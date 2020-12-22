@@ -61,7 +61,12 @@
         "utility": "cpp",
         "vector": "cpp",
         "list": "cpp",
-        "__functional_03": "cpp"
+        "__functional_03": "cpp",
+        "condition_variable": "cpp",
+        "deque": "cpp",
+        "future": "cpp",
+        "queue": "cpp",
+        "thread": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

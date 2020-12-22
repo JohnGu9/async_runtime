@@ -1,7 +1,5 @@
 #pragma once
 
-#include <unordered_map>
-#include "../object.h"
 #include "function.h"
 
 class Listenable : public virtual Object

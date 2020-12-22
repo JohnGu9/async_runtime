@@ -14,12 +14,14 @@ class StatefulElement : public virtual Element
 public:
     StatefulElement(Object::Ref<StatefulWidget> widget);
 
-protected:
-    Object::Ref<State<StatefulWidget>> _state;
     Object::Ref<StatefulWidget> _statefulWidget;
+    Object::Ref<State<StatefulWidget>> _state;
+
+protected:
     Object::Ref<Element> _childElement;
 
     virtual void build() override;
+    virtual void notify() override;
     virtual void attach() override;
     virtual void detach() override;
     virtual void update(Object::Ref<Widget> newWidget) override;

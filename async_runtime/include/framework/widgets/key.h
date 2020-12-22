@@ -18,7 +18,7 @@ public:
     {
         Key *pointer = object.get();
         if (ValueKey<T> *castedPointer = dynamic_cast<ValueKey<T> *>(pointer))
-            return castedPointer->_value == _value;
+            return castedPointer->_value == this->_value;
         return false;
     }
 
@@ -51,6 +51,6 @@ inline bool operator==(Object::Ref<Key> key0, Object::Ref<Key> key1)
 inline bool GlobalObjectKey::equal(Object::Ref<Key> object)
 {
     if (GlobalObjectKey *castedPointer = dynamic_cast<GlobalObjectKey *>(object.get()))
-        return Object::identical(_object, castedPointer->_object);
+        return Object::identical(this->_object, castedPointer->_object);
     return false;
 }

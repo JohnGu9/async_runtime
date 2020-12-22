@@ -4,7 +4,6 @@
 StatefulElement::StatefulElement(Object::Ref<StatefulWidget> widget) : _statefulWidget(widget), Element(widget)
 {
     _state = _statefulWidget->createState();
-    _state->widget = _statefulWidget;
 }
 
 void StatefulElement::build()
@@ -14,19 +13,20 @@ void StatefulElement::build()
     Object::Ref<Widget> lastWidget = _childElement == nullptr ? nullptr : _childElement->widget;
     if (Object::identical(widget, lastWidget))
         return;
-    else if (widget->equal(lastWidget))
+    else if (widget->canUpdate(lastWidget))
     {
-        _childElement->update(widget);
-        _childElement->build();
+        this->_childElement->update(widget);
+        this->_childElement->build();
     }
     else
     {
-        if (_childElement != nullptr)
-            _childElement->detach();
-        _childElement = widget->createElement();
-        _childElement->parent = Object::cast<StatefulElement>(this);
-        _childElement->attach();
-        _childElement->build();
+        if (this->_childElement != nullptr)
+            this->_childElement->detach();
+        this->_childElement = widget->createElement();
+        assert(_childElement != nullptr);
+        this->_childElement->parent = Object::cast<StatefulElement>(this);
+        this->_childElement->attach();
+        this->_childElement->build();
     }
 }
 
@@ -43,8 +43,8 @@ void StatefulElement::update(Object::Ref<Widget> newWidget)
 void StatefulElement::attach()
 {
     Element::attach();
+    this->_state->element = Object::cast<StatefulElement>(this);
     this->_state->initState();
-    this->_state->context = Object::cast<BuildContext>(this);
     this->_state->mounted = true;
     this->_state->didDependenceChanged();
 }
@@ -58,4 +58,12 @@ void StatefulElement::detach()
     this->_childElement = nullptr;
     this->_statefulWidget = nullptr;
     Element::detach();
+}
+
+void StatefulElement::notify()
+{
+    Element::notify();
+    this->_state->didDependenceChanged();
+    this->_childElement->notify();
+    this->_childElement->build();
 }
