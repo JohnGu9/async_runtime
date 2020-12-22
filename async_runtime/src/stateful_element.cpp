@@ -9,7 +9,7 @@ StatefulElement::StatefulElement(Object::Ref<StatefulWidget> widget) : _stateful
 
 void StatefulElement::build()
 {
-    Object::Ref<Widget> widget = this->_state->build(this->cast<BuildContext>());
+    Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr);
     Object::Ref<Widget> lastWidget = _childElement == nullptr ? nullptr : _childElement->widget;
     if (Object::identical(widget, lastWidget))
@@ -24,7 +24,7 @@ void StatefulElement::build()
         if (_childElement != nullptr)
             _childElement->detach();
         _childElement = widget->createElement();
-        _childElement->parent = this->cast<Element>();
+        _childElement->parent = Object::cast<StatefulElement>(this);
         _childElement->attach();
         _childElement->build();
     }
@@ -32,16 +32,19 @@ void StatefulElement::build()
 
 void StatefulElement::update(Object::Ref<Widget> newWidget)
 {
-    Object::Ref<Widget> oldWidget = this->widget;
+    Object::Ref<StatefulWidget> castedWidget = newWidget->cast<StatefulWidget>();
+    assert(castedWidget != nullptr);
+    Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
     this->widget = newWidget;
-    this->_state->didWidgetUpdated(oldWidget->cast<StatefulWidget>());
+    this->_statefulWidget = castedWidget;
+    this->_state->didWidgetUpdated(oldWidget);
 }
 
 void StatefulElement::attach()
 {
     Element::attach();
     this->_state->initState();
-    this->_state->context = this->cast<BuildContext>();
+    this->_state->context = Object::cast<BuildContext>(this);
     this->_state->mounted = true;
     this->_state->didDependenceChanged();
 }

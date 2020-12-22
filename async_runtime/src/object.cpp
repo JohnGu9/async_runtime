@@ -9,10 +9,10 @@ std::string Object::toString()
     return ss.str();
 }
 
-
-
 void Object::toStringStream(std::stringstream &ss)
 {
     ss << "RuntimeType: " << this->runtimeType()
        << "[" << (size_t)this << "]";
 }
+
+Object::~Object() {}

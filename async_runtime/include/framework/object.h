@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <list>
 
-class Object : public std::enable_shared_from_this<Object>
+class Object : public virtual std::enable_shared_from_this<Object>
 {
 public:
     using RuntimeType = std::string;
@@ -26,12 +26,17 @@ public:
     inline static Ref<T> create(_Args &&... __args);
     template <typename T0, typename T1>
     inline static bool identical(const Ref<T0> &object0, const Ref<T1> &object1);
+    template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type * = nullptr>
+    inline static Ref<T> cast(R *other);
+
     template <typename T>
     Ref<T> cast();
 
     virtual std::string toString();
     virtual void toStringStream(std::stringstream &ss);
     virtual RuntimeType runtimeType();
+
+    virtual ~Object();
 };
 
 template <typename T0, typename T1>
@@ -56,6 +61,12 @@ template <typename T0, typename T1>
 inline bool Object::identical(const Object::Ref<T0> &object0, const Object::Ref<T1> &object1)
 {
     return (size_t)(object0.get()) == (size_t)(object1.get());
+}
+
+template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type *>
+inline Object::Ref<T> Object::cast(R *other)
+{
+    return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T>

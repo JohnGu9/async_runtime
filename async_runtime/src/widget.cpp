@@ -6,19 +6,19 @@ LeafWidget::LeafWidget(Object::Ref<Key> key) : Widget(key){};
 
 Object::Ref<Element> LeafWidget::createElement()
 {
-    return Object::create<LeafElement>(this->cast<LeafWidget>());
+    return Object::create<LeafElement>(Object::cast<LeafWidget>(this));
 }
 
 StatelessWidget::StatelessWidget(Object::Ref<Key> key) : Widget(key) {}
 
 Object::Ref<Element> StatelessWidget::createElement()
 {
-    return Object::create<StatelessElement>(this->cast<StatelessWidget>());
+    return Object::create<StatelessElement>(Object::cast<StatelessWidget>(this));
 }
 
 StatefulWidget::StatefulWidget(Object::Ref<Key> key) : Widget(key) {}
 
 Object::Ref<Element> StatefulWidget::createElement()
 {
-    return Object::create<StatefulElement>(this->cast<StatefulWidget>());
+    return Object::create<StatefulElement>(Object::cast<StatefulWidget>(this));
 }

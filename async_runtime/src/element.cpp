@@ -12,7 +12,7 @@ void Element::attach()
 
 void Element::detach()
 {
-    this->_inherits = nullptr;
+    this->_inherits.clear();
 }
 
 LeafElement::LeafElement(Object::Ref<LeafWidget> widget) : Element(widget) {}
@@ -40,7 +40,7 @@ void RootElement::build()
         if (_childElement != nullptr)
             _childElement->detach();
         _childElement = widget->createElement();
-        _childElement->parent = this->cast<Element>();
+        _childElement->parent = Object::cast<RootElement>(this);
         _childElement->attach();
         _childElement->build();
     }
@@ -48,6 +48,13 @@ void RootElement::build()
 
 void RootElement::update(Object::Ref<Widget> newWidget) { assert(false); }
 
-void RootElement::attach() { assert(false); }
+void RootElement::attach()
+{
+    // RootElement
+}
 
-void RootElement::detach() { assert(false); }
+void RootElement::detach()
+{
+    this->_childElement->detach();
+    Element::detach();
+}

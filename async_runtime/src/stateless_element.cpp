@@ -10,13 +10,14 @@ void StatelessElement::attach()
 
 void StatelessElement::detach()
 {
+    this->_childElement->detach();
     _statelessWidget = nullptr;
     Element::detach();
 }
 
 void StatelessElement::build()
 {
-    Object::Ref<Widget> widget = this->_statelessWidget->build(this->cast<BuildContext>());
+    Object::Ref<Widget> widget = this->_statelessWidget->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr);
     Object::Ref<Widget> lastWidget = _childElement == nullptr ? nullptr : _childElement->widget;
     if (Object::identical(widget, lastWidget))
@@ -31,7 +32,7 @@ void StatelessElement::build()
         if (_childElement != nullptr)
             _childElement->detach();
         _childElement = widget->createElement();
-        _childElement->parent = this->cast<Element>();
+        _childElement->parent = Object::cast<StatelessElement>(this);
         _childElement->attach();
         _childElement->build();
     }
