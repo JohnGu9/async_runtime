@@ -3,12 +3,23 @@
 #include <iostream>
 #include "async_runtime.h"
 
-class MainActivity : public StatelessWidget
+struct MainActivity : public StatefulWidget
 {
-public:
-    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
-    {
-        std::cout << "MainActivity::build" << std::endl;
-        return Object::create<LeafWidget>();
-    }
+    virtual Object::Ref<StatefulWidgetState> createState() override;
 };
+
+struct _MainActivityState : public State<MainActivity>
+{
+    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
+};
+
+inline Object::Ref<StatefulWidgetState> MainActivity::createState()
+{
+    return Object::create<_MainActivityState>();
+}
+
+inline Object::Ref<Widget> _MainActivityState::build(Object::Ref<BuildContext> context)
+{
+    debug_print("_MainActivityState::build");
+    return Object::create<LeafWidget>();
+}

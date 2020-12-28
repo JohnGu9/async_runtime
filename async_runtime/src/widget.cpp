@@ -25,4 +25,7 @@ Object::Ref<Element> StatefulWidget::createElement()
 
 Object::Ref<Widget> InheritedWidget::build(Object::Ref<BuildContext> context) { return _child; }
 
-Object::Ref<Element> InheritedWidget::createElement() { return Object::create<InheritedElement>(Object::cast<InheritedWidget>(this)); }
+Object::Ref<Element> InheritedWidget::createElement()
+{
+    return Object::create<InheritedElement>(Object::cast<InheritedWidget>(this));
+}

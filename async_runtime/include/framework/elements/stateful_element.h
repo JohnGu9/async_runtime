@@ -4,21 +4,34 @@
 
 class Widget;
 class StatefulWidget;
+class StatefulWidgetState;
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type * = nullptr>
 class State;
 
 class StatefulElement : public virtual Element
 {
-
 public:
     StatefulElement(Object::Ref<StatefulWidget> widget);
 
     Object::Ref<StatefulWidget> _statefulWidget;
-    Object::Ref<State<StatefulWidget>> _state;
+    Object::Ref<StatefulWidgetState> _state;
 
 protected:
+    class LifeCycle
+    {
+    public:
+        enum _LifeCycle
+        {
+            uninitialized,
+            initialized,
+            mounted,
+            building,
+            unmount,
+        };
+    };
     Object::Ref<Element> _childElement;
+    LifeCycle::_LifeCycle _lifeCycle;
 
     virtual void build() override;
     virtual void notify() override;

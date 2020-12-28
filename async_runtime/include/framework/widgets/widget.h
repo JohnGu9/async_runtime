@@ -10,7 +10,7 @@ class Widget : public virtual Object
     Widget() = delete;
 
 public:
-    Widget(Object::Ref<Key> key = nullptr);
+    Widget(Object::Ref<Key> key);
     virtual Object::Ref<Key> getKey();
     virtual bool canUpdate(Object::Ref<Widget> other)
     {
@@ -41,22 +41,10 @@ public:
 protected:
     virtual Object::Ref<Element> createElement() override;
 };
-
-class StatefulWidget : public Widget
+class StatefulWidgetState : public virtual Object
 {
 public:
-    StatefulWidget(Object::Ref<Key> key = nullptr);
-    virtual Object::Ref<State<StatefulWidget>> createState() = 0;
-
-protected:
-    virtual Object::Ref<Element> createElement() override;
-};
-
-template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
-class State : public virtual Object
-{
-public:
-    State() : mounted(false) {}
+    StatefulWidgetState() : mounted(false) {}
 
     // @mustCallSuper
     virtual void initState() {}
@@ -81,16 +69,29 @@ protected:
         return element;
     }
 
+    bool mounted;
+    Object::WeakRef<StatefulElement> element;
+};
+class StatefulWidget : public Widget
+{
+public:
+    StatefulWidget(Object::Ref<Key> key = nullptr);
+    virtual Object::Ref<StatefulWidgetState> createState() = 0;
+
+protected:
+    virtual Object::Ref<Element> createElement() override;
+};
+
+template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
+class State : public virtual StatefulWidgetState
+{
+public:
+protected:
     virtual Object::Ref<T> getWidget()
     {
         Object::Ref<StatefulElement> element = this->element.lock();
         return element->_statefulWidget->cast<T>();
     }
-
-    bool mounted;
-
-private:
-    Object::WeakRef<StatefulElement> element;
 };
 
 inline Object::Ref<Key> Widget::getKey()
@@ -115,10 +116,3 @@ inline Object::Ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
     return this->_inherits[typeid(T).name()]->cast<T>();
 }
-
-class RuntimeInheritedWidget : public virtual InheritedWidget
-{
-public:
-    RuntimeInheritedWidget(Object::Ref<Widget> child) : InheritedWidget(child) {}
-    virtual bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) { return false; }
-};
