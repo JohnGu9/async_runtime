@@ -25,18 +25,18 @@ public:
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     inline static Ref<T> create(_Args &&... __args);
     template <typename T0, typename T1>
-    inline static bool identical(const Ref<T0> &object0, const Ref<T1> &object1);
+    inline static bool identical(const Ref<T0> &, const Ref<T1> &);
 
     // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type * = nullptr>
-    inline static Ref<T> cast(R *other);
+    inline static Ref<T> cast(R *);
 
     // dynamic cast
     template <typename T>
     Ref<T> cast();
 
     virtual std::string toString();
-    virtual void toStringStream(std::stringstream &ss);
+    virtual void toStringStream(std::stringstream &);
     virtual RuntimeType runtimeType();
 
     virtual ~Object();

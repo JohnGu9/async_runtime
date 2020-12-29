@@ -5,7 +5,7 @@
 class Element;
 class InheritedWidget;
 
-class Inherit : public virtual Object
+class Inheritance : public virtual Object
 {
 };
 
@@ -16,5 +16,5 @@ public:
     Object::Ref<T> dependOnInheritedWidgetOfExactType();
 
 protected:
-    Object::Map<Object::RuntimeType, Object::Ref<Inherit>> _inherits;
+    Object::Map<Object::RuntimeType, Object::Ref<Inheritance>> _inheritances;
 };

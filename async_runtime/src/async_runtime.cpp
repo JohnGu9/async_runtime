@@ -6,8 +6,7 @@ void runApp(Object::Ref<Widget> widget)
 #ifdef DEBUG
     printf("\033c");
     debug_print("Debug mode on");
-    debug_print("Async runtime connecting");
-    debug_print("Scheduler started");
+    debug_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " connecting");
     debug_print("Root widget is \"" << widget->toString() << "\"");
 #elif
     info_print("Debug mode off");

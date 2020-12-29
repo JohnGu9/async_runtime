@@ -21,7 +21,7 @@ protected:
     class LifeCycle
     {
     public:
-        enum _LifeCycle
+        enum Enum
         {
             uninitialized,
             initialized,
@@ -31,7 +31,7 @@ protected:
         };
     };
     Object::Ref<Element> _childElement;
-    LifeCycle::_LifeCycle _lifeCycle;
+    LifeCycle::Enum _lifeCycle;
 
     virtual void build() override;
     virtual void notify() override;

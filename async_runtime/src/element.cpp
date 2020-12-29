@@ -2,26 +2,25 @@
 #include "framework/widgets/widget.h"
 
 /// Element
-
 Element::Element(Object::Ref<Widget> widget_) : widget(widget_) {}
 
 void Element::attach()
 {
     Object::Ref<Element> parent = this->parent.lock();
-    assert(parent != nullptr);
-    this->_inherits = parent->_inherits;
+    assert(parent != nullptr && "Element can't find out its parent. ");
+    this->_inheritances = parent->_inheritances;
 }
 
 void Element::detach()
 {
-    this->_inherits.clear();
+    this->_inheritances.clear();
 }
 
 void Element::notify()
 {
     Object::Ref<Element> parent = this->parent.lock();
-    assert(parent != nullptr);
-    this->_inherits = parent->_inherits;
+    assert(parent != nullptr && "Element can't find out its parent. ");
+    this->_inheritances = parent->_inheritances;// update inheritances
 }
 
 /// Leaf Element
@@ -35,7 +34,6 @@ void LeafElement::notify() {}
 void LeafElement::update(Object::Ref<Widget> newWidget) {}
 
 /// Root Element
-
 RootElement::RootElement(Object::Ref<Widget> widget) : Element(nullptr), _child(widget) {}
 
 void RootElement::build()
@@ -55,16 +53,16 @@ void RootElement::build()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(_childElement != nullptr);
+        assert(this->_childElement != nullptr);
         this->_childElement->parent = Object::cast<RootElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
     }
 }
 
-void RootElement::update(Object::Ref<Widget> newWidget) { assert(false); }
+void RootElement::update(Object::Ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
 
-void RootElement::notify() { assert(false); }
+void RootElement::notify() { assert(false && "RootElement dependence would never change. "); }
 
 void RootElement::attach() {}
 
@@ -76,13 +74,12 @@ void RootElement::detach()
 }
 
 /// Inherited Element
-
 InheritedElement::InheritedElement(Object::Ref<InheritedWidget> widget) : _inheritWidget(widget), Element(widget) {}
 
 void InheritedElement::attach()
 {
     Element::attach();
-    this->_inherits[this->_inheritWidget->runtimeType()] = Object::cast<Inherit>(this->_inheritWidget.get());
+    this->_inheritances[this->_inheritWidget->runtimeType()] = Object::cast<Inheritance>(this->_inheritWidget.get());
 }
 
 void InheritedElement::detach()
@@ -96,11 +93,11 @@ void InheritedElement::detach()
 void InheritedElement::build()
 {
     Object::Ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
-    assert(widget != nullptr);
-    Object::Ref<Widget> lastWidget = _childElement == nullptr ? nullptr : _childElement->widget;
-    if (Object::identical(widget, lastWidget))
+    assert(widget != nullptr && "InheritedWidget child should not return null, make sure call InheritedWidget init constructer. ");
+    Object::Ref<Widget> oldWidget = _childElement == nullptr ? nullptr : _childElement->widget;
+    if (Object::identical(widget, oldWidget))
         return;
-    else if (widget->canUpdate(lastWidget))
+    else if (widget->canUpdate(oldWidget))
     {
         this->_childElement->update(widget);
         this->_childElement->build();
@@ -110,7 +107,7 @@ void InheritedElement::build()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(_childElement != nullptr);
+        assert(this->_childElement != nullptr);
         this->_childElement->parent = Object::cast<InheritedElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
@@ -130,50 +127,37 @@ void InheritedElement::update(Object::Ref<Widget> newWidget)
 
 void InheritedElement::notify()
 {
-    this->_inherits[this->_inheritWidget->runtimeType()] = Object::cast<Inherit>(this->_inheritWidget.get());
-    this->_childElement->notify();
-}
+    this->_inheritances[this->_inheritWidget->runtimeType()] = Object::cast<Inheritance>(this->_inheritWidget.get());
 
-/// Stateful Element
-
-StatefulElement::StatefulElement(Object::Ref<StatefulWidget> widget)
-    : _statefulWidget(widget), Element(widget)
-{
-    _state = _statefulWidget->createState();
-}
-
-void StatefulElement::build()
-{
-    Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
-    assert(widget != nullptr);
-    Object::Ref<Widget> lastWidget = _childElement == nullptr ? nullptr : _childElement->widget;
-    if (Object::identical(widget, lastWidget))
-        return;
-    else if (widget->canUpdate(lastWidget))
+    Object::Ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
+    assert(widget != nullptr && "InheritedWidget child should not return null, make sure call InheritedWidget init constructer. ");
+    Object::Ref<Widget> oldWidget = _childElement == nullptr ? nullptr : _childElement->widget;
+    if (Object::identical(widget, oldWidget))
+    {
+        this->_childElement->notify();
+    }
+    else if (widget->canUpdate(oldWidget))
     {
         this->_childElement->update(widget);
-        this->_childElement->build();
+        this->_childElement->notify();
     }
     else
     {
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(_childElement != nullptr);
-        this->_childElement->parent = Object::cast<StatefulElement>(this);
+        assert(this->_childElement != nullptr);
+        this->_childElement->parent = Object::cast<InheritedElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
     }
 }
 
-void StatefulElement::update(Object::Ref<Widget> newWidget)
+/// Stateful Element
+StatefulElement::StatefulElement(Object::Ref<StatefulWidget> widget)
+    : _statefulWidget(widget), Element(widget)
 {
-    Object::Ref<StatefulWidget> castedWidget = newWidget->cast<StatefulWidget>();
-    assert(castedWidget != nullptr);
-    Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
-    this->widget = newWidget;
-    this->_statefulWidget = castedWidget;
-    this->_state->didWidgetUpdated(oldWidget);
+    _state = _statefulWidget->createState();
 }
 
 void StatefulElement::attach()
@@ -196,16 +180,69 @@ void StatefulElement::detach()
     Element::detach();
 }
 
+void StatefulElement::build()
+{
+    Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
+    assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
+    Object::Ref<Widget> oldWidget = _childElement == nullptr ? nullptr : _childElement->widget;
+    if (Object::identical(widget, oldWidget))
+        return;
+    else if (widget->canUpdate(oldWidget))
+    {
+        this->_childElement->update(widget);
+        this->_childElement->build();
+    }
+    else
+    {
+        if (this->_childElement != nullptr)
+            this->_childElement->detach();
+        this->_childElement = widget->createElement();
+        assert(this->_childElement != nullptr);
+        this->_childElement->parent = Object::cast<StatefulElement>(this);
+        this->_childElement->attach();
+        this->_childElement->build();
+    }
+}
+
+void StatefulElement::update(Object::Ref<Widget> newWidget)
+{
+    Object::Ref<StatefulWidget> castedWidget = newWidget->cast<StatefulWidget>();
+    assert(castedWidget != nullptr);
+    Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
+    this->widget = newWidget;
+    this->_statefulWidget = castedWidget;
+    this->_state->didWidgetUpdated(oldWidget);
+}
+
 void StatefulElement::notify()
 {
     Element::notify();
     this->_state->didDependenceChanged();
-    this->build();
-    this->_childElement->notify();
+    Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
+    assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
+    Object::Ref<Widget> oldWidget = _childElement == nullptr ? nullptr : _childElement->widget;
+    if (Object::identical(widget, oldWidget))
+    {
+        this->_childElement->notify();
+    }
+    else if (widget->canUpdate(oldWidget))
+    {
+        this->_childElement->update(widget);
+        this->_childElement->notify();
+    }
+    else
+    {
+        if (this->_childElement != nullptr)
+            this->_childElement->detach();
+        this->_childElement = widget->createElement();
+        assert(this->_childElement != nullptr);
+        this->_childElement->parent = Object::cast<StatefulElement>(this);
+        this->_childElement->attach();
+        this->_childElement->build();
+    }
 }
 
 /// Stateless Element
-
 StatelessElement::StatelessElement(Object::Ref<StatelessWidget> widget) : _statelessWidget(widget), Element(widget) {}
 
 void StatelessElement::detach()
@@ -219,11 +256,11 @@ void StatelessElement::detach()
 void StatelessElement::build()
 {
     Object::Ref<Widget> widget = this->_statelessWidget->build(Object::cast<BuildContext>(this));
-    assert(widget != nullptr);
-    Object::Ref<Widget> lastWidget = _childElement == nullptr ? nullptr : _childElement->widget;
-    if (Object::identical(widget, lastWidget))
+    assert(widget != nullptr && "StatelessWidget build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
+    Object::Ref<Widget> oldWidget = _childElement == nullptr ? nullptr : _childElement->widget;
+    if (Object::identical(widget, oldWidget))
         return;
-    else if (widget->canUpdate(lastWidget))
+    else if (widget->canUpdate(oldWidget))
     {
         this->_childElement->update(widget);
         this->_childElement->build();
@@ -233,7 +270,7 @@ void StatelessElement::build()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(_childElement != nullptr);
+        assert(this->_childElement != nullptr);
         this->_childElement->parent = Object::cast<StatelessElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
@@ -250,6 +287,26 @@ void StatelessElement::update(Object::Ref<Widget> newWidget)
 void StatelessElement::notify()
 {
     Element::notify();
-    this->build();
-    this->_childElement->notify();
+    Object::Ref<Widget> widget = this->_statelessWidget->build(Object::cast<BuildContext>(this));
+    assert(widget != nullptr && "StatelessWidget build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
+    Object::Ref<Widget> oldWidget = _childElement == nullptr ? nullptr : _childElement->widget;
+    if (Object::identical(widget, oldWidget))
+    {
+        this->_childElement->notify();
+    }
+    else if (widget->canUpdate(oldWidget))
+    {
+        this->_childElement->update(widget);
+        this->_childElement->notify();
+    }
+    else
+    {
+        if (this->_childElement != nullptr)
+            this->_childElement->detach();
+        this->_childElement = widget->createElement();
+        assert(this->_childElement != nullptr);
+        this->_childElement->parent = Object::cast<StatelessElement>(this);
+        this->_childElement->attach();
+        this->_childElement->build();
+    }
 }

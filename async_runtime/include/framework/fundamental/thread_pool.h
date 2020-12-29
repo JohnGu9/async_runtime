@@ -139,8 +139,10 @@ inline bool EventQueue::dispose()
     assert(threadPool != nullptr);
     {
         std::unique_lock<std::mutex> lock(threadPool->queue_mutex);
-        for (auto iter = threadPool->tasks.begin(); iter != threadPool->tasks.end(); iter++)
-            removeFirst(*iter, this->tasks);
+        for (auto iter = this->tasks.begin(); iter != this->tasks.end(); iter++)
+        {
+            removeFirst(*iter, threadPool->tasks);
+        }
     }
 }
 

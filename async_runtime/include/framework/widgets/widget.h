@@ -12,17 +12,11 @@ class Widget : public virtual Object
 public:
     Widget(Object::Ref<Key> key);
     virtual Object::Ref<Key> getKey();
-    virtual bool canUpdate(Object::Ref<Widget> other)
-    {
-        if (other == nullptr)
-            return false;
-        return this->runtimeType() == other->runtimeType() && this->getKey() == other->getKey();
-    }
-
+    virtual bool canUpdate(Object::Ref<Widget> other);
     virtual Object::Ref<Element> createElement() = 0;
 
 protected:
-    Object::Ref<Key> _key;
+    const Object::Ref<Key> _key;
 };
 
 class LeafWidget : public virtual Widget
@@ -41,37 +35,33 @@ public:
 protected:
     virtual Object::Ref<Element> createElement() override;
 };
+
 class StatefulWidgetState : public virtual Object
 {
 public:
-    StatefulWidgetState() : mounted(false) {}
+    StatefulWidgetState();
 
     // @mustCallSuper
-    virtual void initState() {}
+    virtual void initState();
     // @mustCallSuper
-    virtual void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) {}
+    virtual void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget);
     // @mustCallSuper
-    virtual void didDependenceChanged() {}
+    virtual void didDependenceChanged();
     // @mustCallSuper
-    virtual void dispose() {}
-
+    virtual void dispose();
+    // @immutable
+    void setState();
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
-
-    void setState() {}
 
     friend StatefulElement;
 
 protected:
-    virtual Object::Ref<BuildContext> getContext()
-    {
-        assert(this->mounted); // can't access context before initState
-        Object::Ref<StatefulElement> element = this->element.lock();
-        return element;
-    }
+    virtual Object::Ref<BuildContext> getContext();
 
     bool mounted;
     Object::WeakRef<StatefulElement> element;
 };
+
 class StatefulWidget : public Widget
 {
 public:
@@ -99,10 +89,10 @@ inline Object::Ref<Key> Widget::getKey()
     return this->_key;
 }
 
-class InheritedWidget : public virtual StatelessWidget, public virtual Inherit
+class InheritedWidget : public virtual StatelessWidget, public virtual Inheritance
 {
 public:
-    InheritedWidget(Object::Ref<Widget> child) : _child(child) { assert(_child != nullptr); }
+    InheritedWidget(Object::Ref<Widget> child);
     virtual bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) = 0;
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
     virtual Object::Ref<Element> createElement() override;
@@ -114,5 +104,5 @@ protected:
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
 inline Object::Ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
-    return this->_inherits[typeid(T).name()]->cast<T>();
+    return this->_inheritances[typeid(T).name()]->cast<T>();
 }
