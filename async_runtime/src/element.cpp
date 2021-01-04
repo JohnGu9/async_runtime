@@ -20,11 +20,10 @@ void Element::notify()
 {
     Object::Ref<Element> parent = this->parent.lock();
     assert(parent != nullptr && "Element can't find out its parent. ");
-    this->_inheritances = parent->_inheritances;// update inheritances
+    this->_inheritances = parent->_inheritances; // update inheritances
 }
 
 /// Leaf Element
-
 LeafElement::LeafElement(Object::Ref<LeafWidget> widget) : Element(widget) {}
 
 void LeafElement::build() {}
@@ -107,7 +106,7 @@ void InheritedElement::build()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(this->_childElement != nullptr);
+        assert(this->_childElement != nullptr && "Widget [createElement] return null isn't allowed. ");
         this->_childElement->parent = Object::cast<InheritedElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
@@ -146,7 +145,7 @@ void InheritedElement::notify()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(this->_childElement != nullptr);
+        assert(this->_childElement != nullptr && "Widget [createElement] return null isn't allowed. ");
         this->_childElement->parent = Object::cast<InheritedElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
@@ -197,7 +196,7 @@ void StatefulElement::build()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(this->_childElement != nullptr);
+        assert(this->_childElement != nullptr && "Widget [createElement] return null isn't allowed. ");
         this->_childElement->parent = Object::cast<StatefulElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
@@ -235,7 +234,7 @@ void StatefulElement::notify()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(this->_childElement != nullptr);
+        assert(this->_childElement != nullptr && "Widget [createElement] return null isn't allowed. ");
         this->_childElement->parent = Object::cast<StatefulElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
@@ -270,7 +269,7 @@ void StatelessElement::build()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(this->_childElement != nullptr);
+        assert(this->_childElement != nullptr && "Widget [createElement] return null isn't allowed. ");
         this->_childElement->parent = Object::cast<StatelessElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
@@ -304,9 +303,100 @@ void StatelessElement::notify()
         if (this->_childElement != nullptr)
             this->_childElement->detach();
         this->_childElement = widget->createElement();
-        assert(this->_childElement != nullptr);
+        assert(this->_childElement != nullptr && "Widget [createElement] return null isn't allowed. ");
         this->_childElement->parent = Object::cast<StatelessElement>(this);
         this->_childElement->attach();
         this->_childElement->build();
     }
+}
+
+NotificationListenerElement::NotificationListenerElement(Object::Ref<NotificationListener> widget) : _notificationListenerWidget(widget), StatelessElement(widget), Element(widget) {}
+
+void NotificationListenerElement::update(Object::Ref<Widget> newWidget)
+{
+    Object::Ref<NotificationListener> castedWidget = newWidget->cast<NotificationListener>();
+    assert(castedWidget != nullptr);
+    this->_notificationListenerWidget = castedWidget;
+    StatelessElement::update(newWidget);
+}
+
+void NotificationListenerElement::detach()
+{
+    _notificationListenerWidget = nullptr;
+    StatelessElement::detach();
+}
+
+MultiChildElement::MultiChildElement(Object::Ref<MultiChildWidget> widget) : _multiChildWidget(widget), Element(widget) {}
+
+void MultiChildElement::build()
+{
+    Object::List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
+    for (size_t i = 0; i < children.size(); i++)
+    {
+        Object::Ref<Widget> &widget = children[i];
+        if (i < this->_childrenElements.size()) // update widget
+        {
+            assert(_childrenElements[i] != nullptr && "Widget [createElement] return null isn't allowed. ");
+            Object::Ref<Widget> &oldWidget = _childrenElements[i]->widget;
+            if (Object::identical(widget, oldWidget))
+                return;
+            else if (widget->canUpdate(oldWidget))
+            {
+                this->_childrenElements[i]->update(widget);
+                this->_childrenElements[i]->build();
+            }
+            else
+            {
+                this->_childrenElements[i]->detach();
+                this->_childrenElements[i] = widget->createElement();
+                assert(this->_childrenElements[i] != nullptr);
+                this->_childrenElements[i]->parent = Object::cast<MultiChildElement>(this);
+                this->_childrenElements[i]->attach();
+                this->_childrenElements[i]->build();
+            }
+        }
+        else // append widget
+        {
+            this->_childrenElements.push_back(widget->createElement());
+            assert(this->_childrenElements[i] != nullptr);
+            this->_childrenElements[i]->parent = Object::cast<MultiChildElement>(this);
+            this->_childrenElements[i]->attach();
+            this->_childrenElements[i]->build();
+        }
+    }
+    if (this->_childrenElements.size() > children.size()) // remove widget
+    {
+        size_t redundant = this->_childrenElements.size() - children.size();
+        for (size_t i = 0; i < redundant; i++)
+        {
+            auto iter = _childrenElements.rbegin();
+            Object::Ref<Element> element = *iter;
+            element->detach();
+            this->_childrenElements.pop_back();
+        }
+    }
+}
+
+void MultiChildElement::update(Object::Ref<Widget> newWidget)
+{
+    Object::Ref<MultiChildWidget> castedWidget = newWidget->cast<MultiChildWidget>();
+    assert(castedWidget != nullptr);
+    this->_multiChildWidget = castedWidget;
+    this->widget = newWidget;
+}
+
+void MultiChildElement::notify()
+{
+    Element::notify();
+    for (size_t i = 0; i < this->_childrenElements.size(); i++)
+        this->_childrenElements[i]->notify();
+}
+
+void MultiChildElement::detach()
+{
+    for (size_t i = 0; i < this->_childrenElements.size(); i++)
+        this->_childrenElements[i]->detach();
+    this->_childrenElements.clear();
+    this->_multiChildWidget = nullptr;
+    Element::detach();
 }

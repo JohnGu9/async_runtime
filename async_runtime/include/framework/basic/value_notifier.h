@@ -21,7 +21,7 @@ protected:
 template <typename T>
 void ValueNotifier<T>::setValue(T &&value)
 {
-    assert(!this->_isDisposed);
+    assert(!this->_isDisposed && "Can't access [setValue] after [dispose]");
     if (value != this->_value)
     {
         this->_value = value;
@@ -30,7 +30,15 @@ void ValueNotifier<T>::setValue(T &&value)
 }
 
 template <typename T>
-T &ValueNotifier<T>::getValue() { return this->_value; }
+T &ValueNotifier<T>::getValue()
+{
+    assert(!this->_isDisposed && "Can't access [getValue] after [dispose]");
+    return this->_value;
+}
 
 template <typename T>
-const T &ValueNotifier<T>::getValue() const { return this->_value; }
+const T &ValueNotifier<T>::getValue() const
+{
+    assert(!this->_isDisposed && "Can't access [getValue] after [dispose]");
+    return this->_value;
+}

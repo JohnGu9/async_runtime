@@ -1,9 +1,9 @@
 #pragma once
 
 #include "key.h"
+#include "../basic/function.h"
 #include "../contexts/build_context.h"
-#include "../elements/stateless_element.h"
-#include "../elements/stateful_element.h"
+#include "../elements/element.h"
 
 class Widget : public virtual Object
 {
@@ -50,7 +50,7 @@ public:
     // @mustCallSuper
     virtual void dispose();
     // @immutable
-    void setState();
+    void setState(Object::Ref<Fn<void()>>);
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
 
     friend StatefulElement;
@@ -60,6 +60,9 @@ protected:
 
     bool mounted;
     Object::WeakRef<StatefulElement> element;
+
+private:
+    Object::Ref<StatefulElement> getElement();
 };
 
 class StatefulWidget : public Widget
@@ -72,7 +75,7 @@ protected:
     virtual Object::Ref<Element> createElement() override;
 };
 
-template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
+template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type * = nullptr>
 class State : public virtual StatefulWidgetState
 {
 public:
@@ -92,7 +95,7 @@ inline Object::Ref<Key> Widget::getKey()
 class InheritedWidget : public virtual StatelessWidget, public virtual Inheritance
 {
 public:
-    InheritedWidget(Object::Ref<Widget> child);
+    InheritedWidget(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
     virtual bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) = 0;
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
     virtual Object::Ref<Element> createElement() override;
@@ -106,3 +109,27 @@ inline Object::Ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
     return this->_inheritances[typeid(T).name()]->cast<T>();
 }
+
+class NotificationListener : public virtual StatelessWidget
+{
+public:
+    NotificationListener(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
+    // virtual bool onNotification(Object::Ref<T> oldWidget) = 0;
+    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
+    virtual Object::Ref<Element> createElement() override;
+
+protected:
+    Object::Ref<Widget> _child;
+};
+
+class MultiChildWidget : public virtual Widget
+{
+public:
+    MultiChildWidget(Object::List<Object::Ref<Widget>> children, Object::Ref<Key> key = nullptr);
+    virtual Object::Ref<Element> createElement();
+
+    friend MultiChildElement;
+
+protected:
+    Object::List<Object::Ref<Widget>> _children;
+};

@@ -11,8 +11,6 @@ bool Widget::canUpdate(Object::Ref<Widget> other)
 
 LeafWidget::LeafWidget(Object::Ref<Key> key) : Widget(key){};
 
-InheritedWidget::InheritedWidget(Object::Ref<Widget> child) : _child(child) { assert(_child != nullptr); }
-
 Object::Ref<Element> LeafWidget::createElement()
 {
     return Object::create<LeafElement>(Object::cast<LeafWidget>(this));
@@ -32,13 +30,6 @@ Object::Ref<Element> StatefulWidget::createElement()
     return Object::create<StatefulElement>(Object::cast<StatefulWidget>(this));
 }
 
-Object::Ref<Widget> InheritedWidget::build(Object::Ref<BuildContext> context) { return _child; }
-
-Object::Ref<Element> InheritedWidget::createElement()
-{
-    return Object::create<InheritedElement>(Object::cast<InheritedWidget>(this));
-}
-
 StatefulWidgetState::StatefulWidgetState() : mounted(false) {}
 
 void StatefulWidgetState::initState() {}
@@ -49,10 +40,44 @@ void StatefulWidgetState::didDependenceChanged() {}
 
 void StatefulWidgetState::dispose() {}
 
-void StatefulWidgetState::setState() {}
+void StatefulWidgetState::setState(Object::Ref<Fn<void()>> fn)
+{
+    (*fn)();
+    this->getElement()->build();
+}
 
-Object::Ref<BuildContext> StatefulWidgetState::getContext()
+Object::Ref<BuildContext> StatefulWidgetState::getContext() { return this->getElement(); }
+
+Object::Ref<StatefulElement> StatefulWidgetState::getElement()
 {
     assert(this->mounted && "User can't access context before initState. You can try [didDependenceChanged] method to access context before first build. ");
     return this->element.lock();
+}
+
+InheritedWidget::InheritedWidget(Object::Ref<Widget> child, Object::Ref<Key> key) : _child(child), StatelessWidget(key) { assert(_child != nullptr); }
+
+Object::Ref<Widget> InheritedWidget::build(Object::Ref<BuildContext> context) { return _child; }
+
+Object::Ref<Element> InheritedWidget::createElement()
+{
+    return Object::create<InheritedElement>(Object::cast<InheritedWidget>(this));
+}
+
+NotificationListener::NotificationListener(Object::Ref<Widget> child, Object::Ref<Key> key) : _child(child), StatelessWidget(key) {}
+
+Object::Ref<Widget> NotificationListener::build(Object::Ref<BuildContext> context)
+{
+    return this->_child;
+}
+
+Object::Ref<Element> NotificationListener::createElement()
+{
+    return Object::create<NotificationListenerElement>(Object::cast<NotificationListener>(this));
+}
+
+MultiChildWidget::MultiChildWidget(Object::List<Object::Ref<Widget>> children, Object::Ref<Key> key) : _children(children), Widget(key) {}
+
+Object::Ref<Element> MultiChildWidget::createElement()
+{
+    return Object::create<MultiChildElement>(Object::cast<MultiChildWidget>(this));
 }

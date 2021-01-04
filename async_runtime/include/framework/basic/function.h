@@ -7,19 +7,16 @@ class Function : public virtual Object
 {
 };
 
-class VoidCallBack : public Function
+template <class _Fp>
+class Fn;
+
+template <class _Rp, class... _ArgTypes>
+class Fn<_Rp(_ArgTypes...)> : public virtual Function, public std::function<_Rp(_ArgTypes...)>
 {
 public:
-    static Object::Ref<VoidCallBack> fromFunction(std::function<void()> fn);
-    virtual void operator()() = 0;
-};
-
-class _VoidCallBack : public VoidCallBack
-{
-public:
-    _VoidCallBack(std::function<void()> &fn) : _fn(fn) {}
-    virtual void operator()() override;
-
-protected:
-    std::function<void()> _fn;
+    Fn() : std::function<_Rp(_ArgTypes...)>() {}
+    Fn(nullptr_t ptr) : std::function<_Rp(_ArgTypes...)>(ptr) {}
+    Fn(std::function<_Rp(_ArgTypes...)> &fn) : std::function<_Rp(_ArgTypes...)>(fn) {}
+    Fn(std::function<_Rp(_ArgTypes...)> &&fn) : std::function<_Rp(_ArgTypes...)>(std::forward<std::function<_Rp(_ArgTypes...)>>(fn)) {}
+    Fn(_Rp (*fn)(_ArgTypes...)) : std::function<_Rp(_ArgTypes...)>(fn) {}
 };

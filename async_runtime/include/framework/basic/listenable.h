@@ -6,11 +6,11 @@ class Listenable : public virtual Object
 {
 public:
     Listenable();
-    virtual void addListener(Object::Ref<VoidCallBack> fn);
-    virtual void removeListener(Object::Ref<VoidCallBack> fn);
+    virtual void addListener(Object::Ref<Fn<void(Object::Ref<Listenable>)>> fn);
+    virtual void removeListener(Object::Ref<Fn<void(Object::Ref<Listenable>)>> fn);
     virtual void dispose();
 
 protected:
-    std::unordered_map<size_t, Object::Ref<VoidCallBack>> _listeners;
+    std::unordered_map<size_t, Object::Ref<Fn<void(Object::Ref<Listenable>)>>> _listeners;
     bool _isDisposed;
 };

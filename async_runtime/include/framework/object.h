@@ -6,7 +6,7 @@
 #include <assert.h>
 
 #include <unordered_map>
-#include <list>
+#include <vector>
 
 class Object : public virtual std::enable_shared_from_this<Object>
 {
@@ -18,7 +18,7 @@ public:
     using WeakRef = std::weak_ptr<T>;
 
     template <typename Element>
-    using List = std::list<Element>;
+    using List = std::vector<Element>;
     template <typename Key, typename Value>
     using Map = std::unordered_map<Key, Value>;
 

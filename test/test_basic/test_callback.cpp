@@ -1,28 +1,33 @@
 #include <iostream>
 #include "framework/basic/value_notifier.h"
 
-void _test()
+void _test(Object::Ref<Listenable> self)
 {
-    std::cout << "This is _test function" << std::endl;
+    Object::Ref<ValueNotifier<bool>> notifier = self->cast<ValueNotifier<bool>>();
+    std::cout << "Value changed to " << notifier->getValue() << std::endl;
 }
 
 int main(const int argc, char **args)
 {
-    ValueNotifier<bool> notifier(false);
-    auto fn = VoidCallBack::fromFunction(_test);
-    notifier.addListener(fn);
+    auto notifier = Object::create<ValueNotifier<bool>>(false);
+    auto fn = Object::create<Fn<void(Object::Ref<Listenable>)>>(_test);
+    notifier->addListener(fn);
 
     std::cout << "Change value" << std::endl;
-    notifier.setValue(true);
+    notifier->setValue(true);
 
     std::cout << "Not change value" << std::endl;
-    notifier.setValue(true);
+    notifier->setValue(true);
+
+    std::cout << "Remove Listener and change value" << std::endl;
+    notifier->removeListener(fn);
+    notifier->setValue(false);
 
     std::cout << "Dispose" << std::endl;
-    notifier.dispose();
+    notifier->dispose();
 
     std::cout << "Invalid access after dispose()" << std::endl;
-    notifier.setValue(false);
+    notifier->setValue(false);
 
     return EXIT_SUCCESS;
 }
