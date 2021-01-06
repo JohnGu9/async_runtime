@@ -4,9 +4,10 @@
 #include <memory>
 #include <sstream>
 #include <assert.h>
-
 #include <unordered_map>
 #include <vector>
+
+#include "print.h"
 
 class Object : public virtual std::enable_shared_from_this<Object>
 {
@@ -24,6 +25,8 @@ public:
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     inline static Ref<T> create(_Args &&... __args);
+    template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
+    inline static Ref<T> create(_Args &&... __args);
     template <typename T0, typename T1>
     inline static bool identical(const Ref<T0> &, const Ref<T1> &);
 
@@ -34,6 +37,9 @@ public:
     // dynamic cast
     template <typename T>
     Ref<T> cast();
+
+    template <typename T>
+    bool is();
 
     virtual std::string toString();
     virtual void toStringStream(std::stringstream &);
@@ -60,6 +66,13 @@ inline Object::Ref<T> Object::create(_Args &&... __args)
     return std::make_shared<T>(__args...);
 }
 
+template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
+inline Object::Ref<T> Object::create(_Args &&... __args)
+{
+    assert(warning_print("Object::create call on a not Object derived class [" << typeid(T).name() << "]"));
+    return std::make_shared<T>(__args...);
+}
+
 template <typename T0, typename T1>
 inline bool Object::identical(const Object::Ref<T0> &object0, const Object::Ref<T1> &object1)
 {
@@ -78,7 +91,16 @@ inline Object::Ref<T> Object::cast()
     return std::dynamic_pointer_cast<T>(this->shared_from_this());
 }
 
+template <typename T>
+inline bool Object::is()
+{
+    return dynamic_cast<T *>(this);
+}
+
 inline Object::RuntimeType Object::runtimeType()
 {
     return typeid(*this).name();
 }
+
+void print(Object::Ref<Object> object);
+void print(std::string &str);

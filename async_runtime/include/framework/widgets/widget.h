@@ -2,6 +2,7 @@
 
 #include "key.h"
 #include "../basic/function.h"
+#include "../basic/notification.h"
 #include "../contexts/build_context.h"
 #include "../elements/element.h"
 
@@ -114,7 +115,7 @@ class NotificationListener : public virtual StatelessWidget
 {
 public:
     NotificationListener(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
-    // virtual bool onNotification(Object::Ref<T> oldWidget) = 0;
+    virtual bool onNotification(Object::Ref<Notification> notification) = 0;
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
     virtual Object::Ref<Element> createElement() override;
 
@@ -132,4 +133,13 @@ public:
 
 protected:
     Object::List<Object::Ref<Widget>> _children;
+};
+
+class Builder : public virtual StatelessWidget
+{
+public:
+    Builder(Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> fn, Object::Ref<Key> key = nullptr);
+
+protected:
+    Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> _fn;
 };

@@ -1,6 +1,8 @@
 #pragma once
 
+#include "../basic/function.h"
 #include "../contexts/build_context.h"
+#include "../basic/observable.h"
 
 class Widget;
 class LeafWidget;
@@ -24,6 +26,9 @@ public:
     virtual void notify();
     virtual void attach();
     virtual void detach();
+
+    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) = 0;
+    virtual void visitAncestor(Fn<void(Object::Ref<Element>)>);
 };
 
 class LeafElement : public virtual Element
@@ -33,6 +38,8 @@ public:
     virtual void build() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
     virtual void notify() override;
+
+    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
 };
 
 class RootElement : public virtual Element
@@ -46,6 +53,9 @@ public:
     virtual void attach() override;
     virtual void detach() override;
 
+    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
+    virtual void visitAncestor(Fn<void(Object::Ref<Element>)>) override;
+
 protected:
     Object::Ref<Widget> _child;
     Object::Ref<Element> _childElement;
@@ -53,7 +63,6 @@ protected:
 
 class StatelessElement : public virtual Element
 {
-
 public:
     StatelessElement(Object::Ref<StatelessWidget> widget);
 
@@ -63,8 +72,11 @@ protected:
 
     virtual void build() override;
     virtual void notify() override;
+    virtual void attach() override;
     virtual void detach() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
+
+    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
 };
 
 class StatefulElement : public virtual Element
@@ -98,6 +110,8 @@ protected:
     virtual void attach() override;
     virtual void detach() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
+
+    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
 };
 
 class InheritedElement : public virtual Element
@@ -112,6 +126,8 @@ public:
     virtual void notify() override;
     virtual void attach() override;
     virtual void detach() override;
+
+    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
 };
 
 class NotificationListenerElement : public virtual StatelessElement
@@ -131,7 +147,10 @@ public:
     virtual void build() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
     virtual void notify() override;
+    virtual void attach() override;
     virtual void detach() override;
+
+    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
 
 protected:
     Object::Ref<MultiChildWidget> _multiChildWidget;

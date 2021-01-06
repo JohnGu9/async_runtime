@@ -1,5 +1,7 @@
-#include <iostream>
 #include "async_runtime.h"
+
+static std::mutex queue_mutex;
+static std::condition_variable condition;
 
 void runApp(Object::Ref<Widget> widget)
 {
@@ -11,11 +13,12 @@ void runApp(Object::Ref<Widget> widget)
 #elif
     info_print("Debug mode off");
 #endif
+    Object::Ref<RootElement> root = Object::create<RootElement>(widget);
+
+    root->attach();
+
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is ready");
 
-    Object::Ref<RootElement> root = Object::create<RootElement>(widget);
-    root->attach();
-    root->build();
     info_print("Enter '"
                << font_wrapper(BOLDBLUE, "q")
                << "' to quit, '"
@@ -24,7 +27,9 @@ void runApp(Object::Ref<Widget> widget)
                << font_wrapper(BOLDBLUE, "--help")
                << "' for more information");
     std::string input;
-    while (std::cout << ">> " && getline(std::cin, input))
+    onCommand("ls", root);
+
+    while (std::cout << ">> " && std::getline(std::cin, input))
     {
         if (input == "q" || input == "quit")
         {
@@ -65,6 +70,22 @@ void onCommand(const std::string &in, Object::Ref<RootElement> &root)
     }
     else if (command == "ls")
     {
+        Object::Map<Object::RuntimeType, Object::List<size_t>> map;
+        root->visitDescendant([&map](Object::Ref<Element> element) {
+            Object::RuntimeType type = element->runtimeType();
+            if (map.find(type) == map.end())
+                map[type] = {};
+            map[type].push_back((size_t)(element.get()));
+        });
+        std::stringstream ss;
+        for (auto iter = map.begin(); iter != map.end(); iter++)
+        {
+            ss << font_wrapper(BOLDGREEN, iter->first) << "[ ";
+            for (auto i : iter->second)
+                ss << i << " ";
+            ss << "]  ";
+        }
+        debug_print(ss.rdbuf());
     }
     else if (command == "ps")
     {
@@ -76,7 +97,6 @@ void onCommand(const std::string &in, Object::Ref<RootElement> &root)
     {
         root->detach();
         root->attach();
-        root->build();
     }
     else
     {

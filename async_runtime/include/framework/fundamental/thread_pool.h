@@ -12,8 +12,6 @@
 
 #include "../object.h"
 
-class EventQueue;
-
 class ThreadPool : public virtual Object
 {
 public:
@@ -22,15 +20,13 @@ public:
 
     template <class F, class... Args>
     auto post(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
-    virtual bool dispose();
-
-    friend EventQueue;
+    virtual void dispose();
 
 protected:
     // need to keep track of threads so we can join them
     std::vector<std::thread> workers;
     // the task queue
-    std::list<std::function<void()>> tasks;
+    std::queue<std::function<void()>> tasks;
 
     // synchronization
     std::mutex queue_mutex;
@@ -38,41 +34,30 @@ protected:
     bool stop;
 };
 
-class EventQueue : public virtual Object
-{
-    virtual ~EventQueue();
-
-    template <class F, class... Args>
-    auto post(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
-
-    virtual bool dispose();
-
-protected:
-    Object::WeakRef<ThreadPool> parent;
-    std::list<std::function<void()> *> tasks;
-};
-
 // the constructor just launches some amount of workers
 inline ThreadPool::ThreadPool(size_t threads)
     : stop(false)
 {
+    assert(threads > 0);
     for (size_t i = 0; i < threads; ++i)
         workers.emplace_back(
             [this] {
+                auto self = Object::cast<ThreadPool>(this); // lock the reference
+                if (self == nullptr)
+                    return;
+
                 for (;;)
                 {
                     std::function<void()> task;
-
                     {
-                        std::unique_lock<std::mutex> lock(this->queue_mutex);
-                        this->condition.wait(lock,
-                                             [this] { return this->stop || !this->tasks.empty(); });
-                        if (this->stop && this->tasks.empty())
+                        std::unique_lock<std::mutex> lock(self->queue_mutex);
+                        self->condition.wait(lock,
+                                             [self] { return self->stop || !self->tasks.empty(); });
+                        if (self->stop && self->tasks.empty())
                             return;
-                        task = std::move(this->tasks.front());
-                        this->tasks.pop_front();
+                        task = std::move(self->tasks.front());
+                        self->tasks.pop();
                     }
-
                     task();
                 }
             });
@@ -90,11 +75,7 @@ auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::resul
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
-
-        // don't allow enqueueing after stopping the pool
-        if (stop)
-            throw std::runtime_error("enqueue on stopped ThreadPool");
-
+        assert(stop == false && "Don't allow posting after stopping the pool");
         tasks.emplace([task] { (*task)(); });
     }
     condition.notify_one();
@@ -102,7 +83,7 @@ auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::resul
 }
 
 // the destructor joins all threads
-inline bool ThreadPool::dispose()
+inline void ThreadPool::dispose()
 {
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
@@ -111,42 +92,14 @@ inline bool ThreadPool::dispose()
         stop = true;
     }
     condition.notify_all();
+
+#ifdef DEBUG
     for (std::thread &worker : workers)
         worker.join();
+#endif
 }
 
 inline ThreadPool::~ThreadPool()
-{
-    this->dispose();
-}
-
-template <typename T, typename Container>
-inline void removeFirst(T &element, Container &container)
-{
-    for (auto iter = container.begin(); iter != container.end(); iter++)
-    {
-        if (&element == *iter)
-        {
-            iter = container.erase(iter);
-            break;
-        }
-    }
-}
-
-inline bool EventQueue::dispose()
-{
-    Object::Ref<ThreadPool> threadPool = this->parent.lock();
-    assert(threadPool != nullptr);
-    {
-        std::unique_lock<std::mutex> lock(threadPool->queue_mutex);
-        for (auto iter = this->tasks.begin(); iter != this->tasks.end(); iter++)
-        {
-            removeFirst(*iter, threadPool->tasks);
-        }
-    }
-}
-
-inline EventQueue::~EventQueue()
 {
     this->dispose();
 }

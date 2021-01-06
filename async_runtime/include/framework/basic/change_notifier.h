@@ -5,5 +5,5 @@
 class ChangeNotifier : public virtual Listenable
 {
 public:
-    void notifyListeners();
+    virtual void notifyListeners();
 };
