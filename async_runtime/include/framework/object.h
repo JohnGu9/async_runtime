@@ -103,4 +103,3 @@ inline Object::RuntimeType Object::runtimeType()
 }
 
 void print(Object::Ref<Object> object);
-void print(std::string &str);

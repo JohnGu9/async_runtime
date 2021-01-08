@@ -32,7 +32,7 @@ void runApp(Object::Ref<Widget> widget)
         if (input == "q" || input == "quit")
         {
             warning_print("Sure to quit? (y)");
-            if (getline(std::cin, input) && (input == "y" || input == "yes"))
+            if (std::getline(std::cin, input) && (input == "y" || input == "yes"))
                 break;
             info_print("cancel");
         }

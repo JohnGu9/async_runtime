@@ -20,7 +20,7 @@ protected:
     const Object::Ref<Key> _key;
 };
 
-class LeafWidget : public virtual Widget
+class LeafWidget : public Widget
 {
 public:
     static Object::Ref<LeafWidget> &factory();
@@ -38,7 +38,7 @@ protected:
     virtual Object::Ref<Element> createElement() override;
 };
 
-class StatefulWidgetState : public virtual Object
+class StatefulWidgetState : public Object
 {
 public:
     StatefulWidgetState();
@@ -59,20 +59,21 @@ public:
 
 protected:
     virtual Object::Ref<BuildContext> getContext();
+    virtual bool getMounted() const;
 
-    bool mounted;
     Object::WeakRef<StatefulElement> element;
 
 private:
+    bool mounted;
     Object::Ref<StatefulElement> getElement();
 };
 
 class StatefulWidget : public Widget
 {
 public:
-    using State = Object::Ref<StatefulWidgetState>;
+    using State = StatefulWidgetState;
     StatefulWidget(Object::Ref<Key> key = nullptr);
-    virtual State createState() = 0;
+    virtual Object::Ref<State> createState() = 0;
 
 protected:
     virtual Object::Ref<Element> createElement() override;
@@ -86,6 +87,7 @@ protected:
     virtual Object::Ref<T> getWidget()
     {
         Object::Ref<StatefulElement> element = this->element.lock();
+        assert(element);
         return element->_statefulWidget->cast<T>();
     }
 };
@@ -113,7 +115,7 @@ inline Object::Ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
     return this->_inheritances[typeid(T).name()]->cast<T>();
 }
 
-class NotificationListener : public virtual StatelessWidget
+class NotificationListener : public StatelessWidget
 {
 public:
     NotificationListener(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
@@ -125,7 +127,7 @@ protected:
     Object::Ref<Widget> _child;
 };
 
-class MultiChildWidget : public virtual Widget
+class MultiChildWidget : public Widget
 {
 public:
     MultiChildWidget(Object::List<Object::Ref<Widget>> children, Object::Ref<Key> key = nullptr);
@@ -137,7 +139,7 @@ protected:
     Object::List<Object::Ref<Widget>> _children;
 };
 
-class Builder : public virtual StatelessWidget
+class Builder : public StatelessWidget
 {
 public:
     Builder(Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> fn, Object::Ref<Key> key = nullptr);

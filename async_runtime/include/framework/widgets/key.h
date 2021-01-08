@@ -1,12 +1,22 @@
 #pragma once
 
 #include <list>
-#include "../object.h"
+#include "../elements/element.h"
 
-class Key : public virtual Object
+class Element;
+
+class Key : public Object
 {
 public:
     virtual bool equal(Object::Ref<Key> other) = 0;
+    virtual void setElement(Object::Ref<Element> element);
+    virtual Object::Ref<Widget> getCurrentWidget();
+
+protected:
+    virtual Object::Ref<Element> getElement();
+
+private:
+    Object::WeakRef<Element> _element;
 };
 
 template <typename T>
@@ -32,9 +42,12 @@ public:
     {
         return Object::identical(this->shared_from_this(), other);
     }
+
+    virtual Object::Ref<BuildContext> getCurrentContext();
+    virtual Object::Ref<StatefulWidgetState> getCurrentState();
 };
 
-class GlobalObjectKey : public Key
+class GlobalObjectKey : public GlobalKey
 {
 public:
     GlobalObjectKey(Object::Ref<Object> object) : _object(object){};

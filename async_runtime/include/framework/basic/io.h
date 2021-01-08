@@ -32,3 +32,6 @@
 #define error_print(x) std::cout << "[" << BOLDRED << "ERROR" << RESET << "] " << x << std::endl
 
 #define font_wrapper(font, x) font << x << RESET
+
+void print(std::string &str);
+void print(const char *const str);

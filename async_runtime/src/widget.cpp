@@ -9,7 +9,7 @@ bool Widget::canUpdate(Object::Ref<Widget> other)
     return this->runtimeType() == other->runtimeType() && this->getKey() == other->getKey();
 }
 
-Object::Ref<LeafWidget>& LeafWidget::factory()
+Object::Ref<LeafWidget> &LeafWidget::factory()
 {
     static Object::Ref<LeafWidget> singleton = Object::create<LeafWidget>();
     return singleton;
@@ -52,12 +52,20 @@ void StatefulWidgetState::setState(Object::Ref<Fn<void()>> fn)
     this->getElement()->build();
 }
 
-Object::Ref<BuildContext> StatefulWidgetState::getContext() { return this->getElement(); }
+Object::Ref<BuildContext> StatefulWidgetState::getContext()
+{
+    return this->getElement();
+}
 
 Object::Ref<StatefulElement> StatefulWidgetState::getElement()
 {
     assert(this->mounted && "User can't access context before initState. You can try [didDependenceChanged] method to access context before first build. ");
     return this->element.lock();
+}
+
+bool StatefulWidgetState::getMounted() const
+{
+    return this->mounted;
 }
 
 InheritedWidget::InheritedWidget(Object::Ref<Widget> child, Object::Ref<Key> key) : _child(child), StatelessWidget(key) { assert(_child != nullptr); }
