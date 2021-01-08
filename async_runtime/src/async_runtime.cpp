@@ -5,20 +5,19 @@ static std::condition_variable condition;
 
 void runApp(Object::Ref<Widget> widget)
 {
-#ifdef DEBUG
-    printf("\033c");
     debug_print("Debug mode on");
     debug_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " connecting");
     debug_print("Root widget is \"" << widget->toString() << "\"");
-#elif
+
+#ifndef DEBUG
+    printf("\033c");
     info_print("Debug mode off");
 #endif
-    Object::Ref<RootElement> root = Object::create<RootElement>(widget);
 
+    Object::Ref<RootElement> root = Object::create<RootElement>(widget);
     root->attach();
 
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is ready");
-
     info_print("Enter '"
                << font_wrapper(BOLDBLUE, "q")
                << "' to quit, '"
@@ -26,9 +25,8 @@ void runApp(Object::Ref<Widget> widget)
                << "' or '"
                << font_wrapper(BOLDBLUE, "--help")
                << "' for more information");
-    std::string input;
-    onCommand("ls", root);
 
+    std::string input;
     while (std::cout << ">> " && std::getline(std::cin, input))
     {
         if (input == "q" || input == "quit")
@@ -71,11 +69,12 @@ void onCommand(const std::string &in, Object::Ref<RootElement> &root)
     else if (command == "ls")
     {
         Object::Map<Object::RuntimeType, Object::List<size_t>> map;
-        root->visitDescendant([&map](Object::Ref<Element> element) {
+        root->visitDescendant([&map](Object::Ref<Element> element) -> bool {
             Object::RuntimeType type = element->runtimeType();
             if (map.find(type) == map.end())
                 map[type] = {};
             map[type].push_back((size_t)(element.get()));
+            return false;
         });
         std::stringstream ss;
         for (auto iter = map.begin(); iter != map.end(); iter++)
@@ -85,7 +84,7 @@ void onCommand(const std::string &in, Object::Ref<RootElement> &root)
                 ss << i << " ";
             ss << "]  ";
         }
-        debug_print(ss.rdbuf());
+        info_print(ss.rdbuf());
     }
     else if (command == "ps")
     {

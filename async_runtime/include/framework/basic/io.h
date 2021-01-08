@@ -1,6 +1,5 @@
 #pragma once
 
-#include "object.h"
 #include <iostream>
 
 //the following are UBUNTU/LINUX, and MacOS ONLY terminal color codes.
@@ -22,7 +21,12 @@
 #define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
 #define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
 
+#ifdef DEBUG
 #define debug_print(x) std::cout << "[" << BOLDBLUE << "DEBUG" << RESET << "] " << x << std::endl
+#elif
+#define debug_print(x)
+#endif
+
 #define info_print(x) std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << x << std::endl
 #define warning_print(x) std::cout << "[" << BOLDYELLOW << "WARNING" << RESET << "] " << x << std::endl
 #define error_print(x) std::cout << "[" << BOLDRED << "ERROR" << RESET << "] " << x << std::endl

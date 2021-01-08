@@ -22,13 +22,13 @@ public:
     Object::Ref<Widget> widget;
 
     virtual void build() = 0;
-    virtual void update(Object::Ref<Widget> newWidget) = 0;
-    virtual void notify();
+    virtual void update(Object::Ref<Widget> newWidget);
+    virtual void notify(Object::Ref<Widget> newWidget);
     virtual void attach();
     virtual void detach();
 
-    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) = 0;
-    virtual void visitAncestor(Fn<void(Object::Ref<Element>)>);
+    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) = 0;
+    virtual void visitAncestor(Fn<bool(Object::Ref<Element>)>);
 };
 
 class LeafElement : public virtual Element
@@ -37,9 +37,9 @@ public:
     LeafElement(Object::Ref<LeafWidget> widget);
     virtual void build() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
-    virtual void notify() override;
+    virtual void notify(Object::Ref<Widget> newWidget) override;
 
-    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
+    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
 };
 
 class RootElement : public virtual Element
@@ -49,12 +49,12 @@ public:
 
     virtual void build() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
-    virtual void notify() override;
+    virtual void notify(Object::Ref<Widget> newWidget) override;
     virtual void attach() override;
     virtual void detach() override;
 
-    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
-    virtual void visitAncestor(Fn<void(Object::Ref<Element>)>) override;
+    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
+    virtual void visitAncestor(Fn<bool(Object::Ref<Element>)>) override;
 
 protected:
     Object::Ref<Widget> _child;
@@ -71,12 +71,12 @@ protected:
     Object::Ref<Element> _childElement;
 
     virtual void build() override;
-    virtual void notify() override;
+    virtual void notify(Object::Ref<Widget> newWidget) override;
     virtual void attach() override;
     virtual void detach() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
 
-    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
+    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
 };
 
 class StatefulElement : public virtual Element
@@ -95,8 +95,6 @@ protected:
     public:
         enum Enum
         {
-            uninitialized,
-            initialized,
             mounted,
             building,
             unmount,
@@ -106,12 +104,12 @@ protected:
     LifeCycle::Enum _lifeCycle;
 
     virtual void build() override;
-    virtual void notify() override;
+    virtual void notify(Object::Ref<Widget> newWidget) override;
     virtual void attach() override;
     virtual void detach() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
 
-    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
+    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
 };
 
 class InheritedElement : public virtual Element
@@ -123,11 +121,11 @@ public:
 
     virtual void build() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
-    virtual void notify() override;
+    virtual void notify(Object::Ref<Widget> newWidget) override;
     virtual void attach() override;
     virtual void detach() override;
 
-    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
+    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
 };
 
 class NotificationListenerElement : public virtual StatelessElement
@@ -146,11 +144,11 @@ public:
     MultiChildElement(Object::Ref<MultiChildWidget> widget);
     virtual void build() override;
     virtual void update(Object::Ref<Widget> newWidget) override;
-    virtual void notify() override;
+    virtual void notify(Object::Ref<Widget> newWidget) override;
     virtual void attach() override;
     virtual void detach() override;
 
-    virtual void visitDescendant(Fn<void(Object::Ref<Element>)>) override;
+    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
 
 protected:
     Object::Ref<MultiChildWidget> _multiChildWidget;

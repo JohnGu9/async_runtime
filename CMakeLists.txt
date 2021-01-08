@@ -13,7 +13,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/async_runtime/include)
 
 add_subdirectory(async_runtime)
 
-# test globe
+# test globally
 add_executable(test test/test.cpp)
 target_link_libraries(test async_runtime)
 

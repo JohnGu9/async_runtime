@@ -9,6 +9,12 @@ bool Widget::canUpdate(Object::Ref<Widget> other)
     return this->runtimeType() == other->runtimeType() && this->getKey() == other->getKey();
 }
 
+Object::Ref<LeafWidget>& LeafWidget::factory()
+{
+    static Object::Ref<LeafWidget> singleton = Object::create<LeafWidget>();
+    return singleton;
+}
+
 LeafWidget::LeafWidget(Object::Ref<Key> key) : Widget(key){};
 
 Object::Ref<Element> LeafWidget::createElement()

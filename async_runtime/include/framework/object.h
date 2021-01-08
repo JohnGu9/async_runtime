@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "print.h"
+#include "./basic/io.h"
 
 class Object : public virtual std::enable_shared_from_this<Object>
 {
@@ -24,9 +24,9 @@ public:
     using Map = std::unordered_map<Key, Value>;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
-    inline static Ref<T> create(_Args &&... __args);
+    inline static Ref<T> create(_Args &&...);
     template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
-    inline static Ref<T> create(_Args &&... __args);
+    inline static Ref<T> create(_Args &&...);
     template <typename T0, typename T1>
     inline static bool identical(const Ref<T0> &, const Ref<T1> &);
 

@@ -23,6 +23,7 @@ protected:
 class LeafWidget : public virtual Widget
 {
 public:
+    static Object::Ref<LeafWidget> &factory();
     LeafWidget(Object::Ref<Key> key = nullptr);
     virtual Object::Ref<Element> createElement() override;
 };
@@ -69,8 +70,9 @@ private:
 class StatefulWidget : public Widget
 {
 public:
+    using State = Object::Ref<StatefulWidgetState>;
     StatefulWidget(Object::Ref<Key> key = nullptr);
-    virtual Object::Ref<StatefulWidgetState> createState() = 0;
+    virtual State createState() = 0;
 
 protected:
     virtual Object::Ref<Element> createElement() override;

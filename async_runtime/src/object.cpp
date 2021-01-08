@@ -18,4 +18,5 @@ void Object::toStringStream(std::stringstream &ss)
 Object::~Object() {}
 
 void print(Object::Ref<Object> object) { std::cout << object->toString() << std::endl; }
+
 void print(std::string &str) { std::cout << str << std::endl; }
