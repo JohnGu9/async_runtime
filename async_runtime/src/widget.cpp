@@ -46,9 +46,9 @@ void StatefulWidgetState::didDependenceChanged() {}
 
 void StatefulWidgetState::dispose() {}
 
-void StatefulWidgetState::setState(Object::Ref<Fn<void()>> fn)
+void StatefulWidgetState::setState(Fn<void()> fn)
 {
-    (*fn)();
+    fn();
     this->getElement()->build();
 }
 
@@ -94,4 +94,11 @@ MultiChildWidget::MultiChildWidget(Object::List<Object::Ref<Widget>> children, O
 Object::Ref<Element> MultiChildWidget::createElement()
 {
     return Object::create<MultiChildElement>(Object::cast<MultiChildWidget>(this));
+}
+
+Builder::Builder(Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> fn, Object::Ref<Key> key) : _fn(fn), StatelessWidget(key) {}
+
+Object::Ref<Widget> Builder::build(Object::Ref<BuildContext> context)
+{
+    return _fn(context);
 }

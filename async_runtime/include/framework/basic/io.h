@@ -23,7 +23,7 @@
 
 #ifdef DEBUG
 #define debug_print(x) std::cout << "[" << BOLDBLUE << "DEBUG" << RESET << "] " << x << std::endl
-#elif
+#else
 #define debug_print(x)
 #endif
 

@@ -48,17 +48,19 @@ public:
     virtual ~Object();
 };
 
-template <typename T0, typename T1>
-inline bool operator==(Object::Ref<T0> object0, Object::Ref<T1> object1)
-{
-    return (size_t)(object0.get()) == (size_t)(object1.get());
-}
+// http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/memory/shared_ptr/operator_cmp.html
+// C++11 already implement this operator
+// template <typename T0, typename T1>
+// inline bool operator==(Object::Ref<T0> object0, Object::Ref<T1> object1)
+// {
+//     return (size_t)(object0.get()) == (size_t)(object1.get());
+// }
 
-template <typename T0, typename T1>
-inline bool operator!=(Object::Ref<T0> object0, Object::Ref<T1> object1)
-{
-    return (size_t)(object0.get()) != (size_t)(object1.get());
-}
+// template <typename T0, typename T1>
+// inline bool operator!=(Object::Ref<T0> object0, Object::Ref<T1> object1)
+// {
+//     return (size_t)(object0.get()) != (size_t)(object1.get());
+// }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, class... _Args>
 inline Object::Ref<T> Object::create(_Args &&... __args)

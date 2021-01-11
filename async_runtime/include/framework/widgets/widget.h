@@ -52,7 +52,7 @@ public:
     // @mustCallSuper
     virtual void dispose();
     // @immutable
-    void setState(Object::Ref<Fn<void()>>);
+    void setState(Fn<void()>);
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
 
     friend StatefulElement;
@@ -143,6 +143,7 @@ class Builder : public StatelessWidget
 {
 public:
     Builder(Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> fn, Object::Ref<Key> key = nullptr);
+    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
 
 protected:
     Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> _fn;

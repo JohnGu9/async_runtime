@@ -14,6 +14,8 @@ struct _MainActivityState : public State<MainActivity>
 
     void initState() override;
     void dispose() override;
+    void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override;
+    void didDependenceChanged() override;
 
     Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
 };
@@ -33,6 +35,18 @@ void _MainActivityState::dispose()
 {
     debug_print("_MainActivityState::dispose");
     super::dispose();
+}
+
+inline void _MainActivityState::didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget)
+{
+    debug_print("_MainActivityState::didWidgetUpdated");
+    super::didWidgetUpdated(oldWidget);
+}
+
+inline void _MainActivityState::didDependenceChanged()
+{
+    debug_print("_MainActivityState::didDependenceChanged");
+    super::didDependenceChanged();
 }
 
 inline Object::Ref<Widget> _MainActivityState::build(Object::Ref<BuildContext> context)
