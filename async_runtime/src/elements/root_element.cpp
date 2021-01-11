@@ -1,10 +1,10 @@
 #include "framework/elements/element.h"
 #include "framework/widgets/widget.h"
 
-class MockWidget : public Widget
+class _MockWidget : public Widget
 {
 public:
-    MockWidget() : Widget(nullptr) {}
+    _MockWidget() : Widget(nullptr) {}
     Object::Ref<Element> createElement() { return nullptr; }
 };
 
@@ -17,7 +17,7 @@ void RootElement::notify(Object::Ref<Widget> newWidget) { assert(false && "RootE
 
 void RootElement::attach()
 {
-    this->widget = Object::create<MockWidget>();
+    this->widget = Object::create<_MockWidget>();
     this->attachElement(this->_child->createElement());
 }
 

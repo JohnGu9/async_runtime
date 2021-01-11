@@ -1,24 +1,12 @@
 #include "framework/widgets/key.h"
 
-void Key::setElement(Object::Ref<Element> element)
-{
-    this->_element = element;
-}
+void Key::setElement(Object::Ref<Element> element) { this->_element = element; }
 
-Object::Ref<Element> Key::getElement()
-{
-    return this->_element.lock();
-}
+Object::Ref<Element> Key::getElement() { return this->_element.lock(); }
 
-Object::Ref<Widget> Key::getCurrentWidget()
-{
-    return this->_element.lock()->widget;
-}
+Object::Ref<Widget> Key::getCurrentWidget() { return this->_element.lock()->widget; }
 
-Object::Ref<BuildContext> GlobalKey::getCurrentContext()
-{
-    return this->getElement();
-}
+Object::Ref<BuildContext> GlobalKey::getCurrentContext() { return this->getElement(); }
 
 Object::Ref<StatefulWidgetState> GlobalKey::getCurrentState()
 {

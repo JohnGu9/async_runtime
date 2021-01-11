@@ -10,6 +10,8 @@ struct MainActivity : public StatefulWidget
 
 struct _MainActivityState : public State<MainActivity>
 {
+    using super = StatefulWidgetState;
+
     void initState() override;
     void dispose() override;
 
@@ -23,14 +25,14 @@ inline Object::Ref<StatefulWidgetState> MainActivity::createState()
 
 void _MainActivityState::initState()
 {
-    StatefulWidgetState::initState();
+    super::initState();
     debug_print("_MainActivityState::initState");
 }
 
 void _MainActivityState::dispose()
 {
     debug_print("_MainActivityState::dispose");
-    StatefulWidgetState::dispose();
+    super::dispose();
 }
 
 inline Object::Ref<Widget> _MainActivityState::build(Object::Ref<BuildContext> context)
