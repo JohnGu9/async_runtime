@@ -106,6 +106,7 @@ protected:
     public:
         enum Enum
         {
+            uninitialized,
             mounted,
             building,
             unmount,
@@ -137,17 +138,6 @@ public:
     virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
 };
 
-class NotificationListenerElement : public StatelessElement
-{
-public:
-    NotificationListenerElement(Object::Ref<NotificationListener> child);
-    Object::Ref<NotificationListener> _notificationListenerWidget;
-
-    virtual void detach() override;
-    virtual void update(Object::Ref<Widget> newWidget) override;
-    virtual void notify(Object::Ref<Widget> newWidget) override;
-};
-
 class MultiChildElement : public Element
 {
 public:
@@ -163,4 +153,15 @@ public:
 protected:
     Object::Ref<MultiChildWidget> _multiChildWidget;
     Object::List<Object::Ref<Element>> _childrenElements;
+};
+
+class NotificationListenerElement : public StatelessElement
+{
+public:
+    NotificationListenerElement(Object::Ref<NotificationListener> child);
+    Object::Ref<NotificationListener> _notificationListenerWidget;
+
+    virtual void detach() override;
+    virtual void update(Object::Ref<Widget> newWidget) override;
+    virtual void notify(Object::Ref<Widget> newWidget) override;
 };

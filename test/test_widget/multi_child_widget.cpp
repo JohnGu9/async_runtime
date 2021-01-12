@@ -9,7 +9,7 @@ struct _MyWidgetState : public State<MyWidget>
 {
     using super = StatefulWidget::State;
 
-    static Object::Ref<Widget> onBuild(Object::Ref<BuildContext> context)
+    static Object::Ref<Widget> onChildBuild(Object::Ref<BuildContext> context)
     {
         debug_print("onChildBuild");
         return LeafWidget::factory();
@@ -21,8 +21,9 @@ struct _MyWidgetState : public State<MyWidget>
     {
         super::initState();
         this->children = {
-            Object::create<Builder>(_MyWidgetState::onBuild),
-            Object::create<Builder>(_MyWidgetState::onBuild)};
+            Object::create<Builder>(onChildBuild),
+            Object::create<Builder>(onChildBuild)
+        };
     }
 
     void dispose() override
@@ -35,7 +36,7 @@ struct _MyWidgetState : public State<MyWidget>
     {
         auto self = Object::cast<_MyWidgetState>(this);
         this->setState([self]() {
-            self->children.push_back(Object::create<Builder>(_MyWidgetState::onBuild));
+            self->children.push_back(Object::create<Builder>(onChildBuild));
         });
     }
 

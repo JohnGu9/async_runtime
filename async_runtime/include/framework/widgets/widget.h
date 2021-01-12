@@ -40,6 +40,8 @@ protected:
 
 class StatefulWidgetState : public Object
 {
+    friend StatefulElement;
+
 public:
     StatefulWidgetState();
 
@@ -54,8 +56,6 @@ public:
     // @immutable
     void setState(Fn<void()>);
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
-
-    friend StatefulElement;
 
 protected:
     virtual Object::Ref<BuildContext> getContext();

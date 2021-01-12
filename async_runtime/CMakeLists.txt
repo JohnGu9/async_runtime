@@ -5,4 +5,4 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/basic basic_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/elements elements_src)
 
-add_library(async_runtime ${src} ${basic_src} ${elements_src})
+add_library(async_runtime SHARED ${src} ${basic_src} ${elements_src})
