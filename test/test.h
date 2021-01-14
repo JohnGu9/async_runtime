@@ -10,6 +10,17 @@ class MainActivity : public StatefulWidget
 class _MainActivityState : public State<MainActivity>
 {
     using super = State<MainActivity>;
+    Object::Ref<Timer> _timer;
+
+    void initState() override
+    {
+        super::initState();
+        this->_timer = Object::create<Timer>(this);
+        this->_timer->setInterval([this] {
+            Logger::of(this->getContext())->writeLine("Timer callback");
+        },
+                                  Duration(1000));
+    }
 
     void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
     {
@@ -28,6 +39,7 @@ class _MainActivityState : public State<MainActivity>
     void dispose() override
     {
         Logger::of(this->getContext())->writeLine("_MainActivityState::didDependenceChanged");
+        this->_timer->dispose();
         super::dispose();
     }
 

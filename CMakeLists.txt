@@ -26,3 +26,6 @@ target_link_libraries(test_stateless_widget async_runtime)
 
 add_executable(test_multi_child_widget test/test_widget/multi_child_widget.cpp)
 target_link_libraries(test_multi_child_widget async_runtime)
+
+add_executable(test_timer test/test_fundamental/timer.cpp)
+target_link_libraries(test_timer async_runtime)

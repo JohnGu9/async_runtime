@@ -5,7 +5,7 @@ Timer::Timer(StatefulWidget::State *state) : Dispatcher(state) {}
 Timer::~Timer()
 {
     // Timer can automatic dispose itself
-    if (*this->_clear)
+    if (!(*this->_clear))
         this->dispose();
 }
 
@@ -48,7 +48,7 @@ void Timer::setInterval(Fn<void()> function, Duration interval)
 
 void Timer::cancel()
 {
-    this->_clear->operator=(false);
+    this->_clear->operator=(true);
 }
 
 void Timer::dispose()
