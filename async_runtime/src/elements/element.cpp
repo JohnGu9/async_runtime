@@ -2,7 +2,7 @@
 #include "framework/widgets/widget.h"
 
 /// Element
-Element::Element(Object::Ref<Widget> widget_) : widget(widget_) {}
+Element::Element(Object::Ref<Widget> widget) : BuildContext(widget) {}
 
 void Element::attach()
 {

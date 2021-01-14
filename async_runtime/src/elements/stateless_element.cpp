@@ -44,14 +44,11 @@ void StatelessElement::notify(Object::Ref<Widget> newWidget)
 {
     Element::notify(newWidget);
     this->_statelessWidget = newWidget->cast<StatelessWidget>();
-
     assert(this->_childElement != nullptr);
     assert(this->_statelessWidget);
-
     Object::Ref<Widget> widget = this->_statelessWidget->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr && "StatelessWidget build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
     Object::Ref<Widget> oldWidget = this->_childElement->widget;
-
     if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
         this->_childElement->notify(widget);
     else

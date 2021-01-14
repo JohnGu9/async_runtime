@@ -9,10 +9,12 @@
 
 #include "./basic/io.h"
 
+using String = std::string;
+
 class Object : public virtual std::enable_shared_from_this<Object>
 {
 public:
-    using RuntimeType = std::string;
+    using RuntimeType = String;
     template <typename T>
     using Ref = std::shared_ptr<T>;
     template <typename T>
@@ -41,7 +43,7 @@ public:
     template <typename T>
     bool is();
 
-    virtual std::string toString();
+    virtual String toString();
     virtual void toStringStream(std::stringstream &);
     virtual RuntimeType runtimeType();
 
@@ -50,6 +52,7 @@ public:
 
 // http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/memory/shared_ptr/operator_cmp.html
 // C++11 already implement this operator
+
 // template <typename T0, typename T1>
 // inline bool operator==(Object::Ref<T0> object0, Object::Ref<T1> object1)
 // {
@@ -97,11 +100,6 @@ template <typename T>
 inline bool Object::is()
 {
     return dynamic_cast<T *>(this);
-}
-
-inline Object::RuntimeType Object::runtimeType()
-{
-    return typeid(*this).name();
 }
 
 void print(Object::Ref<Object> object);

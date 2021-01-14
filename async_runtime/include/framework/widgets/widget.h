@@ -38,9 +38,12 @@ protected:
     virtual Object::Ref<Element> createElement() override;
 };
 
+class StatefulElement;
+class Dispatcher;
 class StatefulWidgetState : public Object
 {
     friend StatefulElement;
+    friend Dispatcher;
 
 public:
     StatefulWidgetState();
@@ -112,6 +115,8 @@ protected:
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
 inline Object::Ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
+    if (this->_inheritances.find(typeid(T).name()) == this->_inheritances.end())
+        return nullptr;
     return this->_inheritances[typeid(T).name()]->cast<T>();
 }
 

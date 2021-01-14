@@ -1,8 +1,14 @@
 #include <sstream>
 #include <typeinfo>
+
 #include "framework/object.h"
 
-std::string Object::toString()
+Object::RuntimeType Object::runtimeType()
+{
+    return typeid(*this).name();
+}
+
+String Object::toString()
 {
     std::stringstream ss;
     this->toStringStream(ss);

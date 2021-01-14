@@ -1,7 +1,6 @@
 #include "async_runtime.h"
 
-static std::mutex queue_mutex;
-static std::condition_variable condition;
+void onCommand(const std::string &in, Object::Ref<RootElement> &root);
 
 void runApp(Object::Ref<Widget> widget)
 {
@@ -16,27 +15,37 @@ void runApp(Object::Ref<Widget> widget)
 
     Object::Ref<RootElement> root = Object::create<RootElement>(widget);
     root->attach();
-
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is ready");
-    info_print("Enter '"
-               << font_wrapper(BOLDBLUE, "q")
-               << "' to quit, '"
-               << font_wrapper(BOLDBLUE, "-h")
-               << "' or '"
-               << font_wrapper(BOLDBLUE, "--help")
-               << "' for more information");
+    {
+        std::stringstream ss;
+        ss << font_wrapper(BOLDCYAN, "AsyncRuntime") << " is ready";
+        root->getStdoutHandler()->writeLine(ss.str());
+    }
+    {
+        std::stringstream ss;
+        ss << "Enter '"
+           << font_wrapper(BOLDBLUE, 'q')
+           << "' to quit, '"
+           << font_wrapper(BOLDBLUE, "-h")
+           << "' or '"
+           << font_wrapper(BOLDBLUE, "--help")
+           << "' for more information";
+        root->getStdoutHandler()->writeLine(ss.str());
+    }
 
     std::string input;
-    while (std::cout << ">> " && std::getline(std::cin, input))
+    while (root->getStdoutHandler()->write(">> ").get() && std::getline(std::cin, input))
     {
         if (input == "q" || input == "quit")
         {
-            warning_print("Sure to quit? (y)");
+            std::stringstream ss;
+            ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
+            root->getStdoutHandler()->write(ss.str()).get();
             if (std::getline(std::cin, input) && (input == "y" || input == "yes"))
                 break;
-            info_print("cancel");
+            root->getStdoutHandler()->writeLine("cancel").get();
         }
-        onCommand(input, root);
+        else
+            onCommand(input, root);
     }
 
     root->detach();
@@ -45,16 +54,19 @@ void runApp(Object::Ref<Widget> widget)
 
 void onCommand(const std::string &in, Object::Ref<RootElement> &root)
 {
-#define help_format(x, y) " " << x << "\t\t" << y
-
+    Logger::Handler handler = root->getStdoutHandler();
     if (in == "-h" || in == "--help")
     {
-        std::cout << help_format(BOLDWHITE << "command", "arguments" << RESET) << std::endl;
-        std::cout << help_format("-------", "---------") << std::endl;
-        std::cout << help_format("ls\t", "()") << std::endl;
-        std::cout << help_format("ps\t", "()") << std::endl;
-        std::cout << help_format("pwd\t", "()") << std::endl;
-        std::cout << help_format("reassembly", "()") << std::endl;
+#define help_format(x, y) " " << x << "\t\t" << y
+        std::stringstream ss;
+        ss << std::endl;
+        ss << help_format(BOLDWHITE << "command", "arguments" << RESET) << std::endl;
+        ss << help_format("-------", "---------") << std::endl;
+        ss << help_format("ls\t", "()") << std::endl;
+        ss << help_format("ps\t", "()") << std::endl;
+        ss << help_format("pwd\t", "()") << std::endl;
+        ss << help_format("reassembly", "()") << std::endl;
+        handler->write(ss.str());
         return;
     }
     else if (in.empty())
@@ -84,7 +96,7 @@ void onCommand(const std::string &in, Object::Ref<RootElement> &root)
                 ss << i << " ";
             ss << "]  ";
         }
-        info_print(ss.rdbuf());
+        handler->writeLine(ss.str());
     }
     else if (command == "ps")
     {

@@ -10,7 +10,10 @@ Object::Ref<BuildContext> GlobalKey::getCurrentContext() { return this->getEleme
 
 Object::Ref<StatefulWidgetState> GlobalKey::getCurrentState()
 {
-    if (Object::Ref<StatefulElement> element = this->getElement()->cast<StatefulElement>())
-        return element->_state;
+    Object::Ref<Element> element = this->getElement();
+    if (element == nullptr)
+        return nullptr;
+    if (Object::Ref<StatefulElement> statefulElement = element->cast<StatefulElement>())
+        return statefulElement->_state;
     return nullptr;
 }

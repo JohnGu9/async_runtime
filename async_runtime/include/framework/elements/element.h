@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../basic/function.h"
-#include "../contexts/build_context.h"
 #include "../basic/observable.h"
+#include "../contexts/build_context.h"
 
 class Widget;
 class LeafWidget;
@@ -19,7 +19,6 @@ class Element : public BuildContext
 public:
     Element(Object::Ref<Widget> widget);
     Object::WeakRef<Element> parent;
-    Object::Ref<Widget> widget;
 
     virtual void attach();
     virtual void detach();
@@ -55,6 +54,8 @@ protected:
     virtual void detachElement();
 };
 
+class GlobalKey;
+class LoggerHandler;
 class RootElement : public SingleChildElement
 {
 public:
@@ -69,8 +70,11 @@ public:
     virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
     virtual void visitAncestor(Fn<bool(Object::Ref<Element>)>) override;
 
+    virtual Object::Ref<LoggerHandler> getStdoutHandler();
+
 protected:
     Object::Ref<Widget> _child;
+    Object::Ref<GlobalKey> _stdoutKey;
 };
 
 class StatelessElement : public SingleChildElement

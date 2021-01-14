@@ -1,56 +1,44 @@
 #pragma once
 
-#include <iostream>
 #include "async_runtime.h"
 
-struct MainActivity : public StatefulWidget
+class MainActivity : public StatefulWidget
 {
-    virtual Object::Ref<StatefulWidgetState> createState() override;
+    virtual Object::Ref<State> createState() override;
 };
 
-struct _MainActivityState : public State<MainActivity>
+class _MainActivityState : public State<MainActivity>
 {
-    using super = StatefulWidgetState;
+    using super = State<MainActivity>;
 
-    void initState() override;
-    void dispose() override;
-    void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override;
-    void didDependenceChanged() override;
+    void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
+    {
+        Logger::of(this->getContext())->writeLine("_MainActivityState::didWidgetUpdated");
+        super::didWidgetUpdated(oldWidget);
+    }
 
-    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
+    void didDependenceChanged() override
+    {
+        Scheduler::Handler handler = Scheduler::of(this->getContext());
+        Logger::of(this->getContext())->writeLine("_MainActivityState::didDependenceChanged");
+        Logger::of(this->getContext())->writeLine("Current scheduler handler is " + handler->runtimeType());
+        super::didDependenceChanged();
+    }
+
+    void dispose() override
+    {
+        Logger::of(this->getContext())->writeLine("_MainActivityState::didDependenceChanged");
+        super::dispose();
+    }
+
+    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
+    {
+        Logger::of(context)->writeLine("_MainActivityState::didDependenceChanged");
+        return LeafWidget::factory();
+    }
 };
 
 inline Object::Ref<StatefulWidgetState> MainActivity::createState()
 {
     return Object::create<_MainActivityState>();
-}
-
-void _MainActivityState::initState()
-{
-    super::initState();
-    debug_print("_MainActivityState::initState");
-}
-
-void _MainActivityState::dispose()
-{
-    debug_print("_MainActivityState::dispose");
-    super::dispose();
-}
-
-inline void _MainActivityState::didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget)
-{
-    debug_print("_MainActivityState::didWidgetUpdated");
-    super::didWidgetUpdated(oldWidget);
-}
-
-inline void _MainActivityState::didDependenceChanged()
-{
-    debug_print("_MainActivityState::didDependenceChanged");
-    super::didDependenceChanged();
-}
-
-inline Object::Ref<Widget> _MainActivityState::build(Object::Ref<BuildContext> context)
-{
-    debug_print("_MainActivityState::build");
-    return LeafWidget::factory();
 }
