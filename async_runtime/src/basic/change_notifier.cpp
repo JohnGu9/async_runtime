@@ -3,5 +3,5 @@
 void ChangeNotifier::notifyListeners()
 {
     for (auto const &it : this->_listeners)
-        (*(it.second))(Object::cast<Listenable>(this));
+        (*(it.second))(Object::self(this));
 }

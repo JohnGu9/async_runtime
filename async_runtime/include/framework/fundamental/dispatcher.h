@@ -6,7 +6,7 @@
 class Dispatcher : public Object
 {
 public:
-    Dispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);
+    Dispatcher(Scheduler::Handler handler, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);
     Dispatcher(StatefulWidget::State *state, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);
     virtual ~Dispatcher();
     virtual void dispose();

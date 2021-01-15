@@ -36,6 +36,9 @@ public:
     template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type * = nullptr>
     inline static Ref<T> cast(R *);
 
+    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
+    inline static Ref<T> self(T *);
+
     // dynamic cast
     template <typename T>
     Ref<T> cast();
@@ -86,6 +89,12 @@ inline bool Object::identical(const Object::Ref<T0> &object0, const Object::Ref<
 
 template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type *>
 inline Object::Ref<T> Object::cast(R *other)
+{
+    return std::shared_ptr<T>(other->shared_from_this(), other);
+}
+
+template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
+inline Object::Ref<T> Object::self(T *other)
 {
     return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
 }

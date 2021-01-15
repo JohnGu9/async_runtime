@@ -34,7 +34,7 @@ struct _MyWidgetState : public State<MyWidget>
 
     void addChild()
     {
-        auto self = Object::cast<_MyWidgetState>(this);
+        auto self = Object::self(this);
         this->setState([self]() {
             self->children.push_back(Object::create<Builder>(onChildBuild));
         });

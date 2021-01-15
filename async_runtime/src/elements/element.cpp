@@ -10,7 +10,7 @@ void Element::attach()
     assert(parent != nullptr && "Element can't find out its parent. ");
     this->_inheritances = parent->_inheritances;
     if (Object::Ref<Key> key = this->widget->getKey())
-        key->setElement(Object::cast<Element>(this));
+        key->setElement(Object::self(this));
 }
 
 void Element::detach()

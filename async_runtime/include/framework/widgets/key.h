@@ -1,16 +1,19 @@
 #pragma once
 
 #include <list>
-#include "../elements/element.h"
+#include "../object.h"
 
 class Element;
+class Widget;
+class BuildContext;
+class StatefulWidgetState;
 
 class Key : public Object
 {
 public:
     virtual bool equal(Object::Ref<Key> other) = 0;
     virtual void setElement(Object::Ref<Element> element);
-    virtual Object::Ref<Widget> getCurrentWidget();
+    virtual Object::Ref<const Widget> getCurrentWidget();
 
 protected:
     virtual Object::Ref<Element> getElement();

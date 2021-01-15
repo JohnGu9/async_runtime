@@ -7,7 +7,7 @@ void SingleChildElement::attachElement(Object::Ref<Element> element)
 {
     assert(element);
     this->_childElement = element;
-    this->_childElement->parent = Object::cast<Element>(this);
+    this->_childElement->parent = Object::self(this);
     this->_childElement->attach();
 }
 
@@ -17,7 +17,7 @@ void SingleChildElement::reattachElement(Object::Ref<Element> element)
     assert(this->_childElement && "Child element already detach from build tree. System callback invoke by mistake. ");
     this->_childElement->detach();
     this->_childElement = element;
-    this->_childElement->parent = Object::cast<Element>(this);
+    this->_childElement->parent = Object::self(this);
     this->_childElement->attach();
 }
 

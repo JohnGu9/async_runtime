@@ -38,7 +38,7 @@ public:
         int milliseconds = 0,
         int microseconds = 0);
 
-    Duration(int64_t microseconds);
+    Duration(int64_t milliseconds);
 
     Duration operator+(Duration &&other) const
     {
@@ -115,5 +115,5 @@ public:
     std::chrono::milliseconds toChronoMilliseconds() const;
 
 protected:
-    size_t _duration;
+    int64_t _duration;
 };

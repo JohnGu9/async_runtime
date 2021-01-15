@@ -61,14 +61,14 @@ public:
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
 
 protected:
-    virtual Object::Ref<BuildContext> getContext();
+    virtual Object::Ref<BuildContext> getContext() const;
     virtual bool getMounted() const;
 
     Object::WeakRef<StatefulElement> element;
 
 private:
     bool mounted;
-    Object::Ref<StatefulElement> getElement();
+    Object::Ref<StatefulElement> getElement() const;
 };
 
 class StatefulWidget : public Widget
@@ -87,7 +87,7 @@ class State : public virtual StatefulWidgetState
 {
 public:
 protected:
-    virtual Object::Ref<T> getWidget()
+    virtual Object::Ref<const T> getWidget()
     {
         Object::Ref<StatefulElement> element = this->element.lock();
         assert(element);
@@ -123,19 +123,20 @@ inline Object::Ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
 class NotificationListener : public StatelessWidget
 {
 public:
-    NotificationListener(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
-    virtual bool onNotification(Object::Ref<Notification> notification) = 0;
+    NotificationListener(Object::Ref<Widget> child, Fn<bool(Object::Ref<Notification> notification)> onNotification, Object::Ref<Key> key = nullptr);
+    virtual bool onNotification(Object::Ref<Notification> notification) { return this->_onNotification(notification); }
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
     virtual Object::Ref<Element> createElement() override;
 
 protected:
     Object::Ref<Widget> _child;
+    Fn<bool(Object::Ref<Notification> notification)> _onNotification;
 };
 
 class MultiChildWidget : public Widget
 {
 public:
-    MultiChildWidget(Object::List<Object::Ref<Widget>> children, Object::Ref<Key> key = nullptr);
+    MultiChildWidget(const Object::List<Object::Ref<Widget>>& children, Object::Ref<Key> key = nullptr);
     virtual Object::Ref<Element> createElement();
 
     friend MultiChildElement;

@@ -9,6 +9,9 @@ class Timer : public Dispatcher
 {
 public:
     Timer(StatefulWidget::State *state);
+    Timer(StatefulWidget::State *state, Fn<void()> fn, Duration duration);
+    static Object::Ref<Timer> periodic(StatefulWidget::State *state, Fn<void()> fn, Duration interval);
+
     virtual ~Timer();
 
     virtual void setTimeout(Fn<void()> function, Duration delay);

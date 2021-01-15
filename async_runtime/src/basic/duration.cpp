@@ -16,7 +16,7 @@ Duration Duration::fromDetail(
                     microseconds);
 }
 
-Duration::Duration(int64_t microseconds) : _duration(microseconds) {}
+Duration::Duration(int64_t milliseconds) : _duration(microsecondsPerMillisecond * milliseconds) {}
 
 static inline int64_t _abs(int64_t x) { return x >= 0 ? x : -x; }
 
@@ -27,5 +27,5 @@ Duration Duration::abs() const
 
 std::chrono::milliseconds Duration::toChronoMilliseconds() const
 {
-    return std::chrono::milliseconds(this->_duration);
+    return std::chrono::milliseconds(this->_duration / 1000);
 }

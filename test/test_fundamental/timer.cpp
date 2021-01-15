@@ -13,11 +13,14 @@ class _MainActivityState : public State<MainActivity>
     void initState() override
     {
         super::initState();
-        this->_timer = Object::create<Timer>(this);
-        this->_timer->setInterval([this] {
-            Logger::of(this->getContext())->writeLine("Timer callback");
-        },
-                                  Duration(1000));
+        Object::Ref<_MainActivityState> self = Object::self(this);
+        this->_timer = Timer::periodic(
+            this,
+            [self] {
+                if (self->getMounted())
+                    Logger::of(self->getContext())->writeLine("Timer callback");
+            },
+            Duration(1000));
     }
 
     void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
@@ -36,14 +39,14 @@ class _MainActivityState : public State<MainActivity>
 
     void dispose() override
     {
-        Logger::of(this->getContext())->writeLine("_MainActivityState::didDependenceChanged");
+        Logger::of(this->getContext())->writeLine("_MainActivityState::dispose");
         this->_timer->dispose();
         super::dispose();
     }
 
     Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
     {
-        Logger::of(context)->writeLine("_MainActivityState::didDependenceChanged");
+        Logger::of(context)->writeLine("_MainActivityState::build");
         return LeafWidget::factory();
     }
 };
@@ -57,7 +60,8 @@ int main()
 {
     Object::Ref<RootElement> root = Object::create<RootElement>(Object::create<MainActivity>());
     root->attach();
-    root->getStdoutHandler()->writeLine("Testing timer");
+    root->getStdoutHandler()->writeLine("Testing timer").get();
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     root->detach();
     return EXIT_SUCCESS;
 }
