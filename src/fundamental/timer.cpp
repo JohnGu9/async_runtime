@@ -1,3 +1,4 @@
+#include <ctime>
 #include "framework/fundamental/timer.h"
 
 Timer::Timer(StatefulWidget::State *state) : Dispatcher(state) {}
@@ -44,11 +45,14 @@ void Timer::setInterval(Fn<void()> function, Duration interval)
     this->_clear = clearFlag;
     Object::Ref<Timer> self = Object::self(this); // hold a ref of self inside the Fn
     this->_threadPool->post([=]() {
+        using std::chrono::system_clock;
+        system_clock::time_point nextTime = system_clock::now();
         while (true)
         {
             if (*clearFlag)
                 return;
-            std::this_thread::sleep_for(interval.toChronoMilliseconds());
+            nextTime += interval.toChronoMilliseconds();
+            std::this_thread::sleep_until(nextTime);
             self->_handler->microTask([=] {
                 if (*clearFlag)
                     return;
