@@ -2,6 +2,7 @@
 #include "framework/elements/element.h"
 #include "framework/widgets/key.h"
 #include "framework/widgets/root_inherited_widget.h"
+#include "framework/basic/tree.h"
 
 static void onCommand(const std::string &in, Object::Ref<RootElement> root)
 {
@@ -31,28 +32,36 @@ static void onCommand(const std::string &in, Object::Ref<RootElement> root)
     }
     else if (command == "ls")
     {
-        Object::Map<Object::RuntimeType, Object::List<size_t>> map;
+        Object::Map<Element *, Object::List<Element *>> map;
+        map[root.get()] = {};
         root->visitDescendant([&map](Object::Ref<Element> element) -> bool {
-            Object::RuntimeType type = element->runtimeType();
-            if (map.find(type) == map.end())
-                map[type] = {};
-            map[type].push_back((size_t)(element.get()));
+            Object::Ref<Element> parent = element->parent.lock();
+            map[parent.get()].push_back(element.get());
+            map[element.get()] = {};
             return false;
         });
-        std::stringstream ss;
-        for (auto iter = map.begin(); iter != map.end(); iter++)
-        {
-            ss << font_wrapper(BOLDGREEN, iter->first) << "[ ";
-            for (auto i : iter->second)
-                ss << i << " ";
-            ss << "]  ";
-        }
-        handler->writeLine(ss.str());
+        Object::Ref<Tree> tree = Object::create<Tree>();
+        Fn<void(Element *, Object::Ref<Tree>)> buildTree;
+        buildTree =
+            [&](Element *currentElement, Object::Ref<Tree> currentTree) {
+                std::stringstream ss;
+                ss << font_wrapper(BOLDBLUE, currentElement->runtimeType()) << " [" << (size_t)currentElement << "] " << std::endl
+                   << "  widget: " << currentElement->widget->runtimeType() << std::endl;
+                if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
+                    ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
+                currentTree->info = ss.str();
+                Object::List<Element *> &children = map[currentElement];
+                for (auto child : children)
+                {
+                    Object::Ref<Tree> childTree = Object::create<Tree>();
+                    buildTree(child, childTree);
+                    currentTree->children.push_back(childTree);
+                }
+            };
+        buildTree(root.get(), tree);
+        root->getMainHandler()->post([&] { tree->toStringStream(std::cout); }).get();
     }
     else if (command == "ps")
-    {
-    }
-    else if (command == "pwd")
     {
     }
     else if (command == "reassembly")

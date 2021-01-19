@@ -212,3 +212,4 @@ Object::Ref<StatefulWidget::State> StdoutLogger::createState()
 {
     return Object::create<_StdoutLoggerState>();
 }
+

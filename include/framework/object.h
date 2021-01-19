@@ -44,7 +44,7 @@ public:
     Ref<T> cast();
 
     virtual String toString();
-    virtual void toStringStream(std::stringstream &);
+    virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();
     virtual ~Object();
 };

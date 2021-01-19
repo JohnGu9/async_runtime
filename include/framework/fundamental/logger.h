@@ -33,6 +33,35 @@ protected:
     Handler _handler;
 };
 
+class LoggerBlocker : public StatelessWidget
+{
+    struct _Blocker : LoggerHandler
+    {
+        _Blocker() : LoggerHandler(nullptr) {}
+        std::future<bool> write(String str) override
+        {
+            return std::async([] { return true; });
+        }
+        std::future<bool> writeLine(String str) override
+        {
+            return std::async([] { return true; });
+        }
+    };
+
+public:
+    LoggerBlocker(Object::Ref<Widget> child, bool blocking = true, Object::Ref<Key> key = nullptr)
+        : child(child), blocking(blocking), StatelessWidget(key) {}
+
+    Object::Ref<Widget> child;
+    bool blocking;
+
+    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
+    {
+        static Logger::Handler handler = Object::create<_Blocker>();
+        return Object::create<Logger>(child, blocking ? handler : Logger::of(context));
+    }
+};
+
 class _StdoutLoggerState;
 class StdoutLogger : public StatefulWidget
 {
