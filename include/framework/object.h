@@ -77,7 +77,7 @@ inline Object::Ref<T> Object::create(_Args &&... __args)
 template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
 inline Object::Ref<T> Object::create(_Args &&... __args)
 {
-    assert(warning_print("Object::create call on a not Object derived class [" << typeid(T).name() << "]"));
+    assert(debug_print("Object::create call on a not Object derived class [" << typeid(T).name() << "]"));
     return std::make_shared<T>(__args...);
 }
 
@@ -90,13 +90,13 @@ inline bool Object::identical(const Object::Ref<T0> &object0, const Object::Ref<
 template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type *>
 inline Object::Ref<T> Object::cast(R *other)
 {
-    return std::shared_ptr<T>(other->shared_from_this(), other);
+    return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 inline Object::Ref<T> Object::self(T *other)
 {
-    return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
+    return std::shared_ptr<T>(other->shared_from_this(), other);
 }
 
 template <typename T>

@@ -24,7 +24,7 @@
 #ifdef DEBUG
 #define debug_print(x) std::cout << "[" << BOLDBLUE << "DEBUG" << RESET << "] " << x << std::endl
 #else
-#define debug_print(x)
+#define debug_print(x) void(0)
 #endif
 
 #define info_print(x) std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << x << std::endl

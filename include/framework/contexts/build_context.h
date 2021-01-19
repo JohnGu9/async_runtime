@@ -22,7 +22,10 @@ public:
     template <typename T, typename std::enable_if<std::is_base_of<Inheritance, T>::value>::type * = nullptr>
     Object::Ref<T> dependOnInheritanceOfExactType()
     {
-        return this->_inheritances[typeid(T).name()]->cast<T>();
+        auto iter = this->_inheritances.find(typeid(T).name());
+        if (iter == this->_inheritances.end())
+            return nullptr;
+        return iter->second->cast<T>();
     }
 
 protected:

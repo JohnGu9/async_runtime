@@ -3,9 +3,16 @@
 
 Timer::Timer(StatefulWidget::State *state) : Dispatcher(state) {}
 
-Timer::Timer(StatefulWidget::State *state, Fn<void()> fn, Duration duration) : Dispatcher(state)
+// Timer::Timer(StatefulWidget::State *state, Fn<void()> fn, Duration duration) : Dispatcher(state)
+// {
+//     this->setTimeout(fn, duration);
+// }
+
+Object::Ref<Timer> Timer::delay(StatefulWidget::State *state, Fn<void()> fn, Duration duration)
 {
-    this->setTimeout(fn, duration);
+    Object::Ref<Timer> timer = Object::create<Timer>(state);
+    timer->setTimeout(fn, duration);
+    return timer;
 }
 
 Object::Ref<Timer> Timer::periodic(StatefulWidget::State *state, Fn<void()> fn, Duration interval)

@@ -64,3 +64,20 @@ void ThreadPool::dispose()
     for (std::thread &worker : workers)
         worker.join();
 }
+
+void ThreadPool::forceClose()
+{
+    {
+        std::unique_lock<std::mutex> lock(queue_mutex);
+        if (stop)
+        {
+            assert(false && "ThreadPool call [dispose] that already is disposed. ");
+            return;
+        }
+        stop = true;
+    }
+    condition.notify_all();
+
+    for (std::thread &worker : workers)
+        worker.detach();
+}

@@ -11,7 +11,7 @@ public:
     static Handler of(Object::Ref<BuildContext> context);
 
     Scheduler(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
-    Object::Ref<Widget> _child;
+    Object::Ref<Widget> child;
     Object::Ref<State> createState() override;
 };
 
@@ -68,11 +68,17 @@ public:
 
     void visitAncestor(Fn<bool(Object::Ref<Element>)> fn) override
     {
-        this->getHandler()->post([this, fn] { this->toVisitAncestor(fn); }).get();
+        Scheduler::Handler handler = this->getHandler();
+        Scheduler::Handler parentHandler = this->getParentHandler();
+        if (handler != parentHandler && parentHandler != nullptr)
+            parentHandler->post([this, fn] { this->toVisitAncestor(fn); }).get();
+        else
+            InheritedElement::visitAncestor(fn);
     }
 
 protected:
     virtual Scheduler::Handler getHandler() { return this->_inheritWidget->cast<SchedulerProxy>()->_handler; }
+    virtual Scheduler::Handler getParentHandler() { return Scheduler::of(this->parent.lock()); }
     virtual void toAttach() { InheritedElement::attach(); }
     virtual void toDetach() { InheritedElement::detach(); }
     virtual void toBuild() { InheritedElement::build(); }

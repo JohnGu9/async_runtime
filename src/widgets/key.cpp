@@ -2,7 +2,11 @@
 #include "framework/elements/element.h"
 #include "framework/widgets/widget.h"
 
-void Key::setElement(Object::Ref<Element> element) { this->_element = element; }
+void Key::setElement(Object::Ref<Element> element)
+{
+    assert(!this->_element.lock() && "One key can't mount more than one element. ");
+    this->_element = element;
+}
 
 Object::Ref<Element> Key::getElement() { return this->_element.lock(); }
 
@@ -12,10 +16,8 @@ Object::Ref<BuildContext> GlobalKey::getCurrentContext() { return this->getEleme
 
 Object::Ref<StatefulWidgetState> GlobalKey::getCurrentState()
 {
-    Object::Ref<Element> element = this->getElement();
-    if (element == nullptr)
-        return nullptr;
-    if (Object::Ref<StatefulElement> statefulElement = element->cast<StatefulElement>())
-        return statefulElement->_state;
+    if (Object::Ref<Element> element = this->getElement())
+        if (Object::Ref<StatefulElement> statefulElement = element->cast<StatefulElement>())
+            return statefulElement->_state;
     return nullptr;
 }

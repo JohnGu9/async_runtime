@@ -26,6 +26,7 @@ public:
     auto microTask(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
     virtual bool isActive();
     virtual void dispose();
+    virtual void forceClose();
 
 protected:
     // need to keep track of threads so we can join them

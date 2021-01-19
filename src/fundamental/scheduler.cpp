@@ -19,11 +19,11 @@ class _SchedulerState : public State<Scheduler>
 
     Object::Ref<Widget> build(Object::Ref<BuildContext>) override
     {
-        return Object::create<SchedulerProxy>(this->getWidget()->_child, this->_handler);
+        return Object::create<SchedulerProxy>(this->getWidget()->child, this->_handler);
     }
 };
 
-Scheduler::Scheduler(Object::Ref<Widget> child, Object::Ref<Key> key) : _child(child), StatefulWidget(key) { assert(this->_child); }
+Scheduler::Scheduler(Object::Ref<Widget> child_, Object::Ref<Key> key) : child(child_), StatefulWidget(key) { assert(this->child); }
 
 Object::Ref<StatefulWidget::State> Scheduler::createState()
 {
@@ -32,7 +32,9 @@ Object::Ref<StatefulWidget::State> Scheduler::createState()
 
 Scheduler::Handler Scheduler::of(Object::Ref<BuildContext> context)
 {
-    return context->dependOnInheritanceOfExactType<SchedulerProxy>()->_handler;
+    if (Object::Ref<SchedulerProxy> proxy = context->dependOnInheritedWidgetOfExactType<SchedulerProxy>())
+        return proxy->_handler;
+    return nullptr;
 }
 
 SchedulerProxy::SchedulerProxy(Object::Ref<Widget> child, Handler handler)
@@ -53,4 +55,3 @@ Object::Ref<Element> SchedulerProxy::createElement()
 {
     return Object::create<SchedulerElement>(Object::self(this));
 }
-

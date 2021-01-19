@@ -115,9 +115,10 @@ protected:
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
 inline Object::Ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
-    if (this->_inheritances.find(typeid(T).name()) == this->_inheritances.end())
+    auto iter = this->_inheritances.find(typeid(T).name());
+    if (iter == this->_inheritances.end())
         return nullptr;
-    return this->_inheritances[typeid(T).name()]->cast<T>();
+    return iter->second->cast<T>();
 }
 
 class NotificationListener : public StatelessWidget
@@ -136,7 +137,7 @@ protected:
 class MultiChildWidget : public Widget
 {
 public:
-    MultiChildWidget(const Object::List<Object::Ref<Widget>>& children, Object::Ref<Key> key = nullptr);
+    MultiChildWidget(const Object::List<Object::Ref<Widget>> &children, Object::Ref<Key> key = nullptr);
     virtual Object::Ref<Element> createElement();
 
     friend MultiChildElement;
@@ -145,12 +146,3 @@ protected:
     Object::List<Object::Ref<Widget>> _children;
 };
 
-class Builder : public StatelessWidget
-{
-public:
-    Builder(Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> fn, Object::Ref<Key> key = nullptr);
-    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
-
-protected:
-    Fn<Object::Ref<Widget>(Object::Ref<BuildContext>)> _fn;
-};
