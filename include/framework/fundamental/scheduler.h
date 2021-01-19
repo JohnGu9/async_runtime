@@ -31,7 +31,7 @@ public:
     SchedulerProxy(Object::Ref<Widget> child, Handler handler);
 };
 
-class SchedulerElement : public virtual InheritedElement
+class SchedulerElement : public InheritedElement
 {
 public:
     SchedulerElement(Object::Ref<SchedulerProxy> widget) : InheritedElement(widget) {}

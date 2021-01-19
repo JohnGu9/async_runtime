@@ -14,7 +14,7 @@
 #include "../object.h"
 
 // source from https://github.com/progschj/ThreadPool
-class ThreadPool : public virtual Object
+class ThreadPool : public Object
 {
 public:
     ThreadPool(size_t);

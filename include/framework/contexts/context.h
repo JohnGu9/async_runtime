@@ -2,7 +2,6 @@
 
 #include "../object.h"
 
-class Context : public virtual Object
+class Context : public Object
 {
 };
-

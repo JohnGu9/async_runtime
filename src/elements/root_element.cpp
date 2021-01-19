@@ -24,8 +24,8 @@ static void onCommand(const std::string &in, Object::Ref<RootElement> root)
     else if (in.empty())
         return;
 
-    auto commandLength = in.find(" ");
-    auto command = in.substr(0, commandLength == std::string::npos ? in.size() : commandLength);
+    std::string::size_type commandLength = in.find(" ");
+    std::string command = in.substr(0, commandLength == std::string::npos ? in.size() : commandLength);
     if (command == "clear")
     {
         printf("\033c");
@@ -51,7 +51,7 @@ static void onCommand(const std::string &in, Object::Ref<RootElement> root)
                     ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
                 currentTree->info = ss.str();
                 Object::List<Element *> &children = map[currentElement];
-                for (auto child : children)
+                for (Element *child : children)
                 {
                     Object::Ref<Tree> childTree = Object::create<Tree>();
                     buildTree(child, childTree);

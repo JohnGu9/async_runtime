@@ -25,7 +25,7 @@ class LeafWidget : public Widget
 public:
     static Object::Ref<LeafWidget> &factory();
     LeafWidget(Object::Ref<Key> key = nullptr);
-    virtual Object::Ref<Element> createElement() override;
+    Object::Ref<Element> createElement() override;
 };
 
 class StatelessWidget : public Widget
@@ -35,7 +35,7 @@ public:
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
 
 protected:
-    virtual Object::Ref<Element> createElement() override;
+    Object::Ref<Element> createElement() override;
 };
 
 class StatefulElement;
@@ -79,7 +79,7 @@ public:
     virtual Object::Ref<State> createState() = 0;
 
 protected:
-    virtual Object::Ref<Element> createElement() override;
+    Object::Ref<Element> createElement() override;
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type * = nullptr>
@@ -105,8 +105,8 @@ class InheritedWidget : public virtual StatelessWidget, public virtual Inheritan
 public:
     InheritedWidget(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
     virtual bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) = 0;
-    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
-    virtual Object::Ref<Element> createElement() override;
+    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
+    Object::Ref<Element> createElement() override;
 
 protected:
     Object::Ref<Widget> _child;
@@ -126,8 +126,8 @@ class NotificationListener : public StatelessWidget
 public:
     NotificationListener(Object::Ref<Widget> child, Fn<bool(Object::Ref<Notification> notification)> onNotification, Object::Ref<Key> key = nullptr);
     virtual bool onNotification(Object::Ref<Notification> notification) { return this->_onNotification(notification); }
-    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
-    virtual Object::Ref<Element> createElement() override;
+    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
+    Object::Ref<Element> createElement() override;
 
 protected:
     Object::Ref<Widget> _child;
@@ -138,11 +138,10 @@ class MultiChildWidget : public Widget
 {
 public:
     MultiChildWidget(const Object::List<Object::Ref<Widget>> &children, Object::Ref<Key> key = nullptr);
-    virtual Object::Ref<Element> createElement();
+    Object::Ref<Element> createElement() override;
 
     friend MultiChildElement;
 
 protected:
     Object::List<Object::Ref<Widget>> _children;
 };
-

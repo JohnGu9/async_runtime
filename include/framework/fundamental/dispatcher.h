@@ -11,9 +11,9 @@ public:
     virtual ~Dispatcher();
     virtual void dispose();
 
+protected:
     Scheduler::Handler _handler;         // main thread for callback
     Object::Ref<ThreadPool> _threadPool; // work thread
 
-protected:
     bool _ownWorkThread = false;
 };

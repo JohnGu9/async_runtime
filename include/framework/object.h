@@ -11,7 +11,7 @@
 
 using String = std::string;
 
-class Object : public virtual std::enable_shared_from_this<Object>
+class Object : public std::enable_shared_from_this<Object>
 {
 public:
     using RuntimeType = String;
@@ -35,7 +35,6 @@ public:
     // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     inline static Ref<T> cast(R *);
-
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     inline static Ref<T> cast(T *);
 

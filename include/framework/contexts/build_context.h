@@ -10,7 +10,7 @@ class Inheritance : public virtual Object
 {
 };
 
-class BuildContext : public virtual Context
+class BuildContext : public Context
 {
 public:
     BuildContext(Object::Ref<Widget> widget);

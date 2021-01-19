@@ -2,6 +2,6 @@
 
 #include "context.h"
 
-class RuntimeContext : public virtual Context
+class RuntimeContext : public Context
 {
 };
