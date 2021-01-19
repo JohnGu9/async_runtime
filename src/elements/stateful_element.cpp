@@ -13,7 +13,7 @@ void StatefulElement::attach()
     this->_lifeCycle = StatefulElement::LifeCycle::building;
     assert(this->_state->mounted == false && "This [State] class mount twice is not allowed. User should not reuse [State] class or manually call [initState]");
     Element::attach();
-    this->_state->element = Object::self(this);
+    this->_state->element = Object::cast<>(this);
     this->_state->initState();
     this->_state->mounted = true;
     this->_state->didDependenceChanged();

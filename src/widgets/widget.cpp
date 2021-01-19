@@ -19,21 +19,21 @@ LeafWidget::LeafWidget(Object::Ref<Key> key) : Widget(key){};
 
 Object::Ref<Element> LeafWidget::createElement()
 {
-    return Object::create<LeafElement>(Object::self(this));
+    return Object::create<LeafElement>(Object::cast<>(this));
 }
 
 StatelessWidget::StatelessWidget(Object::Ref<Key> key) : Widget(key) {}
 
 Object::Ref<Element> StatelessWidget::createElement()
 {
-    return Object::create<StatelessElement>(Object::self(this));
+    return Object::create<StatelessElement>(Object::cast<>(this));
 }
 
 StatefulWidget::StatefulWidget(Object::Ref<Key> key) : Widget(key) {}
 
 Object::Ref<Element> StatefulWidget::createElement()
 {
-    return Object::create<StatefulElement>(Object::self(this));
+    return Object::create<StatefulElement>(Object::cast<>(this));
 }
 
 StatefulWidgetState::StatefulWidgetState() : mounted(false) {}
@@ -74,7 +74,7 @@ Object::Ref<Widget> InheritedWidget::build(Object::Ref<BuildContext> context) { 
 
 Object::Ref<Element> InheritedWidget::createElement()
 {
-    return Object::create<InheritedElement>(Object::self(this));
+    return Object::create<InheritedElement>(Object::cast<>(this));
 }
 
 NotificationListener::NotificationListener(Object::Ref<Widget> child, Fn<bool(Object::Ref<Notification> notification)> onNotification, Object::Ref<Key> key)
@@ -87,13 +87,13 @@ Object::Ref<Widget> NotificationListener::build(Object::Ref<BuildContext> contex
 
 Object::Ref<Element> NotificationListener::createElement()
 {
-    return Object::create<NotificationListenerElement>(Object::self(this));
+    return Object::create<NotificationListenerElement>(Object::cast<>(this));
 }
 
 MultiChildWidget::MultiChildWidget(const Object::List<Object::Ref<Widget>> &children, Object::Ref<Key> key) : _children(children), Widget(key) {}
 
 Object::Ref<Element> MultiChildWidget::createElement()
 {
-    return Object::create<MultiChildElement>(Object::self(this));
+    return Object::create<MultiChildElement>(Object::cast<>(this));
 }
 

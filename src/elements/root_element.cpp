@@ -67,11 +67,6 @@ static void onCommand(const std::string &in, Object::Ref<RootElement> root)
     }
 }
 
-static inline void bootInfo()
-{
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " boot");
-}
-
 static inline void shutdownInfo()
 {
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shuting down");
@@ -98,7 +93,7 @@ void RootElement::notify(Object::Ref<Widget> newWidget) { assert(false && "RootE
 void RootElement::attach()
 {
     this->widget = Object::create<_MockWidget>();
-    this->_child = Object::create<RootInheritedWidget>(this->_child, Object::self(this));
+    this->_child = Object::create<RootInheritedWidget>(this->_child, Object::cast<>(this));
     this->attachElement(this->_child->createElement());
 }
 
@@ -152,9 +147,8 @@ void RootElement::scheduleRootWidget()
     {
         std::unique_lock<std::mutex> lock(this->_mutex);
         {
-            auto self = Object::self(this);
+            auto self = Object::cast<>(this);
             threadPool.post([self] {
-                bootInfo();
                 self->_console();
                 shutdownInfo();
                 self->_condition.notify_all();
@@ -197,6 +191,6 @@ void RootElement::_console()
             this->getStdoutHandler()->writeLine("cancel").get();
         }
         else
-            onCommand(input, Object::self(this));
+            onCommand(input, Object::cast<>(this));
     }
 }

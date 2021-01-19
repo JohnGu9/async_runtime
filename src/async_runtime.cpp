@@ -9,6 +9,7 @@ void runApp(Object::Ref<Widget> widget)
 
     debug_print("Debug mode on");
     debug_print("Root widget is \"" << widget->toString() << "\"");
+    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " start");
     auto root = Object::create<RootElement>(widget);
     root->scheduleRootWidget();
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited");

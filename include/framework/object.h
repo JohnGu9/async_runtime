@@ -33,23 +33,19 @@ public:
     inline static bool identical(const Ref<T0> &, const Ref<T1> &);
 
     // static cast
-    template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type * = nullptr>
+    template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     inline static Ref<T> cast(R *);
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
-    inline static Ref<T> self(T *);
+    inline static Ref<T> cast(T *);
 
     // dynamic cast
     template <typename T>
     Ref<T> cast();
 
-    template <typename T>
-    bool is();
-
     virtual String toString();
     virtual void toStringStream(std::stringstream &);
     virtual RuntimeType runtimeType();
-
     virtual ~Object();
 };
 
@@ -87,14 +83,14 @@ inline bool Object::identical(const Object::Ref<T0> &object0, const Object::Ref<
     return (size_t)(object0.get()) == (size_t)(object1.get());
 }
 
-template <typename T, typename R, typename std::enable_if<std::is_base_of<Object, R>::value>::type *>
+template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 inline Object::Ref<T> Object::cast(R *other)
 {
     return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
-inline Object::Ref<T> Object::self(T *other)
+inline Object::Ref<T> Object::cast(T *other)
 {
     return std::shared_ptr<T>(other->shared_from_this(), other);
 }
@@ -103,12 +99,6 @@ template <typename T>
 inline Object::Ref<T> Object::cast()
 {
     return std::dynamic_pointer_cast<T>(this->shared_from_this());
-}
-
-template <typename T>
-inline bool Object::is()
-{
-    return dynamic_cast<T *>(this);
 }
 
 void print(Object::Ref<Object> object);

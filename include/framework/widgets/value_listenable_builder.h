@@ -29,7 +29,7 @@ class _ValueListenableBuilderState : public State<ValueListenableBuilder<T>>
     void initState() override
     {
         super::initState();
-        Object::Ref<_ValueListenableBuilderState> self = Object::self(this);
+        Object::Ref<_ValueListenableBuilderState> self = Object::cast<>(this);
         _listener = Object::create<Fn<void(Object::Ref<Listenable>)>>(
             [self](Object::Ref<Listenable> listenable) {
                 Object::Ref<ValueListenable<T>> valueListenable = listenable->cast<ValueListenable<T>>();

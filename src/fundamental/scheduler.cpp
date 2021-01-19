@@ -53,5 +53,5 @@ bool SchedulerProxy::updateShouldNotify(Object::Ref<InheritedWidget> oldWidget)
 
 Object::Ref<Element> SchedulerProxy::createElement()
 {
-    return Object::create<SchedulerElement>(Object::self(this));
+    return Object::create<SchedulerElement>(Object::cast<>(this));
 }

@@ -13,6 +13,7 @@ class Key : public Object
 public:
     virtual bool equal(Object::Ref<Key> other) = 0;
     virtual void setElement(Object::Ref<Element> element);
+    virtual void dispose();
     virtual Object::Ref<const Widget> getCurrentWidget();
 
 protected:

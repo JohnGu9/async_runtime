@@ -14,7 +14,7 @@ void MultiChildElement::attach()
         this->_childrenElements.push_back(widget->createElement());
         Object::Ref<Element> &childElement = this->_childrenElements[i];
         assert(childElement != nullptr);
-        childElement->parent = Object::self(this);
+        childElement->parent = Object::cast<>(this);
         childElement->attach();
     }
 }
@@ -38,7 +38,7 @@ void MultiChildElement::build()
                 this->_childrenElements[i]->detach();
                 this->_childrenElements[i] = widget->createElement();
                 assert(this->_childrenElements[i] != nullptr);
-                this->_childrenElements[i]->parent = Object::self(this);
+                this->_childrenElements[i]->parent = Object::cast<>(this);
                 this->_childrenElements[i]->attach();
             }
         }
@@ -47,7 +47,7 @@ void MultiChildElement::build()
             this->_childrenElements.push_back(widget->createElement());
             Object::Ref<Element> &childElement = this->_childrenElements[i];
             assert(childElement != nullptr);
-            childElement->parent = Object::self(this);
+            childElement->parent = Object::cast<>(this);
             childElement->attach();
         }
     }
@@ -97,7 +97,7 @@ void MultiChildElement::notify(Object::Ref<Widget> newWidget)
                 this->_childrenElements[i] = widget->createElement();
                 element = this->_childrenElements[i];
                 assert(element != nullptr);
-                element->parent = Object::self(this);
+                element->parent = Object::cast<>(this);
                 element->attach();
             }
         }
@@ -106,7 +106,7 @@ void MultiChildElement::notify(Object::Ref<Widget> newWidget)
             this->_childrenElements.push_back(widget->createElement());
             Object::Ref<Element> &childElement = this->_childrenElements[i];
             assert(childElement != nullptr);
-            childElement->parent = Object::self(this);
+            childElement->parent = Object::cast<>(this);
             childElement->attach();
         }
     }
