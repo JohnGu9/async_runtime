@@ -7,7 +7,7 @@ class StatefulWidget : public Widget
 {
 public:
     // using State = StatefulWidgetState;
-    StatefulWidget(Object::Ref<Key> key = nullptr);
+    StatefulWidget(Object::Ref<Key> key = nullptr) : Widget(key) {}
     virtual Object::Ref<State<StatefulWidget>> createState() = 0;
 
 protected:

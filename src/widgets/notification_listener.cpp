@@ -1,6 +1,9 @@
 #include "async_runtime/widgets/notification_listener.h"
 
-NotificationListener::NotificationListener(Object::Ref<Widget> child, Fn<bool(Object::Ref<Notification> notification)> onNotification, Object::Ref<Key> key)
+NotificationListener::NotificationListener(
+    Object::Ref<Widget> child,
+    Fn<bool(Object::Ref<Notification> notification)> onNotification,
+    Object::Ref<Key> key)
     : _child(child), _onNotification(onNotification), StatelessWidget(key) {}
 
 Object::Ref<Widget> NotificationListener::build(Object::Ref<BuildContext> context)

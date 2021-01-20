@@ -77,6 +77,7 @@ public:
     virtual Object::Ref<LoggerHandler> getStdoutHandler();
     virtual Object::Ref<ThreadPool> getMainHandler();
     virtual void scheduleRootWidget();
+    virtual void onCommand(const std::string &in);
 
 protected:
     std::mutex _mutex;

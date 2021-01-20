@@ -1,3 +1,5 @@
+#pragma once
+
 #include "inherited_widget.h"
 
 class RootInheritedWidget : public InheritedWidget

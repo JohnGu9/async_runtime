@@ -4,81 +4,9 @@
 #include "async_runtime/widgets/root_inherited_widget.h"
 #include "async_runtime/basic/tree.h"
 
-static void onCommand(const std::string &in, Object::Ref<RootElement> root)
-{
-    Logger::Handler handler = root->getStdoutHandler();
-    if (in == "-h" || in == "--help")
-    {
-#define help_format(x, y) " " << x << "\t\t" << y
-        std::stringstream ss;
-        ss << std::endl;
-        ss << help_format(BOLDWHITE << "command", "arguments" << RESET) << std::endl;
-        ss << help_format("-------", "---------") << std::endl;
-        ss << help_format("ls\t", "()") << std::endl;
-        ss << help_format("ps\t", "()") << std::endl;
-        ss << help_format("pwd\t", "()") << std::endl;
-        ss << help_format("reassembly", "()") << std::endl;
-        handler->write(ss.str());
-        return;
-    }
-    else if (in.empty())
-        return;
-
-    std::string::size_type commandLength = in.find(" ");
-    std::string command = in.substr(0, commandLength == std::string::npos ? in.size() : commandLength);
-    if (command == "clear")
-    {
-        printf("\033c");
-    }
-    else if (command == "ls")
-    {
-        Object::Map<Element *, Object::List<Element *>> map;
-        map[root.get()] = {};
-        root->visitDescendant([&map](Object::Ref<Element> element) -> bool {
-            Object::Ref<Element> parent = element->parent.lock();
-            map[parent.get()].push_back(element.get());
-            map[element.get()] = {};
-            return false;
-        });
-        Object::Ref<Tree> tree = Object::create<Tree>();
-        Fn<void(Element *, Object::Ref<Tree>)> buildTree;
-        buildTree =
-            [&](Element *currentElement, Object::Ref<Tree> currentTree) {
-                std::stringstream ss;
-                ss << font_wrapper(BOLDBLUE, currentElement->runtimeType()) << " [" << (size_t)currentElement << "] " << std::endl
-                   << "  widget: " << currentElement->widget->runtimeType() << std::endl;
-                if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
-                    ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
-                currentTree->info = ss.str();
-                Object::List<Element *> &children = map[currentElement];
-                for (Element *child : children)
-                {
-                    Object::Ref<Tree> childTree = Object::create<Tree>();
-                    buildTree(child, childTree);
-                    currentTree->children.push_back(childTree);
-                }
-            };
-        buildTree(root.get(), tree);
-        root->getMainHandler()->post([&] { tree->toStringStream(std::cout); }).get();
-    }
-    else if (command == "ps")
-    {
-    }
-    else if (command == "reassembly")
-    {
-        root->detach();
-        root->attach();
-    }
-    else
-    {
-        error_print("No such method");
-        info_print("'-h' or '--help' for more information");
-    }
-}
-
 static inline void shutdownInfo()
 {
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shuting down");
+    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
 }
 
 struct _MockWidget : Widget
@@ -200,6 +128,78 @@ void RootElement::_console()
             this->getStdoutHandler()->writeLine("cancel").get();
         }
         else
-            onCommand(input, Object::cast<>(this));
+            onCommand(input);
+    }
+}
+
+void RootElement::onCommand(const std::string &in)
+{
+    Logger::Handler handler = this->getStdoutHandler();
+    if (in == "-h" || in == "--help")
+    {
+#define help_format(x, y) " " << x << "\t\t" << y
+        std::stringstream ss;
+        ss << std::endl;
+        ss << help_format(BOLDWHITE << "command", "arguments" << RESET) << std::endl;
+        ss << help_format("-------", "---------") << std::endl;
+        ss << help_format("ls\t", "()") << std::endl;
+        ss << help_format("ps\t", "()") << std::endl;
+        ss << help_format("pwd\t", "()") << std::endl;
+        ss << help_format("reassembly", "()") << std::endl;
+        handler->write(ss.str());
+        return;
+    }
+    else if (in.empty())
+        return;
+
+    std::string::size_type commandLength = in.find(" ");
+    std::string command = in.substr(0, commandLength == std::string::npos ? in.size() : commandLength);
+    if (command == "clear")
+    {
+        printf("\033c");
+    }
+    else if (command == "ls")
+    {
+        Object::Map<Element *, Object::List<Element *>> map;
+        map[this] = {};
+        this->visitDescendant([&map](Object::Ref<Element> element) -> bool {
+            Object::Ref<Element> parent = element->parent.lock();
+            map[parent.get()].push_back(element.get());
+            map[element.get()] = {};
+            return false;
+        });
+        Object::Ref<Tree> tree = Object::create<Tree>();
+        Fn<void(Element *, Object::Ref<Tree>)> buildTree;
+        buildTree =
+            [&](Element *currentElement, Object::Ref<Tree> currentTree) {
+                std::stringstream ss;
+                ss << font_wrapper(BOLDBLUE, currentElement->runtimeType()) << " [" << (size_t)currentElement << "] " << std::endl
+                   << "  widget: " << currentElement->widget->runtimeType() << std::endl;
+                if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
+                    ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
+                currentTree->info = ss.str();
+                Object::List<Element *> &children = map[currentElement];
+                for (Element *child : children)
+                {
+                    Object::Ref<Tree> childTree = Object::create<Tree>();
+                    buildTree(child, childTree);
+                    currentTree->children.push_back(childTree);
+                }
+            };
+        buildTree(this, tree);
+        this->getMainHandler()->post([&] { tree->toStringStream(std::cout); }).get();
+    }
+    else if (command == "ps")
+    {
+    }
+    else if (command == "reassembly")
+    {
+        this->detach();
+        this->attach();
+    }
+    else
+    {
+        error_print("No such method");
+        info_print("'-h' or '--help' for more information");
     }
 }

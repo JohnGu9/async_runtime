@@ -1,4 +1,5 @@
 #pragma once
+
 #include "stateless_widget.h"
 
 class InheritedWidget : public virtual StatelessWidget, public virtual Inheritance

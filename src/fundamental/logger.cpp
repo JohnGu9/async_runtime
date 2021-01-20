@@ -4,10 +4,10 @@
 class _StdoutLoggerHandler : public LoggerHandler
 {
 public:
-    _StdoutLoggerHandler(Scheduler::Handler sync) : LoggerHandler(sync) {}
+    _StdoutLoggerHandler(State<StatefulWidget> *state) : LoggerHandler(state) { assert(state); }
     std::future<bool> write(String str) override
     {
-        return this->sync->post([str] {
+        return this->_handler->post([str] {
             std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
             return true;
         });
@@ -15,7 +15,7 @@ public:
 
     std::future<bool> writeLine(String str) override
     {
-        return this->sync->post([str] { info_print(str);return true; });
+        return this->_handler->post([str] { info_print(str); return true; });
     }
 };
 
@@ -174,17 +174,10 @@ public:
         }
     }
 };
-
-void _StdoutLoggerState::didDependenceChanged()
+void _StdoutLoggerState::initState()
 {
-    assert(this->getContext()->dependOnInheritedWidgetOfExactType<_StdoutLoggerInheritedWidget>() == nullptr && "Duplicate StdoutLogger. ");
-    if (this->_handler == nullptr)
-        this->_handler = Object::create<_StdoutLoggerHandler>(Scheduler::of(this->getContext()));
-    else
-    {
-        assert(_handler->sync == Scheduler::of(this->getContext()) && "StdoutLogger sync should not change. ");
-    }
-    super::didDependenceChanged();
+    super::initState();
+    this->_handler = Object::create<_StdoutLoggerHandler>(this);
 }
 
 void _StdoutLoggerState::dispose()
@@ -213,3 +206,42 @@ Object::Ref<State<StatefulWidget>> StdoutLogger::createState()
     return Object::create<_StdoutLoggerState>();
 }
 
+class _LoggerBlockerState : public State<LoggerBlocker>
+{
+    struct _Blocker : LoggerHandler
+    {
+        _Blocker(State<StatefulWidget> *state) : LoggerHandler(state) {}
+        std::future<bool> write(String str) override
+        {
+            return std::async([] { return true; });
+        }
+        std::future<bool> writeLine(String str) override
+        {
+            return std::async([] { return true; });
+        }
+    };
+    using super = State<LoggerBlocker>;
+    Logger::Handler _handler;
+
+    void initState() override
+    {
+        super::initState();
+        _handler = Object::create<_Blocker>(this);
+    }
+
+    void dispose() override
+    {
+        _handler->dispose();
+        super::dispose();
+    }
+
+    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
+    {
+        return Object::create<Logger>(this->getWidget()->child, this->getWidget()->blocking ? _handler : Logger::of(context));
+    }
+};
+
+Object::Ref<State<StatefulWidget>> LoggerBlocker::createState()
+{
+    return Object::create<_LoggerBlockerState>();
+}

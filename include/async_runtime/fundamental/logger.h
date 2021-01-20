@@ -2,20 +2,15 @@
 
 #include <sstream>
 #include "scheduler.h"
+#include "dispatcher.h"
 
-class LoggerHandler : public Object
+class LoggerHandler : public Dispatcher
 {
 public:
-    LoggerHandler(Scheduler::Handler sync_) : sync(sync_) {}
-    Scheduler::Handler sync; // output sync
+    LoggerHandler(State<StatefulWidget> *state) : Dispatcher(state, nullptr, 0) {}
 
     virtual std::future<bool> write(String str) = 0;
     virtual std::future<bool> writeLine(String str) = 0;
-
-    virtual void dispose()
-    {
-        sync = nullptr;
-    }
 };
 
 class Logger : public InheritedWidget
@@ -33,33 +28,17 @@ protected:
     Handler _handler;
 };
 
-class LoggerBlocker : public StatelessWidget
+class LoggerBlocker : public StatefulWidget
 {
-    struct _Blocker : LoggerHandler
-    {
-        _Blocker() : LoggerHandler(nullptr) {}
-        std::future<bool> write(String str) override
-        {
-            return std::async([] { return true; });
-        }
-        std::future<bool> writeLine(String str) override
-        {
-            return std::async([] { return true; });
-        }
-    };
 
 public:
     LoggerBlocker(Object::Ref<Widget> child, bool blocking = true, Object::Ref<Key> key = nullptr)
-        : child(child), blocking(blocking), StatelessWidget(key) {}
+        : child(child), blocking(blocking), StatefulWidget(key) {}
 
     Object::Ref<Widget> child;
     bool blocking;
 
-    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
-    {
-        static Logger::Handler handler = Object::create<_Blocker>();
-        return Object::create<Logger>(child, blocking ? handler : Logger::of(context));
-    }
+    Object::Ref<State<StatefulWidget>> createState() override;
 };
 
 class _StdoutLoggerState;
@@ -81,7 +60,7 @@ public:
     using super = State<StdoutLogger>;
     Logger::Handler _handler;
 
-    void didDependenceChanged() override;
+    void initState() override;
     void dispose() override;
     Object::Ref<Widget> build(Object::Ref<BuildContext>) override;
 };

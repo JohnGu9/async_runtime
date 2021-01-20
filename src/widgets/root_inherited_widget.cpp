@@ -1,6 +1,5 @@
 #include "async_runtime/widgets/root_inherited_widget.h"
 #include "async_runtime/fundamental/logger.h"
-#include <sstream>
 
 Object::Ref<RootInheritedWidget> RootInheritedWidget::of(Object::Ref<BuildContext> context)
 {
