@@ -45,7 +45,8 @@ public:
     virtual String toString();
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();
-    virtual ~Object();
+
+    virtual ~Object() {}
 };
 
 // http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/memory/shared_ptr/operator_cmp.html

@@ -8,12 +8,36 @@ Duration Duration::fromDetail(
     int milliseconds,
     int microseconds)
 {
-    return Duration(microsecondsPerDay * days +
-                    microsecondsPerHour * hours +
-                    microsecondsPerMinute * minutes +
-                    microsecondsPerSecond * seconds +
-                    microsecondsPerMillisecond * milliseconds +
-                    microseconds);
+    return Duration(millisecondsPerDay * days +
+                    millisecondsPerHour * hours +
+                    millisecondsPerMinute * minutes +
+                    millisecondsPerSecond * seconds +
+                    milliseconds);
+}
+
+Duration Duration::fromMilliseconds(int milliseconds)
+{
+    return Duration(milliseconds);
+}
+
+Duration Duration::fromSeconds(int seconds)
+{
+    return Duration(millisecondsPerSecond * seconds);
+}
+
+Duration Duration::fromMinutes(int minutes)
+{
+    return Duration(millisecondsPerMinute * minutes);
+}
+
+Duration Duration::fromHours(int hours)
+{
+    return Duration(millisecondsPerHour * hours);
+}
+
+Duration Duration::fromDays(int days)
+{
+    return Duration(millisecondsPerDay * days);
 }
 
 Duration::Duration(int64_t milliseconds) : _duration(microsecondsPerMillisecond * milliseconds) {}

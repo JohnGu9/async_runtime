@@ -15,10 +15,8 @@ String Object::toString()
     return ss.str();
 }
 
-void Object::toStringStream(std::ostream &ss)
+void Object::toStringStream(std::ostream &os)
 {
-    ss << "RuntimeType: " << this->runtimeType()
+    os << "RuntimeType: " << this->runtimeType()
        << "[" << (size_t)this << "]";
 }
-
-Object::~Object() {}

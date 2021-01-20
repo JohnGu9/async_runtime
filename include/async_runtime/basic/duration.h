@@ -38,6 +38,12 @@ public:
         int milliseconds = 0,
         int microseconds = 0);
 
+    static Duration fromMilliseconds(int milliseconds);
+    static Duration fromSeconds(int seconds);
+    static Duration fromMinutes(int minutes);
+    static Duration fromHours(int hours);
+    static Duration fromDays(int days);
+
     Duration(int64_t milliseconds);
 
     Duration operator+(Duration &&other) const
