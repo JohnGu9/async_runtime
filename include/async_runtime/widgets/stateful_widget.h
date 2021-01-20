@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../basic/function.h"
 #include "widget.h"
 
 class StatefulWidget : public Widget
@@ -62,7 +63,7 @@ private:
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
-class State : public virtual State<StatefulWidget>
+class State : public State<StatefulWidget>
 {
 public:
 protected:

@@ -1,10 +1,7 @@
 #pragma once
 
-#include "key.h"
-#include "../basic/function.h"
-#include "../basic/notification.h"
-#include "../contexts/build_context.h"
 #include "../elements/element.h"
+#include "key.h"
 
 class Widget : public virtual Object
 {
@@ -24,4 +21,3 @@ inline Object::Ref<Key> Widget::getKey()
 {
     return this->_key;
 }
-

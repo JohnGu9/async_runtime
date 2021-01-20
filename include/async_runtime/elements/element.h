@@ -12,7 +12,7 @@ class InheritedWidget;
 class NotificationListener;
 class MultiChildWidget;
 
-template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type * = nullptr>
+template <typename T = StatefulWidget, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type * = nullptr>
 class State;
 
 class Element : public BuildContext

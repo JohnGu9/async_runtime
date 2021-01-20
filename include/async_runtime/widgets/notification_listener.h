@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../basic/notification.h"
 #include "stateless_widget.h"
 
 class NotificationListener : public StatelessWidget
