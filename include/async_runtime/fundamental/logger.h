@@ -68,7 +68,7 @@ class StdoutLogger : public StatefulWidget
     friend _StdoutLoggerState;
     Object::Ref<Widget> _child;
 
-    Object::Ref<State> createState() override;
+    Object::Ref<State<StatefulWidget>> createState() override;
 
 public:
     static Logger::Handler of(Object::Ref<BuildContext> context);

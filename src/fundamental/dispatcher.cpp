@@ -1,4 +1,4 @@
-#include "framework/fundamental/dispatcher.h"
+#include "async_runtime/fundamental/dispatcher.h"
 
 Dispatcher::Dispatcher(Object::Ref<ThreadPool> scheduler, Object::Ref<ThreadPool> threadPool, size_t threads)
     : _handler(scheduler), _threadPool(threadPool)
@@ -12,7 +12,7 @@ Dispatcher::Dispatcher(Object::Ref<ThreadPool> scheduler, Object::Ref<ThreadPool
     }
 }
 
-Dispatcher::Dispatcher(StatefulWidget::State *state, Object::Ref<ThreadPool> threadPool, size_t threads)
+Dispatcher::Dispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool> threadPool, size_t threads)
 {
     assert(state && "State is required. ");
     Object::Ref<BuildContext> context = state->element.lock();

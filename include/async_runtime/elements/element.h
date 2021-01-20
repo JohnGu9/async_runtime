@@ -8,10 +8,12 @@ class Widget;
 class LeafWidget;
 class StatelessWidget;
 class StatefulWidget;
-class StatefulWidgetState;
 class InheritedWidget;
 class NotificationListener;
 class MultiChildWidget;
+
+template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type * = nullptr>
+class State;
 
 class Element : public BuildContext
 {
@@ -105,13 +107,14 @@ protected:
 
 class StatefulElement : public SingleChildElement
 {
-    friend StatefulWidgetState;
+    template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
+    friend class State;
 
 public:
     StatefulElement(Object::Ref<StatefulWidget> widget);
 
     Object::Ref<StatefulWidget> _statefulWidget;
-    Object::Ref<StatefulWidgetState> _state;
+    Object::Ref<State<StatefulWidget>> _state;
 
 protected:
     class LifeCycle

@@ -1,8 +1,8 @@
-#include "framework/fundamental/logger.h"
-#include "framework/elements/element.h"
-#include "framework/widgets/key.h"
-#include "framework/widgets/root_inherited_widget.h"
-#include "framework/basic/tree.h"
+#include "async_runtime/fundamental/logger.h"
+#include "async_runtime/elements/element.h"
+#include "async_runtime/widgets/key.h"
+#include "async_runtime/widgets/root_inherited_widget.h"
+#include "async_runtime/basic/tree.h"
 
 static void onCommand(const std::string &in, Object::Ref<RootElement> root)
 {
@@ -136,7 +136,7 @@ void RootElement::visitAncestor(Fn<bool(Object::Ref<Element>)>) {}
 
 Logger::Handler RootElement::getStdoutHandler()
 {
-    if (Object::Ref<StatefulWidgetState> currentState = this->_stdoutKey->getCurrentState())
+    if (Object::Ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState())
         if (Object::Ref<_StdoutLoggerState> state = currentState->cast<_StdoutLoggerState>())
             return state->_handler;
     return nullptr;

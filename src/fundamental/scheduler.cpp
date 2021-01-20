@@ -1,4 +1,4 @@
-#include "framework/fundamental/scheduler.h"
+#include "async_runtime/fundamental/scheduler.h"
 
 class _SchedulerState : public State<Scheduler>
 {
@@ -25,7 +25,7 @@ class _SchedulerState : public State<Scheduler>
 
 Scheduler::Scheduler(Object::Ref<Widget> child_, Object::Ref<Key> key) : child(child_), StatefulWidget(key) { assert(this->child); }
 
-Object::Ref<StatefulWidget::State> Scheduler::createState()
+Object::Ref<State<StatefulWidget>> Scheduler::createState()
 {
     return Object::create<_SchedulerState>();
 }

@@ -1,16 +1,16 @@
 #include <ctime>
-#include "framework/fundamental/timer.h"
+#include "async_runtime/fundamental/timer.h"
 
-Timer::Timer(StatefulWidget::State *state) : Dispatcher(state) {}
+Timer::Timer(State<StatefulWidget> *state) : Dispatcher(state) {}
 
-Object::Ref<Timer> Timer::delay(StatefulWidget::State *state, Fn<void()> fn, Duration duration)
+Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Fn<void()> fn, Duration duration)
 {
     Object::Ref<Timer> timer = Object::create<Timer>(state);
     timer->setTimeout(fn, duration);
     return timer;
 }
 
-Object::Ref<Timer> Timer::periodic(StatefulWidget::State *state, Fn<void()> fn, Duration interval)
+Object::Ref<Timer> Timer::periodic(State<StatefulWidget> *state, Fn<void()> fn, Duration interval)
 {
     Object::Ref<Timer> timer = Object::create<Timer>(state);
     timer->setInterval(fn, interval);

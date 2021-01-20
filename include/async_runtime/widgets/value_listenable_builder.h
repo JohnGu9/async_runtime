@@ -15,7 +15,7 @@ public:
     Fn<Object::Ref<Widget>(Object::Ref<BuildContext>, T, Object::Ref<Widget>)> builder;
     Object::Ref<Widget> child;
     Object::Ref<ValueListenable<T>> valueListenable;
-    Object::Ref<State> createState() override;
+    Object::Ref<State<StatefulWidget>> createState() override;
 };
 
 template <typename T>
@@ -67,7 +67,7 @@ class _ValueListenableBuilderState : public State<ValueListenableBuilder<T>>
 };
 
 template <typename T>
-inline Object::Ref<StatefulWidget::State> ValueListenableBuilder<T>::createState()
+inline Object::Ref<State<StatefulWidget>> ValueListenableBuilder<T>::createState()
 {
     return Object::create<_ValueListenableBuilderState<T>>();
 }

@@ -1,5 +1,5 @@
-#include "framework/fundamental/logger.h"
-#include "framework/fundamental/scheduler.h"
+#include "async_runtime/fundamental/logger.h"
+#include "async_runtime/fundamental/scheduler.h"
 
 class _StdoutLoggerHandler : public LoggerHandler
 {
@@ -60,7 +60,7 @@ class __LoggerState;
 class _Logger : public StatefulWidget
 {
     friend __LoggerState;
-    Object::Ref<State> createState() override;
+    Object::Ref<State<StatefulWidget>> createState() override;
     Object::Ref<Widget> _child;
     String _path;
 
@@ -138,7 +138,7 @@ bool Logger::updateShouldNotify(Object::Ref<InheritedWidget> oldWidget)
 _Logger::_Logger(Object::Ref<Widget> child, String path, Object::Ref<Key> key)
     : _child(child), _path(path), StatefulWidget(key) {}
 
-Object::Ref<StatefulWidget::State> _Logger::createState()
+Object::Ref<State<StatefulWidget>> _Logger::createState()
 {
     return Object::create<__LoggerState>();
 }
@@ -208,7 +208,7 @@ Logger::Handler StdoutLogger::of(Object::Ref<BuildContext> context)
 StdoutLogger::StdoutLogger(Object::Ref<Widget> child, Object::Ref<Key> key)
     : _child(child), StatefulWidget(key) { assert(_child); }
 
-Object::Ref<StatefulWidget::State> StdoutLogger::createState()
+Object::Ref<State<StatefulWidget>> StdoutLogger::createState()
 {
     return Object::create<_StdoutLoggerState>();
 }

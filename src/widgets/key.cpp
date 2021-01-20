@@ -1,6 +1,6 @@
-#include "framework/widgets/key.h"
-#include "framework/elements/element.h"
-#include "framework/widgets/widget.h"
+#include "async_runtime/widgets/key.h"
+#include "async_runtime/elements/element.h"
+#include "async_runtime/widgets/widget.h"
 
 void Key::setElement(Object::Ref<Element> element)
 {
@@ -19,7 +19,7 @@ Object::Ref<const Widget> Key::getCurrentWidget() { return this->_element.lock()
 
 Object::Ref<BuildContext> GlobalKey::getCurrentContext() { return this->getElement(); }
 
-Object::Ref<StatefulWidgetState> GlobalKey::getCurrentState()
+Object::Ref<State<StatefulWidget>> GlobalKey::getCurrentState()
 {
     if (Object::Ref<Element> element = this->getElement())
         if (Object::Ref<StatefulElement> statefulElement = element->cast<StatefulElement>())

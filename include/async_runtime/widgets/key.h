@@ -1,12 +1,11 @@
 #pragma once
 
 #include <list>
-#include "../object.h"
+#include "../elements/element.h"
 
 class Element;
 class Widget;
 class BuildContext;
-class StatefulWidgetState;
 
 class Key : public Object
 {
@@ -48,7 +47,7 @@ public:
     }
 
     virtual Object::Ref<BuildContext> getCurrentContext();
-    virtual Object::Ref<StatefulWidgetState> getCurrentState();
+    virtual Object::Ref<State<StatefulWidget>> getCurrentState();
 };
 
 class GlobalObjectKey : public GlobalKey

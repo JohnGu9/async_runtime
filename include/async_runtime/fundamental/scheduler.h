@@ -1,8 +1,9 @@
 #pragma once
 
 #include "thread_pool.h"
-#include "../widgets/widget.h"
 #include "../elements/element.h"
+#include "../widgets/stateful_widget.h"
+#include "../widgets/inherited_widget.h"
 
 class Scheduler : public StatefulWidget
 {
@@ -12,7 +13,7 @@ public:
 
     Scheduler(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
     Object::Ref<Widget> child;
-    Object::Ref<State> createState() override;
+    Object::Ref<State<StatefulWidget>> createState() override;
 };
 
 class SchedulerElement;

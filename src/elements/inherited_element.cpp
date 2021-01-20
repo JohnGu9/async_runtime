@@ -1,5 +1,5 @@
-#include "framework/elements/element.h"
-#include "framework/widgets/widget.h"
+#include "async_runtime/elements/element.h"
+#include "async_runtime/widgets/inherited_widget.h"
 
 /// Inherited Element
 InheritedElement::InheritedElement(Object::Ref<InheritedWidget> widget) : _inheritWidget(widget), SingleChildElement(widget) {}
