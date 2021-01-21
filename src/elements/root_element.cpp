@@ -53,14 +53,14 @@ void RootElement::detach()
     Element::detach();
 }
 
-void RootElement::visitDescendant(Fn<bool(Object::Ref<Element>)> fn)
+void RootElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
 {
     assert(this->_childElement != nullptr);
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);
 }
 
-void RootElement::visitAncestor(Fn<bool(Object::Ref<Element>)>) {}
+void RootElement::visitAncestor(Function<bool(Object::Ref<Element>)>) {}
 
 Logger::Handler RootElement::getStdoutHandler()
 {
@@ -169,7 +169,7 @@ void RootElement::onCommand(const std::string &in)
             return false;
         });
         Object::Ref<Tree> tree = Object::create<Tree>();
-        Fn<void(Element *, Object::Ref<Tree>)> buildTree;
+        Function<void(Element *, Object::Ref<Tree>)> buildTree;
         buildTree =
             [&](Element *currentElement, Object::Ref<Tree> currentTree) {
                 std::stringstream ss;

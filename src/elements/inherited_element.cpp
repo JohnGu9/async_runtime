@@ -63,7 +63,7 @@ void InheritedElement::notify(Object::Ref<Widget> newWidget)
         this->reattachElement(widget->createElement());
 }
 
-void InheritedElement::visitDescendant(Fn<bool(Object::Ref<Element>)> fn)
+void InheritedElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
 {
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);

@@ -14,8 +14,8 @@ public:
     template <typename R>
     Observable(Observable<R> other) : Object::Ref<T>(other) {}
 
-    Fn<void()> willChange;
-    Fn<void()> didChanged;
+    Function<void()> willChange;
+    Function<void()> didChanged;
 
     T *operator->() const { return Object::Ref<T>::operator->(); }
 

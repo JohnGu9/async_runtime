@@ -15,5 +15,6 @@
 
 #include "async_runtime/fundamental/timer.h"
 #include "async_runtime/fundamental/logger.h"
+#include "async_runtime/fundamental/file.h"
 
 void runApp(Object::Ref<Widget> widget);

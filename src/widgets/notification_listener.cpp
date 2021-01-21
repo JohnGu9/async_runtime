@@ -2,7 +2,7 @@
 
 NotificationListener::NotificationListener(
     Object::Ref<Widget> child,
-    Fn<bool(Object::Ref<Notification> notification)> onNotification,
+    Function<bool(Object::Ref<Notification> notification)> onNotification,
     Object::Ref<Key> key)
     : _child(child), _onNotification(onNotification), StatelessWidget(key) {}
 

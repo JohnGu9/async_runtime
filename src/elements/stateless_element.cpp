@@ -55,7 +55,7 @@ void StatelessElement::notify(Object::Ref<Widget> newWidget)
         this->reattachElement(widget->createElement());
 }
 
-void StatelessElement::visitDescendant(Fn<bool(Object::Ref<Element>)> fn)
+void StatelessElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
 {
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);

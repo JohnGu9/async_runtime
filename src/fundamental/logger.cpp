@@ -1,5 +1,6 @@
 #include "async_runtime/fundamental/logger.h"
 #include "async_runtime/fundamental/scheduler.h"
+#include "async_runtime/fundamental/file.h"
 
 class _StdoutLoggerHandler : public LoggerHandler
 {
@@ -21,21 +22,27 @@ public:
 
 class _FileLoggerHandler : public LoggerHandler
 {
-    String _path;
-    Logger::Handler _proxyTarget;
+    Object::Ref<File> _file;
 
 public:
-    _FileLoggerHandler(Logger::Handler proxyTarget, String path)
-        : _proxyTarget(proxyTarget), _path(path), LoggerHandler(nullptr) { assert(!this->_path.empty()); }
+    _FileLoggerHandler(State<StatefulWidget> *state, String path)
+        : _file(File::fromPath(state, path)), LoggerHandler(nullptr) {}
 
     std::future<bool> write(String str) override
     {
-        return this->_proxyTarget->write(" [File out not finish yet] " + str);
+
+        return std::async([] { return true; });
     }
 
     std::future<bool> writeLine(String str) override
     {
-        return this->_proxyTarget->writeLine(" [File out not finish yet] " + str);
+        return std::async([] { return true; });
+    }
+
+    void dispose() override
+    {
+        this->_file->dispose();
+        LoggerHandler::dispose();
     }
 };
 
@@ -82,7 +89,7 @@ class __LoggerState : public State<_Logger>
             if (this->getWidget()->_path.empty())
                 this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->getContext()));
             else
-                this->_handler = Object::create<_FileLoggerHandler>(StdoutLogger::of(this->getContext()), this->getWidget()->_path);
+                this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->_path);
         }
         else
         {
@@ -99,7 +106,7 @@ class __LoggerState : public State<_Logger>
         if (this->getWidget()->_path.empty())
             this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->getContext()));
         else
-            this->_handler = Object::create<_FileLoggerHandler>(StdoutLogger::of(this->getContext()), this->getWidget()->_path);
+            this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->_path);
 
         super::didDependenceChanged();
     }
@@ -189,7 +196,7 @@ void _StdoutLoggerState::dispose()
 Object::Ref<Widget> _StdoutLoggerState::build(Object::Ref<BuildContext>)
 {
     return Object::create<_StdoutLoggerInheritedWidget>(
-        this->getWidget()->_child,
+        this->getWidget()->child,
         this->_handler);
 }
 
@@ -199,7 +206,7 @@ Logger::Handler StdoutLogger::of(Object::Ref<BuildContext> context)
 }
 
 StdoutLogger::StdoutLogger(Object::Ref<Widget> child, Object::Ref<Key> key)
-    : _child(child), StatefulWidget(key) { assert(_child); }
+    : child(child), StatefulWidget(key) { assert(child); }
 
 Object::Ref<State<StatefulWidget>> StdoutLogger::createState()
 {

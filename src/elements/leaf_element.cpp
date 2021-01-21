@@ -10,4 +10,4 @@ void LeafElement::notify(Object::Ref<Widget> newWidget) {}
 
 void LeafElement::update(Object::Ref<Widget> newWidget) {}
 
-void LeafElement::visitDescendant(Fn<bool(Object::Ref<Element>)>) {}
+void LeafElement::visitDescendant(Function<bool(Object::Ref<Element>)>) {}

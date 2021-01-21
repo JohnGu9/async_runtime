@@ -7,9 +7,9 @@ class StatefulBuilder : public StatefulWidget
 {
 public:
     StatefulBuilder(
-        Fn<Object::Ref<Widget>(Object::Ref<BuildContext> /*context*/, Fn<void(Fn<void()>)> /*setState*/)> builder,
+        Function<Object::Ref<Widget>(Object::Ref<BuildContext> context, Function<void(Function<void()>)> setState)> builder,
         Object::Ref<Key> key = nullptr);
 
-    Fn<Object::Ref<Widget>(Object::Ref<BuildContext>, Fn<void(Fn<void()>)>)> builder;
+    Function<Object::Ref<Widget>(Object::Ref<BuildContext>, Function<void(Function<void()>)>)> builder;
     Object::Ref<State<StatefulWidget>> createState() override;
 };

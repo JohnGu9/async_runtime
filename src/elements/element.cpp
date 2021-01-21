@@ -35,7 +35,7 @@ void Element::notify(Object::Ref<Widget> newWidget)
     this->_inheritances = parent->_inheritances; // update inheritances
 }
 
-void Element::visitAncestor(Fn<bool(Object::Ref<Element>)> fn)
+void Element::visitAncestor(Function<bool(Object::Ref<Element>)> fn)
 {
     Object::Ref<Element> parent = this->parent.lock();
     assert(parent != nullptr && "Element can't find out its parent. ");

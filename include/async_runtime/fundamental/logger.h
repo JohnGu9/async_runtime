@@ -30,7 +30,6 @@ protected:
 
 class LoggerBlocker : public StatefulWidget
 {
-
 public:
     LoggerBlocker(Object::Ref<Widget> child, bool blocking = true, Object::Ref<Key> key = nullptr)
         : child(child), blocking(blocking), StatefulWidget(key) {}
@@ -41,17 +40,13 @@ public:
     Object::Ref<State<StatefulWidget>> createState() override;
 };
 
-class _StdoutLoggerState;
 class StdoutLogger : public StatefulWidget
 {
-    friend _StdoutLoggerState;
-    Object::Ref<Widget> _child;
-
-    Object::Ref<State<StatefulWidget>> createState() override;
-
 public:
     static Logger::Handler of(Object::Ref<BuildContext> context);
     StdoutLogger(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
+    Object::Ref<State<StatefulWidget>> createState() override;
+    Object::Ref<Widget> child;
 };
 
 class _StdoutLoggerState : public State<StdoutLogger>

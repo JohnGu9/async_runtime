@@ -62,12 +62,12 @@ public:
         this->getHandler()->post([this, newWidget] { this->toUpdate(newWidget); }).get();
     }
 
-    void visitDescendant(Fn<bool(Object::Ref<Element>)> fn) override
+    void visitDescendant(Function<bool(Object::Ref<Element>)> fn) override
     {
         this->getHandler()->post([this, fn] { this->toVisitDescendant(fn); }).get();
     }
 
-    void visitAncestor(Fn<bool(Object::Ref<Element>)> fn) override
+    void visitAncestor(Function<bool(Object::Ref<Element>)> fn) override
     {
         Scheduler::Handler handler = this->getHandler();
         Scheduler::Handler parentHandler = this->getParentHandler();
@@ -85,6 +85,6 @@ protected:
     virtual void toBuild() { InheritedElement::build(); }
     virtual void toNotify(Object::Ref<Widget> newWidget) { InheritedElement::notify(newWidget); }
     virtual void toUpdate(Object::Ref<Widget> newWidget) { InheritedElement::update(newWidget); }
-    virtual void toVisitDescendant(Fn<bool(Object::Ref<Element>)> fn) { InheritedElement::visitDescendant(fn); }
-    virtual void toVisitAncestor(Fn<bool(Object::Ref<Element>)> fn) { InheritedElement::visitAncestor(fn); }
+    virtual void toVisitDescendant(Function<bool(Object::Ref<Element>)> fn) { InheritedElement::visitDescendant(fn); }
+    virtual void toVisitAncestor(Function<bool(Object::Ref<Element>)> fn) { InheritedElement::visitAncestor(fn); }
 };

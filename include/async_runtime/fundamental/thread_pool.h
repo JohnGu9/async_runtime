@@ -79,3 +79,10 @@ auto ThreadPool::microTask(F &&f, Args &&... args) -> std::future<typename std::
     condition.notify_one();
     return res;
 }
+
+class StaticThreadPool : public ThreadPool
+{
+public:
+    StaticThreadPool(size_t threads) : ThreadPool(threads) {}
+    ~StaticThreadPool() { this->dispose(); }
+};

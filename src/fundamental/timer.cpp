@@ -3,14 +3,14 @@
 
 Timer::Timer(State<StatefulWidget> *state) : Dispatcher(state) {}
 
-Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Fn<void()> fn, Duration duration)
+Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Function<void()> fn, Duration duration)
 {
     Object::Ref<Timer> timer = Object::create<Timer>(state);
     timer->setTimeout(fn, duration);
     return timer;
 }
 
-Object::Ref<Timer> Timer::periodic(State<StatefulWidget> *state, Fn<void()> fn, Duration interval)
+Object::Ref<Timer> Timer::periodic(State<StatefulWidget> *state, Function<void()> fn, Duration interval)
 {
     Object::Ref<Timer> timer = Object::create<Timer>(state);
     timer->setInterval(fn, interval);
@@ -24,11 +24,11 @@ Timer::~Timer()
         this->dispose();
 }
 
-void Timer::setTimeout(Fn<void()> function, Duration delay)
+void Timer::setTimeout(Function<void()> function, Duration delay)
 {
     Object::Ref<std::atomic_bool> clearFlag = Object::create<std::atomic_bool>(false);
     this->_clear = clearFlag;
-    Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Fn
+    Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
     this->_threadPool->post([=]() {
         if (*clearFlag)
             return;
@@ -41,11 +41,11 @@ void Timer::setTimeout(Fn<void()> function, Duration delay)
     });
 }
 
-void Timer::setInterval(Fn<void()> function, Duration interval)
+void Timer::setInterval(Function<void()> function, Duration interval)
 {
     Object::Ref<std::atomic_bool> clearFlag = Object::create<std::atomic_bool>(false);
     this->_clear = clearFlag;
-    Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Fn
+    Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
     this->_threadPool->post([=]() {
         using std::chrono::system_clock;
         system_clock::time_point nextTime = system_clock::now();

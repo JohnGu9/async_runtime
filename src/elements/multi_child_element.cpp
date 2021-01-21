@@ -131,7 +131,7 @@ void MultiChildElement::detach()
     Element::detach();
 }
 
-void MultiChildElement::visitDescendant(Fn<bool(Object::Ref<Element>)> fn)
+void MultiChildElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
 {
     for (size_t i = 0; i < this->_childrenElements.size(); i++)
     {

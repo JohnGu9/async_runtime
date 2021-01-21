@@ -87,7 +87,7 @@ void StatefulElement::notify(Object::Ref<Widget> newWidget)
     this->_lifeCycle = StatefulElement::LifeCycle::mounted;
 }
 
-void StatefulElement::visitDescendant(Fn<bool(Object::Ref<Element>)> fn)
+void StatefulElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
 {
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);

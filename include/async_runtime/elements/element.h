@@ -28,8 +28,8 @@ public:
     virtual void update(Object::Ref<Widget> newWidget);
     virtual void notify(Object::Ref<Widget> newWidget);
 
-    virtual void visitDescendant(Fn<bool(Object::Ref<Element>)>) = 0;
-    virtual void visitAncestor(Fn<bool(Object::Ref<Element>)>);
+    virtual void visitDescendant(Function<bool(Object::Ref<Element>)>) = 0;
+    virtual void visitAncestor(Function<bool(Object::Ref<Element>)>);
 };
 
 class LeafElement : public Element
@@ -40,7 +40,7 @@ public:
     void update(Object::Ref<Widget> newWidget) override;
     void notify(Object::Ref<Widget> newWidget) override;
 
-    void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
 };
 
 class SingleChildElement : public Element
@@ -71,8 +71,8 @@ public:
     void update(Object::Ref<Widget> newWidget) override;
     void notify(Object::Ref<Widget> newWidget) override;
 
-    void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
-    void visitAncestor(Fn<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
+    void visitAncestor(Function<bool(Object::Ref<Element>)>) override;
 
     virtual Object::Ref<LoggerHandler> getStdoutHandler();
     virtual Object::Ref<ThreadPool> getMainHandler();
@@ -103,7 +103,7 @@ protected:
     void notify(Object::Ref<Widget> newWidget) override;
     void update(Object::Ref<Widget> newWidget) override;
 
-    void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
 };
 
 class StatefulElement : public SingleChildElement
@@ -137,7 +137,7 @@ protected:
     void notify(Object::Ref<Widget> newWidget) override;
     void update(Object::Ref<Widget> newWidget) override;
 
-    void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
 };
 
 class InheritedElement : public SingleChildElement
@@ -152,7 +152,7 @@ public:
     void update(Object::Ref<Widget> newWidget) override;
     void notify(Object::Ref<Widget> newWidget) override;
 
-    void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
 };
 
 class MultiChildElement : public Element
@@ -165,7 +165,7 @@ public:
     void update(Object::Ref<Widget> newWidget) override;
     void notify(Object::Ref<Widget> newWidget) override;
 
-    void visitDescendant(Fn<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
 
 protected:
     Object::Ref<MultiChildWidget> _multiChildWidget;

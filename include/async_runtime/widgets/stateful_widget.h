@@ -31,7 +31,7 @@ public:
     // @mustCallSuper
     virtual void dispose() {}
     // @immutable
-    void setState(Fn<void()> fn)
+    void setState(Function<void()> fn)
     {
         fn();
         this->getElement()->build();
