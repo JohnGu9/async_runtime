@@ -1,4 +1,3 @@
-#include <sstream>
 #include <typeinfo>
 
 #include "async_runtime/object.h"

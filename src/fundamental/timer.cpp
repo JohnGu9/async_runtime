@@ -33,7 +33,7 @@ void Timer::setTimeout(Fn<void()> function, Duration delay)
         if (*clearFlag)
             return;
         std::this_thread::sleep_for(delay.toChronoMilliseconds());
-        self->_handler->microTask([=] {
+        self->_callbackHandler->microTask([=] {
             if (*clearFlag)
                 return;
             function();
@@ -55,7 +55,7 @@ void Timer::setInterval(Fn<void()> function, Duration interval)
                 return;
             nextTime += interval.toChronoMilliseconds();
             std::this_thread::sleep_until(nextTime);
-            self->_handler->microTask([=] {
+            self->_callbackHandler->microTask([=] {
                 if (*clearFlag)
                     return;
                 function();

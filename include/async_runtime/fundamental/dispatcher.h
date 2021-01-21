@@ -12,7 +12,7 @@ public:
     virtual void dispose();
 
 protected:
-    Scheduler::Handler _handler;         // main thread for callback
+    Scheduler::Handler _callbackHandler;         // main thread for callback
     Object::Ref<ThreadPool> _threadPool; // work thread
 
     bool _ownWorkThread = false;

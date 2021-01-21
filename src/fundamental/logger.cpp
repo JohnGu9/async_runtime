@@ -7,7 +7,7 @@ public:
     _StdoutLoggerHandler(State<StatefulWidget> *state) : LoggerHandler(state) { assert(state); }
     std::future<bool> write(String str) override
     {
-        return this->_handler->post([str] {
+        return this->_callbackHandler->post([str] {
             std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
             return true;
         });
@@ -15,7 +15,7 @@ public:
 
     std::future<bool> writeLine(String str) override
     {
-        return this->_handler->post([str] { info_print(str); return true; });
+        return this->_callbackHandler->post([str] { info_print(str); return true; });
     }
 };
 
