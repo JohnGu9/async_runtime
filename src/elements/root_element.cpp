@@ -3,6 +3,7 @@
 #include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/root_inherited_widget.h"
 #include "async_runtime/basic/tree.h"
+#include "async_runtime/basic/state.h"
 
 static inline void shutdownInfo()
 {
@@ -80,12 +81,12 @@ Scheduler::Handler RootElement::getMainHandler()
 void RootElement::scheduleRootWidget()
 {
     this->attach();
-    ThreadPool threadPool(1);
+    Thread thread;
     {
         std::unique_lock<std::mutex> lock(this->_mutex);
         {
             auto self = Object::cast<>(this);
-            threadPool.post([self] {
+            thread = Thread([self] {
                 self->_console();
                 shutdownInfo();
                 self->_condition.notify_all();
@@ -93,7 +94,7 @@ void RootElement::scheduleRootWidget()
         }
         this->_condition.wait(lock); // wait for exit
     }
-    threadPool.forceClose();
+    thread.detach();
     this->detach();
 }
 

@@ -2,15 +2,17 @@
 
 #include "function.h"
 
-class Listenable : public virtual Object
+// abstract class
+class Listenable : public Object
 {
 public:
-    Listenable();
     virtual void addListener(Function<void(Object::Ref<Listenable>)> fn);
     virtual void removeListener(Function<void(Object::Ref<Listenable>)> fn);
     virtual void dispose();
 
 protected:
+    Listenable();
+
     Object::Map<size_t, Function<void(Object::Ref<Listenable>)>> _listeners;
     bool _isDisposed;
 };

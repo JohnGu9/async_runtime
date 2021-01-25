@@ -2,41 +2,34 @@
 
 #include <iostream>
 #include <fstream>
+#include "../basic/state.h"
+#include "../basic/function.h"
+#include "async.h"
 
-#include "dispatcher.h"
-
-class File : public Dispatcher
+class File : public Object
 {
 public:
     static Object::Ref<File> fromPath(State<StatefulWidget> *state, String path);
-    File(State<StatefulWidget> *state, String path) : _path(path), _isDisposed(false), Dispatcher(state, nullptr, 0)
-    {
-        static Object::Ref<ThreadPool> sharedThreadPool = Object::create<StaticThreadPool>(1);
-        this->_threadPool = sharedThreadPool;
-    }
+    File(State<StatefulWidget> *state, String path);
+    virtual ~File();
 
     // write
-    virtual std::future<void> append(const String &str);
-    virtual std::future<void> append(String &&str);
-    virtual std::future<void> append(const String &str, Function<void()> onFinished);
-    virtual std::future<void> append(String &&str, Function<void()> onFinished);
-    virtual std::future<void> overwrite(const String &str);
-    virtual std::future<void> overwrite(String &&str);
-    virtual std::future<void> overwrite(const String &str, Function<void()> onFinished);
-    virtual std::future<void> overwrite(String &&str, Function<void()> onFinished);
-    virtual std::future<void> clear();
-    virtual std::future<void> clear(Function<void()> onFinished);
+    virtual Object::Ref<Future<void>> append(const String &str);
+    virtual Object::Ref<Future<void>> append(String &&str);
+    virtual Object::Ref<Future<void>> overwrite(const String &str);
+    virtual Object::Ref<Future<void>> overwrite(String &&str);
+    virtual Object::Ref<Future<void>> clear();
 
     // read
-    virtual std::future<void> read(Function<void(String &)> onRead);
-    virtual std::future<void> readWordAsStream(Function<void(String &)> onRead);
-    virtual std::future<void> readLineAsStream(Function<void(String &)> onRead);
-    virtual std::future<void> readWordAsStream(Function<void(String &)> onRead, Function<void()> onFinished);
-    virtual std::future<void> readLineAsStream(Function<void(String &)> onRead, Function<void()> onFinished);
+    virtual Object::Ref<Future<String>> read();
+    virtual Object::Ref<Stream<String>> readWordAsStream();
+    virtual Object::Ref<Stream<String>> readLineAsStream();
 
-    void dispose() override;
+    virtual void dispose();
 
 protected:
     String _path;
+    Object::Ref<State<StatefulWidget>> _state;
+    Object::Ref<ThreadPool> _threadPool;
     std::atomic_bool _isDisposed;
 };

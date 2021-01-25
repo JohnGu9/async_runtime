@@ -1,6 +1,7 @@
 #pragma once
 
 #include "widget.h"
+#include "../basic/state.h"
 #include "../basic/value_notifier.h"
 
 template <typename T = Object>

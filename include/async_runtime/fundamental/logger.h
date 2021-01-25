@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include "../basic/state.h"
 #include "scheduler.h"
 #include "dispatcher.h"
 

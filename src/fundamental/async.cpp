@@ -1,4 +1,4 @@
-#include "async_runtime/fundamental/thread_pool.h"
+#include "async_runtime/fundamental/async.h"
 
 ThreadPool::ThreadPool(size_t threads) : stop(false)
 {
@@ -80,4 +80,10 @@ void ThreadPool::forceClose()
 
     for (std::thread &worker : workers)
         worker.detach();
+}
+
+Object::Ref<ThreadPool> StaticThreadPool::shared()
+{
+    static Object::Ref<ThreadPool> singleton = Object::create<StaticThreadPool>(1);
+    return singleton;
 }

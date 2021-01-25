@@ -7,9 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "./basic/io.h"
-
-using String = std::string;
+#include "basic/io.h"
+#include "basic/string.h"
 
 class Object : public std::enable_shared_from_this<Object>
 {
@@ -67,14 +66,14 @@ public:
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, class... _Args>
 inline Object::Ref<T> Object::create(_Args &&... __args)
 {
-    return std::make_shared<T>(__args...);
+    return std::make_shared<T>(std::forward<_Args>(__args)...);
 }
 
 template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
 inline Object::Ref<T> Object::create(_Args &&... __args)
 {
     assert(debug_print("Object::create call on a not Object derived class [" << typeid(T).name() << "]"));
-    return std::make_shared<T>(__args...);
+    return std::make_shared<T>(std::forward<_Args>(__args)...);
 }
 
 template <typename T0, typename T1>

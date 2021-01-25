@@ -4,13 +4,25 @@
 #include <assert.h>
 #include "value_listenable.h"
 
+template <typename T = nullptr_t>
+class ValueNotifier;
+
+template <>
+class ValueNotifier<nullptr_t> : public ChangeNotifier
+{
+protected:
+    ValueNotifier(){};
+};
+
 template <typename T>
-class ValueNotifier : public virtual ValueListenable<T>, public virtual ChangeNotifier
+class ValueNotifier : public ValueListenable<T>, public ValueNotifier<nullptr_t>
 {
 public:
-    static Object::Ref<ValueNotifier<T>> fromValue(T value) { return Object::create<ValueNotifier<T>>(value); }
+    static Object::Ref<ValueNotifier<T>> fromValue(const T &value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
+    static Object::Ref<ValueNotifier<T>> fromValue(T &&value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
     ValueNotifier() = delete;
-    ValueNotifier(T value) : _value(value) {}
+    ValueNotifier(const T &value) : _value(value) {}
+    ValueNotifier(T &&value) : _value(value) {}
     virtual void setValue(const T &value);
     virtual void setValue(T &&value);
 

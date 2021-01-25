@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../basic/function.h"
 #include "widget.h"
+#include "../basic/state.h"
+#include "../basic/function.h"
 
 class StatefulWidget : public Widget
 {
@@ -17,7 +18,10 @@ template <>
 class State<StatefulWidget> : public Object
 {
     friend class StatefulElement;
-    friend class Dispatcher;
+    friend class StateHelper;
+
+    template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
+    friend class State;
 
 public:
     State() : mounted(false) {}
@@ -50,14 +54,15 @@ protected:
         return this->mounted;
     }
 
-    Object::WeakRef<StatefulElement> element;
+    Object::WeakRef<StatefulElement> _element; //
 
 private:
     bool mounted;
+
     Object::Ref<StatefulElement> getElement() const
     {
         assert(this->mounted && "User can't access context before initState. You can try [didDependenceChanged] method to access context before first build. ");
-        return this->element.lock();
+        return this->_element.lock();
     }
 };
 
@@ -68,7 +73,7 @@ public:
 protected:
     virtual Object::Ref<const T> getWidget()
     {
-        Object::Ref<StatefulElement> element = this->element.lock();
+        Object::Ref<StatefulElement> element = this->_element.lock();
         assert(element);
         return element->_statefulWidget->cast<T>();
     }

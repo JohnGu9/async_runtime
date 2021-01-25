@@ -1,9 +1,9 @@
 #pragma once
 
-#include "thread_pool.h"
 #include "../elements/element.h"
 #include "../widgets/stateful_widget.h"
 #include "../widgets/inherited_widget.h"
+#include "async.h"
 
 class Scheduler : public StatefulWidget
 {

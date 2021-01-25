@@ -1,4 +1,7 @@
+#include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/dispatcher.h"
+#include "async_runtime/fundamental/scheduler.h"
+#include "async_runtime/widgets/stateful_widget.h"
 
 Dispatcher::Dispatcher(Object::Ref<ThreadPool> scheduler, Object::Ref<ThreadPool> threadPool, size_t threads)
     : _callbackHandler(scheduler), _threadPool(threadPool)
@@ -14,7 +17,7 @@ Dispatcher::Dispatcher(Object::Ref<ThreadPool> scheduler, Object::Ref<ThreadPool
 Dispatcher::Dispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool> threadPool, size_t threads)
 {
     assert(state && "State is required. ");
-    Object::Ref<BuildContext> context = state->element.lock();
+    Object::Ref<BuildContext> context = getContextfromState(state);
     this->_callbackHandler = Scheduler::of(context);
     assert(this->_callbackHandler && "Can't find out scheduler in context. ");
     if (this->_threadPool == nullptr && threads > 0)

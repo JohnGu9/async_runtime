@@ -1,19 +1,17 @@
 #pragma once
 
 #include "../basic/function.h"
+#include "../basic/state.h"
 #include "../contexts/build_context.h"
-#include "../fundamental/thread_pool.h"
 
 class Widget;
 class LeafWidget;
 class StatelessWidget;
-class StatefulWidget;
 class InheritedWidget;
 class NotificationListener;
 class MultiChildWidget;
 
-template <typename T = StatefulWidget, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type * = nullptr>
-class State;
+class ThreadPool;
 
 class Element : public BuildContext
 {
