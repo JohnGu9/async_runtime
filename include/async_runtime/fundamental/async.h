@@ -1,7 +1,6 @@
 #pragma once
 
-#include <list>
-#include <memory>
+#include <queue>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -44,9 +43,9 @@ protected:
     // need to keep track of threads so we can join them
     Object::List<Thread> workers;
     // the task queue
-    std::list<Function<void()>> tasks;
+    std::queue<std::function<void()>> tasks;
     // the micro task queue
-    std::list<Function<void()>> microTasks;
+    std::queue<std::function<void()>> microTasks;
 
     // synchronization
     std::mutex queue_mutex;
@@ -67,7 +66,7 @@ auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::resul
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         assert(stop == false && "Don't allow posting after stopping the pool");
-        tasks.emplace_back([task] { (*task)(); });
+        tasks.emplace([task] { (*task)(); });
     }
     condition.notify_one();
     return res;
@@ -86,7 +85,7 @@ auto ThreadPool::microTask(F &&f, Args &&... args) -> std::future<typename std::
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         assert(stop == false && "Don't allow posting after stopping the pool");
-        microTasks.emplace_back([task] { (*task)(); });
+        microTasks.emplace([task] { (*task)(); });
     }
     condition.notify_one();
     return res;

@@ -3,6 +3,7 @@
 #include "../basic/function.h"
 #include "../widgets/state.h"
 #include "../contexts/build_context.h"
+#include "../fundamental/async.h"
 
 class Widget;
 class LeafWidget;
@@ -10,8 +11,6 @@ class StatelessWidget;
 class InheritedWidget;
 class NotificationListener;
 class MultiChildWidget;
-
-class ThreadPool;
 
 class Element : public BuildContext
 {
