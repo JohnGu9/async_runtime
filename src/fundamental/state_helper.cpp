@@ -4,12 +4,12 @@
 
 Object::Ref<BuildContext> StateHelper::getContextfromState(State<StatefulWidget> *state)
 {
-    assert(state->mounted && "Can not access context from an unmounted state");
-    return state->_element.lock();
+    assert(state->_mounted && "Can not access context from an unmounted state");
+    return state->_element;
 }
 
 Object::Ref<ThreadPool> StateHelper::getHandlerfromState(State<StatefulWidget> *state)
 {
-    assert(state->mounted && "Can not access context from an unmounted state");
+    assert(state->_mounted && "Can not access context from an unmounted state");
     return Scheduler::of(getContextfromState(state));
 }

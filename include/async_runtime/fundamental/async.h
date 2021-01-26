@@ -18,11 +18,11 @@
 #include "state_helper.h"
 
 // @ thread safe
-template <typename T = nullptr_t>
+template <typename T = std::nullptr_t>
 class Future;
-template <typename T = nullptr_t, typename std::enable_if<!std::is_void<T>::value>::type * = nullptr>
+template <typename T = std::nullptr_t, typename std::enable_if<!std::is_void<T>::value>::type * = nullptr>
 class Stream;
-template <typename T = nullptr_t>
+template <typename T = std::nullptr_t>
 class Completer;
 
 using Thread = std::thread;
@@ -103,7 +103,7 @@ public:
 };
 
 template <>
-class Future<nullptr_t> : public Object, public StateHelper
+class Future<std::nullptr_t> : public Object, public StateHelper
 {
     template <typename R>
     friend class Completer;
@@ -119,7 +119,7 @@ public:
 };
 
 template <>
-class Future<void> : public Future<nullptr_t>
+class Future<void> : public Future<std::nullptr_t>
 {
     template <typename R>
     friend class Completer;
@@ -149,7 +149,7 @@ protected:
 };
 
 template <typename T>
-class Future : public Future<nullptr_t>
+class Future : public Future<std::nullptr_t>
 {
     template <typename R>
     friend class Completer;
@@ -181,7 +181,7 @@ protected:
 };
 
 template <>
-class Completer<nullptr_t> : public Object, public StateHelper
+class Completer<std::nullptr_t> : public Object, public StateHelper
 {
     template <typename R>
     friend class Future;
@@ -196,7 +196,7 @@ public:
 };
 
 template <>
-class Completer<void> : public Completer<nullptr_t>
+class Completer<void> : public Completer<std::nullptr_t>
 {
     template <typename R>
     friend class Future;
@@ -255,7 +255,7 @@ protected:
 };
 
 template <typename T>
-class Completer : public Completer<nullptr_t>
+class Completer : public Completer<std::nullptr_t>
 {
     template <typename R>
     friend class Future;
@@ -502,7 +502,7 @@ void Future<T>::sync(Duration timeout)
 }
 
 template <>
-class Stream<nullptr_t> : public Object, public StateHelper
+class Stream<std::nullptr_t> : public Object, public StateHelper
 {
 protected:
     Stream() {}
@@ -510,7 +510,7 @@ protected:
 };
 
 template <typename T, typename std::enable_if<!std::is_void<T>::value>::type *>
-class Stream : public Stream<nullptr_t>
+class Stream : public Stream<std::nullptr_t>
 {
 public:
     Stream(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}

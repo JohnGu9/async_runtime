@@ -5,7 +5,6 @@
 
 class String
 {
-
     friend String operator+(const char c, const String &string);
     friend String operator+(const char *const str, const String &string);
     friend std::ostream &operator<<(std::ostream &os, const String &dt);
@@ -13,7 +12,7 @@ class String
     friend String getline(std::istream &is);
     friend class std::hash<String>;
 
-    std::shared_ptr<const std::string> _string;
+    std::shared_ptr<const std::string> _ptr;
     String(const std::shared_ptr<const std::string> other);
 
 public:
@@ -50,7 +49,7 @@ namespace std
     {
         std::size_t operator()(const String &str) const
         {
-            return hash<std::string>()(*(str._string));
+            return hash<std::string>()(*(str._ptr));
         }
     };
-} // namespace std
+}

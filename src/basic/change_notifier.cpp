@@ -2,6 +2,6 @@
 
 void ChangeNotifier::notifyListeners()
 {
-    for (auto const &it : this->_listeners)
-        it.second(Object::cast<>(this));
+    for (auto const &fn : this->_listeners)
+        fn(Object::cast<>(this));
 }

@@ -5,16 +5,14 @@
 #include <sstream>
 #include <assert.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
-#include "basic/io.h"
-#include "basic/string.h"
-
 // native copyable type that don't not need Object::Ref
-class String;
-class Duration;
-template <typename T = nullptr_t>
-class Function;
+#include "basic/io.h"
+#include "basic/string.h"   // String
+#include "basic/duration.h" // Duration
+#include "basic/function.h" // Function
 
 class Object : public std::enable_shared_from_this<Object>
 {
@@ -29,6 +27,8 @@ public:
     using List = std::vector<Element>;
     template <typename Key, typename Value>
     using Map = std::unordered_map<Key, Value>;
+    template <typename Element>
+    using Set = std::unordered_set<Element>;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     inline static Ref<T> create(_Args &&...);

@@ -1,20 +1,21 @@
 #pragma once
 
-#include "../basic/state.h"
+#include <shared_mutex>
 #include "async.h"
+#include "../basic/state.h"
 
 class File : public Object
 {
+    static Object::Ref<ThreadPool> sharedThreadPool();
+
 public:
-    static Object::Ref<File> fromPath(State<StatefulWidget> *state, String path);
-    File(State<StatefulWidget> *state, String path);
+    static Object::Ref<File> fromPath(State<StatefulWidget> *state, String path, size_t threads = 0);
+    File(State<StatefulWidget> *state, String path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
     virtual ~File();
 
     // write
-    virtual Object::Ref<Future<void>> append(const String &str);
-    virtual Object::Ref<Future<void>> append(String &&str);
-    virtual Object::Ref<Future<void>> overwrite(const String &str);
-    virtual Object::Ref<Future<void>> overwrite(String &&str);
+    virtual Object::Ref<Future<void>> append(String str);
+    virtual Object::Ref<Future<void>> overwrite(String str);
     virtual Object::Ref<Future<void>> clear();
 
     // read
@@ -29,4 +30,5 @@ protected:
     Object::Ref<State<StatefulWidget>> _state;
     Object::Ref<ThreadPool> _threadPool;
     std::atomic_bool _isDisposed;
+    // std::shared_mutex _mutex;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "function.h"
+#include "../object.h"
 
 // abstract class
 class Listenable : public Object
@@ -13,6 +14,6 @@ public:
 protected:
     Listenable();
 
-    Object::Map<size_t, Function<void(Object::Ref<Listenable>)>> _listeners;
+    Object::Set<Function<void(Object::Ref<Listenable>)>> _listeners;
     bool _isDisposed;
 };

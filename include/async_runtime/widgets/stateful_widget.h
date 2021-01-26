@@ -24,7 +24,7 @@ class State<StatefulWidget> : public Object
     friend class State;
 
 public:
-    State() : mounted(false) {}
+    State() : _mounted(false) {}
 
     // @mustCallSuper
     virtual void initState() {}
@@ -38,32 +38,19 @@ public:
     void setState(Function<void()> fn)
     {
         fn();
-        this->getElement()->build();
+        this->_element->build();
     }
 
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
 
-protected:
-    virtual Object::Ref<BuildContext> getContext() const
-    {
-        return this->getElement();
-    }
-
-    virtual bool getMounted() const
-    {
-        return this->mounted;
-    }
-
-    Object::WeakRef<StatefulElement> _element; //
-
 private:
-    bool mounted;
+    bool _mounted;
+    Object::Ref<StatefulElement> _element;
+    Object::Ref<BuildContext> _context;
 
-    Object::Ref<StatefulElement> getElement() const
-    {
-        assert(this->mounted && "User can't access context before initState. You can try [didDependenceChanged] method to access context before first build. ");
-        return this->_element.lock();
-    }
+protected:
+    const bool &mounted = _mounted;
+    const Object::Ref<BuildContext> &context = _context;
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
@@ -73,8 +60,6 @@ public:
 protected:
     virtual Object::Ref<const T> getWidget()
     {
-        Object::Ref<StatefulElement> element = this->_element.lock();
-        assert(element);
-        return element->_statefulWidget->cast<T>();
+        return _element->_statefulWidget->cast<T>();
     }
 };

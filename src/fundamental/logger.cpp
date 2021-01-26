@@ -10,7 +10,7 @@ public:
     Object::Ref<Future<bool>> write(String str) override
     {
         return Future<bool>::async(this->_state.get(), [str] {
-            std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << std::move(str);
+            std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
             return true;
         });
     }
@@ -18,7 +18,7 @@ public:
     Object::Ref<Future<bool>> writeLine(String str) override
     {
         return Future<bool>::async(this->_state.get(), [str] {
-            info_print(std::move(str));
+            info_print(str);
             return true;
         });
     }
@@ -34,12 +34,12 @@ public:
 
     Object::Ref<Future<bool>> write(String str) override
     {
-        return this->_file->append(std::move(str))->than<bool>([] { return true; });
+        return this->_file->append(str)->than<bool>([] { return true; });
     }
 
     Object::Ref<Future<bool>> writeLine(String str) override
     {
-        return this->_file->append(std::move(str) + '\n')->than<bool>([] { return true; });
+        return this->_file->append(str + '\n')->than<bool>([] { return true; });
     }
 
     void dispose() override
@@ -89,7 +89,7 @@ class __LoggerState : public State<_Logger>
         {
             this->_handler->dispose();
             if (this->getWidget()->_path.isEmpty())
-                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->getContext()));
+                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
             else
                 this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->_path);
         }
@@ -106,7 +106,7 @@ class __LoggerState : public State<_Logger>
         if (this->_handler != nullptr)
             this->_handler->dispose();
         if (this->getWidget()->_path.isEmpty())
-            this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->getContext()));
+            this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
         else
             this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->_path);
 

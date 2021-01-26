@@ -28,7 +28,7 @@ class _ValueListenableBuilderState : public State<ValueListenableBuilder<T>>
 
     Function<void(Object::Ref<Listenable>)> _listener = [this](Object::Ref<Listenable> listenable) {
         Object::Ref<ValueListenable<T>> valueListenable = listenable->cast<ValueListenable<T>>();
-        if (this->getMounted())
+        if (this->mounted)
             this->setState([this, valueListenable] { this->_value = valueListenable->getValue(); });
     };
 

@@ -8,7 +8,7 @@ class Observable : public virtual Object::Ref<T>
 
 public:
     Observable() : Object::Ref<T>(nullptr) {}
-    Observable(nullptr_t) : Object::Ref<T>(nullptr) {}
+    Observable(std::nullptr_t) : Object::Ref<T>(nullptr) {}
     template <typename R>
     Observable(Object::Ref<R> ref) : Object::Ref<T>(ref) {}
     template <typename R>
