@@ -4,7 +4,6 @@
 #include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/root_inherited_widget.h"
 #include "async_runtime/basic/tree.h"
-#include "async_runtime/basic/state.h"
 
 static inline void shutdownInfo()
 {

@@ -19,6 +19,11 @@ bool String::operator==(const String &other) const
     return other._ptr == this->_ptr || *(other._ptr) == *(this->_ptr);
 }
 
+bool String::operator==(const char *const other) const
+{
+    return *(this->_ptr) == other;
+}
+
 String String::operator+(const char c) const
 {
     std::shared_ptr<std::string> ptr = std::make_shared<std::string>();

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../object.h"
-#include "../basic/state.h"
+#include "../widgets/state.h"
 #include "state_helper.h"
 
 class ThreadPool;

@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-// declare state for easy reference order
+// declare state first for easy reference order later
 // these classes will be implement in "stateful_widget.h"
 
 class StatefulWidget;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <queue>
 #include <list>
 #include <memory>
 #include <thread>
@@ -8,12 +7,11 @@
 #include <condition_variable>
 #include <future>
 #include <functional>
-#include <stdexcept>
 
 #include "../object.h"
 #include "../basic/function.h"
 #include "../basic/duration.h"
-#include "../basic/state.h"
+#include "../widgets/state.h"
 
 #include "state_helper.h"
 

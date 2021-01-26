@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <sstream>
 #include <memory>
@@ -27,6 +28,7 @@ public:
 
     virtual operator bool() const;
     virtual bool operator==(const String &other) const;
+    virtual bool operator==(const char *const other) const;
     virtual String operator+(const char c) const;
     virtual String operator+(const char *const str) const;
     virtual String operator+(const String &other) const;
@@ -52,4 +54,4 @@ namespace std
             return hash<std::string>()(*(str._ptr));
         }
     };
-}
+} // namespace std

@@ -3,9 +3,7 @@
 #include <list>
 #include "../elements/element.h"
 
-class Element;
 class Widget;
-class BuildContext;
 
 class Key : public Object
 {
