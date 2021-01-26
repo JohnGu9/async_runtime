@@ -1,3 +1,5 @@
+#include <iostream>
+#include <fstream>
 #include "async_runtime/fundamental/file.h"
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/widgets/stateful_widget.h"
@@ -23,7 +25,7 @@ Object::Ref<Future<void>> File::append(const String &str)
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->_threadPool->post([self, completer, str] {
-        std::ofstream file(self->_path);
+        std::ofstream file(self->_path.getNativeString(), std::ios::app);
         file << std::move(str);
         file.close();
         completer->complete();
@@ -36,7 +38,7 @@ Object::Ref<Future<void>> File::append(String &&str)
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->_threadPool->post([self, completer, str] {
-        std::ofstream file(self->_path);
+        std::ofstream file(self->_path.getNativeString(), std::ios::app);
         file << std::move(str);
         file.close();
         completer->complete();
@@ -49,7 +51,7 @@ Object::Ref<Future<void>> File::overwrite(const String &str)
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->_threadPool->post([self, completer, str] {
-        std::ofstream file(self->_path, std::ofstream::trunc);
+        std::ofstream file(self->_path.getNativeString(), std::ofstream::trunc);
         file << std::move(str);
         file.close();
         completer->complete();
@@ -62,7 +64,7 @@ Object::Ref<Future<void>> File::overwrite(String &&str)
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->_threadPool->post([self, completer, str] {
-        std::ofstream file(self->_path, std::ofstream::trunc);
+        std::ofstream file(self->_path.getNativeString(), std::ofstream::trunc);
         file << std::move(str);
         file.close();
         completer->complete();
@@ -75,7 +77,7 @@ Object::Ref<Future<void>> File::clear()
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->_threadPool->post([self, completer] {
-        std::ofstream file(self->_path, std::ofstream::trunc);
+        std::ofstream file(self->_path.getNativeString(), std::ofstream::trunc);
         file.close();
         completer->complete();
     });
@@ -87,15 +89,15 @@ Object::Ref<Future<String>> File::read()
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<String>> completer = Object::create<Completer<String>>(_state.get());
     this->_threadPool->post([self, completer] {
-        String str;
-        std::ifstream file(self->_path, std::ios::in | std::ios::ate);
+        std::string str;
+        std::ifstream file(self->_path.getNativeString(), std::ios::in | std::ios::ate);
         std::ifstream::streampos filesize = file.tellg();
         str.reserve(filesize);
         file.seekg(0);
         while (!file.eof())
             str += file.get();
 
-        completer->complete(str);
+        completer->complete(std::move(str));
     });
     return completer->getFuture();
 }
@@ -106,7 +108,7 @@ Object::Ref<Stream<String>> File::readWordAsStream()
     Object::Ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
     this->_threadPool->post([self, stream] {
         String str;
-        std::ifstream file(self->_path);
+        std::ifstream file(self->_path.getNativeString());
         while (file >> str && self->_isDisposed == false)
             stream->sink(str);
         stream->close();
@@ -119,9 +121,8 @@ Object::Ref<Stream<String>> File::readLineAsStream()
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
     this->_threadPool->post([self, stream] {
-        String str;
-        std::ifstream file(self->_path);
-        while (getline(file, str) && self->_isDisposed == false)
+        std::ifstream file(self->_path.getNativeString());
+        while (String str = getline(file) && self->_isDisposed == false)
             stream->sink(str);
         stream->close();
     });

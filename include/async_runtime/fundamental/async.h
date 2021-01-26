@@ -125,6 +125,12 @@ class Future<void> : public Future<nullptr_t>
     friend class Completer;
 
 public:
+    static Object::Ref<Future<void>> value(Object::Ref<ThreadPool> callbackHandler);
+    static Object::Ref<Future<void>> value(State<StatefulWidget> *state);
+
+    static Object::Ref<Future<void>> async(Object::Ref<ThreadPool> callbackHandler, Function<void()>);
+    static Object::Ref<Future<void>> async(State<StatefulWidget> *state, Function<void()>);
+
     Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
     Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
 
@@ -149,12 +155,18 @@ class Future : public Future<nullptr_t>
     friend class Completer;
 
 public:
+    static Object::Ref<Future<T>> value(Object::Ref<ThreadPool> callbackHandler, const T &);
+    static Object::Ref<Future<T>> value(State<StatefulWidget> *state, const T &);
+
+    static Object::Ref<Future<T>> async(Object::Ref<ThreadPool> callbackHandler, Function<T()>);
+    static Object::Ref<Future<T>> async(State<StatefulWidget> *state, Function<T()>);
+
     Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
     Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
 
     template <typename ReturnType, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);
-    template <typename ReturnType, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
+    template <typename ReturnType = void, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)> fn);
 
     virtual Object::Ref<Future<T>> timeout(Duration, Function<void()> onTimeout);
@@ -190,6 +202,9 @@ class Completer<void> : public Completer<nullptr_t>
     friend class Future;
 
 public:
+    static Object::Ref<Completer<void>> deferred(Object::Ref<ThreadPool> callbackHandler, Function<void()> fn);
+    static Object::Ref<Completer<void>> deferred(State<StatefulWidget> *state, Function<void()> fn);
+
     Completer(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _future(Object::create<Future<void>>(callbackHandler)) {}
     Completer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _future(Object::create<Future<void>>(state)) {}
 
@@ -246,6 +261,9 @@ class Completer : public Completer<nullptr_t>
     friend class Future;
 
 public:
+    static Object::Ref<Completer<T>> deferred(Object::Ref<ThreadPool> callbackHandler, Function<T()> fn);
+    static Object::Ref<Completer<T>> deferred(State<StatefulWidget> *state, Function<T()> fn);
+
     Completer(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _future(Object::create<Future<T>>(callbackHandler)) {}
     Completer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _future(Object::create<Future<T>>(state)) {}
 
@@ -313,6 +331,62 @@ protected:
     Object::Ref<ThreadPool> _callbackHandler;
 };
 
+inline Object::Ref<Future<void>> Future<void>::value(Object::Ref<ThreadPool> callbackHandler)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
+    completer->complete();
+    return completer->getFuture();
+}
+
+inline Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
+    completer->complete();
+    return completer->getFuture();
+}
+
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler, const T &value)
+{
+    Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(callbackHandler);
+    completer->complete(value);
+    return completer->getFuture();
+}
+
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, const T &value)
+{
+    Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(state);
+    completer->complete(value);
+    return completer->getFuture();
+}
+
+inline Object::Ref<Future<void>> Future<void>::async(Object::Ref<ThreadPool> callbackHandler, Function<void()> fn)
+{
+    Object::Ref<Completer<void>> completer = Completer<void>::deferred(callbackHandler, fn);
+    return completer->getFuture();
+}
+
+inline Object::Ref<Future<void>> Future<void>::async(State<StatefulWidget> *state, Function<void()> fn)
+{
+    Object::Ref<Completer<void>> completer = Completer<void>::deferred(state, fn);
+    return completer->getFuture();
+}
+
+template <typename T>
+Object::Ref<Future<T>> Future<T>::async(Object::Ref<ThreadPool> callbackHandler, Function<T()> fn)
+{
+    Object::Ref<Completer<T>> completer = Completer<T>::deferred(callbackHandler, fn);
+    return completer->getFuture();
+}
+
+template <typename T>
+Object::Ref<Future<T>> Future<T>::async(State<StatefulWidget> *state, Function<T()> fn)
+{
+    Object::Ref<Completer<T>> completer = Completer<T>::deferred(state, fn);
+    return completer->getFuture();
+}
+
 template <>
 inline Object::Ref<Future<void>> Future<void>::than(Function<void()> fn)
 {
@@ -352,9 +426,7 @@ inline void Future<void>::sync()
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&] {
-        condition.notify_all();
-    });
+    this->than<void>([&] { condition.notify_all(); });
     condition.wait(lock);
 }
 
@@ -363,9 +435,7 @@ inline void Future<void>::sync(Duration timeout)
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&] {
-        condition.notify_all();
-    });
+    this->than<void>([&] { condition.notify_all(); });
     condition.wait(lock);
 }
 
@@ -415,9 +485,7 @@ void Future<T>::sync()
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&](const T &) -> void {
-        condition.notify_all();
-    });
+    this->than<void>([&](const T &) { condition.notify_all(); });
     condition.wait(lock);
 }
 
@@ -522,3 +590,32 @@ protected:
     std::mutex _mutex;
     bool _isClosed;
 };
+
+inline Object::Ref<Completer<void>> Completer<void>::deferred(Object::Ref<ThreadPool> callbackHandler, Function<void()> fn)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
+    completer->_callbackHandler->post([fn, completer] {fn(); completer->complete(); });
+    return completer;
+}
+
+inline Object::Ref<Completer<void>> Completer<void>::deferred(State<StatefulWidget> *state, Function<void()> fn)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
+    completer->_callbackHandler->post([fn, completer] {fn(); completer->complete(); });
+    return completer;
+}
+template <typename T>
+Object::Ref<Completer<T>> Completer<T>::deferred(Object::Ref<ThreadPool> callbackHandler, Function<T()> fn)
+{
+    Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(callbackHandler);
+    completer->_callbackHandler->post([fn, completer] { completer->complete(fn()); });
+    return completer;
+}
+
+template <typename T>
+Object::Ref<Completer<T>> Completer<T>::deferred(State<StatefulWidget> *state, Function<T()> fn)
+{
+    Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(state);
+    completer->_callbackHandler->post([fn, completer] { completer->complete(fn()); });
+    return completer;
+}

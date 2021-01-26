@@ -1,22 +1,26 @@
+#include <sstream>
+#include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/logger.h"
-#include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/fundamental/file.h"
 
 class _StdoutLoggerHandler : public LoggerHandler
 {
 public:
     _StdoutLoggerHandler(State<StatefulWidget> *state) : LoggerHandler(state) { assert(state); }
-    std::future<bool> write(String str) override
+    Object::Ref<Future<bool>> write(String str) override
     {
-        return this->_callbackHandler->post([str] {
-            std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
+        return Future<bool>::async(this->_state.get(), [str] {
+            std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << std::move(str);
             return true;
         });
     }
 
-    std::future<bool> writeLine(String str) override
+    Object::Ref<Future<bool>> writeLine(String str) override
     {
-        return this->_callbackHandler->post([str] { info_print(str); return true; });
+        return Future<bool>::async(this->_state.get(), [str] {
+            info_print(std::move(str));
+            return true;
+        });
     }
 };
 
@@ -26,17 +30,16 @@ class _FileLoggerHandler : public LoggerHandler
 
 public:
     _FileLoggerHandler(State<StatefulWidget> *state, String path)
-        : _file(File::fromPath(state, path)), LoggerHandler(nullptr) {}
+        : _file(File::fromPath(state, path)), LoggerHandler(state) { _file->clear(); }
 
-    std::future<bool> write(String str) override
+    Object::Ref<Future<bool>> write(String str) override
     {
-
-        return std::async([] { return true; });
+        return this->_file->append(std::move(str))->than<bool>([] { return true; });
     }
 
-    std::future<bool> writeLine(String str) override
+    Object::Ref<Future<bool>> writeLine(String str) override
     {
-        return std::async([] { return true; });
+        return this->_file->append(std::move(str) + '\n')->than<bool>([] { return true; });
     }
 
     void dispose() override
@@ -52,12 +55,12 @@ class _LoggerProxyHandler : public LoggerHandler
 
 public:
     _LoggerProxyHandler(Logger::Handler proxyTarget) : LoggerHandler(nullptr) {}
-    std::future<bool> write(String str) override
+    Object::Ref<Future<bool>> write(String str) override
     {
-        return this->_proxyTarget->write(" [File out not finish yet] " + str);
+        return this->_proxyTarget->write(str);
     }
 
-    std::future<bool> writeLine(String str) override
+    Object::Ref<Future<bool>> writeLine(String str) override
     {
         return this->_proxyTarget->writeLine(str);
     }
@@ -79,14 +82,13 @@ class __LoggerState : public State<_Logger>
 {
     using super = State<_Logger>;
     Logger::Handler _handler;
-    Scheduler::Handler _schedulerHandler;
 
     void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
     {
         if (Object::Ref<_Logger> old = oldWidget->cast<_Logger>())
         {
             this->_handler->dispose();
-            if (this->getWidget()->_path.empty())
+            if (this->getWidget()->_path.isEmpty())
                 this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->getContext()));
             else
                 this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->_path);
@@ -103,7 +105,7 @@ class __LoggerState : public State<_Logger>
     {
         if (this->_handler != nullptr)
             this->_handler->dispose();
-        if (this->getWidget()->_path.empty())
+        if (this->getWidget()->_path.isEmpty())
             this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->getContext()));
         else
             this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->_path);
@@ -157,7 +159,7 @@ Object::Ref<Widget> Logger::stdoutProxy(Object::Ref<Widget> child, Object::Ref<K
 
 Object::Ref<Widget> Logger::file(Object::Ref<Widget> child, String path, Object::Ref<Key> key)
 {
-    assert(!path.empty() && "path can't be empty");
+    assert(!path.isEmpty() && "path can't be empty");
     return Object::create<_Logger>(child, path, key);
 }
 
@@ -218,13 +220,13 @@ class _LoggerBlockerState : public State<LoggerBlocker>
     struct _Blocker : LoggerHandler
     {
         _Blocker(State<StatefulWidget> *state) : LoggerHandler(state) {}
-        std::future<bool> write(String str) override
+        Object::Ref<Future<bool>> write(String str) override
         {
-            return std::async([] { return true; });
+            return Future<bool>::value(this->_state.get(), true);
         }
-        std::future<bool> writeLine(String str) override
+        Object::Ref<Future<bool>> writeLine(String str) override
         {
-            return std::async([] { return true; });
+            return Future<bool>::value(this->_state.get(), true);
         }
     };
     using super = State<LoggerBlocker>;

@@ -10,6 +10,12 @@
 #include "basic/io.h"
 #include "basic/string.h"
 
+// native copyable type that don't not need Object::Ref
+class String;
+class Duration;
+template <typename T = nullptr_t>
+class Function;
+
 class Object : public std::enable_shared_from_this<Object>
 {
 public:
@@ -45,7 +51,12 @@ public:
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();
 
+    Object() {}
     virtual ~Object() {}
+
+private:
+    Object(const Object &) = delete;
+    Object &operator=(const Object &) = delete;
 };
 
 // http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/memory/shared_ptr/operator_cmp.html

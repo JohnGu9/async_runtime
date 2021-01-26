@@ -2,7 +2,7 @@
 
 #include "stateless_widget.h"
 
-class InheritedWidget : public virtual StatelessWidget, public virtual Inheritance
+class InheritedWidget : public StatelessWidget, public Inheritance
 {
 public:
     InheritedWidget(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);

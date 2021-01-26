@@ -14,8 +14,8 @@ void StatefulElement::attach()
     assert(this->_state->mounted == false && "This [State] class mount twice is not allowed. User should not reuse [State] class or manually call [initState]");
     Element::attach();
     this->_state->_element = Object::cast<>(this);
-    this->_state->initState();
     this->_state->mounted = true;
+    this->_state->initState();
     this->_state->didDependenceChanged();
     Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");

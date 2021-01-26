@@ -44,7 +44,7 @@ void Timer::setTimeout(Function<void()> function, Duration delay)
 
 void Timer::setInterval(Function<void()> function, Duration interval)
 {
-    Object::Ref<std::atomic_bool> clearFlag = Object::create<std::atomic_bool>(false);
+    Object::Ref<std::atomic_bool> clearFlag = std::make_shared<std::atomic_bool>(false);
     this->_clear = clearFlag;
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
     this->_threadPool->post([=]() {

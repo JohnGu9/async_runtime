@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
 #include "../basic/state.h"
-#include "../basic/function.h"
 #include "async.h"
 
 class File : public Object

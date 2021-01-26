@@ -11,7 +11,7 @@ public:
 
     virtual void ps(std::ostream &ss)
     {
-        if (info.empty())
+        if (info.isEmpty())
             ss << '[' << this->runtimeType() << ']' << std::endl;
         else
             ss << info << std::endl;

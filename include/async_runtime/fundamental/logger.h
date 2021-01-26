@@ -1,17 +1,21 @@
 #pragma once
 
-#include <sstream>
-#include "../basic/state.h"
-#include "scheduler.h"
-#include "dispatcher.h"
+#include "../widgets/inherited_widget.h"
+#include "../widgets/stateful_widget.h"
+#include "state_helper.h"
+#include "async.h"
 
-class LoggerHandler : public Dispatcher
+class LoggerHandler : public Object, public StateHelper
 {
 public:
-    LoggerHandler(State<StatefulWidget> *state) : Dispatcher(state, nullptr, 0) {}
+    LoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}
 
-    virtual std::future<bool> write(String str) = 0;
-    virtual std::future<bool> writeLine(String str) = 0;
+    virtual Object::Ref<Future<bool>> write(String str) = 0;
+    virtual Object::Ref<Future<bool>> writeLine(String str) = 0;
+    virtual void dispose() {}
+
+protected:
+    Object::Ref<State<StatefulWidget>> _state;
 };
 
 class Logger : public InheritedWidget

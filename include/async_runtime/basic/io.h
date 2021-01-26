@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include "string.h"
 
 //the following are UBUNTU/LINUX, and MacOS ONLY terminal color codes.
 #define RESET "\033[0m"
@@ -33,5 +34,5 @@
 
 #define font_wrapper(font, x) font << x << RESET
 
-void print(std::string &str);
+void print(String str);
 void print(const char *const str);

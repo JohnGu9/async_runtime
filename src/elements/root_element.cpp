@@ -1,4 +1,5 @@
 #include "async_runtime/fundamental/logger.h"
+#include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/elements/element.h"
 #include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/root_inherited_widget.h"

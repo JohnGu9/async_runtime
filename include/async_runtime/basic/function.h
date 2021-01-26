@@ -5,11 +5,8 @@
 
 #include "../object.h"
 
-template <typename T = nullptr_t>
-class Function;
-
 template <>
-class Function<nullptr_t> : public virtual Object
+class Function<nullptr_t>
 {
 public:
     virtual operator bool() { return false; }

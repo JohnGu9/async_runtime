@@ -2,9 +2,14 @@
 
 #include <cstdlib>
 #include <chrono>
-#include "../object.h"
+#include <string>
+#include <memory>
+#include <sstream>
+#include <assert.h>
+#include <unordered_map>
+#include <vector>
 
-class Duration : public Object
+class Duration
 {
 public:
     static const int64_t microsecondsPerMillisecond = 1000;
