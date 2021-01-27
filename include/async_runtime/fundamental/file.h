@@ -9,9 +9,18 @@ class File : public Object
     static Object::Ref<ThreadPool> sharedThreadPool();
 
 public:
+    static bool exists(String path);
+    static Object::Ref<Future<bool>> exists(State<StatefulWidget> *state, String path);
+
+    static int remove(String path);
+    static Object::Ref<Future<int>> remove(State<StatefulWidget> *state, String path);
+
     static Object::Ref<File> fromPath(State<StatefulWidget> *state, String path, size_t threads = 0);
     File(State<StatefulWidget> *state, String path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
     virtual ~File();
+
+    virtual Object::Ref<Future<bool>> exists();
+    virtual Object::Ref<Future<int>> remove();
 
     // write
     virtual Object::Ref<Future<void>> append(String str);
@@ -31,4 +40,6 @@ protected:
     Object::Ref<ThreadPool> _threadPool;
     std::atomic_bool _isDisposed;
     // std::shared_mutex _mutex;
+public:
+    const String &path = _path;
 };

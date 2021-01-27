@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <queue>
 #include <thread>
 #include <mutex>
@@ -8,11 +9,6 @@
 #include <functional>
 
 #include "../object.h"
-#include "../basic/function.h"
-#include "../basic/duration.h"
-#include "../widgets/state.h"
-
-#include "state_helper.h"
 
 // @ thread safe
 template <typename T = std::nullptr_t>
@@ -41,7 +37,7 @@ public:
 
 protected:
     // need to keep track of threads so we can join them
-    Object::List<Thread> workers;
+    std::vector<Thread> workers;
     // the task queue
     std::queue<std::function<void()>> tasks;
     // the micro task queue
@@ -99,6 +95,11 @@ public:
     ~StaticThreadPool() { this->dispose(); }
 };
 
+#include "../basic/function.h"
+#include "../basic/duration.h"
+#include "../widgets/state.h"
+#include "state_helper.h"
+
 template <>
 class Future<std::nullptr_t> : public Object, public StateHelper
 {
@@ -140,7 +141,7 @@ public:
     void sync(Duration timeout) override;
 
 protected:
-    Object::Ref<Completer<void>> _completer;
+    bool _completed = false;
     Object::Ref<ThreadPool> _callbackHandler;
     Object::List<Function<void()>> _callbackList;
 };
@@ -172,7 +173,8 @@ public:
     void sync(Duration timeout) override;
 
 protected:
-    Object::Ref<Completer<T>> _completer;
+    T _data;
+    bool _completed = false;
     Object::Ref<ThreadPool> _callbackHandler;
     Object::List<Function<void(const T &)>> _callbackList;
 };
@@ -211,11 +213,10 @@ public:
         std::unique_lock<std::mutex> lock(this->_future->_mutex);
         if (this->_isCancelled)
             return;
-        this->_future->_completer = Object::cast<>(this);
+        this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
             this->_callbackHandler->post(fn);
         this->_future->_callbackList.clear();
-        this->_future = nullptr;
     }
 
     bool cancel() override
@@ -225,11 +226,6 @@ public:
             return false; // already completed
         this->_isCancelled = true;
         return true; // cancel successfully
-    }
-
-    virtual Object::Ref<Future<void>> getFuture() const
-    {
-        return this->_future;
     }
 
     bool isCompleted() override
@@ -249,6 +245,9 @@ protected:
     bool _isCancelled = false;
     Object::Ref<Future<void>> _future;
     Object::Ref<ThreadPool> _callbackHandler;
+
+public:
+    const Object::Ref<Future<void>> &future = _future;
 };
 
 template <typename T>
@@ -271,10 +270,10 @@ public:
         std::unique_lock<std::mutex> lock(this->_future->_mutex);
         if (this->_isCancelled)
             return;
-        this->_future->_completer = Object::cast<>(this);
-        this->_data = value;
+        this->_future->_data = value;
+        this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
-            this->_callbackHandler->post([fn, self] { fn(self->_data); });
+            this->_callbackHandler->post([fn, self] { fn(self->_future->_data); });
         this->_future->_callbackList.clear();
         this->_future = nullptr;
     }
@@ -286,12 +285,11 @@ public:
         std::unique_lock<std::mutex> lock(this->_future->_mutex);
         if (this->_isCancelled)
             return;
-        this->_future->_completer = Object::cast<>(this);
-        this->_data = std::forward<T>(value);
+        this->_future->_data = std::forward<T>(value);
+        this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
-            this->_callbackHandler->post([fn, self] { fn(self->_data); });
+            this->_callbackHandler->post([fn, self] { fn(self->_future->_data); });
         this->_future->_callbackList.clear();
-        this->_future = nullptr;
     }
 
     bool cancel() override
@@ -301,11 +299,6 @@ public:
             return false; // already completed
         this->_isCancelled = true;
         return true; // cancel successfully
-    }
-
-    virtual Object::Ref<Future<T>> getFuture() const
-    {
-        return this->_future;
     }
 
     bool isCompleted() override
@@ -321,25 +314,27 @@ public:
     }
 
 protected:
-    T _data;
     bool _isCompleted = false;
     bool _isCancelled = false;
     Object::Ref<Future<T>> _future;
     Object::Ref<ThreadPool> _callbackHandler;
+
+public:
+    const Object::Ref<Future<T>> &future = _future;
 };
 
 inline Object::Ref<Future<void>> Future<void>::value(Object::Ref<ThreadPool> callbackHandler)
 {
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
     completer->complete();
-    return completer->getFuture();
+    return completer->future;
 }
 
 inline Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
 {
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
     completer->complete();
-    return completer->getFuture();
+    return completer->future;
 }
 
 template <typename T>
@@ -347,7 +342,7 @@ Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler,
 {
     Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(callbackHandler);
     completer->complete(value);
-    return completer->getFuture();
+    return completer->future;
 }
 
 template <typename T>
@@ -355,33 +350,33 @@ Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, const T &v
 {
     Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(state);
     completer->complete(value);
-    return completer->getFuture();
+    return completer->future;
 }
 
 inline Object::Ref<Future<void>> Future<void>::async(Object::Ref<ThreadPool> callbackHandler, Function<void()> fn)
 {
     Object::Ref<Completer<void>> completer = Completer<void>::deferred(callbackHandler, fn);
-    return completer->getFuture();
+    return completer->future;
 }
 
 inline Object::Ref<Future<void>> Future<void>::async(State<StatefulWidget> *state, Function<void()> fn)
 {
     Object::Ref<Completer<void>> completer = Completer<void>::deferred(state, fn);
-    return completer->getFuture();
+    return completer->future;
 }
 
 template <typename T>
 Object::Ref<Future<T>> Future<T>::async(Object::Ref<ThreadPool> callbackHandler, Function<T()> fn)
 {
     Object::Ref<Completer<T>> completer = Completer<T>::deferred(callbackHandler, fn);
-    return completer->getFuture();
+    return completer->future;
 }
 
 template <typename T>
 Object::Ref<Future<T>> Future<T>::async(State<StatefulWidget> *state, Function<T()> fn)
 {
     Object::Ref<Completer<T>> completer = Completer<T>::deferred(state, fn);
-    return completer->getFuture();
+    return completer->future;
 }
 
 template <>
@@ -389,11 +384,11 @@ inline Object::Ref<Future<void>> Future<void>::than(Function<void()> fn)
 {
     std::unique_lock<std::mutex> lock(this->_mutex);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
-    if (this->_completer == nullptr)
+    if (this->_completed == false)
         this->_callbackList.push_back([completer, fn] { fn(); completer->complete(); });
     else
         this->_callbackHandler->post([completer, fn] { fn(); completer->complete(); });
-    return completer->getFuture();
+    return completer->future;
 }
 
 template <typename ReturnType>
@@ -401,11 +396,11 @@ Object::Ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
 {
     std::unique_lock<std::mutex> lock(this->_mutex);
     Object::Ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
-    if (this->_completer == nullptr)
+    if (this->_completed == false)
         this->_callbackList.push_back([completer, fn] { completer->complete(fn()); });
     else
         this->_callbackHandler->post([completer, fn] { completer->complete(fn()); });
-    return completer->getFuture();
+    return completer->future;
 }
 
 inline Object::Ref<Future<void>> Future<void>::timeout(Duration, Function<void()> onTimeout)
@@ -443,11 +438,11 @@ Object::Ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> 
     std::unique_lock<std::mutex> lock(this->_mutex);
     Object::Ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
     Object::Ref<Future<T>> self = Object::cast<>(this);
-    if (this->_completer == nullptr)
+    if (this->_completed == false)
         this->_callbackList.push_back([completer, fn](const T &value) { fn(value); completer->complete(); });
     else
-        this->_callbackHandler->post([completer, self, fn] { fn(self->_completer->_data); completer->complete(); });
-    return completer->getFuture();
+        this->_callbackHandler->post([completer, self, fn] { fn(self->_data); completer->complete(); });
+    return completer->future;
 }
 
 template <typename T>
@@ -457,11 +452,11 @@ Object::Ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> 
     std::unique_lock<std::mutex> lock(this->_mutex);
     Object::Ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
     Object::Ref<Future<T>> self = Object::cast<>(this);
-    if (this->_completer == nullptr)
+    if (this->_completed == false)
         this->_callbackList.push_back([completer, fn](const T &value) { completer->complete(fn(value)); });
     else
         this->_callbackHandler->post([completer, self, fn] { completer->complete(fn(self->_completer->_data)); });
-    return completer->getFuture();
+    return completer->future;
 }
 
 template <typename T>
@@ -492,9 +487,7 @@ void Future<T>::sync(Duration timeout)
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&](const T &) -> void {
-        condition.notify_all();
-    });
+    this->than<void>([&](const T &) { condition.notify_all(); });
     condition.wait(lock);
 }
 
@@ -558,7 +551,7 @@ public:
     virtual Object::Ref<Stream<T>> onClose(Function<void()> fn)
     {
         std::unique_lock<std::mutex> lock(this->_mutex);
-        this->_onClose->getFuture()->than(fn);
+        this->_onClose->future->than(fn);
         return Object::cast<>(this);
     }
 
@@ -566,7 +559,7 @@ public:
     {
         std::unique_lock<std::mutex> lock(this->_mutex);
         assert(!this->_isClosed);
-        return this->_onClose->getFuture();
+        return this->_onClose->future;
     }
 
     void close() override
@@ -585,7 +578,7 @@ protected:
 
     Function<void(T)> _listener;
     std::mutex _mutex;
-    bool _isClosed;
+    bool _isClosed = false;
 };
 
 inline Object::Ref<Completer<void>> Completer<void>::deferred(Object::Ref<ThreadPool> callbackHandler, Function<void()> fn)

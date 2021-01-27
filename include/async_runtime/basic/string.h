@@ -35,7 +35,8 @@ public:
 
     virtual bool isEmpty() const;
     virtual bool isNotEmpty() const;
-    virtual const std::string &getNativeString() const;
+    virtual const std::string &toStdString() const;
+    virtual const char *c_str() const;
 };
 
 String operator+(const char c, const String &string);

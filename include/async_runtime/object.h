@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
+#include <deque>
 
 // native copyable type that don't not need Object::Ref
 #include "basic/io.h"
@@ -24,7 +24,7 @@ public:
     using WeakRef = std::weak_ptr<T>;
 
     template <typename Element>
-    using List = std::vector<Element>;
+    using List = std::deque<Element>;
     template <typename Key, typename Value>
     using Map = std::unordered_map<Key, Value>;
     template <typename Element>

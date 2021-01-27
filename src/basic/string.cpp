@@ -55,9 +55,14 @@ bool String::isNotEmpty() const
     return !this->isEmpty();
 }
 
-const std::string &String::getNativeString() const
+const std::string &String::toStdString() const
 {
     return *(this->_ptr);
+}
+
+const char *String::c_str() const
+{
+    return this->_ptr->c_str();
 }
 
 std::ostream &operator<<(std::ostream &os, const String &str)
