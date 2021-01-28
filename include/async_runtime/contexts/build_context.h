@@ -29,5 +29,5 @@ public:
     }
 
 protected:
-    Object::Map<Object::RuntimeType, Object::Ref<Inheritance>> _inheritances;
+    Map<Object::RuntimeType, Object::Ref<Inheritance>> _inheritances;
 };

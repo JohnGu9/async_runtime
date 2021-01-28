@@ -11,7 +11,7 @@ void Listenable::addListener(Function<void(Object::Ref<Listenable>)> fn)
 
 void Listenable::removeListener(Function<void(Object::Ref<Listenable>)> fn)
 {
-    using iterator = Object::Set<Function<void(Object::Ref<Listenable>)>>::iterator;
+    using iterator = Set<Function<void(Object::Ref<Listenable>)>>::iterator;
     const iterator it = this->_listeners.find(fn);
     if (it != this->_listeners.end())
         this->_listeners.erase(it);

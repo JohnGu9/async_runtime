@@ -15,6 +15,7 @@ public:
     virtual void dispose() {}
 
 protected:
+    LoggerHandler() {}
     Object::Ref<State<StatefulWidget>> _state;
 };
 
@@ -24,7 +25,7 @@ public:
     using Handler = Object::Ref<LoggerHandler>;
     static Handler of(Object::Ref<BuildContext> context);
     static Object::Ref<Widget> stdoutProxy(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
-    static Object::Ref<Widget> file(Object::Ref<Widget> child, String path, Object::Ref<Key> key = nullptr);
+    static Object::Ref<Widget> file(String path, Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
 
     Logger(Object::Ref<Widget> child, Handler handler, Object::Ref<Key> key = nullptr);
     bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) override;

@@ -166,7 +166,7 @@ public:
 
 protected:
     Object::Ref<MultiChildWidget> _multiChildWidget;
-    Object::List<Object::Ref<Element>> _childrenElements;
+    List<Object::Ref<Element>> _childrenElements;
 };
 
 class NotificationListenerElement : public StatelessElement

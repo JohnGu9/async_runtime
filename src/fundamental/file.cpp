@@ -42,6 +42,35 @@ Object::Ref<Future<int>> File::remove(State<StatefulWidget> *state, String path)
     return completer->future;
 }
 
+long long File::size(String path)
+{
+    std::ifstream::streampos begin, end;
+    std::ifstream file(path.toStdString(), std::ios::binary);
+    begin = file.tellg();
+    file.seekg(0, std::ios::end);
+    end = file.tellg();
+    file.close();
+    return end - begin;
+}
+
+Object::Ref<Future<long long>> File::size(State<StatefulWidget> *state, String path)
+{
+    Object::Ref<Completer<long long>> completer = Object::create<Completer<long long>>(state);
+    sharedThreadPool()->post([path, completer] {
+        //TODO: add read/write lock
+        std::ifstream::streampos begin, end;
+        {
+            std::ifstream file(path.toStdString(), std::ios::binary);
+            begin = file.tellg();
+            file.seekg(0, std::ios::end);
+            end = file.tellg();
+            file.close();
+        }
+        completer->complete(end - begin);
+    });
+    return completer->future;
+}
+
 File::File(State<StatefulWidget> *state, String path, size_t threads)
     : _path(path), _state(Object::cast<>(state))
 {
@@ -81,6 +110,25 @@ Object::Ref<Future<int>> File::remove()
     this->_threadPool->post([self, completer] {
         //TODO: add read/write lock
         completer->complete(std::remove(self->_path.c_str()));
+    });
+    return completer->future;
+}
+
+Object::Ref<Future<long long>> File::size()
+{
+    Object::Ref<File> self = Object::cast<>(this);
+    Object::Ref<Completer<long long>> completer = Object::create<Completer<long long>>(_state.get());
+    this->_threadPool->post([self, completer] {
+        //TODO: add read/write lock
+        std::ifstream::streampos begin, end;
+        {
+            std::ifstream file(self->_path.toStdString(), std::ios::binary);
+            begin = file.tellg();
+            file.seekg(0, std::ios::end);
+            end = file.tellg();
+            file.close();
+        }
+        completer->complete(end - begin);
     });
     return completer->future;
 }
@@ -151,6 +199,31 @@ Object::Ref<Future<String>> File::read()
         completer->complete(std::move(str));
     });
     return completer->future;
+}
+
+Object::Ref<Stream<String>> File::readAsStream(size_t chip)
+{
+    Object::Ref<File> self = Object::cast<>(this);
+    Object::Ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
+    this->_threadPool->post([self, stream, chip] {
+        {
+            //TODO: add read/write lock
+            std::ifstream file(self->_path.toStdString(), std::ios::in | std::ios::ate);
+            file.seekg(0);
+            size_t i;
+            while (!file.eof() && self->_isDisposed == false)
+            {
+                std::string str;
+                str.reserve(chip);
+                for (i = 0; i < chip && !file.eof(); i++)
+                    str += file.get();
+                stream->sink(std::move(str));
+            }
+            file.close();
+        }
+        stream->close();
+    });
+    return stream;
 }
 
 Object::Ref<Stream<String>> File::readWordAsStream()

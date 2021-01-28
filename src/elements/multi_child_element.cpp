@@ -7,7 +7,7 @@ MultiChildElement::MultiChildElement(Object::Ref<MultiChildWidget> widget) : _mu
 void MultiChildElement::attach()
 {
     Element::attach();
-    Object::List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
+    List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children.size(); i++)
     {
         Object::Ref<Widget> &widget = children[i];
@@ -21,7 +21,7 @@ void MultiChildElement::attach()
 
 void MultiChildElement::build()
 {
-    Object::List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
+    List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children.size(); i++)
     {
         Object::Ref<Widget> &widget = children[i];
@@ -80,7 +80,7 @@ void MultiChildElement::notify(Object::Ref<Widget> newWidget)
     this->_multiChildWidget = castedWidget;
     this->widget = newWidget;
 
-    Object::List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
+    List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children.size(); i++)
     {
         Object::Ref<Widget> &widget = children[i];

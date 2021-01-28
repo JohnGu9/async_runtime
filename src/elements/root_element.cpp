@@ -161,7 +161,7 @@ void RootElement::onCommand(const std::string &in)
     }
     else if (command == "ls")
     {
-        Object::Map<Element *, Object::List<Element *>> map;
+        Map<Element *, List<Element *>> map;
         map[this] = {};
         this->visitDescendant([&map](Object::Ref<Element> element) -> bool {
             Object::Ref<Element> parent = element->parent.lock();
@@ -179,7 +179,7 @@ void RootElement::onCommand(const std::string &in)
                 if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
                     ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
                 currentTree->info = ss.str();
-                Object::List<Element *> &children = map[currentElement];
+                List<Element *> &children = map[currentElement];
                 for (Element *child : children)
                 {
                     Object::Ref<Tree> childTree = Object::create<Tree>();

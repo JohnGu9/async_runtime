@@ -14,6 +14,6 @@ public:
 protected:
     Listenable();
 
-    Object::Set<Function<void(Object::Ref<Listenable>)>> _listeners;
+    Set<Function<void(Object::Ref<Listenable>)>> _listeners;
     bool _isDisposed;
 };

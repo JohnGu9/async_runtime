@@ -13,10 +13,12 @@
 // @ thread safe
 template <typename T = std::nullptr_t>
 class Future;
-template <typename T = std::nullptr_t, typename std::enable_if<!std::is_void<T>::value>::type * = nullptr>
+template <typename T = std::nullptr_t>
 class Stream;
 template <typename T = std::nullptr_t>
 class Completer;
+template <typename T = std::nullptr_t>
+class AsyncSnapshot;
 
 using Thread = std::thread;
 
@@ -49,6 +51,12 @@ protected:
     bool stop;
 };
 
+static bool warning()
+{
+    std::cout << "Async task post after threadpool stopped. " << std::endl;
+    return true;
+}
+
 // add new work item to the pool
 template <class F, class... Args>
 auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>
@@ -61,7 +69,12 @@ auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::resul
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
-        assert(stop == false && "Don't allow posting after stopping the pool");
+        if (stop)
+        {
+            assert(warning());
+            (*task)();
+            return res;
+        }
         tasks.emplace([task] { (*task)(); });
     }
     condition.notify_one();
@@ -80,7 +93,12 @@ auto ThreadPool::microTask(F &&f, Args &&... args) -> std::future<typename std::
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
-        assert(stop == false && "Don't allow posting after stopping the pool");
+        if (stop)
+        {
+            assert(warning());
+            (*task)();
+            return res;
+        }
         microTasks.emplace([task] { (*task)(); });
     }
     condition.notify_one();
@@ -101,17 +119,25 @@ public:
 #include "state_helper.h"
 
 template <>
-class Future<std::nullptr_t> : public Object, public StateHelper
+class Future<std::nullptr_t> : public Object, StateHelper
 {
     template <typename R>
     friend class Completer;
 
+    template <typename R>
+    friend class Stream;
+
 protected:
-    Future() {}
-    // synchronization
-    std::mutex _mutex;
+    Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
+    Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _completed(false) {}
+    std::atomic_bool _completed;
+    Object::Ref<ThreadPool> _callbackHandler;
 
 public:
+    static Object::Ref<Future<void>> race(Set<Object::Ref<Future<>>> &&set);
+    static Object::Ref<Future<void>> wait(Set<Object::Ref<Future<>>> &&set);
+
+    virtual Object::Ref<Future<void>> than(Function<void()>) = 0;
     virtual void sync() = 0;
     virtual void sync(Duration timeout) = 0;
 };
@@ -122,6 +148,9 @@ class Future<void> : public Future<std::nullptr_t>
     template <typename R>
     friend class Completer;
 
+    template <typename R>
+    friend class Stream;
+
 public:
     static Object::Ref<Future<void>> value(Object::Ref<ThreadPool> callbackHandler);
     static Object::Ref<Future<void>> value(State<StatefulWidget> *state);
@@ -129,21 +158,19 @@ public:
     static Object::Ref<Future<void>> async(Object::Ref<ThreadPool> callbackHandler, Function<void()>);
     static Object::Ref<Future<void>> async(State<StatefulWidget> *state, Function<void()>);
 
-    Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
-    Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
+    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler) {}
+    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state) {}
 
     template <typename ReturnType = void>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType()>);
+    Object::Ref<Future<void>> than(Function<void()>) override;
 
     virtual Object::Ref<Future<void>> timeout(Duration, Function<void()> onTimeout);
-    virtual Object::Ref<Future<void>> catchError(Function<void()>);
     void sync() override;
     void sync(Duration timeout) override;
 
 protected:
-    bool _completed = false;
-    Object::Ref<ThreadPool> _callbackHandler;
-    Object::List<Function<void()>> _callbackList;
+    List<Function<void()>> _callbackList;
 };
 
 template <typename T>
@@ -152,46 +179,62 @@ class Future : public Future<std::nullptr_t>
     template <typename R>
     friend class Completer;
 
+    template <typename R>
+    friend class Stream;
+
 public:
     static Object::Ref<Future<T>> value(Object::Ref<ThreadPool> callbackHandler, const T &);
     static Object::Ref<Future<T>> value(State<StatefulWidget> *state, const T &);
+    static Object::Ref<Future<T>> value(Object::Ref<ThreadPool> callbackHandler, T &&);
+    static Object::Ref<Future<T>> value(State<StatefulWidget> *state, T &&);
 
     static Object::Ref<Future<T>> async(Object::Ref<ThreadPool> callbackHandler, Function<T()>);
     static Object::Ref<Future<T>> async(State<StatefulWidget> *state, Function<T()>);
 
-    Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
-    Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
+    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler) {}
+    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state) {}
+
+    Future(Object::Ref<ThreadPool> callbackHandler, const T &data)
+        : _data(data), Future<std::nullptr_t>(callbackHandler) { this->_completed = true; }
+    Future(State<StatefulWidget> *state, const T &data)
+        : _data(data), Future<std::nullptr_t>(state) { this->_completed = true; }
 
     template <typename ReturnType, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);
     template <typename ReturnType = void, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)> fn);
+    Object::Ref<Future<void>> than(Function<void()>) override;
 
     virtual Object::Ref<Future<T>> timeout(Duration, Function<void()> onTimeout);
-    virtual Object::Ref<Future<T>> catchError(Function<void()>);
     void sync() override;
     void sync(Duration timeout) override;
 
 protected:
     T _data;
-    bool _completed = false;
-    Object::Ref<ThreadPool> _callbackHandler;
-    Object::List<Function<void(const T &)>> _callbackList;
+    List<Function<void(const T &)>> _callbackList;
 };
 
 template <>
-class Completer<std::nullptr_t> : public Object, public StateHelper
+class Completer<std::nullptr_t> : public Object, StateHelper
 {
     template <typename R>
     friend class Future;
 
+    template <typename R>
+    friend class Stream;
+
 protected:
-    Completer() {}
+    Completer(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _isCompleted(false), _isCancelled(false) {}
+    Completer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _isCompleted(false), _isCancelled(false) {}
+
+    std::atomic_bool _isCompleted;
+    std::atomic_bool _isCancelled;
+    Object::Ref<ThreadPool> _callbackHandler;
 
 public:
-    virtual bool cancel() = 0;
-    virtual bool isCompleted() = 0;
-    virtual bool isCancelled() = 0;
+    virtual void cancel() = 0;
+    const std::atomic_bool &isCompleted = _isCompleted;
+    const std::atomic_bool &isCancelled = _isCancelled;
 };
 
 template <>
@@ -200,51 +243,43 @@ class Completer<void> : public Completer<std::nullptr_t>
     template <typename R>
     friend class Future;
 
+    template <typename R>
+    friend class Stream;
+
 public:
     static Object::Ref<Completer<void>> deferred(Object::Ref<ThreadPool> callbackHandler, Function<void()> fn);
     static Object::Ref<Completer<void>> deferred(State<StatefulWidget> *state, Function<void()> fn);
 
-    Completer(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _future(Object::create<Future<void>>(callbackHandler)) {}
-    Completer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _future(Object::create<Future<void>>(state)) {}
+    Completer(Object::Ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<void>>(callbackHandler)) {}
+    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<void>>(state)) {}
 
     virtual void complete()
     {
-        assert(this->_isCompleted == false);
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        if (this->_isCancelled)
-            return;
-        this->_future->_completed = true;
-        for (auto &fn : this->_future->_callbackList)
-            this->_callbackHandler->post(fn);
-        this->_future->_callbackList.clear();
+        Object::Ref<Completer<void>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self] {
+            assert(self->_isCompleted == false);
+            if (self->_isCancelled)
+                return;
+            self->_future->_completed = true;
+            for (auto &fn : self->_future->_callbackList)
+                fn();
+            self->_future->_callbackList.clear();
+        });
     }
 
-    bool cancel() override
+    void cancel() override
     {
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        if (this->_isCompleted)
-            return false; // already completed
-        this->_isCancelled = true;
-        return true; // cancel successfully
-    }
-
-    bool isCompleted() override
-    {
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        return this->_isCompleted;
-    }
-
-    bool isCancelled() override
-    {
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        return this->_isCancelled;
+        Object::Ref<Completer<void>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self] {
+            if (self->_isCompleted)
+                return false; // already completed
+            self->_isCancelled = true;
+            return true; // cancel successfully
+        });
     }
 
 protected:
-    bool _isCompleted = false;
-    bool _isCancelled = false;
     Object::Ref<Future<void>> _future;
-    Object::Ref<ThreadPool> _callbackHandler;
 
 public:
     const Object::Ref<Future<void>> &future = _future;
@@ -256,75 +291,82 @@ class Completer : public Completer<std::nullptr_t>
     template <typename R>
     friend class Future;
 
+    template <typename R>
+    friend class Stream;
+
 public:
     static Object::Ref<Completer<T>> deferred(Object::Ref<ThreadPool> callbackHandler, Function<T()> fn);
     static Object::Ref<Completer<T>> deferred(State<StatefulWidget> *state, Function<T()> fn);
 
-    Completer(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _future(Object::create<Future<T>>(callbackHandler)) {}
-    Completer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _future(Object::create<Future<T>>(state)) {}
+    Completer(Object::Ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<T>>(callbackHandler)) {}
+    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<T>>(state)) {}
 
     virtual void complete(const T &value)
     {
-        assert(this->_isCompleted == false);
         Object::Ref<Completer<T>> self = Object::cast<>(this);
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        if (this->_isCancelled)
-            return;
-        this->_future->_data = value;
-        this->_future->_completed = true;
-        for (auto &fn : this->_future->_callbackList)
-            this->_callbackHandler->post([fn, self] { fn(self->_future->_data); });
-        this->_future->_callbackList.clear();
-        this->_future = nullptr;
+        this->_callbackHandler->post([self, value] {
+            assert(self->_isCompleted == false);
+            if (self->_isCancelled)
+                return;
+            self->_future->_data = std::move(value);
+            self->_future->_completed = true;
+            for (auto &fn : self->_future->_callbackList)
+                fn(self->_future->_data);
+            self->_future->_callbackList.clear();
+            self->_future = nullptr;
+        });
     }
 
     virtual void complete(T &&value)
     {
-        assert(this->_isCompleted == false);
         Object::Ref<Completer<T>> self = Object::cast<>(this);
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        if (this->_isCancelled)
-            return;
-        this->_future->_data = std::forward<T>(value);
-        this->_future->_completed = true;
-        for (auto &fn : this->_future->_callbackList)
-            this->_callbackHandler->post([fn, self] { fn(self->_future->_data); });
-        this->_future->_callbackList.clear();
+        this->_callbackHandler->post([self, value] {
+            assert(self->_isCompleted == false);
+            if (self->_isCancelled)
+                return;
+            self->_future->_data = std::move(value);
+            self->_future->_completed = true;
+            for (auto &fn : self->_future->_callbackList)
+                fn(self->_future->_data);
+            self->_future->_callbackList.clear();
+        });
     }
 
-    bool cancel() override
+    void cancel() override
     {
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        if (this->_isCompleted)
-            return false; // already completed
-        this->_isCancelled = true;
-        return true; // cancel successfully
-    }
-
-    bool isCompleted() override
-    {
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        return this->_isCompleted;
-    }
-
-    bool isCancelled() override
-    {
-        std::unique_lock<std::mutex> lock(this->_future->_mutex);
-        return this->_isCancelled;
+        Object::Ref<Completer<T>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self] {
+            if (!self->_isCompleted)
+                self->_isCancelled = true;
+        });
     }
 
 protected:
-    bool _isCompleted = false;
-    bool _isCancelled = false;
     Object::Ref<Future<T>> _future;
-    Object::Ref<ThreadPool> _callbackHandler;
 
 public:
     const Object::Ref<Future<T>> &future = _future;
 };
 
+inline Object::Ref<Future<void>> Future<std::nullptr_t>::race(Set<Object::Ref<Future<>>> &&set)
+{
+    //TODO: implement function
+    assert(!set.empty());
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>((*set.begin())->_callbackHandler);
+    return completer->future;
+}
+
+inline Object::Ref<Future<void>> Future<std::nullptr_t>::wait(Set<Object::Ref<Future<>>> &&set)
+{
+    //TODO: implement function
+    assert(!set.empty());
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>((*set.begin())->_callbackHandler);
+    return completer->future;
+}
+
 inline Object::Ref<Future<void>> Future<void>::value(Object::Ref<ThreadPool> callbackHandler)
 {
+    //TODO: implement function
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
     completer->complete();
     return completer->future;
@@ -332,6 +374,7 @@ inline Object::Ref<Future<void>> Future<void>::value(Object::Ref<ThreadPool> cal
 
 inline Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
 {
+    //TODO: implement function
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
     completer->complete();
     return completer->future;
@@ -340,17 +383,25 @@ inline Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *stat
 template <typename T>
 Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler, const T &value)
 {
-    Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(callbackHandler);
-    completer->complete(value);
-    return completer->future;
+    return Object::create<Future<T>>(callbackHandler, value);
 }
 
 template <typename T>
 Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, const T &value)
 {
-    Object::Ref<Completer<T>> completer = Object::create<Completer<T>>(state);
-    completer->complete(value);
-    return completer->future;
+    return Object::create<Future<T>>(state, value);
+}
+
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler, T &&value)
+{
+    return Object::create<Future<T>>(callbackHandler, value);
+}
+
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, T &&value)
+{
+    return Object::create<Future<T>>(state, value);
 }
 
 inline Object::Ref<Future<void>> Future<void>::async(Object::Ref<ThreadPool> callbackHandler, Function<void()> fn)
@@ -382,34 +433,50 @@ Object::Ref<Future<T>> Future<T>::async(State<StatefulWidget> *state, Function<T
 template <>
 inline Object::Ref<Future<void>> Future<void>::than(Function<void()> fn)
 {
-    std::unique_lock<std::mutex> lock(this->_mutex);
+    Object::Ref<Future<void>> self = Object::cast<>(this);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
-    if (this->_completed == false)
-        this->_callbackList.push_back([completer, fn] { fn(); completer->complete(); });
-    else
-        this->_callbackHandler->post([completer, fn] { fn(); completer->complete(); });
+    this->_callbackHandler->post([self, completer, fn] {
+        if (self->_completed == false)
+            self->_callbackList.push_back([completer, fn] { fn(); completer->complete(); });
+        else
+        {
+            fn();
+            completer->complete();
+        }
+    });
     return completer->future;
 }
 
 template <typename ReturnType>
 Object::Ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
 {
-    std::unique_lock<std::mutex> lock(this->_mutex);
+    Object::Ref<Future<void>> self = Object::cast<>(this);
     Object::Ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
-    if (this->_completed == false)
-        this->_callbackList.push_back([completer, fn] { completer->complete(fn()); });
-    else
-        this->_callbackHandler->post([completer, fn] { completer->complete(fn()); });
+    this->_callbackHandler->post([self, completer, fn] {
+        if (self->_completed == false)
+            self->_callbackList.push_back([completer, fn] { completer->complete(fn()); });
+        else
+            completer->complete(fn());
+    });
     return completer->future;
+}
+
+inline Object::Ref<Future<void>> Future<void>::than(Function<void()> fn)
+{
+    Object::Ref<Future<void>> self = Object::cast<>(this);
+    this->_callbackHandler->post([self, fn] {
+        if (self->_completed == false)
+            self->_callbackList.push_back(fn);
+        else
+            fn();
+    });
+
+    return self;
 }
 
 inline Object::Ref<Future<void>> Future<void>::timeout(Duration, Function<void()> onTimeout)
 {
-    return Object::cast<>(this);
-}
-
-inline Object::Ref<Future<void>> Future<void>::catchError(Function<void()>)
-{
+    //TODO: implement function
     return Object::cast<>(this);
 }
 
@@ -435,13 +502,17 @@ template <typename T>
 template <typename ReturnType, typename std::enable_if<std::is_void<ReturnType>::value>::type *>
 Object::Ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
 {
-    std::unique_lock<std::mutex> lock(this->_mutex);
-    Object::Ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     Object::Ref<Future<T>> self = Object::cast<>(this);
-    if (this->_completed == false)
-        this->_callbackList.push_back([completer, fn](const T &value) { fn(value); completer->complete(); });
-    else
-        this->_callbackHandler->post([completer, self, fn] { fn(self->_data); completer->complete(); });
+    this->_callbackHandler->post([self, completer, fn] {
+        if (self->_completed == false)
+            self->_callbackList.push_back([completer, fn](const T &value) { fn(value); completer->complete(); });
+        else
+        {
+            fn(self->_data);
+            completer->complete();
+        }
+    });
     return completer->future;
 }
 
@@ -449,25 +520,27 @@ template <typename T>
 template <typename ReturnType, typename std::enable_if<!std::is_void<ReturnType>::value>::type *>
 Object::Ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
 {
-    std::unique_lock<std::mutex> lock(this->_mutex);
     Object::Ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
     Object::Ref<Future<T>> self = Object::cast<>(this);
-    if (this->_completed == false)
-        this->_callbackList.push_back([completer, fn](const T &value) { completer->complete(fn(value)); });
-    else
-        this->_callbackHandler->post([completer, self, fn] { completer->complete(fn(self->_completer->_data)); });
+    this->_callbackHandler->post([self, completer, fn] {
+        if (self->_completed == false)
+            self->_callbackList.push_back([completer, fn](const T &value) { completer->complete(fn(value)); });
+        else
+            completer->complete(fn(self->_data));
+    });
     return completer->future;
+}
+
+template <typename T>
+Object::Ref<Future<void>> Future<T>::than(Function<void()> fn)
+{
+    return this->than<void>([fn](const T &) { fn(); });
 }
 
 template <typename T>
 Object::Ref<Future<T>> Future<T>::timeout(Duration, Function<void()> onTimeout)
 {
-    return Object::cast<>(this);
-}
-
-template <typename T>
-Object::Ref<Future<T>> Future<T>::catchError(Function<void()>)
-{
+    //TODO: implement function
     return Object::cast<>(this);
 }
 
@@ -492,92 +565,169 @@ void Future<T>::sync(Duration timeout)
 }
 
 template <>
-class Stream<std::nullptr_t> : public Object, public StateHelper
+class Stream<std::nullptr_t> : public Object, StateHelper
 {
 protected:
-    Stream() {}
+    Stream(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
+    Stream(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
+
+    Object::Ref<ThreadPool> _callbackHandler;
+
+public:
     virtual void close() = 0;
 };
 
-template <typename T, typename std::enable_if<!std::is_void<T>::value>::type *>
-class Stream : public Stream<std::nullptr_t>
+template <>
+class Stream<void> : public Stream<std::nullptr_t>
 {
 public:
-    Stream(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
-    Stream(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _onClose(Object::create<Completer<void>>(state)) {}
+    Stream(Object::Ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
+    Stream(State<StatefulWidget> *state) : Stream<std::nullptr_t>(state), _onClose(Object::create<Completer<void>>(state)) {}
     virtual ~Stream()
     {
         if (!this->_isClosed)
-            this->close();
-    }
-
-    virtual Object::Ref<Stream<T>> sink(const T &value)
-    {
-        std::unique_lock<std::mutex> lock(this->_mutex);
-        assert(!this->_isClosed);
-        Object::Ref<Stream<T>> self = Object::cast<>(this);
-        if (this->_listener)
-            this->_callbackHandler->post([self, value] { self->_listener(std::move(value)); });
-        else
-            this->_cache.emplace_back(value);
-        return self;
-    }
-
-    virtual Object::Ref<Stream<T>> sink(T &&value)
-    {
-        std::unique_lock<std::mutex> lock(this->_mutex);
-        assert(!this->_isClosed);
-        Object::Ref<Stream<T>> self = Object::cast<>(this);
-        if (this->_listener)
-            this->_callbackHandler->post([self, value] { self->_listener(std::move(value)); });
-        else
-            this->_cache.emplace_back(std::forward<T>(value));
-        return self;
-    }
-
-    virtual Object::Ref<Stream<T>> listen(Function<void(T)> fn)
-    {
-        std::unique_lock<std::mutex> lock(this->_mutex);
-        this->_listener = fn;
-        Object::Ref<Stream<T>> self = Object::cast<>(this);
-        for (auto &cache : this->_cache)
-            this->_callbackHandler->post([self, cache] { self->_listener(std::move(cache)); });
-        this->_cache.clear();
-        if (this->_isClosed)
             this->_onClose->complete();
+    }
+
+    virtual Object::Ref<Stream<void>> sink()
+    {
+        Object::Ref<Stream<void>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self] {
+            assert(!self->_isClosed);
+            if (self->_listener)
+                self->_listener();
+            else
+                self->_sinkCounter++;
+        });
         return self;
     }
 
-    virtual Object::Ref<Stream<T>> onClose(Function<void()> fn)
+    virtual Object::Ref<Stream<void>> listen(Function<void()> fn)
     {
-        std::unique_lock<std::mutex> lock(this->_mutex);
+        Object::Ref<Stream<void>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self, fn] {
+            assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
+            self->_listener = fn;
+            for (int c = 0; c < self->_sinkCounter; c++)
+                self->_listener();
+            self->_sinkCounter = 0;
+            if (self->_isClosed)
+                self->_onClose->complete();
+        });
+        return self;
+    }
+
+    virtual Object::Ref<Stream<void>> onClose(Function<void()> fn)
+    {
         this->_onClose->future->than(fn);
         return Object::cast<>(this);
     }
 
-    Future<void> asFuture()
+    virtual Object::Ref<Future<void>> asFuture()
     {
-        std::unique_lock<std::mutex> lock(this->_mutex);
-        assert(!this->_isClosed);
         return this->_onClose->future;
     }
 
     void close() override
     {
-        std::unique_lock<std::mutex> lock(this->_mutex);
-        assert(!this->_isClosed);
-        if (this->_cache.empty())
-            this->_onClose->complete();
-        this->_isClosed = true;
+        Object::Ref<Stream<void>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self] {
+            assert(!self->_isClosed);
+            if (self->_sinkCounter == 0)
+                self->_onClose->complete();
+            self->_isClosed = true;
+        });
     }
 
 protected:
     Object::Ref<Completer<void>> _onClose;
     Object::Ref<ThreadPool> _callbackHandler;
-    Object::List<T> _cache;
+    size_t _sinkCounter;
+
+    Function<void()> _listener;
+    bool _isClosed = false;
+};
+
+template <typename T>
+class Stream : public Stream<std::nullptr_t>
+{
+public:
+    Stream(Object::Ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
+    Stream(State<StatefulWidget> *state) : Stream<std::nullptr_t>(state), _onClose(Object::create<Completer<void>>(state)) {}
+    virtual ~Stream()
+    {
+        if (!this->_isClosed)
+            this->_onClose->complete();
+    }
+
+    virtual Object::Ref<Stream<T>> sink(const T &value)
+    {
+        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self, value] {
+            assert(!self->_isClosed);
+            if (self->_listener)
+                self->_listener(std::move(value));
+            else
+                self->_cache.emplace_back(value);
+        });
+        return self;
+    }
+
+    virtual Object::Ref<Stream<T>> sink(T &&value)
+    {
+        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self, value] {
+            assert(!self->_isClosed);
+            if (self->_listener)
+                self->_listener(std::move(value));
+            else
+                self->_cache.emplace_back(std::move(value));
+        });
+        return self;
+    }
+
+    virtual Object::Ref<Stream<T>> listen(Function<void(T)> fn)
+    {
+        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self, fn] {
+            assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
+            self->_listener = fn;
+            for (auto &cache : self->_cache)
+                self->_listener(std::move(cache));
+            self->_cache.clear();
+            if (self->_isClosed)
+                self->_onClose->complete();
+        });
+        return self;
+    }
+
+    virtual Object::Ref<Stream<T>> onClose(Function<void()> fn)
+    {
+        this->_onClose->future->than(fn);
+        return Object::cast<>(this);
+    }
+
+    virtual Object::Ref<Future<void>> asFuture()
+    {
+        return this->_onClose->future;
+    }
+
+    void close() override
+    {
+        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        this->_callbackHandler->post([self] {
+            assert(!self->_isClosed);
+            if (self->_cache.empty())
+                self->_onClose->complete();
+            self->_isClosed = true;
+        });
+    }
+
+protected:
+    Object::Ref<Completer<void>> _onClose;
+    List<T> _cache;
 
     Function<void(T)> _listener;
-    std::mutex _mutex;
     bool _isClosed = false;
 };
 

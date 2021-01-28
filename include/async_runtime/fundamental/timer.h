@@ -21,5 +21,5 @@ public:
     void dispose() override;
 
 protected:
-    Object::Ref<std::atomic_bool> _clear;
+    std::shared_ptr<std::atomic_bool> _clear;
 };

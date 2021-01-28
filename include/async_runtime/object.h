@@ -14,6 +14,13 @@
 #include "basic/duration.h" // Duration
 #include "basic/function.h" // Function
 
+template <typename Element>
+using List = std::deque<Element>;
+template <typename Key, typename Value>
+using Map = std::unordered_map<Key, Value>;
+template <typename Element>
+using Set = std::unordered_set<Element>;
+
 class Object : public std::enable_shared_from_this<Object>
 {
 public:
@@ -22,13 +29,6 @@ public:
     using Ref = std::shared_ptr<T>;
     template <typename T>
     using WeakRef = std::weak_ptr<T>;
-
-    template <typename Element>
-    using List = std::deque<Element>;
-    template <typename Key, typename Value>
-    using Map = std::unordered_map<Key, Value>;
-    template <typename Element>
-    using Set = std::unordered_set<Element>;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     inline static Ref<T> create(_Args &&...);

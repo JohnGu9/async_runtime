@@ -54,7 +54,7 @@ class _LoggerProxyHandler : public LoggerHandler
     Logger::Handler _proxyTarget;
 
 public:
-    _LoggerProxyHandler(Logger::Handler proxyTarget) : LoggerHandler(nullptr) {}
+    _LoggerProxyHandler(Logger::Handler proxyTarget) : _proxyTarget(proxyTarget), LoggerHandler() {}
     Object::Ref<Future<bool>> write(String str) override
     {
         return this->_proxyTarget->write(str);
@@ -157,7 +157,7 @@ Object::Ref<Widget> Logger::stdoutProxy(Object::Ref<Widget> child, Object::Ref<K
     return Object::create<_Logger>(child, "", key);
 }
 
-Object::Ref<Widget> Logger::file(Object::Ref<Widget> child, String path, Object::Ref<Key> key)
+Object::Ref<Widget> Logger::file(String path, Object::Ref<Widget> child, Object::Ref<Key> key)
 {
     assert(!path.isEmpty() && "path can't be empty");
     return Object::create<_Logger>(child, path, key);
