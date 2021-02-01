@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <memory>
+#include "../object.h"
 
 class String
 {
@@ -32,6 +33,9 @@ public:
     virtual String operator+(const char c) const;
     virtual String operator+(const char *const str) const;
     virtual String operator+(const String &other) const;
+    virtual String operator+(Object::Ref<Object> object) const;
+    template <typename T>
+    String operator+(const T& value) const;
 
     virtual bool isEmpty() const;
     virtual bool isNotEmpty() const;
@@ -39,11 +43,20 @@ public:
     virtual const char *c_str() const;
 };
 
+template <typename T>
+String String::operator+(const T& value) const
+{
+    std::shared_ptr<std::string> ptr = std::make_shared<std::string>(this->toStdString());
+    *ptr += std::to_string(value);
+    return String(ptr);
+}
+
 String operator+(const char c, const String &string);
 String operator+(const char *const str, const String &string);
 std::ostream &operator<<(std::ostream &os, const String &str);
 std::istream &operator>>(std::istream &is, String &str);
 String getline(std::istream &os);
+void print(String str);
 
 namespace std
 {

@@ -9,7 +9,7 @@ public:
     _StdoutLoggerHandler(State<StatefulWidget> *state) : LoggerHandler(state) { assert(state); }
     Object::Ref<Future<bool>> write(String str) override
     {
-        return Future<bool>::async(this->_state.get(), [str] {
+        return async<bool>(this->_state.get(), [str] {
             std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
             return true;
         });
@@ -17,7 +17,7 @@ public:
 
     Object::Ref<Future<bool>> writeLine(String str) override
     {
-        return Future<bool>::async(this->_state.get(), [str] {
+        return async<bool>(this->_state.get(), [str] {
             info_print(str);
             return true;
         });

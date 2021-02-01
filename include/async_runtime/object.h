@@ -4,22 +4,23 @@
 #include <sstream>
 #include <assert.h>
 
+#include <deque>
 #include <unordered_map>
 #include <unordered_set>
-#include <deque>
 
 // native copyable type that don't not need Object::Ref
 #include "basic/io.h"
-#include "basic/string.h"   // String
 #include "basic/duration.h" // Duration
 #include "basic/function.h" // Function
+// #include "basic/string.h"   // String
+class String;
 
 template <typename Element>
-using List = std::deque<Element>;
+using List = std::deque<Element>; // List
 template <typename Key, typename Value>
-using Map = std::unordered_map<Key, Value>;
+using Map = std::unordered_map<Key, Value>; // Map
 template <typename Element>
-using Set = std::unordered_set<Element>;
+using Set = std::unordered_set<Element>; // Set
 
 class Object : public std::enable_shared_from_this<Object>
 {
@@ -58,6 +59,8 @@ private:
     Object(const Object &) = delete;
     Object &operator=(const Object &) = delete;
 };
+
+#define Self Object::cast<>(this)
 
 // http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/memory/shared_ptr/operator_cmp.html
 // C++11 already implement this operator
@@ -112,3 +115,6 @@ inline Object::Ref<T> Object::cast()
 }
 
 void print(Object::Ref<Object> object);
+
+// native copyable type that don't not need Object::Ref
+#include "basic/string.h" // String

@@ -45,6 +45,13 @@ String String::operator+(const String &other) const
     return String(ptr);
 }
 
+String String::operator+(Object::Ref<Object> object) const
+{
+    std::shared_ptr<std::string> ptr = std::make_shared<std::string>(this->toStdString());
+    *ptr += object->toString().toStdString();
+    return String(ptr);
+}
+
 bool String::isEmpty() const
 {
     return this->_ptr->empty();

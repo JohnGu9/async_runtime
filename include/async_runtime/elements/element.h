@@ -115,18 +115,21 @@ public:
     Object::Ref<State<StatefulWidget>> _state;
 
 protected:
-    class LifeCycle
+    class _LifeCycle
     {
     public:
-        enum Enum
+        enum Value
         {
             uninitialized,
             mounted,
             building,
             unmount,
         };
+        static const List<Value> values;
+        static String toString(Value value);
     };
-    LifeCycle::Enum _lifeCycle;
+
+    _LifeCycle::Value _lifeCycle;
 
     void attach() override;
     void detach() override;

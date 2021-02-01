@@ -35,6 +35,8 @@ ThreadPool::ThreadPool(size_t threads) : stop(false)
             });
 }
 
+size_t ThreadPool::threads() const { return this->workers.size(); }
+
 ThreadPool::~ThreadPool()
 {
     std::unique_lock<std::mutex> lock(queue_mutex);
@@ -82,8 +84,37 @@ void ThreadPool::forceClose()
         worker.detach();
 }
 
-Object::Ref<ThreadPool> StaticThreadPool::shared()
+Object::Ref<ThreadPool> AutoReleaseThreadPool::shared()
 {
-    static Object::Ref<ThreadPool> singleton = Object::create<StaticThreadPool>(1);
+    static Object::Ref<ThreadPool> singleton = Object::create<AutoReleaseThreadPool>(1);
     return singleton;
+}
+
+const List<AsyncSnapshot<>::ConnectionState::Value>
+    AsyncSnapshot<>::ConnectionState::values = {
+        AsyncSnapshot<>::ConnectionState::none,
+        AsyncSnapshot<>::ConnectionState::active,
+        AsyncSnapshot<>::ConnectionState::done,
+        AsyncSnapshot<>::ConnectionState::waiting};
+
+String AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::ConnectionState::Value value)
+{
+    static const String none = "AsyncSnapshot<>::ConnectionState::none";
+    static const String active = "AsyncSnapshot<>::ConnectionState::active";
+    static const String done = "AsyncSnapshot<>::ConnectionState::done";
+    static const String waiting = "AsyncSnapshot<>::ConnectionState::waiting";
+    switch (value)
+    {
+    case AsyncSnapshot<>::ConnectionState::none:
+        return none;
+    case AsyncSnapshot<>::ConnectionState::active:
+        return active;
+    case AsyncSnapshot<>::ConnectionState::done:
+        return done;
+    case AsyncSnapshot<>::ConnectionState::waiting:
+        return waiting;
+    default:
+        assert(false && "The enum doesn't exists. ");
+        break;
+    }
 }

@@ -1,16 +1,45 @@
 #include "async_runtime/elements/element.h"
 #include "async_runtime/widgets/stateful_widget.h"
 
+const List<StatefulElement::_LifeCycle::Value>
+    StatefulElement::_LifeCycle::values = {
+        StatefulElement::_LifeCycle::uninitialized,
+        StatefulElement::_LifeCycle::mounted,
+        StatefulElement::_LifeCycle::building,
+        StatefulElement::_LifeCycle::unmount};
+
+String StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::Value value)
+{
+    static const String uninitialized = "StatefulElement::_LifeCycle::uninitialized";
+    static const String mounted = "StatefulElement::_LifeCycle::mounted";
+    static const String building = "StatefulElement::_LifeCycle::building";
+    static const String unmount = "StatefulElement::_LifeCycle::unmount";
+    switch (value)
+    {
+    case StatefulElement::_LifeCycle::uninitialized:
+        return uninitialized;
+    case StatefulElement::_LifeCycle::mounted:
+        return mounted;
+    case StatefulElement::_LifeCycle::building:
+        return building;
+    case StatefulElement::_LifeCycle::unmount:
+        return unmount;
+    default:
+        assert(false && "The enum doesn't exists. ");
+        break;
+    }
+}
+
 /// Stateful Element
 StatefulElement::StatefulElement(Object::Ref<StatefulWidget> widget)
-    : _statefulWidget(widget), SingleChildElement(widget), _lifeCycle(StatefulElement::LifeCycle::uninitialized)
+    : _statefulWidget(widget), SingleChildElement(widget), _lifeCycle(StatefulElement::_LifeCycle::uninitialized)
 {
     _state = _statefulWidget->createState();
 }
 
 void StatefulElement::attach()
 {
-    this->_lifeCycle = StatefulElement::LifeCycle::building;
+    this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_state->_mounted == false && "This [State] class mount twice is not allowed. User should not reuse [State] class or manually call [initState]");
     Element::attach();
     this->_state->_element = Object::cast<>(this);
@@ -21,12 +50,12 @@ void StatefulElement::attach()
     Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
     this->attachElement(widget->createElement());
-    this->_lifeCycle = StatefulElement::LifeCycle::mounted;
+    this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
 
 void StatefulElement::detach()
 {
-    this->_lifeCycle = StatefulElement::LifeCycle::unmount;
+    this->_lifeCycle = StatefulElement::_LifeCycle::unmount;
     assert(this->_state->_mounted && "This [State] class dispose more than twice is not allowed. User should not reuse [State] class or manually call [dispose]");
     this->detachElement();
     this->_state->dispose();
@@ -40,7 +69,7 @@ void StatefulElement::detach()
 
 void StatefulElement::build()
 {
-    this->_lifeCycle = StatefulElement::LifeCycle::building;
+    this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_childElement != nullptr);
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
@@ -52,24 +81,24 @@ void StatefulElement::build()
         this->_childElement->update(widget);
     else
         this->reattachElement(widget->createElement());
-    this->_lifeCycle = StatefulElement::LifeCycle::mounted;
+    this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
 
 void StatefulElement::update(Object::Ref<Widget> newWidget)
 {
-    this->_lifeCycle = StatefulElement::LifeCycle::building;
+    this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
     this->_statefulWidget = newWidget->cast<StatefulWidget>();
     assert(this->_statefulWidget != nullptr);
     this->_state->didWidgetUpdated(oldWidget);
     Element::update(newWidget);
-    this->_lifeCycle = StatefulElement::LifeCycle::mounted;
+    this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
 
 void StatefulElement::notify(Object::Ref<Widget> newWidget)
 {
-    this->_lifeCycle = StatefulElement::LifeCycle::building;
+    this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_childElement != nullptr);
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     Element::notify(newWidget);
@@ -87,7 +116,7 @@ void StatefulElement::notify(Object::Ref<Widget> newWidget)
         this->_childElement->notify(widget);
     else
         this->reattachElement(widget->createElement());
-    this->_lifeCycle = StatefulElement::LifeCycle::mounted;
+    this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
 
 void StatefulElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)

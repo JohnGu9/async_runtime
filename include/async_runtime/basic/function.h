@@ -17,6 +17,8 @@ public:
 template <typename ReturnType, class... Args>
 class Function<ReturnType(Args...)> : public Function<std::nullptr_t>
 {
+    static_assert(std::is_constructible<std::function<ReturnType(Args...)>, ReturnType(Args...)>::value, "Can't construct object in function");
+
     template <typename T>
     friend struct std::hash;
 
@@ -24,7 +26,7 @@ public:
     Function() {}
     Function(std::nullptr_t) {}
     Function(const Function &other) : _fn(other._fn) {}
-    template <typename Lambda>
+    template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
     Function(Lambda lambda) : _fn(std::make_shared<std::function<ReturnType(Args...)>>(lambda)) {}
 
     virtual ReturnType operator()(Args... args) const { return _fn->operator()(std::forward<Args>(args)...); }

@@ -3,21 +3,13 @@
 // #include <shared_mutex>
 #include "async.h"
 #include "../widgets/state.h"
+#include "../basic/lock.h"
 
 class File : public Object
 {
     static Object::Ref<ThreadPool> sharedThreadPool();
 
 public:
-    static bool exists(String path);                                                    // sync
-    static Object::Ref<Future<bool>> exists(State<StatefulWidget> *state, String path); // async
-
-    static int remove(String path);                                                    // sync
-    static Object::Ref<Future<int>> remove(State<StatefulWidget> *state, String path); // async
-
-    static long long size(String path);                                                    // sync
-    static Object::Ref<Future<long long>> size(State<StatefulWidget> *state, String path); // async
-
     static Object::Ref<File> fromPath(State<StatefulWidget> *state, String path, size_t threads = 0);
     File(State<StatefulWidget> *state, String path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
     virtual ~File();
@@ -25,6 +17,10 @@ public:
     virtual Object::Ref<Future<bool>> exists();
     virtual Object::Ref<Future<int>> remove();
     virtual Object::Ref<Future<long long>> size(); // unit: byte
+
+    virtual bool existsSync();
+    virtual int removeSync();
+    virtual long long sizeSync();
 
     // write
     virtual Object::Ref<Future<void>> append(String str);
@@ -44,7 +40,8 @@ protected:
     Object::Ref<State<StatefulWidget>> _state;
     Object::Ref<ThreadPool> _threadPool;
     std::atomic_bool _isDisposed;
-    // std::shared_mutex _mutex;
+    Object::Ref<Lock> _lock;
+
 public:
     const String &path = _path;
 };
