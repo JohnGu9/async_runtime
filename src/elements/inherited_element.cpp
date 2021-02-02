@@ -7,7 +7,7 @@ InheritedElement::InheritedElement(Object::Ref<InheritedWidget> widget) : _inher
 void InheritedElement::attach()
 {
     Element::attach();
-    this->_inheritances = Map<Object::RuntimeType, Object::Ref<Inheritance>>(this->_inheritances);
+    this->_inheritances = this->_inheritances.copy();
     this->_inheritances[this->_inheritWidget->runtimeType()] = Object::cast<Inheritance>(this->_inheritWidget.get());
     Object::Ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr && "InheritedWidget child should not return null, make sure call InheritedWidget init constructer. ");

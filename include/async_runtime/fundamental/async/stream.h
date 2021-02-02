@@ -90,8 +90,14 @@ template <typename T>
 class Stream : public Stream<std::nullptr_t>
 {
 public:
-    Stream(Object::Ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
-    Stream(State<StatefulWidget> *state) : Stream<std::nullptr_t>(state), _onClose(Object::create<Completer<void>>(state)) {}
+    Stream(Object::Ref<ThreadPool> callbackHandler)
+        : Stream<std::nullptr_t>(callbackHandler),
+          _onClose(Object::create<Completer<void>>(callbackHandler)),
+          _cache({}) {}
+    Stream(State<StatefulWidget> *state)
+        : Stream<std::nullptr_t>(state),
+          _onClose(Object::create<Completer<void>>(state)),
+          _cache({}) {}
     virtual ~Stream()
     {
         if (!this->_isClosed)
@@ -106,7 +112,7 @@ public:
             if (self->_listener)
                 self->_listener(std::move(value));
             else
-                self->_cache.emplace_back(value);
+                self->_cache->emplace_back(value);
         });
         return self;
     }
@@ -119,7 +125,7 @@ public:
             if (self->_listener)
                 self->_listener(std::move(value));
             else
-                self->_cache.emplace_back(std::move(value));
+                self->_cache->emplace_back(std::move(value));
         });
         return self;
     }
@@ -132,7 +138,7 @@ public:
             self->_listener = fn;
             for (auto &cache : self->_cache)
                 self->_listener(std::move(cache));
-            self->_cache.clear();
+            self->_cache->clear();
             if (self->_isClosed)
                 self->_onClose->completeSync();
         });
@@ -155,7 +161,7 @@ public:
         Object::Ref<Stream<T>> self = Object::cast<>(this);
         this->_callbackHandler->post([self] {
             assert(!self->_isClosed);
-            if (self->_cache.empty())
+            if (self->_cache->empty())
                 self->_onClose->completeSync();
             self->_isClosed = true;
         });

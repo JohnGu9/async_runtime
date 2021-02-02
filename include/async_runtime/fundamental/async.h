@@ -39,7 +39,7 @@ inline Object::Ref<Future<void>> Future<void>::than(Function<void()> fn)
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList.push_back([completer, fn] { fn(); completer->completeSync(); });
+            self->_callbackList->push_back([completer, fn] { fn(); completer->completeSync(); });
         else
         {
             fn();
@@ -56,7 +56,7 @@ Object::Ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
     Object::Ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList.push_back([completer, fn] { completer->completeSync(fn()); });
+            self->_callbackList->push_back([completer, fn] { completer->completeSync(fn()); });
         else
             completer->completeSync(fn());
     });
@@ -101,7 +101,7 @@ Object::Ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> 
     Object::Ref<Future<T>> self = Object::cast<>(this);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList.push_back([completer, fn](const T &value) { fn(value); completer->completeSync(); });
+            self->_callbackList->push_back([completer, fn](const T &value) { fn(value); completer->completeSync(); });
         else
         {
             fn(self->_data);
@@ -119,7 +119,7 @@ Object::Ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> 
     Object::Ref<Future<T>> self = Object::cast<>(this);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList.push_back([completer, fn](const T &value) { completer->completeSync(fn(value)); });
+            self->_callbackList->push_back([completer, fn](const T &value) { completer->completeSync(fn(value)); });
         else
             completer->completeSync(fn(self->_data));
     });
@@ -132,7 +132,7 @@ Object::Ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
     Object::Ref<Future<T>> self = Object::cast<>(this);
     this->_callbackHandler->post([self, fn] {
         if (self->_completed == false)
-            self->_callbackList.push_back([fn](const T &) { fn(); });
+            self->_callbackList->push_back([fn](const T &) { fn(); });
         else
             fn();
     });

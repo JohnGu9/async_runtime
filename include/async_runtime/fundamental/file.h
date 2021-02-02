@@ -20,7 +20,7 @@ public:
 
     virtual bool existsSync();
     virtual int removeSync();
-    virtual long long sizeSync();
+    virtual long long sizeSync(); // unit: byte
 
     // write
     virtual Object::Ref<Future<void>> append(String str);

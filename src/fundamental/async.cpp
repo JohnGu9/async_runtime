@@ -154,7 +154,7 @@ void Future<std::nullptr_t>::sync(Duration timeout)
 
 Object::Ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set)
 {
-    if (set.empty())
+    if (set->empty())
         return Future<void>::value(state);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
     for (auto &future : set)
@@ -164,7 +164,7 @@ Object::Ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<O
 
 Object::Ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set)
 {
-    size_t size = set.size();
+    size_t size = set->size();
     if (size == 0)
         return Future<void>::value(state);
     Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
@@ -202,7 +202,7 @@ Object::Ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
     Object::Ref<Future<void>> self = Object::cast<>(this);
     this->_callbackHandler->post([self, fn] {
         if (self->_completed == false)
-            self->_callbackList.push_back(fn);
+            self->_callbackList->push_back(fn);
         else
             fn();
     });

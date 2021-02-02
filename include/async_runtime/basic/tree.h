@@ -5,6 +5,7 @@
 class Tree : public Object
 {
 public:
+    Tree() : children({}) {}
     Object::WeakRef<Tree> parent;
     List<Object::Ref<Tree>> children;
     String info;

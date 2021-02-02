@@ -14,7 +14,6 @@ File::File(State<StatefulWidget> *state, String path, size_t threads)
     : _path(path), _state(Object::cast<>(state)),
       _lock(threads > 1 ? Object::create<Lock>() : Object::create<Lock::InvailedLock>())
 {
-    // assert(threads < 2 && "C++11 do not feature read-write lock, so File object do not support multithread read-write operation. ");
     if (threads == 0)
         this->_threadPool = sharedThreadPool();
     else

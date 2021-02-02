@@ -70,7 +70,7 @@ protected:
         this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
             fn();
-        this->_future->_callbackList.clear();
+        this->_future->_callbackList->clear();
     }
 
     Object::Ref<Future<void>> _future;
@@ -129,7 +129,7 @@ protected:
         this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
             fn(this->_future->_data);
-        this->_future->_callbackList.clear();
+        this->_future->_callbackList->clear();
     }
 
     Object::Ref<Future<T>> _future;

@@ -51,8 +51,8 @@ public:
     static Object::Ref<Future<void>> value(Object::Ref<ThreadPool> callbackHandler);
     static Object::Ref<Future<void>> value(State<StatefulWidget> *state);
 
-    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler) {}
-    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state) {}
+    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
+    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
 
     template <typename ReturnType = void>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType()>);
@@ -85,13 +85,13 @@ public:
     static Object::Ref<Future<T>> value(Object::Ref<ThreadPool> callbackHandler, T &&);
     static Object::Ref<Future<T>> value(State<StatefulWidget> *state, T &&);
 
-    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler) {}
-    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state) {}
+    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
+    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
 
     Future(Object::Ref<ThreadPool> callbackHandler, const T &data)
-        : _data(data), Future<std::nullptr_t>(callbackHandler) { this->_completed = true; }
+        : _data(data), _callbackList({}), Future<std::nullptr_t>(callbackHandler) { this->_completed = true; }
     Future(State<StatefulWidget> *state, const T &data)
-        : _data(data), Future<std::nullptr_t>(state) { this->_completed = true; }
+        : _data(data), _callbackList({}), Future<std::nullptr_t>(state) { this->_completed = true; }
 
     template <typename ReturnType = void, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);

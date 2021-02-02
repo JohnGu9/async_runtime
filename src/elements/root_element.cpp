@@ -32,6 +32,7 @@ void RootElement::attach()
 {
     this->widget = Object::create<_MockWidget>();
     this->_child = Object::create<RootInheritedWidget>(this->_child, Object::cast<>(this));
+    this->_inheritances = {};
     this->attachElement(this->_child->createElement());
 }
 
@@ -161,12 +162,11 @@ void RootElement::onCommand(const std::string &in)
     }
     else if (command == "ls")
     {
-        Map<Element *, List<Element *>> map;
-        map[this] = {};
+        Map<Element *, List<Element *>> map = {{this, List<Element *>::empty()}};
         this->visitDescendant([&map](Object::Ref<Element> element) -> bool {
             Object::Ref<Element> parent = element->parent.lock();
-            map[parent.get()].push_back(element.get());
-            map[element.get()] = {};
+            map[parent.get()]->push_back(element.get());
+            map[element.get()] = List<Element *>::empty();
             return false;
         });
         Object::Ref<Tree> tree = Object::create<Tree>();
@@ -184,7 +184,7 @@ void RootElement::onCommand(const std::string &in)
                 {
                     Object::Ref<Tree> childTree = Object::create<Tree>();
                     buildTree(child, childTree);
-                    currentTree->children.push_back(childTree);
+                    currentTree->children->push_back(childTree);
                 }
             };
         buildTree(this, tree);

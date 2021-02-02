@@ -12,15 +12,11 @@
 #include "basic/io.h"
 #include "basic/duration.h" // Duration
 #include "basic/function.h" // Function
+#include "basic/container.h"
+
 // #include "basic/string.h"   // String
 class String;
 
-template <typename Element>
-using List = std::deque<Element>; // List
-template <typename Key, typename Value>
-using Map = std::unordered_map<Key, Value>; // Map
-template <typename Element>
-using Set = std::unordered_set<Element>; // Set
 
 class Object : public std::enable_shared_from_this<Object>
 {
