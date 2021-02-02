@@ -1,5 +1,11 @@
 #include "async_runtime/fundamental/async.h"
 
+////////////////////////////
+//
+// ThreadPool implement
+//
+////////////////////////////
+
 ThreadPool::ThreadPool(size_t threads) : stop(false)
 {
     assert(threads > 0);
@@ -50,7 +56,7 @@ bool ThreadPool::isActive()
 }
 
 // the destructor joins all threads
-void ThreadPool::dispose()
+void ThreadPool::dispose(bool join)
 {
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
@@ -63,19 +69,19 @@ void ThreadPool::dispose()
     }
     condition.notify_all();
 
-    for (std::thread &worker : workers)
-        worker.join();
+    if (join)
+    {
+        for (std::thread &worker : workers)
+            worker.join();
+    }
 }
 
-void ThreadPool::forceClose()
+void ThreadPool::detach()
 {
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         if (stop)
-        {
-            assert(false && "ThreadPool call [dispose] that already is disposed. ");
             return;
-        }
         stop = true;
     }
     condition.notify_all();
@@ -84,11 +90,136 @@ void ThreadPool::forceClose()
         worker.detach();
 }
 
+////////////////////////////
+//
+// AutoReleaseThreadPool implement
+//
+////////////////////////////
+
 Object::Ref<ThreadPool> AutoReleaseThreadPool::shared()
 {
     static Object::Ref<ThreadPool> singleton = Object::create<AutoReleaseThreadPool>(1);
     return singleton;
 }
+
+////////////////////////////
+//
+// Future<std::nullptr_t> implement
+//
+////////////////////////////
+
+bool Future<std::nullptr_t>::every(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)> fn)
+{
+    for (auto &future : set)
+    {
+        if (!fn(future))
+            return false;
+    }
+    return true;
+}
+
+bool Future<std::nullptr_t>::any(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)> fn)
+{
+    for (auto &future : set)
+    {
+        if (fn(future))
+            return true;
+    }
+    return false;
+}
+
+void Future<std::nullptr_t>::sync()
+{
+    std::mutex mutex;
+    std::condition_variable condition;
+    std::unique_lock<std::mutex> lock(mutex);
+    this->than([&] { condition.notify_all(); });
+    condition.wait(lock);
+}
+
+void Future<std::nullptr_t>::sync(Duration timeout)
+{
+    std::mutex mutex;
+    std::condition_variable condition;
+    std::unique_lock<std::mutex> lock(mutex);
+    this->than([&] { condition.notify_all(); });
+    condition.wait(lock);
+}
+
+////////////////////////////
+//
+// Future<void> implement
+//
+////////////////////////////
+
+Object::Ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set)
+{
+    if (set.empty())
+        return Future<void>::value(state);
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
+    for (auto &future : set)
+        future->than([completer] { completer->complete(); });
+    return completer->future;
+}
+
+Object::Ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set)
+{
+    size_t size = set.size();
+    if (size == 0)
+        return Future<void>::value(state);
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
+    size_t *count = new size_t(0);
+    for (auto &future : set)
+        future->than([completer, count, size] {
+            completer->_callbackHandler->post([completer, count, size] {
+                (*count)++;
+                if (*count == size)
+                {
+                    completer->completeSync();
+                    delete count;
+                }
+            });
+        });
+    return completer->future;
+}
+
+Object::Ref<Future<void>> Future<void>::value(Object::Ref<ThreadPool> callbackHandler)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
+    completer->complete();
+    return completer->future;
+}
+
+Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
+    completer->complete();
+    return completer->future;
+}
+
+Object::Ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
+{
+    Object::Ref<Future<void>> self = Object::cast<>(this);
+    this->_callbackHandler->post([self, fn] {
+        if (self->_completed == false)
+            self->_callbackList.push_back(fn);
+        else
+            fn();
+    });
+    return self;
+}
+
+Object::Ref<Future<void>> Future<void>::timeout(Duration, Function<void()> onTimeout)
+{
+    //TODO: implement function
+    return Object::cast<>(this);
+}
+
+////////////////////////////
+//
+// AsyncSnapshot implement
+//
+////////////////////////////
 
 const List<AsyncSnapshot<>::ConnectionState::Value>
     AsyncSnapshot<>::ConnectionState::values = {
@@ -99,20 +230,16 @@ const List<AsyncSnapshot<>::ConnectionState::Value>
 
 String AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::ConnectionState::Value value)
 {
-    static const String none = "AsyncSnapshot<>::ConnectionState::none";
-    static const String active = "AsyncSnapshot<>::ConnectionState::active";
-    static const String done = "AsyncSnapshot<>::ConnectionState::done";
-    static const String waiting = "AsyncSnapshot<>::ConnectionState::waiting";
     switch (value)
     {
     case AsyncSnapshot<>::ConnectionState::none:
-        return none;
+        return "AsyncSnapshot<>::ConnectionState::none";
     case AsyncSnapshot<>::ConnectionState::active:
-        return active;
+        return "AsyncSnapshot<>::ConnectionState::active";
     case AsyncSnapshot<>::ConnectionState::done:
-        return done;
+        return "AsyncSnapshot<>::ConnectionState::done";
     case AsyncSnapshot<>::ConnectionState::waiting:
-        return waiting;
+        return "AsyncSnapshot<>::ConnectionState::waiting";
     default:
         assert(false && "The enum doesn't exists. ");
         break;

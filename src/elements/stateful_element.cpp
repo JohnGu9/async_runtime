@@ -10,20 +10,16 @@ const List<StatefulElement::_LifeCycle::Value>
 
 String StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::Value value)
 {
-    static const String uninitialized = "StatefulElement::_LifeCycle::uninitialized";
-    static const String mounted = "StatefulElement::_LifeCycle::mounted";
-    static const String building = "StatefulElement::_LifeCycle::building";
-    static const String unmount = "StatefulElement::_LifeCycle::unmount";
     switch (value)
     {
     case StatefulElement::_LifeCycle::uninitialized:
-        return uninitialized;
+        return "StatefulElement::_LifeCycle::uninitialized";
     case StatefulElement::_LifeCycle::mounted:
-        return mounted;
+        return "StatefulElement::_LifeCycle::mounted";
     case StatefulElement::_LifeCycle::building:
-        return building;
+        return "StatefulElement::_LifeCycle::building";
     case StatefulElement::_LifeCycle::unmount:
-        return unmount;
+        return "StatefulElement::_LifeCycle::unmount";
     default:
         assert(false && "The enum doesn't exists. ");
         break;

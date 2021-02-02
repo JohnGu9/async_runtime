@@ -95,7 +95,10 @@ Scheduler::Handler Scheduler::of(Object::Ref<BuildContext> context)
 }
 
 SchedulerProxy::SchedulerProxy(Object::Ref<Widget> child, Handler handler)
-    : _handler(handler), InheritedWidget(child, Object::create<ValueKey<Handler>>(handler)) {}
+    : _handler(handler), InheritedWidget(child, Object::create<ValueKey<Handler>>(handler))
+{
+    assert(handler->threads() == 1);
+}
 
 bool SchedulerProxy::updateShouldNotify(Object::Ref<InheritedWidget> oldWidget)
 {

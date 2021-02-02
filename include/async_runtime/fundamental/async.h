@@ -12,8 +12,6 @@ class Completer;
 template <typename T = std::nullptr_t>
 class AsyncSnapshot;
 
-class ThreadPool;
-
 #include "async/thread.h"
 #include "async/thread_pool.h"
 
@@ -30,63 +28,9 @@ class ThreadPool;
 
 ////////////////////////////
 //
-// Future implement
+// Future<void> implement
 //
 ////////////////////////////
-
-inline Object::Ref<Future<void>> Future<std::nullptr_t>::race(Set<Object::Ref<Future<>>> &&set)
-{
-    //TODO: implement function
-    assert(!set.empty());
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>((*set.begin())->_callbackHandler);
-    return completer->future;
-}
-
-inline Object::Ref<Future<void>> Future<std::nullptr_t>::wait(Set<Object::Ref<Future<>>> &&set)
-{
-    //TODO: implement function
-    assert(!set.empty());
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>((*set.begin())->_callbackHandler);
-    return completer->future;
-}
-
-inline Object::Ref<Future<void>> Future<void>::value(Object::Ref<ThreadPool> callbackHandler)
-{
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
-    completer->complete();
-    return completer->future;
-}
-
-inline Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
-{
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
-    completer->complete();
-    return completer->future;
-}
-
-template <typename T>
-Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler, const T &value)
-{
-    return Object::create<Future<T>>(callbackHandler, value);
-}
-
-template <typename T>
-Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, const T &value)
-{
-    return Object::create<Future<T>>(state, value);
-}
-
-template <typename T>
-Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler, T &&value)
-{
-    return Object::create<Future<T>>(callbackHandler, value);
-}
-
-template <typename T>
-Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, T &&value)
-{
-    return Object::create<Future<T>>(state, value);
-}
 
 template <>
 inline Object::Ref<Future<void>> Future<void>::than(Function<void()> fn)
@@ -119,41 +63,34 @@ Object::Ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
     return completer->future;
 }
 
-inline Object::Ref<Future<void>> Future<void>::than(Function<void()> fn)
-{
-    Object::Ref<Future<void>> self = Object::cast<>(this);
-    this->_callbackHandler->post([self, fn] {
-        if (self->_completed == false)
-            self->_callbackList.push_back(fn);
-        else
-            fn();
-    });
+////////////////////////////
+//
+// Future<T> implement
+//
+////////////////////////////
 
-    return self;
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler, const T &value)
+{
+    return Object::create<Future<T>>(callbackHandler, value);
 }
 
-inline Object::Ref<Future<void>> Future<void>::timeout(Duration, Function<void()> onTimeout)
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, const T &value)
 {
-    //TODO: implement function
-    return Object::cast<>(this);
+    return Object::create<Future<T>>(state, value);
 }
 
-inline void Future<void>::sync()
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(Object::Ref<ThreadPool> callbackHandler, T &&value)
 {
-    std::mutex mutex;
-    std::condition_variable condition;
-    std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&] { condition.notify_all(); });
-    condition.wait(lock);
+    return Object::create<Future<T>>(callbackHandler, value);
 }
 
-inline void Future<void>::sync(Duration timeout)
+template <typename T>
+Object::Ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, T &&value)
 {
-    std::mutex mutex;
-    std::condition_variable condition;
-    std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&] { condition.notify_all(); });
-    condition.wait(lock);
+    return Object::create<Future<T>>(state, value);
 }
 
 template <typename T>
@@ -190,9 +127,16 @@ Object::Ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> 
 }
 
 template <typename T>
-Object::Ref<Future<void>> Future<T>::than(Function<void()> fn)
+Object::Ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
 {
-    return this->than<void>([fn](const T &) { fn(); });
+    Object::Ref<Future<T>> self = Object::cast<>(this);
+    this->_callbackHandler->post([self, fn] {
+        if (self->_completed == false)
+            self->_callbackList.push_back([fn](const T &) { fn(); });
+        else
+            fn();
+    });
+    return self;
 }
 
 template <typename T>
@@ -200,26 +144,6 @@ Object::Ref<Future<T>> Future<T>::timeout(Duration, Function<void()> onTimeout)
 {
     //TODO: implement function
     return Object::cast<>(this);
-}
-
-template <typename T>
-void Future<T>::sync()
-{
-    std::mutex mutex;
-    std::condition_variable condition;
-    std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&](const T &) { condition.notify_all(); });
-    condition.wait(lock);
-}
-
-template <typename T>
-void Future<T>::sync(Duration timeout)
-{
-    std::mutex mutex;
-    std::condition_variable condition;
-    std::unique_lock<std::mutex> lock(mutex);
-    this->than<void>([&](const T &) { condition.notify_all(); });
-    condition.wait(lock);
 }
 
 ////////////////////////////

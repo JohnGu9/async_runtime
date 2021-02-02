@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class Future<std::nullptr_t> : public Object, StateHelper
+class Future<std::nullptr_t> : public Object, protected StateHelper
 {
     template <typename R>
     friend class Completer;
@@ -12,18 +12,21 @@ class Future<std::nullptr_t> : public Object, StateHelper
     friend class Stream;
 
 protected:
+    static bool every(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)>);
+    static bool any(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)>);
     Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
     Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _completed(false) {}
     std::atomic_bool _completed;
     Object::Ref<ThreadPool> _callbackHandler;
 
 public:
-    static Object::Ref<Future<void>> race(Set<Object::Ref<Future<>>> &&set);
-    static Object::Ref<Future<void>> wait(Set<Object::Ref<Future<>>> &&set);
+    virtual Object::Ref<Future<std::nullptr_t>> than(Function<void()>) = 0;
 
-    virtual Object::Ref<Future<void>> than(Function<void()>) = 0;
-    virtual void sync() = 0;
-    virtual void sync(Duration timeout) = 0;
+    // not recommend to use these two functions
+    // async function should always be async
+    // try to sync may cause deadlock
+    virtual void sync();
+    virtual void sync(Duration timeout);
 };
 
 template <>
@@ -42,6 +45,9 @@ class Future<void> : public Future<std::nullptr_t>
     friend Object::Ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
 
 public:
+    static Object::Ref<Future<void>> race(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set);
+    static Object::Ref<Future<void>> wait(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set);
+
     static Object::Ref<Future<void>> value(Object::Ref<ThreadPool> callbackHandler);
     static Object::Ref<Future<void>> value(State<StatefulWidget> *state);
 
@@ -50,11 +56,9 @@ public:
 
     template <typename ReturnType = void>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType()>);
-    Object::Ref<Future<void>> than(Function<void()>) override;
+    Object::Ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
     virtual Object::Ref<Future<void>> timeout(Duration, Function<void()> onTimeout);
-    void sync() override;
-    void sync(Duration timeout) override;
 
 protected:
     List<Function<void()>> _callbackList;
@@ -93,11 +97,9 @@ public:
     Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);
     template <typename ReturnType = void, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
     Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)> fn);
-    Object::Ref<Future<void>> than(Function<void()>) override;
+    Object::Ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
     virtual Object::Ref<Future<T>> timeout(Duration, Function<void()> onTimeout);
-    void sync() override;
-    void sync(Duration timeout) override;
 
 protected:
     T _data;

@@ -9,8 +9,8 @@ class Widget;
 class LeafWidget;
 class StatelessWidget;
 class InheritedWidget;
-class NotificationListener;
 class MultiChildWidget;
+class NotificationListener;
 
 class Element : public BuildContext
 {

@@ -23,8 +23,8 @@ public:
     template <class F, class... Args>
     auto microTask(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
     virtual bool isActive();
-    virtual void dispose();
-    virtual void forceClose();
+    virtual void dispose(bool join = true);
+    virtual void detach();
     virtual size_t threads() const;
 
 protected:
