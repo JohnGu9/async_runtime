@@ -67,7 +67,7 @@ void RootElement::visitAncestor(Function<bool(Object::Ref<Element>)>) {}
 Logger::Handler RootElement::getStdoutHandler()
 {
     if (Object::Ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState())
-        if (Object::Ref<_StdoutLoggerState> state = currentState->cast<_StdoutLoggerState>())
+        if (Object::Ref<StdoutLoggerState> state = currentState->cast<StdoutLoggerState>())
             return state->_handler;
     return nullptr;
 }

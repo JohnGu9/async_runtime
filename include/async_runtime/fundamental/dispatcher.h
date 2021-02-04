@@ -6,7 +6,7 @@
 #include "disposable.h"
 
 class ThreadPool;
-class Dispatcher : public Object, public StateHelper, public Disposable
+class Dispatcher : public virtual Object, public virtual StateHelper, public virtual Disposable
 {
 public:
     Dispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);

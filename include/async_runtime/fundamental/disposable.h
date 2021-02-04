@@ -2,5 +2,6 @@
 
 class Disposable
 {
+public:
     virtual void dispose() = 0;
 };

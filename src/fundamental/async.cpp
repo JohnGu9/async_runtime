@@ -115,8 +115,6 @@ Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads
 AutoReleaseThreadPool::~AutoReleaseThreadPool()
 {
     this->detach();
-    for (std::thread &worker : workers)
-        worker.detach();
 }
 
 void AutoReleaseThreadPool::detach()
@@ -128,6 +126,8 @@ void AutoReleaseThreadPool::detach()
         stop = true;
     }
     condition.notify_all();
+    for (std::thread &worker : workers)
+        worker.detach();
 }
 
 void AutoReleaseThreadPool::onConstruction(size_t threads) {}

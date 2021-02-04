@@ -6,7 +6,7 @@
 #include "../basic/function.h"
 #include "../basic/duration.h"
 
-class Timer : public Object, StateHelper, public Disposable
+class Timer : public Object, public Disposable, StateHelper
 {
 public:
     Timer(State<StatefulWidget> *state);
@@ -19,7 +19,7 @@ public:
     virtual void setInterval(Duration interval, Function<void()> function);
     virtual void cancel();
 
-    void dispose();
+    void dispose() override;
 
 protected:
     Object::Ref<AutoReleaseThreadPool> _autoReleaseThreadPool;
