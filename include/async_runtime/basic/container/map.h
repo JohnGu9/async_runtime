@@ -36,6 +36,12 @@ public:
         return *this;
     }
 
+    Map<Key, Value> &operator=(std::nullptr_t t)
+    {
+        std::shared_ptr<std::unordered_map<Key, Value>>::operator=(t);
+        return *this;
+    }
+
     Value &operator[](const Key &key) { return (*this)->operator[](key); }
     Value &operator[](const Key &key) const { return (*this)->operator[](key); }
     Value &operator[](Key &&key) { return (*this)->operator[](std::forward<Key>(key)); }

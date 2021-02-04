@@ -6,18 +6,17 @@
 
 Object::Ref<ThreadPool> File::sharedThreadPool()
 {
-    static Object::Ref<ThreadPool> sharedThreadPool = Object::create<AutoReleaseThreadPool>(1);
+    static Object::Ref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1);
     return sharedThreadPool;
 }
 
 File::File(State<StatefulWidget> *state, String path, size_t threads)
     : _path(path), _state(Object::cast<>(state)),
-      _lock(threads > 1 ? Object::create<Lock>() : Object::create<Lock::InvailedLock>())
+      _lock(threads > 1 ? Object::create<Lock>() /* if multithread read/write, need an actually lock */
+                        : Object::create<Lock::InvailedLock>() /* if only one thread, don't need actually lock */),
+      _threadPool(threads == 0 ? sharedThreadPool()
+                               : AutoReleaseThreadPool::factory(threads))
 {
-    if (threads == 0)
-        this->_threadPool = sharedThreadPool();
-    else
-        this->_threadPool = Object::create<AutoReleaseThreadPool>(threads);
 }
 
 Object::Ref<File> File::fromPath(State<StatefulWidget> *state, String path, size_t threads)
@@ -34,11 +33,7 @@ Object::Ref<Future<bool>> File::exists()
 {
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<bool>> completer = Object::create<Completer<bool>>(_state.get());
-    this->_threadPool->post([self, completer] {
-        Object::Ref<Lock::SharedLock> readLock = self->_lock->sharedLock();
-        std::ifstream file(self->_path.c_str());
-        completer->complete(file.good());
-    });
+    this->_threadPool->post([self, completer] { completer->complete(self->existsSync()); });
     return completer->future;
 }
 
@@ -46,10 +41,7 @@ Object::Ref<Future<int>> File::remove()
 {
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<int>> completer = Object::create<Completer<int>>(_state.get());
-    this->_threadPool->post([self, completer] {
-        Object::Ref<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
-        completer->complete(std::remove(self->_path.c_str()));
-    });
+    this->_threadPool->post([self, completer] { completer->complete(self->removeSync()); });
     return completer->future;
 }
 
@@ -57,18 +49,7 @@ Object::Ref<Future<long long>> File::size()
 {
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Completer<long long>> completer = Object::create<Completer<long long>>(_state.get());
-    this->_threadPool->post([self, completer] {
-        Object::Ref<Lock::SharedLock> readLock = self->_lock->sharedLock();
-        std::ifstream::streampos begin, end;
-        {
-            std::ifstream file(self->_path.toStdString(), std::ios::binary);
-            begin = file.tellg();
-            file.seekg(0, std::ios::end);
-            end = file.tellg();
-            file.close();
-        }
-        completer->complete(end - begin);
-    });
+    this->_threadPool->post([self, completer] { completer->complete(self->sizeSync()); });
     return completer->future;
 }
 

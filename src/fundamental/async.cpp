@@ -8,37 +8,46 @@
 
 ThreadPool::ThreadPool(size_t threads) : stop(false)
 {
+    this->onConstruction(threads);
+}
+
+void ThreadPool::onConstruction(size_t threads)
+{
     assert(threads > 0);
     workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
-        workers.emplace_back(
-            [this] {
-                for (;;)
+        workers.emplace_back(this->workerBuilder(i));
+}
+
+std::function<void()> ThreadPool::workerBuilder(size_t thread)
+{
+    return [this] {
+        for (;;)
+        {
+            std::function<void()> task;
+            {
+                std::unique_lock<std::mutex> lock(this->queue_mutex);
+                this->condition.wait(lock, [this] { return this->stop || !this->microTasks.empty() || !this->tasks.empty(); });
+
+                if ( // this->stop &&
+                    this->microTasks.empty() &&
+                    this->tasks.empty()) // always finish all task
+                    return;
+
+                if (!this->microTasks.empty())
                 {
-                    std::function<void()> task;
-                    {
-                        std::unique_lock<std::mutex> lock(this->queue_mutex);
-                        this->condition.wait(lock, [this] { return this->stop || !this->microTasks.empty() || !this->tasks.empty(); });
-
-                        if ( // this->stop &&
-                            this->microTasks.empty() &&
-                            this->tasks.empty()) // always finish all task
-                            return;
-
-                        if (!this->microTasks.empty())
-                        {
-                            task = std::move(this->microTasks.front());
-                            this->microTasks.pop();
-                        }
-                        else
-                        {
-                            task = std::move(this->tasks.front());
-                            this->tasks.pop();
-                        }
-                    }
-                    task();
+                    task = std::move(this->microTasks.front());
+                    this->microTasks.pop();
                 }
-            });
+                else
+                {
+                    task = std::move(this->tasks.front());
+                    this->tasks.pop();
+                }
+            }
+            task();
+        }
+    };
 }
 
 size_t ThreadPool::threads() const { return this->workers.size(); }
@@ -56,7 +65,7 @@ bool ThreadPool::isActive()
 }
 
 // the destructor joins all threads
-void ThreadPool::dispose(bool join)
+void ThreadPool::dispose()
 {
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
@@ -69,11 +78,8 @@ void ThreadPool::dispose(bool join)
     }
     condition.notify_all();
 
-    if (join)
-    {
-        for (std::thread &worker : workers)
-            worker.join();
-    }
+    for (std::thread &worker : workers)
+        worker.join();
 }
 
 void ThreadPool::detach()
@@ -96,10 +102,66 @@ void ThreadPool::detach()
 //
 ////////////////////////////
 
-Object::Ref<ThreadPool> AutoReleaseThreadPool::shared()
+Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads)
 {
-    static Object::Ref<ThreadPool> singleton = Object::create<AutoReleaseThreadPool>(1);
-    return singleton;
+    assert(threads > 0);
+    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(makeSharedOnly(0), threads);
+    instance->workers.reserve(threads);
+    for (size_t i = 0; i < threads; ++i)
+        instance->workers.emplace_back(instance->workerBuilder(i));
+    return instance;
+}
+
+AutoReleaseThreadPool::~AutoReleaseThreadPool()
+{
+    this->close();
+    for (std::thread &worker : workers)
+        worker.detach();
+}
+
+void AutoReleaseThreadPool::close()
+{
+    {
+        std::unique_lock<std::mutex> lock(queue_mutex);
+        if (stop)
+            return;
+        stop = true;
+    }
+    condition.notify_all();
+}
+
+void AutoReleaseThreadPool::onConstruction(size_t threads) {}
+
+std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t)
+{
+    Object::Ref<AutoReleaseThreadPool> self = Object::cast<>(this);
+    return [self] {
+        for (;;)
+        {
+            std::function<void()> task;
+            {
+                std::unique_lock<std::mutex> lock(self->queue_mutex);
+                self->condition.wait(lock, [self] { return self->stop || !self->microTasks.empty() || !self->tasks.empty(); });
+
+                if ( // this->stop &&
+                    self->microTasks.empty() &&
+                    self->tasks.empty()) // always finish all task
+                    return;
+
+                if (!self->microTasks.empty())
+                {
+                    task = std::move(self->microTasks.front());
+                    self->microTasks.pop();
+                }
+                else
+                {
+                    task = std::move(self->tasks.front());
+                    self->tasks.pop();
+                }
+            }
+            task();
+        }
+    };
 }
 
 ////////////////////////////

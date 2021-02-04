@@ -33,6 +33,12 @@ public:
         return *this;
     }
 
+    Set<T> &operator=(std::nullptr_t t)
+    {
+        std::shared_ptr<std::unordered_set<T>>::operator=(t);
+        return *this;
+    }
+
     iterator begin()
     {
         assert(*this);

@@ -23,11 +23,14 @@ public:
     template <class F, class... Args>
     auto microTask(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
     virtual bool isActive();
-    virtual void dispose(bool join = true);
+    virtual void dispose();
     virtual void detach();
     virtual size_t threads() const;
 
 protected:
+    virtual void onConstruction(size_t threads);
+    virtual std::function<void()> workerBuilder(size_t);
+
     // need to keep track of threads so we can join them
     std::vector<Thread> workers;
     // the task queue
@@ -40,12 +43,6 @@ protected:
     std::condition_variable condition;
     bool stop;
 };
-
-static bool warning()
-{
-    std::cout << "Async task post after threadpool stopped. " << std::endl;
-    return true;
-}
 
 // add new work item to the pool
 template <class F, class... Args>
@@ -61,7 +58,7 @@ auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::resul
         std::unique_lock<std::mutex> lock(queue_mutex);
         if (stop)
         {
-            assert(warning());
+            assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();
             return res;
         }
@@ -85,7 +82,7 @@ auto ThreadPool::microTask(F &&f, Args &&... args) -> std::future<typename std::
         std::unique_lock<std::mutex> lock(queue_mutex);
         if (stop)
         {
-            assert(warning());
+            assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();
             return res;
         }
@@ -97,8 +94,20 @@ auto ThreadPool::microTask(F &&f, Args &&... args) -> std::future<typename std::
 
 class AutoReleaseThreadPool : public ThreadPool
 {
+    struct makeSharedOnly
+    {
+        explicit makeSharedOnly(int) {}
+    };
+
 public:
-    static Object::Ref<ThreadPool> shared();
-    AutoReleaseThreadPool(size_t threads = 1) : ThreadPool(threads) {}
-    ~AutoReleaseThreadPool() { this->dispose(); }
+    static Object::Ref<AutoReleaseThreadPool> factory(size_t threads = 1);
+
+    AutoReleaseThreadPool(makeSharedOnly, size_t threads = 1) : ThreadPool(threads) {}
+    virtual ~AutoReleaseThreadPool();
+
+    void close();
+
+protected:
+    void onConstruction(size_t threads) override;
+    std::function<void()> workerBuilder(size_t) override;
 };

@@ -33,6 +33,12 @@ public:
         return *this;
     }
 
+    List<T> &operator=(std::nullptr_t t)
+    {
+        std::shared_ptr<std::deque<T>>::operator=(t);
+        return *this;
+    }
+
     T &operator[](size_t index) { return (*this)->operator[](index); }
     T &operator[](size_t index) const { return (*this)->operator[](index); }
 

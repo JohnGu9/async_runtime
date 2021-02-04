@@ -3,20 +3,19 @@
 #include <memory>
 #include <sstream>
 #include <assert.h>
-
-#include <deque>
-#include <unordered_map>
-#include <unordered_set>
+#include "basic/io.h"
 
 // native copyable type that don't not need Object::Ref
-#include "basic/io.h"
-#include "basic/duration.h" // Duration
-#include "basic/function.h" // Function
-#include "basic/container.h"
-
-// #include "basic/string.h"   // String
 class String;
-
+class Duration;
+template <typename T = std::nullptr_t>
+class Function;
+template <typename Key, typename Value>
+class Map;
+template <typename T>
+class Set;
+template <typename T>
+class List;
 
 class Object : public std::enable_shared_from_this<Object>
 {
@@ -51,27 +50,11 @@ public:
     Object() {}
     virtual ~Object() {}
 
-private:
     Object(const Object &) = delete;
     Object &operator=(const Object &) = delete;
 };
 
 #define Self Object::cast<>(this)
-
-// http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/memory/shared_ptr/operator_cmp.html
-// C++11 already implement this operator
-
-// template <typename T0, typename T1>
-// inline bool operator==(Object::Ref<T0> object0, Object::Ref<T1> object1)
-// {
-//     return (size_t)(object0.get()) == (size_t)(object1.get());
-// }
-
-// template <typename T0, typename T1>
-// inline bool operator!=(Object::Ref<T0> object0, Object::Ref<T1> object1)
-// {
-//     return (size_t)(object0.get()) != (size_t)(object1.get());
-// }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, class... _Args>
 inline Object::Ref<T> Object::create(_Args &&... __args)
@@ -112,5 +95,7 @@ inline Object::Ref<T> Object::cast()
 
 void print(Object::Ref<Object> object);
 
-// native copyable type that don't not need Object::Ref
-#include "basic/string.h" // String
+#include "basic/string.h"
+#include "basic/duration.h"
+#include "basic/function.h"
+#include "basic/container.h"

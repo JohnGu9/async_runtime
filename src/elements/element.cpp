@@ -15,7 +15,7 @@ void Element::attach()
 
 void Element::detach()
 {
-    this->_inheritances->clear();
+    this->_inheritances = nullptr;
     if (Object::Ref<Key> key = this->widget->getKey())
         key->dispose();
     this->widget = nullptr;

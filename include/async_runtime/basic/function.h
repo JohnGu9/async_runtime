@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <memory>
 
-template <typename T = std::nullptr_t>
+template <typename T>
 class Function;
 
 template <>

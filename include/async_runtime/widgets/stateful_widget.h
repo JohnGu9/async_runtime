@@ -34,12 +34,7 @@ public:
     virtual void didDependenceChanged() {}
     // @mustCallSuper
     virtual void dispose() {}
-    // @immutable
-    void setState(Function<void()> fn)
-    {
-        fn();
-        this->_element->build();
-    }
+
 
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
 
@@ -49,6 +44,13 @@ private:
     Object::Ref<BuildContext> _context;
 
 protected:
+    // @immutable
+    void setState(Function<void()> fn)
+    {
+        fn();
+        this->_element->build();
+    }
+
     const bool &mounted = _mounted;
     const Object::Ref<BuildContext> &context = _context;
 };
