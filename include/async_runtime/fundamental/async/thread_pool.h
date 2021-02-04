@@ -9,10 +9,11 @@
 #include <functional>
 
 #include "../async.h"
+#include "../disposable.h"
 #include "thread.h"
 
 // source from https://github.com/progschj/ThreadPool
-class ThreadPool : public Object
+class ThreadPool : public Object, public Disposable
 {
 public:
     ThreadPool(size_t);
@@ -22,10 +23,12 @@ public:
     auto post(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
     template <class F, class... Args>
     auto microTask(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
-    virtual bool isActive();
-    virtual void dispose();
-    virtual void detach();
+
     virtual size_t threads() const;
+    virtual bool isActive();
+
+    virtual void detach();   // detach thread
+    void dispose() override; // join thread
 
 protected:
     virtual void onConstruction(size_t threads);
@@ -104,8 +107,7 @@ public:
 
     AutoReleaseThreadPool(makeSharedOnly, size_t threads = 1) : ThreadPool(threads) {}
     virtual ~AutoReleaseThreadPool();
-
-    void close();
+    void detach() override;
 
 protected:
     void onConstruction(size_t threads) override;

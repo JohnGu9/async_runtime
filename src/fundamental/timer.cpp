@@ -2,7 +2,7 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
 
-Timer::Timer(State<StatefulWidget> *state) : Dispatcher(state, nullptr, 0), _autoReleaseThreadPool(AutoReleaseThreadPool::factory(1)) {}
+Timer::Timer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _autoReleaseThreadPool(AutoReleaseThreadPool::factory(1)) {}
 
 Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn)
 {
@@ -32,7 +32,7 @@ void Timer::setTimeout(Duration delay, Function<void()> function)
     std::shared_ptr<std::atomic_bool> clearFlag = std::make_shared<std::atomic_bool>(false);
     this->_clear = clearFlag;
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    this->_autoReleaseThreadPool->close();
+    this->_autoReleaseThreadPool->detach();
     this->_autoReleaseThreadPool = AutoReleaseThreadPool::factory(1);
     this->_autoReleaseThreadPool->post([=]() {
         if (*clearFlag)
@@ -51,7 +51,7 @@ void Timer::setInterval(Duration interval, Function<void()> function)
     Object::Ref<std::atomic_bool> clearFlag = std::make_shared<std::atomic_bool>(false);
     this->_clear = clearFlag;
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    this->_autoReleaseThreadPool->close();
+    this->_autoReleaseThreadPool->detach();
     this->_autoReleaseThreadPool = AutoReleaseThreadPool::factory(1);
     this->_autoReleaseThreadPool->post([=](system_clock::time_point nextTime) {
         while (true)
@@ -76,5 +76,6 @@ void Timer::cancel()
 void Timer::dispose()
 {
     this->cancel();
-    Dispatcher::dispose();
+    this->_callbackHandler = nullptr;
+    this->_autoReleaseThreadPool = nullptr;
 }

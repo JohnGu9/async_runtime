@@ -2,10 +2,11 @@
 
 // #include <shared_mutex>
 #include "async.h"
+#include "disposable.h"
 #include "../widgets/state.h"
 #include "../basic/lock.h"
 
-class File : public Object
+class File : public Object, public Disposable
 {
     static Object::Ref<ThreadPool> sharedThreadPool();
 
@@ -33,7 +34,7 @@ public:
     virtual Object::Ref<Stream<String>> readWordAsStream();
     virtual Object::Ref<Stream<String>> readLineAsStream();
 
-    virtual void dispose();
+    void dispose() override;
 
 protected:
     String _path;

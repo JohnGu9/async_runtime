@@ -114,12 +114,12 @@ Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads
 
 AutoReleaseThreadPool::~AutoReleaseThreadPool()
 {
-    this->close();
+    this->detach();
     for (std::thread &worker : workers)
         worker.detach();
 }
 
-void AutoReleaseThreadPool::close()
+void AutoReleaseThreadPool::detach()
 {
     {
         std::unique_lock<std::mutex> lock(queue_mutex);

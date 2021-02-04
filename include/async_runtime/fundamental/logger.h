@@ -4,8 +4,9 @@
 #include "../widgets/stateful_widget.h"
 #include "state_helper.h"
 #include "async.h"
+#include "disposable.h"
 
-class LoggerHandler : public Object, public StateHelper
+class LoggerHandler : public Object, public StateHelper, public Disposable
 {
 public:
     LoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}

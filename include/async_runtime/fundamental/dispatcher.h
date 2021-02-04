@@ -3,15 +3,16 @@
 #include "../object.h"
 #include "../widgets/state.h"
 #include "state_helper.h"
+#include "disposable.h"
 
 class ThreadPool;
-class Dispatcher : public Object, public StateHelper
+class Dispatcher : public Object, public StateHelper, public Disposable
 {
 public:
     Dispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);
     Dispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);
     virtual ~Dispatcher();
-    virtual void dispose();
+    void dispose() override;
 
 protected:
     Object::Ref<ThreadPool> _callbackHandler; // main thread for callback
