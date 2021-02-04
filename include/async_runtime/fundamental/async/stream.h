@@ -133,6 +133,7 @@ public:
     virtual Object::Ref<Stream<T>> listen(Function<void(T)> fn)
     {
         Object::Ref<Stream<T>> self = Object::cast<>(this);
+        assert(!static_cast<bool>(this->_listener) && "Single listener stream can't have more than one listener");
         this->_callbackHandler->post([self, fn] {
             assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
             self->_listener = fn;
