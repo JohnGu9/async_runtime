@@ -29,8 +29,17 @@ public:
     template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
     Function(Lambda lambda) : _fn(std::make_shared<std::function<ReturnType(Args...)>>(lambda)) {}
 
+    virtual Function &operator=(std::nullptr_t)
+    {
+        this->_fn = nullptr;
+        return *this;
+    }
+
     virtual ReturnType operator()(Args... args) const { return _fn->operator()(std::forward<Args>(args)...); }
     virtual bool operator==(const Function &other) const { return _fn == other._fn; }
+    virtual bool operator!=(const Function &other) const { return _fn != other._fn; }
+    virtual bool operator==(std::nullptr_t) const { return _fn == nullptr; }
+    virtual bool operator!=(std::nullptr_t) const { return _fn != nullptr; }
 
     operator bool() override { return _fn != nullptr; }
 

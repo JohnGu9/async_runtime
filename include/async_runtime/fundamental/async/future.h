@@ -11,6 +11,9 @@ class Future<std::nullptr_t> : public Object, protected StateHelper
     template <typename R>
     friend class Stream;
 
+    template <typename R>
+    friend class AsyncSnapshot;
+
 protected:
     static bool every(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)>);
     static bool any(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)>);
@@ -39,6 +42,9 @@ class Future<void> : public Future<std::nullptr_t>
     friend class Stream;
 
     template <typename R>
+    friend class AsyncSnapshot;
+
+    template <typename R>
     friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
 
     template <typename R>
@@ -50,6 +56,9 @@ public:
 
     static Object::Ref<Future<void>> value(Object::Ref<ThreadPool> callbackHandler);
     static Object::Ref<Future<void>> value(State<StatefulWidget> *state);
+
+    static Object::Ref<Future<void>> delay(Object::Ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout = nullptr);
+    static Object::Ref<Future<void>> delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout = nullptr);
 
     Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
     Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
@@ -72,6 +81,9 @@ class Future : public Future<std::nullptr_t>
 
     template <typename R>
     friend class Stream;
+
+    template <typename R>
+    friend class AsyncSnapshot;
 
     template <typename R>
     friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);

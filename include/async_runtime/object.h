@@ -27,21 +27,23 @@ public:
     using WeakRef = std::weak_ptr<T>;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
-    inline static Ref<T> create(_Args &&...);
+    static Ref<T> create(_Args &&...);
     template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
-    inline static Ref<T> create(_Args &&...);
+    static Ref<T> create(_Args &&...);
     template <typename T0, typename T1>
-    inline static bool identical(const Ref<T0> &, const Ref<T1> &);
+    static bool identical(const Ref<T0> &, const Ref<T1> &);
 
     // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    inline static Ref<T> cast(R *);
+    static Ref<T> cast(R *);
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
-    inline static Ref<T> cast(T *);
+    static Ref<T> cast(T *);
 
     // dynamic cast
     template <typename T>
     Ref<T> cast();
+    template <typename T>
+    Ref<T> covariant();
 
     virtual String toString();
     virtual void toStringStream(std::ostream &);
@@ -57,40 +59,49 @@ public:
 #define Self Object::cast<>(this)
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, class... _Args>
-inline Object::Ref<T> Object::create(_Args &&... __args)
+Object::Ref<T> Object::create(_Args &&...__args)
 {
     return std::make_shared<T>(std::forward<_Args>(__args)...);
 }
 
 template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
-inline Object::Ref<T> Object::create(_Args &&... __args)
+Object::Ref<T> Object::create(_Args &&...__args)
 {
     assert(debug_print("Object::create call on a not Object derived class [" << typeid(T).name() << "]"));
     return std::make_shared<T>(std::forward<_Args>(__args)...);
 }
 
 template <typename T0, typename T1>
-inline bool Object::identical(const Object::Ref<T0> &object0, const Object::Ref<T1> &object1)
+bool Object::identical(const Object::Ref<T0> &object0, const Object::Ref<T1> &object1)
 {
     return (size_t)(object0.get()) == (size_t)(object1.get());
 }
 
 template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
-inline Object::Ref<T> Object::cast(R *other)
+Object::Ref<T> Object::cast(R *other)
 {
     return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
-inline Object::Ref<T> Object::cast(T *other)
+Object::Ref<T> Object::cast(T *other)
 {
     return std::shared_ptr<T>(other->shared_from_this(), other);
 }
 
 template <typename T>
-inline Object::Ref<T> Object::cast()
+Object::Ref<T> Object::cast()
 {
     return std::dynamic_pointer_cast<T>(this->shared_from_this());
+}
+
+template <typename T>
+Object::Ref<T> Object::covariant()
+{
+    if (T *castedPointer = dynamic_cast<T *>(this))
+        return Object::cast<>(castedPointer);
+    else
+        assert(false && "Covariant failed. ");
 }
 
 void print(Object::Ref<Object> object);

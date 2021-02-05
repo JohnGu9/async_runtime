@@ -10,8 +10,11 @@ class Timer : public Object, public Disposable, StateHelper
 {
 public:
     Timer(State<StatefulWidget> *state);
+    Timer(Object::Ref<ThreadPool> callbackHandler);
     static Object::Ref<Timer> delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn);
     static Object::Ref<Timer> periodic(State<StatefulWidget> *state, Duration interval, Function<void()> fn);
+    static Object::Ref<Timer> delay(Object::Ref<ThreadPool> callbackHandler, Duration duration, Function<void()> fn);
+    static Object::Ref<Timer> periodic(Object::Ref<ThreadPool> callbackHandler, Duration interval, Function<void()> fn);
 
     virtual ~Timer();
 

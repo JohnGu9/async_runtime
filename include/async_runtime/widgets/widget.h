@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../elements/element.h"
-#include "key.h"
+#include "../elements/key.h"
 
 class Widget : public virtual Object
 {

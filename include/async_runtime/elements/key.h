@@ -1,7 +1,7 @@
 #pragma once
 
 #include <list>
-#include "../elements/element.h"
+#include "element.h"
 
 class Widget;
 

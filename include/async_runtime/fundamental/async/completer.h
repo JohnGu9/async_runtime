@@ -11,6 +11,9 @@ class Completer<std::nullptr_t> : public Object, StateHelper
     template <typename R>
     friend class Stream;
 
+    template <typename R>
+    friend class AsyncSnapshot;
+
 protected:
     Completer(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _isCompleted(false), _isCancelled(false) {}
     Completer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _isCompleted(false), _isCancelled(false) {}
@@ -33,6 +36,9 @@ class Completer<void> : public Completer<std::nullptr_t>
 
     template <typename R>
     friend class Stream;
+
+    template <typename R>
+    friend class AsyncSnapshot;
 
     template <typename R>
     friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
@@ -70,7 +76,7 @@ protected:
         this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
             fn();
-        this->_future->_callbackList->clear();
+        this->_future->_callbackList = nullptr;
     }
 
     Object::Ref<Future<void>> _future;
@@ -87,6 +93,9 @@ class Completer : public Completer<std::nullptr_t>
 
     template <typename R>
     friend class Stream;
+
+    template <typename R>
+    friend class AsyncSnapshot;
 
     template <typename R>
     friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
@@ -129,7 +138,7 @@ protected:
         this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
             fn(this->_future->_data);
-        this->_future->_callbackList->clear();
+        this->_future->_callbackList = nullptr;
     }
 
     Object::Ref<Future<T>> _future;

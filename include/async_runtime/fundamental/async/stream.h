@@ -5,6 +5,9 @@
 template <>
 class Stream<std::nullptr_t> : public Object, StateHelper
 {
+    template <typename R>
+    friend class AsyncSnapshot;
+
 protected:
     Stream(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
     Stream(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
@@ -18,6 +21,9 @@ public:
 template <>
 class Stream<void> : public Stream<std::nullptr_t>
 {
+    template <typename R>
+    friend class AsyncSnapshot;
+
 public:
     Stream(Object::Ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
     Stream(State<StatefulWidget> *state) : Stream<std::nullptr_t>(state), _onClose(Object::create<Completer<void>>(state)) {}
@@ -89,6 +95,9 @@ protected:
 template <typename T>
 class Stream : public Stream<std::nullptr_t>
 {
+    template <typename R>
+    friend class AsyncSnapshot;
+
 public:
     Stream(Object::Ref<ThreadPool> callbackHandler)
         : Stream<std::nullptr_t>(callbackHandler),

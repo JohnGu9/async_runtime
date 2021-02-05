@@ -64,19 +64,19 @@ public:
 
     void attach() override;
     void detach() override;
-    void build() override;
-    void update(Object::Ref<Widget> newWidget) override;
-    void notify(Object::Ref<Widget> newWidget) override;
-
     void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
-    void visitAncestor(Function<bool(Object::Ref<Element>)>) override;
+    virtual void scheduleRootWidget();
 
     virtual Object::Ref<LoggerHandler> getStdoutHandler();
     virtual Object::Ref<ThreadPool> getMainHandler();
-    virtual void scheduleRootWidget();
     virtual void onCommand(const std::string &in);
 
 protected:
+    void build() override;
+    void update(Object::Ref<Widget> newWidget) override;
+    void notify(Object::Ref<Widget> newWidget) override;
+    void visitAncestor(Function<bool(Object::Ref<Element>)>) override;
+
     std::mutex _mutex;
     std::condition_variable _condition;
 

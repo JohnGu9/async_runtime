@@ -4,6 +4,8 @@
 
 Timer::Timer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _autoReleaseThreadPool(AutoReleaseThreadPool::factory(1)) {}
 
+Timer::Timer(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _autoReleaseThreadPool(AutoReleaseThreadPool::factory(1)) {}
+
 Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn)
 {
     Object::Ref<Timer> timer = Object::create<Timer>(state);
@@ -14,6 +16,20 @@ Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration,
 Object::Ref<Timer> Timer::periodic(State<StatefulWidget> *state, Duration interval, Function<void()> fn)
 {
     Object::Ref<Timer> timer = Object::create<Timer>(state);
+    timer->setInterval(interval, fn);
+    return timer;
+}
+
+Object::Ref<Timer> Timer::delay(Object::Ref<ThreadPool> callbackHandler, Duration duration, Function<void()> fn)
+{
+    Object::Ref<Timer> timer = Object::create<Timer>(callbackHandler);
+    timer->setTimeout(duration, fn);
+    return timer;
+}
+
+Object::Ref<Timer> Timer::periodic(Object::Ref<ThreadPool> callbackHandler, Duration interval, Function<void()> fn)
+{
+    Object::Ref<Timer> timer = Object::create<Timer>(callbackHandler);
     timer->setInterval(interval, fn);
     return timer;
 }

@@ -259,6 +259,29 @@ Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
     return completer->future;
 }
 
+#include "async_runtime/fundamental/timer.h"
+Object::Ref<Future<void>> Future<void>::delay(Object::Ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
+    Object::Ref<Timer> timer = Timer::delay(callbackHandler, duration, [completer, onTimeout] {
+        if (onTimeout != nullptr)
+            onTimeout();
+        completer->complete();
+    });
+    return completer->future;
+}
+
+Object::Ref<Future<void>> Future<void>::delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout)
+{
+    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
+    Object::Ref<Timer> timer = Timer::delay(state, duration, [completer, onTimeout] {
+        if (onTimeout != nullptr)
+            onTimeout();
+        completer->complete();
+    });
+    return completer->future;
+}
+
 Object::Ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
 {
     Object::Ref<Future<void>> self = Object::cast<>(this);
@@ -288,7 +311,7 @@ const List<AsyncSnapshot<>::ConnectionState::Value>
         AsyncSnapshot<>::ConnectionState::none,
         AsyncSnapshot<>::ConnectionState::active,
         AsyncSnapshot<>::ConnectionState::done,
-        AsyncSnapshot<>::ConnectionState::waiting};
+};
 
 String AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::ConnectionState::Value value)
 {
@@ -300,8 +323,6 @@ String AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::ConnectionSta
         return "AsyncSnapshot<>::ConnectionState::active";
     case AsyncSnapshot<>::ConnectionState::done:
         return "AsyncSnapshot<>::ConnectionState::done";
-    case AsyncSnapshot<>::ConnectionState::waiting:
-        return "AsyncSnapshot<>::ConnectionState::waiting";
     default:
         assert(false && "The enum doesn't exists. ");
         break;
