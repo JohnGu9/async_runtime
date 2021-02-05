@@ -3,10 +3,11 @@
 // #include <shared_mutex>
 #include "async.h"
 #include "disposable.h"
+#include "dispatcher.h"
 #include "../widgets/state.h"
 #include "../basic/lock.h"
 
-class File : public Object, public Disposable
+class File : public Dispatcher
 {
     static Object::Ref<ThreadPool> sharedThreadPool();
 
@@ -39,7 +40,6 @@ public:
 protected:
     String _path;
     Object::Ref<State<StatefulWidget>> _state;
-    Object::Ref<ThreadPool> _threadPool;
     std::atomic_bool _isDisposed;
     Object::Ref<Lock> _lock;
 

@@ -5,10 +5,16 @@
 // @ thread safe
 template <typename T = std::nullptr_t>
 class Future;
-template <typename T = std::nullptr_t>
-class Stream;
+// @ thread safe
 template <typename T = std::nullptr_t>
 class Completer;
+// @ thread safe
+template <typename T = std::nullptr_t>
+class Stream;
+// @ thread safe
+template <typename T = std::nullptr_t>
+class StreamSubscription;
+// @ thread safe
 template <typename T = std::nullptr_t>
 class AsyncSnapshot;
 
@@ -22,6 +28,7 @@ class AsyncSnapshot;
 
 #include "async/future.h"
 #include "async/completer.h"
+#include "async/stream_subscription.h"
 #include "async/stream.h"
 #include "async/async_snapshot.h"
 #include "async/async.h"

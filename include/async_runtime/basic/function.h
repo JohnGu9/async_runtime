@@ -43,6 +43,8 @@ public:
 
     operator bool() override { return _fn != nullptr; }
 
+    const std::function<ReturnType(Args...)> &toStdFunction() const { return *(this->_fn); }
+
 protected:
     std::shared_ptr<std::function<ReturnType(Args...)>> _fn;
 };

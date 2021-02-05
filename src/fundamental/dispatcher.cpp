@@ -12,9 +12,11 @@ Dispatcher::Dispatcher(Object::Ref<ThreadPool> scheduler, Object::Ref<ThreadPool
         this->_ownWorkThread = true;
         this->_threadPool = Object::create<ThreadPool>(threads);
     }
+    assert(this->_threadPool);
 }
 
 Dispatcher::Dispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool> threadPool, size_t threads)
+    : _threadPool(threadPool)
 {
     assert(state && "State is required. ");
     Object::Ref<BuildContext> context = getContextfromState(state);
@@ -25,6 +27,20 @@ Dispatcher::Dispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool> thr
         this->_ownWorkThread = true;
         this->_threadPool = Object::create<ThreadPool>(threads);
     }
+    assert(this->_threadPool);
+}
+
+void Dispatcher::post(Function<void()> fn)
+{
+    this->_threadPool->post(fn.toStdFunction());
+}
+
+void Dispatcher::post(Function<void(RunOnMainThread runner)> fn)
+{
+    Object::Ref<Dispatcher> self = Object::cast<>(this);
+    this->_threadPool->post(
+        fn.toStdFunction(),
+        [self](Function<void()> job) { self->_callbackHandler->post(job.toStdFunction()); });
 }
 
 Dispatcher::~Dispatcher()

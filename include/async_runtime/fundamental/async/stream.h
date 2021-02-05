@@ -6,6 +6,9 @@ template <>
 class Stream<std::nullptr_t> : public Object, StateHelper
 {
     template <typename R>
+    friend class StreamSubscription;
+
+    template <typename R>
     friend class AsyncSnapshot;
 
 protected:
@@ -21,6 +24,9 @@ public:
 template <>
 class Stream<void> : public Stream<std::nullptr_t>
 {
+    template <typename R>
+    friend class StreamSubscription;
+
     template <typename R>
     friend class AsyncSnapshot;
 
@@ -46,7 +52,7 @@ public:
         return self;
     }
 
-    virtual Object::Ref<Stream<void>> listen(Function<void()> fn)
+    virtual Object::Ref<StreamSubscription<void>> listen(Function<void()> fn)
     {
         Object::Ref<Stream<void>> self = Object::cast<>(this);
         this->_callbackHandler->post([self, fn] {
@@ -58,7 +64,7 @@ public:
             if (self->_isClosed)
                 self->_onClose->completeSync();
         });
-        return self;
+        return Object::create<StreamSubscription<void>>(self);
     }
 
     virtual Object::Ref<Stream<void>> onClose(Function<void()> fn)
@@ -95,6 +101,9 @@ protected:
 template <typename T>
 class Stream : public Stream<std::nullptr_t>
 {
+    template <typename R>
+    friend class StreamSubscription;
+
     template <typename R>
     friend class AsyncSnapshot;
 
@@ -139,7 +148,7 @@ public:
         return self;
     }
 
-    virtual Object::Ref<Stream<T>> listen(Function<void(T)> fn)
+    virtual Object::Ref<StreamSubscription<T>> listen(Function<void(T)> fn)
     {
         Object::Ref<Stream<T>> self = Object::cast<>(this);
         assert(!static_cast<bool>(this->_listener) && "Single listener stream can't have more than one listener");
@@ -152,7 +161,7 @@ public:
             if (self->_isClosed)
                 self->_onClose->completeSync();
         });
-        return self;
+        return Object::create<StreamSubscription<T>>(self);
     }
 
     virtual Object::Ref<Stream<T>> onClose(Function<void()> fn)
