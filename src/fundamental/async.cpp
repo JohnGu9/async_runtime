@@ -37,6 +37,14 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
     return [this, threadId] {
         ThreadPool::threadName = this->childrenThreadName(threadId);
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        // windows not support thread name yet for now
+        // yeah, I'm lazy
+#elif __APPLE__
+        pthread_setname_np(ThreadPool::threadName.c_str());
+#elif __linux__
+        pthread_setname_np(pthread_self(), ThreadPool::threadName.c_str());
+#endif
         for (;;)
         {
             std::function<void()> task;
@@ -129,7 +137,7 @@ void ThreadPool::detach()
 Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads)
 {
     assert(threads > 0);
-    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(makeSharedOnly(0), threads);
+    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(MakeSharedOnly(0), threads);
     instance->_workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
         instance->_workers.emplace_back(instance->workerBuilder(i));
@@ -180,34 +188,7 @@ void AutoReleaseThreadPool::onConstruction(size_t threads) {}
 std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
     Object::Ref<AutoReleaseThreadPool> self = Object::cast<>(this);
-    return [self, threadId] {
-        ThreadPool::threadName = self->childrenThreadName(threadId);
-        for (;;)
-        {
-            std::function<void()> task;
-            {
-                std::unique_lock<std::mutex> lock(self->_queueMutex);
-                self->_condition.wait(lock, [self] { return self->_stop || !self->_microTasks.empty() || !self->_tasks.empty(); });
-
-                if ( // this->stop &&
-                    self->_microTasks.empty() &&
-                    self->_tasks.empty()) // always finish all task
-                    return;
-
-                if (!self->_microTasks.empty())
-                {
-                    task = std::move(self->_microTasks.front());
-                    self->_microTasks.pop();
-                }
-                else
-                {
-                    task = std::move(self->_tasks.front());
-                    self->_tasks.pop();
-                }
-            }
-            task();
-        }
-    };
+    return [self, threadId] { self->ThreadPool::workerBuilder(threadId); };
 }
 
 ////////////////////////////

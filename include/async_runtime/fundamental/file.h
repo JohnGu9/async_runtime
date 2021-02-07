@@ -30,7 +30,7 @@ public:
 
     // read
     virtual Object::Ref<Future<String>> read();
-    virtual Object::Ref<Stream<String>> readAsStream(size_t);
+    virtual Object::Ref<Stream<String>> readAsStream(size_t segmentationLength);
     virtual Object::Ref<Stream<String>> readWordAsStream();
     virtual Object::Ref<Stream<String>> readLineAsStream();
 

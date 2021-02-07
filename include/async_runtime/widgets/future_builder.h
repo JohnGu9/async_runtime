@@ -14,11 +14,15 @@ public:
     Function<Object::Ref<Widget>(Object::Ref<BuildContext>, Object::Ref<AsyncSnapshot<T>>)> builder;
 
     Object::Ref<State<>> createState() override;
+
+protected:
+    class _State;
 };
 
 template <typename T>
-class _FutureBuilderState : public State<FutureBuilder<T>>
+class FutureBuilder<T>::_State : public State<FutureBuilder<T>>
 {
+public:
     using super = State<FutureBuilder<T>>;
 
     void initState() override
@@ -27,7 +31,7 @@ class _FutureBuilderState : public State<FutureBuilder<T>>
         Object::Ref<Future<T>> future = this->getWidget()->future;
         if (not AsyncSnapshot<>::getCompletedFromFuture(future))
         {
-            Object::Ref<_FutureBuilderState> self = Object::cast<>(this);
+            Object::Ref<FutureBuilder<T>::_State> self = Object::cast<>(this);
             future->than([self, future] {
                 if (self->getWidget()->future == future)
                     self->setState([] {});
@@ -41,7 +45,7 @@ class _FutureBuilderState : public State<FutureBuilder<T>>
         Object::Ref<Future<T>> future = this->getWidget()->future;
         if (old->future != future && (not AsyncSnapshot<>::getCompletedFromFuture(future)))
         {
-            Object::Ref<_FutureBuilderState> self = Object::cast<>(this);
+            Object::Ref<FutureBuilder<T>::_State> self = Object::cast<>(this);
             future->than([self, future] {
                 if (self->getWidget()->future == future)
                     self->setState([] {});
@@ -61,5 +65,5 @@ class _FutureBuilderState : public State<FutureBuilder<T>>
 template <typename T>
 Object::Ref<State<>> FutureBuilder<T>::createState()
 {
-    return Object::create<_FutureBuilderState<T>>();
+    return Object::create<FutureBuilder<T>::_State>();
 }

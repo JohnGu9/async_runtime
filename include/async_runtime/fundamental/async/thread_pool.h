@@ -108,15 +108,15 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
 
 class AutoReleaseThreadPool : public ThreadPool
 {
-    struct makeSharedOnly
+    struct MakeSharedOnly
     {
-        explicit makeSharedOnly(int) {}
+        explicit MakeSharedOnly(int) {}
     };
 
 public:
     static Object::Ref<AutoReleaseThreadPool> factory(size_t threads = 1);
 
-    AutoReleaseThreadPool(makeSharedOnly, size_t threads = 1) : ThreadPool(threads) {}
+    AutoReleaseThreadPool(MakeSharedOnly, size_t threads = 1) : ThreadPool(threads) {}
     virtual ~AutoReleaseThreadPool();
     void dispose() override;
     void detach() override;

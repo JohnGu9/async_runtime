@@ -18,14 +18,16 @@ public:
 
     virtual ~Timer();
 
-    virtual void setTimeout(Duration delay, Function<void()> function);
-    virtual void setInterval(Duration interval, Function<void()> function);
     virtual void cancel();
-
     void dispose() override;
 
 protected:
     Object::Ref<AutoReleaseThreadPool> _autoReleaseThreadPool;
     Object::Ref<ThreadPool> _callbackHandler;
     std::shared_ptr<std::atomic_bool> _clear;
+
+    // now Timer can't reuse
+    // Please create new Timer for new task
+    virtual void _setTimeout(Duration delay, Function<void()> function);
+    virtual void _setInterval(Duration interval, Function<void()> function);
 };

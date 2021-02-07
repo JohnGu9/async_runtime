@@ -72,6 +72,8 @@ Object::Ref<T> Object::create(_Args &&...__args)
 template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
 Object::Ref<T> Object::create(_Args &&...__args)
 {
+    // recommend set a break pointer here
+    // not-Object class should not create from this api
     assert(debug_print("Object::create call on a not Object derived class [" << typeid(T).name() << "]"));
     return std::make_shared<T>(std::forward<_Args>(__args)...);
 }

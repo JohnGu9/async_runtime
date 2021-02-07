@@ -67,12 +67,12 @@ int File::removeSync()
 
 long long File::sizeSync()
 {
+    using std::ifstream;
     Object::Ref<Lock::SharedLock> readLock = this->_lock->sharedLock();
-    std::ifstream::streampos begin, end;
-    std::ifstream file(path.toStdString(), std::ios::binary);
-    begin = file.tellg();
+    ifstream file(path.toStdString(), std::ios::binary);
+    const ifstream::streampos begin = file.tellg();
     file.seekg(0, std::ios::end);
-    end = file.tellg();
+    const ifstream::streampos end = file.tellg();
     file.close();
     return end - begin;
 }
@@ -145,11 +145,11 @@ Object::Ref<Future<String>> File::read()
     return completer->future;
 }
 
-Object::Ref<Stream<String>> File::readAsStream(size_t chip)
+Object::Ref<Stream<String>> File::readAsStream(size_t segmentationLength)
 {
     Object::Ref<File> self = Object::cast<>(this);
     Object::Ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
-    this->post([self, stream, chip] {
+    this->post([self, stream, segmentationLength] {
         {
             Object::Ref<Lock::SharedLock> readLock = self->_lock->sharedLock();
             std::ifstream file(self->_path.toStdString(), std::ios::in | std::ios::ate);
@@ -158,8 +158,8 @@ Object::Ref<Stream<String>> File::readAsStream(size_t chip)
             while (!file.eof() && self->_isDisposed == false)
             {
                 std::string str;
-                str.reserve(chip);
-                for (i = 0; i < chip && !file.eof(); i++)
+                str.reserve(segmentationLength);
+                for (i = 0; i < segmentationLength && !file.eof(); i++)
                     str += file.get();
                 stream->sink(std::move(str));
             }
