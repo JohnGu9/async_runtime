@@ -8,6 +8,8 @@
 
 Set<String> ThreadPool::_namePool = Set<String>::empty();
 
+thread_local String ThreadPool::threadName = String();
+
 ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
 {
     if (this->_name == nullptr)
@@ -31,9 +33,10 @@ void ThreadPool::onConstruction(size_t threads)
         _workers.emplace_back(this->workerBuilder(i));
 }
 
-std::function<void()> ThreadPool::workerBuilder(size_t thread)
+std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
-    return [this] {
+    return [this, threadId] {
+        ThreadPool::threadName = this->childrenThreadName(threadId);
         for (;;)
         {
             std::function<void()> task;
@@ -60,6 +63,11 @@ std::function<void()> ThreadPool::workerBuilder(size_t thread)
             task();
         }
     };
+}
+
+String ThreadPool::childrenThreadName(size_t id)
+{
+    return this->name + "#" + id;
 }
 
 size_t ThreadPool::threads() const { return this->_workers.size(); }
@@ -130,7 +138,30 @@ Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads
 
 AutoReleaseThreadPool::~AutoReleaseThreadPool()
 {
-    this->detach();
+    _stop = true;
+    _condition.notify_all();
+    if (not _join)
+    {
+        for (std::thread &worker : _workers)
+            worker.detach();
+    }
+}
+
+void AutoReleaseThreadPool::dispose()
+{
+    {
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        if (_stop)
+        {
+            assert(false && "ThreadPool call [dispose] that already is disposed. ");
+            return;
+        }
+        _stop = true;
+        _join = true;
+    }
+    _condition.notify_all();
+    for (std::thread &worker : _workers)
+        worker.join();
 }
 
 void AutoReleaseThreadPool::detach()
@@ -142,16 +173,15 @@ void AutoReleaseThreadPool::detach()
         _stop = true;
     }
     _condition.notify_all();
-    for (std::thread &worker : _workers)
-        worker.detach();
 }
 
 void AutoReleaseThreadPool::onConstruction(size_t threads) {}
 
-std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t)
+std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
     Object::Ref<AutoReleaseThreadPool> self = Object::cast<>(this);
-    return [self] {
+    return [self, threadId] {
+        ThreadPool::threadName = self->childrenThreadName(threadId);
         for (;;)
         {
             std::function<void()> task;

@@ -37,7 +37,7 @@ Object::Ref<Timer> Timer::periodic(Object::Ref<ThreadPool> callbackHandler, Dura
 Timer::~Timer()
 {
     // Timer can automatic dispose itself
-    if (!(*(this->_clear)))
+    if (not *(this->_clear))
         this->dispose();
 }
 

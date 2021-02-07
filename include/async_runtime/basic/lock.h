@@ -1,5 +1,8 @@
 #pragma once
 
+// Do not include this header directly
+// Please try to include object.h rather than this
+
 #include <condition_variable>
 #include "../object.h"
 

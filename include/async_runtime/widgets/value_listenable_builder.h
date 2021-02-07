@@ -28,17 +28,16 @@ class _ValueListenableBuilderState : public State<ValueListenableBuilder<T>>
 
     Function<void(Object::Ref<Listenable>)> _listener = [this](Object::Ref<Listenable> listenable) {
         Object::Ref<ValueListenable<T>> valueListenable = listenable->cast<ValueListenable<T>>();
-        if (this->mounted)
-            this->setState([this, valueListenable] { this->_value = valueListenable->getValue(); });
+        this->setState([this, valueListenable] { this->_value = valueListenable->getValue(); });
     };
 
     void initState() override
     {
         super::initState();
         Object::Ref<_ValueListenableBuilderState> self = Object::cast<>(this);
-        _valueListenable = this->getWidget()->valueListenable;
-        _valueListenable->addListener(_listener);
-        _value = _valueListenable->getValue();
+        this->_valueListenable = this->getWidget()->valueListenable;
+        this->_valueListenable->addListener(_listener);
+        this->_value = _valueListenable->getValue();
     }
 
     void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
@@ -46,23 +45,26 @@ class _ValueListenableBuilderState : public State<ValueListenableBuilder<T>>
         Object::Ref<ValueListenable<T>> newListenable = this->getWidget()->valueListenable;
         if (newListenable != _valueListenable)
         {
-            _valueListenable->removeListener(_listener);
-            _valueListenable = newListenable;
-            _valueListenable->addListener(_listener);
-            _value = _valueListenable->getValue();
+            this->_valueListenable->removeListener(this->_listener);
+            this->_valueListenable = newListenable;
+            this->_valueListenable->addListener(this->_listener);
+            this->_value = _valueListenable->getValue();
         }
         super::didWidgetUpdated(oldWidget);
     }
 
     void dispose() override
     {
-        _valueListenable->removeListener(_listener);
+        this->_valueListenable->removeListener(this->_listener);
         super::dispose();
     }
 
     Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
     {
-        return this->getWidget()->builder(context, this->_value, this->getWidget()->child);
+        return this->getWidget()->builder(
+            context,
+            this->_value,
+            this->getWidget()->child);
     }
 };
 

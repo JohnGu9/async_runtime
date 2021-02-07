@@ -34,6 +34,8 @@ public:
     virtual void detach();   // detach thread
     void dispose() override; // join thread
 
+    virtual String childrenThreadName(size_t id);
+
 protected:
     virtual void onConstruction(size_t threads);
     virtual std::function<void()> workerBuilder(size_t);
@@ -116,9 +118,12 @@ public:
 
     AutoReleaseThreadPool(makeSharedOnly, size_t threads = 1) : ThreadPool(threads) {}
     virtual ~AutoReleaseThreadPool();
+    void dispose() override;
     void detach() override;
 
 protected:
     void onConstruction(size_t threads) override;
     std::function<void()> workerBuilder(size_t) override;
+
+    bool _join = false;
 };
