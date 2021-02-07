@@ -5,7 +5,7 @@
 #include <unordered_set>
 
 template <typename T>
-class Set : public std::shared_ptr<std::unordered_set<T>>
+class Set : public std::shared_ptr<std::unordered_set<T>>, public Lock::WithLockMixin
 {
     explicit Set(std::nullptr_t) : std::shared_ptr<std::unordered_set<T>>(std::make_shared<std::unordered_set<T>>()) {}
 
@@ -15,7 +15,8 @@ public:
 
     static Set<T> empty() { return Set<T>(nullptr); }
     explicit Set() {}
-    Set(const Set<T> &other) : std::shared_ptr<std::unordered_set<T>>(std::make_shared<std::unordered_set<T>>(*other)) { assert(*this); }
+    Set(const Set<T> &other)
+        : std::shared_ptr<std::unordered_set<T>>(std::make_shared<std::unordered_set<T>>(*other)), Lock::WithLockMixin(other) { assert(*this); }
     Set(std::initializer_list<T> &&ls)
         : std::shared_ptr<std::unordered_set<T>>(std::make_shared<std::unordered_set<T>>(std::forward<std::initializer_list<T>>(ls))) { assert(*this); }
 
@@ -30,6 +31,7 @@ public:
     Set<T> &operator=(const Set<T> &other)
     {
         std::shared_ptr<std::unordered_set<T>>::operator=(static_cast<const std::shared_ptr<std::unordered_set<T>> &>(other));
+        Lock::WithLockMixin::operator=(other);
         return *this;
     }
 

@@ -13,6 +13,7 @@ public:
     class SharedLock;
     class UniqueLock;
     class InvailedLock;
+    class WithLockMixin;
 
     Lock() {}
     ~Lock();
@@ -52,4 +53,22 @@ class Lock::InvailedLock : public Lock
 {
     Object::Ref<Lock::SharedLock> sharedLock() override { return nullptr; }
     Object::Ref<Lock::UniqueLock> uniqueLock() override { return nullptr; }
+};
+
+class Lock::WithLockMixin
+{
+    Object::Ref<Lock> _lock;
+
+public:
+    WithLockMixin(Object::Ref<Lock> lock = nullptr) : _lock(lock == nullptr ? Object::create<Lock>() : lock) {}
+    WithLockMixin(const WithLockMixin &other) : _lock(other.lock) { assert(this->_lock != nullptr); }
+
+    const Object::Ref<Lock> &lock = _lock;
+
+    WithLockMixin &operator=(const WithLockMixin &other)
+    {
+        this->_lock = other.lock;
+        assert(this->_lock != nullptr);
+        return *this;
+    }
 };

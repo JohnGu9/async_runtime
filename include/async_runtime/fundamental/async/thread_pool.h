@@ -15,14 +15,18 @@
 // source from https://github.com/progschj/ThreadPool
 class ThreadPool : public Object, public Disposable
 {
+    static Set<String> _namePool;
+
 public:
-    ThreadPool(size_t);
+    static thread_local String threadName;
+
+    ThreadPool(size_t threads, String name = nullptr);
     virtual ~ThreadPool();
 
     template <class F, class... Args>
-    auto post(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
+    auto post(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
     template <class F, class... Args>
-    auto microTask(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
+    auto microTask(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
     virtual size_t threads() const;
     virtual bool isActive();
@@ -34,22 +38,27 @@ protected:
     virtual void onConstruction(size_t threads);
     virtual std::function<void()> workerBuilder(size_t);
 
+    String _name;
+
     // need to keep track of threads so we can join them
-    std::vector<Thread> workers;
+    std::vector<Thread> _workers;
     // the task queue
-    std::queue<std::function<void()>> tasks;
+    std::queue<std::function<void()>> _tasks;
     // the micro task queue
-    std::queue<std::function<void()>> microTasks;
+    std::queue<std::function<void()>> _microTasks;
 
     // synchronization
-    std::mutex queue_mutex;
-    std::condition_variable condition;
-    bool stop;
+    std::mutex _queueMutex;
+    std::condition_variable _condition;
+    bool _stop;
+
+public:
+    const String &name = _name;
 };
 
 // add new work item to the pool
 template <class F, class... Args>
-auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>
+auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
 {
     using return_type = typename std::result_of<F(Args...)>::type;
 
@@ -58,22 +67,22 @@ auto ThreadPool::post(F &&f, Args &&... args) -> std::future<typename std::resul
 
     std::future<return_type> res = task->get_future();
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        if (stop)
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        if (_stop)
         {
             assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();
             return res;
         }
-        tasks.emplace([task] { (*task)(); });
+        _tasks.emplace([task] { (*task)(); });
     }
-    condition.notify_one();
+    _condition.notify_one();
     return res;
 }
 
 // add new work item to the pool
 template <class F, class... Args>
-auto ThreadPool::microTask(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>
+auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
 {
     using return_type = typename std::result_of<F(Args...)>::type;
 
@@ -82,16 +91,16 @@ auto ThreadPool::microTask(F &&f, Args &&... args) -> std::future<typename std::
 
     std::future<return_type> res = task->get_future();
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        if (stop)
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        if (_stop)
         {
             assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();
             return res;
         }
-        microTasks.emplace([task] { (*task)(); });
+        _microTasks.emplace([task] { (*task)(); });
     }
-    condition.notify_one();
+    _condition.notify_one();
     return res;
 }
 

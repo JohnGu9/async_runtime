@@ -5,7 +5,7 @@
 #include <deque>
 
 template <typename T>
-class List : public std::shared_ptr<std::deque<T>>
+class List : public std::shared_ptr<std::deque<T>>, public Lock::WithLockMixin
 {
     explicit List(std::nullptr_t) : std::shared_ptr<std::deque<T>>(std::make_shared<std::deque<T>>()) {}
 
@@ -15,7 +15,7 @@ public:
 
     static List<T> empty() { return List<T>(nullptr); }
     explicit List() {}
-    List(const List<T> &other) : std::shared_ptr<std::deque<T>>(std::make_shared<std::deque<T>>(*other)) { assert(*this); }
+    List(const List<T> &other) : std::shared_ptr<std::deque<T>>(std::make_shared<std::deque<T>>(*other)), Lock::WithLockMixin(other) { assert(*this); }
     List(std::initializer_list<T> &&ls)
         : std::shared_ptr<std::deque<T>>(std::make_shared<std::deque<T>>(std::forward<std::initializer_list<T>>(ls))) { assert(*this); }
 
@@ -30,6 +30,7 @@ public:
     List<T> &operator=(const List<T> &other)
     {
         std::shared_ptr<std::deque<T>>::operator=(static_cast<const std::shared_ptr<std::deque<T>> &>(other));
+        Lock::WithLockMixin::operator=(other);
         return *this;
     }
 

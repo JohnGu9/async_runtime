@@ -6,17 +6,29 @@
 //
 ////////////////////////////
 
-ThreadPool::ThreadPool(size_t threads) : stop(false)
+Set<String> ThreadPool::_namePool = Set<String>::empty();
+
+ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
 {
+    if (this->_name == nullptr)
+    {
+        static const String prefix = "ThreadPool";
+        this->_name = prefix + "#" + size_t(this);
+    }
+    {
+        Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
+        ThreadPool::_namePool->insert(this->_name);
+    }
     this->onConstruction(threads);
 }
 
 void ThreadPool::onConstruction(size_t threads)
 {
     assert(threads > 0);
-    workers.reserve(threads);
+    _workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
-        workers.emplace_back(this->workerBuilder(i));
+        _workers.emplace_back(this->workerBuilder(i));
 }
 
 std::function<void()> ThreadPool::workerBuilder(size_t thread)
@@ -26,23 +38,23 @@ std::function<void()> ThreadPool::workerBuilder(size_t thread)
         {
             std::function<void()> task;
             {
-                std::unique_lock<std::mutex> lock(this->queue_mutex);
-                this->condition.wait(lock, [this] { return this->stop || !this->microTasks.empty() || !this->tasks.empty(); });
+                std::unique_lock<std::mutex> lock(this->_queueMutex);
+                this->_condition.wait(lock, [this] { return this->_stop || !this->_microTasks.empty() || !this->_tasks.empty(); });
 
                 if ( // this->stop &&
-                    this->microTasks.empty() &&
-                    this->tasks.empty()) // always finish all task
+                    this->_microTasks.empty() &&
+                    this->_tasks.empty()) // always finish all task
                     return;
 
-                if (!this->microTasks.empty())
+                if (!this->_microTasks.empty())
                 {
-                    task = std::move(this->microTasks.front());
-                    this->microTasks.pop();
+                    task = std::move(this->_microTasks.front());
+                    this->_microTasks.pop();
                 }
                 else
                 {
-                    task = std::move(this->tasks.front());
-                    this->tasks.pop();
+                    task = std::move(this->_tasks.front());
+                    this->_tasks.pop();
                 }
             }
             task();
@@ -50,49 +62,53 @@ std::function<void()> ThreadPool::workerBuilder(size_t thread)
     };
 }
 
-size_t ThreadPool::threads() const { return this->workers.size(); }
+size_t ThreadPool::threads() const { return this->_workers.size(); }
 
 ThreadPool::~ThreadPool()
 {
-    std::unique_lock<std::mutex> lock(queue_mutex);
-    assert(this->stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+    {
+        Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+        ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
+    }
+    std::unique_lock<std::mutex> lock(_queueMutex);
+    assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
 }
 
 bool ThreadPool::isActive()
 {
-    std::unique_lock<std::mutex> lock(queue_mutex);
-    return !this->stop;
+    std::unique_lock<std::mutex> lock(_queueMutex);
+    return !this->_stop;
 }
 
 // the destructor joins all threads
 void ThreadPool::dispose()
 {
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        if (stop)
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        if (_stop)
         {
             assert(false && "ThreadPool call [dispose] that already is disposed. ");
             return;
         }
-        stop = true;
+        _stop = true;
     }
-    condition.notify_all();
+    _condition.notify_all();
 
-    for (std::thread &worker : workers)
+    for (std::thread &worker : _workers)
         worker.join();
 }
 
 void ThreadPool::detach()
 {
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        if (stop)
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        if (_stop)
             return;
-        stop = true;
+        _stop = true;
     }
-    condition.notify_all();
+    _condition.notify_all();
 
-    for (std::thread &worker : workers)
+    for (std::thread &worker : _workers)
         worker.detach();
 }
 
@@ -106,9 +122,9 @@ Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads
 {
     assert(threads > 0);
     Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(makeSharedOnly(0), threads);
-    instance->workers.reserve(threads);
+    instance->_workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
-        instance->workers.emplace_back(instance->workerBuilder(i));
+        instance->_workers.emplace_back(instance->workerBuilder(i));
     return instance;
 }
 
@@ -120,13 +136,13 @@ AutoReleaseThreadPool::~AutoReleaseThreadPool()
 void AutoReleaseThreadPool::detach()
 {
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        if (stop)
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        if (_stop)
             return;
-        stop = true;
+        _stop = true;
     }
-    condition.notify_all();
-    for (std::thread &worker : workers)
+    _condition.notify_all();
+    for (std::thread &worker : _workers)
         worker.detach();
 }
 
@@ -140,23 +156,23 @@ std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t)
         {
             std::function<void()> task;
             {
-                std::unique_lock<std::mutex> lock(self->queue_mutex);
-                self->condition.wait(lock, [self] { return self->stop || !self->microTasks.empty() || !self->tasks.empty(); });
+                std::unique_lock<std::mutex> lock(self->_queueMutex);
+                self->_condition.wait(lock, [self] { return self->_stop || !self->_microTasks.empty() || !self->_tasks.empty(); });
 
                 if ( // this->stop &&
-                    self->microTasks.empty() &&
-                    self->tasks.empty()) // always finish all task
+                    self->_microTasks.empty() &&
+                    self->_tasks.empty()) // always finish all task
                     return;
 
-                if (!self->microTasks.empty())
+                if (!self->_microTasks.empty())
                 {
-                    task = std::move(self->microTasks.front());
-                    self->microTasks.pop();
+                    task = std::move(self->_microTasks.front());
+                    self->_microTasks.pop();
                 }
                 else
                 {
-                    task = std::move(self->tasks.front());
-                    self->tasks.pop();
+                    task = std::move(self->_tasks.front());
+                    self->_tasks.pop();
                 }
             }
             task();

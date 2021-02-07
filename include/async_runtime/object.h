@@ -7,13 +7,18 @@
 
 // native copyable type that don't not need Object::Ref
 class String;
+// native copyable type that don't not need Object::Ref
 class Duration;
+// native copyable type that don't not need Object::Ref
 template <typename T = std::nullptr_t>
 class Function;
+// native copyable type that don't not need Object::Ref
 template <typename Key, typename Value>
 class Map;
+// native copyable type that don't not need Object::Ref
 template <typename T>
 class Set;
+// native copyable type that don't not need Object::Ref
 template <typename T>
 class List;
 

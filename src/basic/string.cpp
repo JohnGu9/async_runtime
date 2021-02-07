@@ -14,6 +14,11 @@ String::~String() {}
 
 String::operator bool() const { return this->_ptr != nullptr; }
 
+bool String::operator==(std::nullptr_t) const
+{
+    return this->_ptr == nullptr;
+}
+
 bool String::operator==(const String &other) const
 {
     return other._ptr == this->_ptr || *(other._ptr) == *(this->_ptr);

@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 template <typename Key, typename Value>
-class Map : public std::shared_ptr<std::unordered_map<Key, Value>>
+class Map : public std::shared_ptr<std::unordered_map<Key, Value>>, public Lock::WithLockMixin
 {
     explicit Map(std::nullptr_t) : std::shared_ptr<std::unordered_map<Key, Value>>(std::make_shared<std::unordered_map<Key, Value>>()) {}
 
@@ -17,7 +17,7 @@ public:
     static Map<Key, Value> empty() { return Map<Key, Value>(nullptr); }
     explicit Map() {}
     Map(const Map<Key, Value> &other)
-        : std::shared_ptr<std::unordered_map<Key, Value>>(std::make_shared<std::unordered_map<Key, Value>>(*other)) { assert(*this); }
+        : std::shared_ptr<std::unordered_map<Key, Value>>(std::make_shared<std::unordered_map<Key, Value>>(*other)), Lock::WithLockMixin(other) { assert(*this); }
     Map(std::initializer_list<value_type> &&ls)
         : std::shared_ptr<std::unordered_map<Key, Value>>(std::make_shared<std::unordered_map<Key, Value>>(std::forward<std::initializer_list<value_type>>(ls))) { assert(*this); }
 
@@ -33,6 +33,7 @@ public:
     {
         std::shared_ptr<std::unordered_map<Key, Value>>::operator=(
             static_cast<const std::shared_ptr<std::unordered_map<Key, Value>> &>(other));
+        Lock::WithLockMixin::operator=(other);
         return *this;
     }
 

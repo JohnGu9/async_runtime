@@ -19,6 +19,7 @@ class String
 
 public:
     String() {}
+    String(std::nullptr_t) {}
     String(const String &other);
     String(const char *const str);
     String(const char str);
@@ -28,6 +29,7 @@ public:
     virtual ~String();
 
     virtual operator bool() const;
+    virtual bool operator==(std::nullptr_t) const;
     virtual bool operator==(const String &other) const;
     virtual bool operator==(const char *const other) const;
     virtual String operator+(const char c) const;
@@ -35,7 +37,7 @@ public:
     virtual String operator+(const String &other) const;
     virtual String operator+(Object::Ref<Object> object) const;
     template <typename T>
-    String operator+(const T& value) const;
+    String operator+(const T &value) const;
 
     virtual bool isEmpty() const;
     virtual bool isNotEmpty() const;
@@ -44,7 +46,7 @@ public:
 };
 
 template <typename T>
-String String::operator+(const T& value) const
+String String::operator+(const T &value) const
 {
     std::shared_ptr<std::string> ptr = std::make_shared<std::string>(this->toStdString());
     *ptr += std::to_string(value);
