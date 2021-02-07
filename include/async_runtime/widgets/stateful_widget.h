@@ -35,7 +35,6 @@ public:
     // @mustCallSuper
     virtual void dispose() {}
 
-
     virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
 
 private:
@@ -45,11 +44,7 @@ private:
 
 protected:
     // @immutable
-    void setState(Function<void()> fn)
-    {
-        fn();
-        this->_element->build();
-    }
+    void setState(Function<void()> fn);
 
     const bool &mounted = _mounted;
     const Object::Ref<BuildContext> &context = _context;
