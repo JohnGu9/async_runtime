@@ -58,7 +58,7 @@ void NamedMultiChildElement::build()
             Object::Ref<Element> &element = elementIterator->second;
             Object::Ref<Widget> &oldWidget = element->widget;
             if (Object::identical(widget, oldWidget))
-                return;
+                continue;
             else if (widget->canUpdate(oldWidget))
                 element->update(widget);
             else

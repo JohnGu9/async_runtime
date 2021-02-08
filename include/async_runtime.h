@@ -5,8 +5,8 @@
 #include "async_runtime/widgets/leaf_widget.h"
 #include "async_runtime/widgets/stateless_widget.h"
 #include "async_runtime/widgets/stateful_widget.h"
-
 #include "async_runtime/widgets/multi_child_widget.h"
+#include "async_runtime/widgets/named_multi_child_widget.h"
 #include "async_runtime/widgets/inherited_widget.h"
 #include "async_runtime/widgets/notification_listener.h"
 #include "async_runtime/widgets/builder.h"
