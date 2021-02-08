@@ -6,7 +6,7 @@
 #include "async.h"
 #include "disposable.h"
 
-class LoggerHandler : public virtual Object, public virtual StateHelper, public virtual Disposable
+class LoggerHandler : public virtual Object, public StateHelper, public Disposable
 {
 public:
     LoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}

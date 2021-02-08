@@ -38,8 +38,9 @@ public:
 
 protected:
     String _path;
-    Object::Ref<State<StatefulWidget>> _state;
     std::atomic_bool _isDisposed;
+
+    Object::Ref<State<StatefulWidget>> _state;
     Object::Ref<Lock> _lock;
 
 public:

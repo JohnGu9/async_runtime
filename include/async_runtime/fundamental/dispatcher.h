@@ -5,7 +5,7 @@
 #include "disposable.h"
 
 class ThreadPool;
-class Dispatcher : public virtual Object, public virtual StateHelper, public virtual Disposable
+class Dispatcher : public virtual Object, public StateHelper, public Disposable
 {
 public:
     using RunOnMainThread = Function<void(Function<void()> job)>;

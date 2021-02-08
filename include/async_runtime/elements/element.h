@@ -9,8 +9,9 @@ class Widget;
 class LeafWidget;
 class StatelessWidget;
 class InheritedWidget;
-class MultiChildWidget;
 class NotificationListener;
+class MultiChildWidget;
+class NamedMultiChildWidget;
 
 class Element : public BuildContext
 {
@@ -155,6 +156,17 @@ public:
     void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
 };
 
+class NotificationListenerElement : public StatelessElement
+{
+public:
+    NotificationListenerElement(Object::Ref<NotificationListener> child);
+    Object::Ref<NotificationListener> _notificationListenerWidget;
+
+    void detach() override;
+    void update(Object::Ref<Widget> newWidget) override;
+    void notify(Object::Ref<Widget> newWidget) override;
+};
+
 class MultiChildElement : public Element
 {
 public:
@@ -172,13 +184,19 @@ protected:
     List<Object::Ref<Element>> _childrenElements;
 };
 
-class NotificationListenerElement : public StatelessElement
+class NamedMultiChildElement : public Element
 {
 public:
-    NotificationListenerElement(Object::Ref<NotificationListener> child);
-    Object::Ref<NotificationListener> _notificationListenerWidget;
-
+    NamedMultiChildElement(Object::Ref<NamedMultiChildWidget> widget);
+    void attach() override;
     void detach() override;
+    void build() override;
     void update(Object::Ref<Widget> newWidget) override;
     void notify(Object::Ref<Widget> newWidget) override;
+
+    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
+
+protected:
+    Object::Ref<NamedMultiChildWidget> _namedMultiChildWidget;
+    Map<String, Object::Ref<Element>> _childrenElements;
 };

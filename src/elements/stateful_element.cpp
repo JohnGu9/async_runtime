@@ -85,8 +85,7 @@ void StatefulElement::update(Object::Ref<Widget> newWidget)
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
-    this->_statefulWidget = newWidget->cast<StatefulWidget>();
-    assert(this->_statefulWidget != nullptr);
+    this->_statefulWidget = newWidget->covariant<StatefulWidget>();
     this->_state->didWidgetUpdated(oldWidget);
     Element::update(newWidget);
     this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
@@ -100,8 +99,7 @@ void StatefulElement::notify(Object::Ref<Widget> newWidget)
     Element::notify(newWidget);
     {
         Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
-        this->_statefulWidget = newWidget->cast<StatefulWidget>();
-        assert(this->_statefulWidget != nullptr);
+        this->_statefulWidget = newWidget->covariant<StatefulWidget>();
         this->_state->didWidgetUpdated(oldWidget);
     }
     this->_state->didDependenceChanged();

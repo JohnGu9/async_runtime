@@ -2,7 +2,8 @@
 #include "async_runtime/widgets/notification_listener.h"
 
 // NotificationListener Element
-NotificationListenerElement::NotificationListenerElement(Object::Ref<NotificationListener> widget) : _notificationListenerWidget(widget), StatelessElement(widget) {}
+NotificationListenerElement::NotificationListenerElement(Object::Ref<NotificationListener> widget)
+    : _notificationListenerWidget(widget), StatelessElement(widget) {}
 
 void NotificationListenerElement::update(Object::Ref<Widget> newWidget)
 {

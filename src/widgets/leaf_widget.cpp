@@ -1,6 +1,6 @@
 #include "async_runtime/widgets/leaf_widget.h"
 
-Object::Ref<LeafWidget> &LeafWidget::factory()
+Object::Ref<LeafWidget> LeafWidget::factory()
 {
     static Object::Ref<LeafWidget> singleton = Object::create<LeafWidget>();
     return singleton;

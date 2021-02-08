@@ -18,7 +18,7 @@ class ThreadPool : public Object, public Disposable
     static Set<String> _namePool;
 
 public:
-    static thread_local String threadName;
+    static thread_local String thisThreadName;
 
     ThreadPool(size_t threads, String name = nullptr);
     virtual ~ThreadPool();

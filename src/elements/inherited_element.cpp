@@ -37,11 +37,9 @@ void InheritedElement::build()
 
 void InheritedElement::update(Object::Ref<Widget> newWidget)
 {
-    Object::Ref<InheritedWidget> castedWidget = newWidget->cast<InheritedWidget>();
-    assert(castedWidget != nullptr);
     Object::Ref<InheritedWidget> oldWidget = this->_inheritWidget;
-    this->_inheritWidget = castedWidget;
-    if (castedWidget->updateShouldNotify(oldWidget))
+    this->_inheritWidget = newWidget->covariant<InheritedWidget>();
+    if (this->_inheritWidget->updateShouldNotify(oldWidget))
         this->notify(newWidget);
     else
         Element::update(newWidget);
@@ -51,8 +49,7 @@ void InheritedElement::notify(Object::Ref<Widget> newWidget)
 {
     Element::notify(newWidget);
     this->_inheritances[this->_inheritWidget->runtimeType()] = Object::cast<Inheritance>(this->_inheritWidget.get());
-    this->_inheritWidget = newWidget->cast<InheritedWidget>();
-    assert(this->_inheritWidget != nullptr);
+    this->_inheritWidget = newWidget->covariant<InheritedWidget>();
     assert(this->_childElement != nullptr);
 
     Object::Ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));

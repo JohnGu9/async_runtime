@@ -8,14 +8,19 @@
 
 Set<String> ThreadPool::_namePool = Set<String>::empty();
 
-thread_local String ThreadPool::threadName = String();
+thread_local String ThreadPool::thisThreadName = String();
 
 ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
 {
     if (this->_name == nullptr)
     {
-        static const String prefix = "ThreadPool";
-        this->_name = prefix + "#" + size_t(this);
+        static const String prefix =
+#ifdef DEBUG
+            "ThreadPool#";
+#else
+            "";
+#endif
+        this->_name = prefix + size_t(this);
     }
     {
         Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
@@ -36,12 +41,12 @@ void ThreadPool::onConstruction(size_t threads)
 std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
     return [this, threadId] {
-        ThreadPool::threadName = this->childrenThreadName(threadId);
+        ThreadPool::thisThreadName = this->childrenThreadName(threadId);
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        // windows not support thread name yet for now
+        // Windows not support thread name yet for now
         // yeah, I'm lazy
 #elif __APPLE__
-        pthread_setname_np(ThreadPool::threadName.c_str());
+        pthread_setname_np(ThreadPool::thisThreadName.c_str());
 #elif __linux__
         pthread_setname_np(pthread_self(), ThreadPool::threadName.c_str());
 #endif
@@ -73,10 +78,7 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
     };
 }
 
-String ThreadPool::childrenThreadName(size_t id)
-{
-    return this->name + "#" + id;
-}
+String ThreadPool::childrenThreadName(size_t id) { return this->name + "#" + id; }
 
 size_t ThreadPool::threads() const { return this->_workers.size(); }
 

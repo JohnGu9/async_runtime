@@ -2,7 +2,8 @@
 #include "async_runtime/widgets/multi_child_widget.h"
 
 // MultiChild Element
-MultiChildElement::MultiChildElement(Object::Ref<MultiChildWidget> widget) : _childrenElements({}), _multiChildWidget(widget), Element(widget) {}
+MultiChildElement::MultiChildElement(Object::Ref<MultiChildWidget> widget)
+    : _childrenElements({}), _multiChildWidget(widget), Element(widget) {}
 
 void MultiChildElement::attach()
 {
@@ -66,19 +67,14 @@ void MultiChildElement::build()
 
 void MultiChildElement::update(Object::Ref<Widget> newWidget)
 {
-    Object::Ref<MultiChildWidget> castedWidget = newWidget->cast<MultiChildWidget>();
-    assert(castedWidget != nullptr);
-    this->_multiChildWidget = castedWidget;
+    this->_multiChildWidget = newWidget->covariant<MultiChildWidget>();
     Element::update(newWidget);
 }
 
 void MultiChildElement::notify(Object::Ref<Widget> newWidget)
 {
     Element::notify(newWidget);
-    Object::Ref<MultiChildWidget> castedWidget = newWidget->cast<MultiChildWidget>();
-    assert(castedWidget != nullptr);
-    this->_multiChildWidget = castedWidget;
-    this->widget = newWidget;
+    this->_multiChildWidget = newWidget->covariant<MultiChildWidget>();
 
     List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children->size(); i++)
@@ -126,7 +122,7 @@ void MultiChildElement::detach()
 {
     for (size_t i = 0; i < this->_childrenElements->size(); i++)
         this->_childrenElements[i]->detach();
-    this->_childrenElements->clear();
+    this->_childrenElements = nullptr;
     this->_multiChildWidget = nullptr;
     Element::detach();
 }
