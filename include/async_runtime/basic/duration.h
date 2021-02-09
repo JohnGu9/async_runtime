@@ -1,6 +1,11 @@
 #pragma once
 
+#if __APPLE__
 #include <cstdlib>
+#elif __linux__
+#include <cmath>
+#endif
+
 #include <chrono>
 #include <string>
 #include <memory>
