@@ -1,3 +1,4 @@
+#include "async_runtime/elements/lead_element.h"
 #include "async_runtime/widgets/leaf_widget.h"
 
 Object::Ref<LeafWidget> LeafWidget::factory()

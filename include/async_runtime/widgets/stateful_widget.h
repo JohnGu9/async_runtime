@@ -3,6 +3,7 @@
 #include "widget.h"
 #include "state.h"
 #include "../basic/function.h"
+#include "../elements/stateful_element.h"
 
 class StatefulWidget : public Widget
 {

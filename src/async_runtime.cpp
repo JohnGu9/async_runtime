@@ -1,4 +1,5 @@
 #include "async_runtime.h"
+#include "async_runtime/elements/root_element.h"
 
 void runApp(Object::Ref<Widget> widget)
 {

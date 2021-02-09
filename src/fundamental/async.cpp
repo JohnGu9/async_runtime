@@ -175,7 +175,6 @@ void AutoReleaseThreadPool::dispose()
     _condition.notify_all();
     for (std::thread &worker : _workers)
         worker.join();
-
     unregisterName();
 }
 
@@ -202,26 +201,6 @@ std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 // Future<std::nullptr_t> implement
 //
 ////////////////////////////
-
-bool Future<std::nullptr_t>::every(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)> fn)
-{
-    for (auto &future : set)
-    {
-        if (!fn(future))
-            return false;
-    }
-    return true;
-}
-
-bool Future<std::nullptr_t>::any(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)> fn)
-{
-    for (auto &future : set)
-    {
-        if (fn(future))
-            return true;
-    }
-    return false;
-}
 
 void Future<std::nullptr_t>::sync()
 {

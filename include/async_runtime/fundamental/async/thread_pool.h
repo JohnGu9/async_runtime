@@ -27,12 +27,10 @@ public:
     template <class F, class... Args>
     auto microTask(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
+    virtual String childrenThreadName(size_t id);
     virtual size_t threads() const;
     virtual bool isActive();
-
     void dispose() override; // join thread
-
-    virtual String childrenThreadName(size_t id);
 
 protected:
     virtual void onConstruction(size_t threads);

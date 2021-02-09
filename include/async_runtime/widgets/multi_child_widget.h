@@ -4,7 +4,7 @@
 
 class MultiChildWidget : public Widget
 {
-    friend MultiChildElement;
+    friend class MultiChildElement;
 
 public:
     static Object::Ref<MultiChildWidget> fromChildren(List<Object::Ref<Widget>> children, Object::Ref<Key> key = nullptr);

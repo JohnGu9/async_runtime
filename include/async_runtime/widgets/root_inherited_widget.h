@@ -2,6 +2,7 @@
 
 #include "inherited_widget.h"
 
+class RootElement;
 class RootInheritedWidget : public InheritedWidget
 {
 public:

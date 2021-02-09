@@ -1,3 +1,4 @@
+#include "async_runtime/elements/root_element.h"
 #include "async_runtime/widgets/root_inherited_widget.h"
 #include "async_runtime/fundamental/logger.h"
 

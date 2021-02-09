@@ -15,8 +15,6 @@ class Future<std::nullptr_t> : public Object, protected StateHelper
     friend class AsyncSnapshot;
 
 protected:
-    static bool every(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)>);
-    static bool any(const Set<Object::Ref<Future<>>> &set, Function<bool(Object::Ref<Future<>>)>);
     Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
     Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _completed(false) {}
     std::atomic_bool _completed;

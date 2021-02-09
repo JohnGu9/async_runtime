@@ -1,3 +1,4 @@
+#include "async_runtime/elements/multi_child_element.h"
 #include "async_runtime/widgets/multi_child_widget.h"
 
 Object::Ref<MultiChildWidget> MultiChildWidget::fromChildren(List<Object::Ref<Widget>> children, Object::Ref<Key> key)

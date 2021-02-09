@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../elements/element.h"
 #include "../widgets/stateful_widget.h"
 #include "../widgets/inherited_widget.h"
 #include "async.h"
