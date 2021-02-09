@@ -31,12 +31,16 @@ void NamedMultiChildElement::detach()
 void NamedMultiChildElement::build()
 {
     Map<String, Object::Ref<Widget>> &children = this->_namedMultiChildWidget->_children;
-    for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end(); iter++)
+    for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
         {
             iter->second->detach();
             iter = this->_childrenElements->erase(iter);
+        }
+        else
+        {
+            iter++;
         }
     }
 
@@ -86,12 +90,16 @@ void NamedMultiChildElement::notify(Object::Ref<Widget> newWidget)
     this->_namedMultiChildWidget = newWidget->covariant<NamedMultiChildWidget>();
 
     Map<String, Object::Ref<Widget>> &children = this->_namedMultiChildWidget->_children;
-    for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end(); iter++)
+    for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
         {
             iter->second->detach();
             iter = this->_childrenElements->erase(iter);
+        }
+        else
+        {
+            iter++;
         }
     }
 
@@ -127,4 +135,11 @@ void NamedMultiChildElement::notify(Object::Ref<Widget> newWidget)
     }
 }
 
-void NamedMultiChildElement::visitDescendant(Function<bool(Object::Ref<Element>)>) {}
+void NamedMultiChildElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
+{
+    for (auto &iter : this->_childrenElements)
+    {
+        if (fn(iter.second) == false)
+            iter.second->visitDescendant(fn);
+    }
+}

@@ -14,6 +14,7 @@ public:
 
 protected:
     virtual void run(Function<void()>);
+    virtual void microTask(Function<void()>);
 
 private:
     Object::Ref<ThreadPool> _callbackHandler; // main thread for callback

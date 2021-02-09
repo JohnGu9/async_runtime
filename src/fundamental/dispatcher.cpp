@@ -11,6 +11,8 @@ void Dispatcher::dispose() {}
 
 void Dispatcher::run(Function<void()> fn) { this->_callbackHandler->post(fn.toStdFunction()); }
 
+void Dispatcher::microTask(Function<void()> fn) { this->_callbackHandler->microTask(fn.toStdFunction()); }
+
 AsyncDispatcher::AsyncDispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(handler),
       _ownThreadPool(threadPool != nullptr ? nullptr : Object::create<ThreadPool>(threads)),

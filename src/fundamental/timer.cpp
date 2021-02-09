@@ -2,9 +2,11 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
 
-Timer::Timer(State<StatefulWidget> *state, const _CreateOnly &) : Dispatcher(state), _clear(false) {}
+Timer::Timer(State<StatefulWidget> *state, const _CreateOnly &)
+    : Dispatcher(state), _clear(false), _completed(false) {}
 
-Timer::Timer(Object::Ref<ThreadPool> callbackHandler, const _CreateOnly &) : Dispatcher(callbackHandler), _clear(false) {}
+Timer::Timer(Object::Ref<ThreadPool> callbackHandler, const _CreateOnly &)
+    : Dispatcher(callbackHandler), _clear(false), _completed(false) {}
 
 Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn)
 {
@@ -44,41 +46,51 @@ Timer::~Timer()
 
 void Timer::_setTimeout(Duration delay, Function<void()> function)
 {
+    assert(this->_clear == false);
     using std::chrono::system_clock;
     system_clock::time_point current = system_clock::now();
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    auto threadPool = AutoReleaseThreadPool::factory(1, String("Timer#") + size_t(this));
-    threadPool->post([=] {
+    _thread = std::make_shared<Thread>([=] {
         if (self->_clear)
+        {
+            self->_completed = true;
             return;
+        }
         std::this_thread::sleep_until(current + delay.toChronoMilliseconds());
         if (self->_clear)
+        {
+            self->_completed = true;
             return;
-        self->run(function);
+        }
+        self->microTask(function);
     });
-    threadPool->close();
 }
 
 void Timer::_setInterval(Duration interval, Function<void()> function)
 {
+    assert(this->_clear == false);
     using std::chrono::system_clock;
     system_clock::time_point current = system_clock::now();
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    auto threadPool = AutoReleaseThreadPool::factory(1, String("Timer#") + size_t(this));
-    threadPool->post([=] {
+    _thread = std::make_shared<Thread>([=] {
         system_clock::time_point nextTime = current;
-        while (true)
+        if (self->_clear)
         {
-            if (self->_clear)
-                return;
+            self->_completed = true;
+            return;
+        }
+        for (;;)
+        {
             nextTime += interval.toChronoMilliseconds();
             std::this_thread::sleep_until(nextTime);
             if (self->_clear)
+            {
+                self->_completed = true;
                 return;
-            self->run(function);
+            }
+            self->microTask(function);
         }
     });
-    threadPool->close();
 }
 
 void Timer::cancel()
@@ -89,5 +101,6 @@ void Timer::cancel()
 void Timer::dispose()
 {
     this->cancel();
+    this->_thread->detach(); // timer would wait thread complete.
     Dispatcher::dispose();
 }

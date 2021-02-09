@@ -2,7 +2,7 @@
 
 #if __APPLE__
 #include <cstdlib>
-#elif __linux__
+#else
 #include <cmath>
 #endif
 
