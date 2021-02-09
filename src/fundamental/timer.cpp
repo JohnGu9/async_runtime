@@ -2,9 +2,9 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
 
-Timer::Timer(State<StatefulWidget> *state, const _CreateOnly &) : Dispatcher(state) {}
+Timer::Timer(State<StatefulWidget> *state, const _CreateOnly &) : Dispatcher(state), _clear(false) {}
 
-Timer::Timer(Object::Ref<ThreadPool> callbackHandler, const _CreateOnly &) : Dispatcher(callbackHandler) {}
+Timer::Timer(Object::Ref<ThreadPool> callbackHandler, const _CreateOnly &) : Dispatcher(callbackHandler), _clear(false) {}
 
 Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn)
 {
@@ -39,57 +39,55 @@ Object::Ref<Timer> Timer::periodic(Object::Ref<ThreadPool> callbackHandler, Dura
 Timer::~Timer()
 {
     // Timer can automatic dispose itself
-    if (this->_clear != nullptr)
-        this->dispose();
+    this->dispose();
 }
 
 void Timer::_setTimeout(Duration delay, Function<void()> function)
 {
     using std::chrono::system_clock;
-    system_clock::time_point nextTime = system_clock::now();
-    std::shared_ptr<std::atomic_bool> clearFlag = std::make_shared<std::atomic_bool>(false);
-    this->_clear = clearFlag;
+    system_clock::time_point current = system_clock::now();
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    this->post([=](Function<void(Function<void()>)> runJob) {
-        if (*clearFlag)
+    auto threadPool = AutoReleaseThreadPool::factory(1, String("Timer#") + size_t(this));
+    threadPool->post([=] {
+        if (self->_clear)
             return;
-        std::this_thread::sleep_until(nextTime + delay.toChronoMilliseconds());
-        if (*clearFlag)
+        std::this_thread::sleep_until(current + delay.toChronoMilliseconds());
+        if (self->_clear)
             return;
-        runJob(function);
+        self->run(function);
     });
+    threadPool->close();
 }
 
 void Timer::_setInterval(Duration interval, Function<void()> function)
 {
     using std::chrono::system_clock;
     system_clock::time_point current = system_clock::now();
-    Object::Ref<std::atomic_bool> clearFlag = std::make_shared<std::atomic_bool>(false);
-    this->_clear = clearFlag;
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    this->post([=](Function<void(Function<void()>)> runJob) {
+    auto threadPool = AutoReleaseThreadPool::factory(1, String("Timer#") + size_t(this));
+    threadPool->post([=] {
         system_clock::time_point nextTime = current;
         while (true)
         {
-            if (*clearFlag)
+            if (self->_clear)
                 return;
-            nextTime = nextTime + interval.toChronoMilliseconds();
+            nextTime += interval.toChronoMilliseconds();
             std::this_thread::sleep_until(nextTime);
-            if (*clearFlag)
+            if (self->_clear)
                 return;
-            runJob(function);
+            self->run(function);
         }
     });
+    threadPool->close();
 }
 
 void Timer::cancel()
 {
-    this->_clear->operator=(true);
+    this->_clear = true;
 }
 
 void Timer::dispose()
 {
     this->cancel();
-    this->_clear = nullptr;
     Dispatcher::dispose();
 }

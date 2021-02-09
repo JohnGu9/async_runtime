@@ -74,4 +74,20 @@ public:
     {
         return Map<Key, Value>(*this);
     }
+
+    bool any(Function<bool(const value_type &)> fn)
+    {
+        for (auto &iter : **this)
+            if (fn(iter))
+                return true;
+        return false;
+    }
+
+    bool every(Function<bool(const value_type &)> fn)
+    {
+        for (auto &iter : **this)
+            if (not fn(iter))
+                return false;
+        return true;
+    }
 };

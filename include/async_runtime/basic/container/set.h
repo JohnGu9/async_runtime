@@ -67,4 +67,20 @@ public:
     {
         return Set<T>(*this);
     }
+
+    bool any(Function<bool(const T &)> fn)
+    {
+        for (auto &iter : **this)
+            if (fn(iter))
+                return true;
+        return false;
+    }
+
+    bool every(Function<bool(const T &)> fn)
+    {
+        for (auto &iter : **this)
+            if (not fn(iter))
+                return false;
+        return true;
+    }
 };

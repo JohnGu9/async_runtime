@@ -8,10 +8,24 @@ class ThreadPool;
 class Dispatcher : public virtual Object, public StateHelper, public Disposable
 {
 public:
+    Dispatcher(Object::Ref<ThreadPool> handler);
+    Dispatcher(State<StatefulWidget> *state);
+    void dispose() override;
+
+protected:
+    virtual void run(Function<void()>);
+
+private:
+    Object::Ref<ThreadPool> _callbackHandler; // main thread for callback
+};
+
+class AsyncDispatcher : public Dispatcher
+{
+public:
     using RunOnMainThread = Function<void(Function<void()> job)>;
-    Dispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);
-    Dispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool> threadPool = nullptr, size_t threads = 1);
-    virtual ~Dispatcher();
+    AsyncDispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool>, size_t threads);
+    AsyncDispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool>, size_t threads);
+    virtual ~AsyncDispatcher();
     void dispose() override;
 
 protected:
@@ -19,8 +33,6 @@ protected:
     virtual void post(Function<void(RunOnMainThread runner)>);
 
 private:
-    Object::Ref<ThreadPool> _callbackHandler; // main thread for callback
-    Object::Ref<ThreadPool> _threadPool;      // work thread
-
-    bool _ownWorkThread = false;
+    Object::Ref<ThreadPool> _ownThreadPool;
+    Object::Ref<ThreadPool> _threadPool; // work thread
 };

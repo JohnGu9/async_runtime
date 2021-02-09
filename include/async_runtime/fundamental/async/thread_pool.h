@@ -31,7 +31,6 @@ public:
     virtual size_t threads() const;
     virtual bool isActive();
 
-    virtual void detach();   // detach thread
     void dispose() override; // join thread
 
     virtual String childrenThreadName(size_t id);
@@ -39,6 +38,7 @@ public:
 protected:
     virtual void onConstruction(size_t threads);
     virtual std::function<void()> workerBuilder(size_t);
+    virtual void unregisterName();
 
     String _name;
 
@@ -108,18 +108,18 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
 
 class AutoReleaseThreadPool : public ThreadPool
 {
-    struct MakeSharedOnly
+    struct _MakeSharedOnly
     {
-        explicit MakeSharedOnly(int) {}
+        explicit _MakeSharedOnly(int) {}
     };
 
 public:
-    static Object::Ref<AutoReleaseThreadPool> factory(size_t threads = 1);
+    static Object::Ref<AutoReleaseThreadPool> factory(size_t threads = 1, String name = nullptr);
 
-    AutoReleaseThreadPool(MakeSharedOnly, size_t threads = 1) : ThreadPool(threads) {}
+    AutoReleaseThreadPool(_MakeSharedOnly, size_t threads = 1, String name = nullptr) : ThreadPool(threads, name) {}
     virtual ~AutoReleaseThreadPool();
     void dispose() override;
-    void detach() override;
+    virtual void close();
 
 protected:
     void onConstruction(size_t threads) override;

@@ -14,20 +14,21 @@ class Timer : public Dispatcher
     };
 
 public:
-    Timer(State<StatefulWidget> *state, const _CreateOnly &);
-    Timer(Object::Ref<ThreadPool> callbackHandler, const _CreateOnly &);
     static Object::Ref<Timer> delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn);
     static Object::Ref<Timer> periodic(State<StatefulWidget> *state, Duration interval, Function<void()> fn);
     static Object::Ref<Timer> delay(Object::Ref<ThreadPool> callbackHandler, Duration duration, Function<void()> fn);
     static Object::Ref<Timer> periodic(Object::Ref<ThreadPool> callbackHandler, Duration interval, Function<void()> fn);
 
-    virtual ~Timer();
+    Timer(State<StatefulWidget> *state, const _CreateOnly &);
+    Timer(Object::Ref<ThreadPool> callbackHandler, const _CreateOnly &);
 
+    virtual ~Timer();
     virtual void cancel();
-    void dispose() override;
 
 protected:
-    std::shared_ptr<std::atomic_bool> _clear;
+    void dispose() override;
+
+    std::atomic_bool _clear;
 
     // now Timer can't reuse
     // Please create new Timer for new task

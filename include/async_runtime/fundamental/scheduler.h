@@ -11,8 +11,9 @@ public:
     using Handler = Object::Ref<ThreadPool>;
     static Handler of(Object::Ref<BuildContext> context);
 
-    Scheduler(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
+    Scheduler(Object::Ref<Widget> child, String name = nullptr, Object::Ref<Key> key = nullptr);
     Object::Ref<Widget> child;
+    String name;
     Object::Ref<State<StatefulWidget>> createState() override;
 };
 

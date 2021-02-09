@@ -65,7 +65,7 @@ class _SchedulerState : public State<Scheduler>
     void initState() override
     {
         super::initState();
-        this->_handler = Object::create<ThreadPool>(1);
+        this->_handler = Object::create<ThreadPool>(1, this->getWidget()->name);
     }
 
     void dispose() override
@@ -80,7 +80,8 @@ class _SchedulerState : public State<Scheduler>
     }
 };
 
-Scheduler::Scheduler(Object::Ref<Widget> child_, Object::Ref<Key> key) : child(child_), StatefulWidget(key) { assert(this->child); }
+Scheduler::Scheduler(Object::Ref<Widget> child, String name, Object::Ref<Key> key)
+    : child(child), name(name), StatefulWidget(key) { assert(this->child); }
 
 Object::Ref<State<StatefulWidget>> Scheduler::createState()
 {

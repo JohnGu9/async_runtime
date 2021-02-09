@@ -14,20 +14,30 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
 {
     if (this->_name == nullptr)
     {
-        static const String prefix =
-#ifdef DEBUG
-            "ThreadPool#";
-#else
-            "";
-#endif
+        static const String prefix = "ThreadPool#";
         this->_name = prefix + size_t(this);
     }
     {
+        assert(this->_name && this->_name.isNotEmpty());
         Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
     }
     this->onConstruction(threads);
+}
+
+ThreadPool::~ThreadPool()
+{
+#ifdef DEBUG
+    {
+        Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
+    }
+    {
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+    }
+#endif
 }
 
 void ThreadPool::onConstruction(size_t threads)
@@ -42,14 +52,21 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
     return [this, threadId] {
         ThreadPool::thisThreadName = this->childrenThreadName(threadId);
+        assert(ThreadPool::thisThreadName && ThreadPool::thisThreadName.isNotEmpty());
+
+#ifdef DEBUG
+        std::string debugThreadName = ThreadPool::thisThreadName.toStdString();
+        std::string debugThreadPoolRuntimeType = this->runtimeType().toStdString();
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         // Windows not support thread name yet for now
         // yeah, I'm lazy
 #elif __APPLE__
         pthread_setname_np(ThreadPool::thisThreadName.c_str());
 #elif __linux__
-        pthread_setname_np(pthread_self(), ThreadPool::threadName.c_str());
+        pthread_setname_np(pthread_self(), ThreadPool::thisThreadName.c_str());
 #endif
+#endif
+
         for (;;)
         {
             std::function<void()> task;
@@ -57,9 +74,9 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
                 std::unique_lock<std::mutex> lock(this->_queueMutex);
                 this->_condition.wait(lock, [this] { return this->_stop || !this->_microTasks.empty() || !this->_tasks.empty(); });
 
-                if ( // this->stop &&
+                if (this->_stop &&
                     this->_microTasks.empty() &&
-                    this->_tasks.empty()) // always finish all task
+                    this->_tasks.empty())
                     return;
 
                 if (!this->_microTasks.empty())
@@ -67,11 +84,13 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
                     task = std::move(this->_microTasks.front());
                     this->_microTasks.pop();
                 }
-                else
+                else if (!this->_tasks.empty())
                 {
                     task = std::move(this->_tasks.front());
                     this->_tasks.pop();
                 }
+                else
+                    continue;
             }
             task();
         }
@@ -81,16 +100,6 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 String ThreadPool::childrenThreadName(size_t id) { return this->name + "#" + id; }
 
 size_t ThreadPool::threads() const { return this->_workers.size(); }
-
-ThreadPool::~ThreadPool()
-{
-    {
-        Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
-        ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
-    }
-    std::unique_lock<std::mutex> lock(_queueMutex);
-    assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
-}
 
 bool ThreadPool::isActive()
 {
@@ -114,20 +123,14 @@ void ThreadPool::dispose()
 
     for (std::thread &worker : _workers)
         worker.join();
+    _workers.clear();
+    unregisterName();
 }
 
-void ThreadPool::detach()
+void ThreadPool::unregisterName()
 {
-    {
-        std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop)
-            return;
-        _stop = true;
-    }
-    _condition.notify_all();
-
-    for (std::thread &worker : _workers)
-        worker.detach();
+    Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+    ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
 }
 
 ////////////////////////////
@@ -136,10 +139,10 @@ void ThreadPool::detach()
 //
 ////////////////////////////
 
-Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads)
+Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, String name)
 {
     assert(threads > 0);
-    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(MakeSharedOnly(0), threads);
+    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(_MakeSharedOnly(0), threads, name);
     instance->_workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
         instance->_workers.emplace_back(instance->workerBuilder(i));
@@ -163,7 +166,7 @@ void AutoReleaseThreadPool::dispose()
         std::unique_lock<std::mutex> lock(_queueMutex);
         if (_stop)
         {
-            assert(false && "ThreadPool call [dispose] that already is disposed. ");
+            assert(false && "AutoReleaseThreadPool call [dispose] or [close] that already is disposed. ");
             return;
         }
         _stop = true;
@@ -172,17 +175,18 @@ void AutoReleaseThreadPool::dispose()
     _condition.notify_all();
     for (std::thread &worker : _workers)
         worker.join();
+
+    unregisterName();
 }
 
-void AutoReleaseThreadPool::detach()
+void AutoReleaseThreadPool::close()
 {
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop)
-            return;
         _stop = true;
     }
     _condition.notify_all();
+    unregisterName();
 }
 
 void AutoReleaseThreadPool::onConstruction(size_t threads) {}
@@ -190,7 +194,7 @@ void AutoReleaseThreadPool::onConstruction(size_t threads) {}
 std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
     Object::Ref<AutoReleaseThreadPool> self = Object::cast<>(this);
-    return [self, threadId] { self->ThreadPool::workerBuilder(threadId); };
+    return [self, threadId] { self->ThreadPool::workerBuilder(threadId)(); };
 }
 
 ////////////////////////////

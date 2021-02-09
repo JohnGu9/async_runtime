@@ -6,7 +6,7 @@
 #include "../widgets/state.h"
 #include "../basic/lock.h"
 
-class File : public Dispatcher
+class File : public AsyncDispatcher
 {
     static Object::Ref<ThreadPool> sharedThreadPool();
 

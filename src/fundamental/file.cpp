@@ -6,7 +6,7 @@
 
 Object::Ref<ThreadPool> File::sharedThreadPool()
 {
-    static Object::Ref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1);
+    static Object::Ref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1, "FileSharedThreadPool");
     return sharedThreadPool;
 }
 
@@ -14,7 +14,7 @@ File::File(State<StatefulWidget> *state, String path, size_t threads)
     : _path(path), _state(Object::cast<>(state)),
       _lock(threads > 1 ? Object::create<Lock>() /* if multithread read/write, need an actually lock */
                         : Object::create<Lock::InvailedLock>() /* if only one thread, don't need actually lock */),
-      Dispatcher(state, (threads == 0 ? sharedThreadPool() : nullptr), threads)
+      AsyncDispatcher(state, threads == 0 ? sharedThreadPool() : nullptr, threads)
 {
 }
 

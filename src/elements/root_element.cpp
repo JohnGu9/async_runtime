@@ -21,7 +21,7 @@ RootElement::RootElement(Object::Ref<Widget> widget) : _consoleStop(false), Sing
 {
     assert(widget != nullptr);
     this->_stdoutKey = Object::create<GlobalKey>();
-    this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _stdoutKey));
+    this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _stdoutKey), "RootThread");
 }
 
 void RootElement::update(Object::Ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
