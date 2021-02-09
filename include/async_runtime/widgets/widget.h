@@ -9,15 +9,13 @@ class Widget : public virtual Object
 
 public:
     Widget(Object::Ref<Key> key);
-    virtual Object::Ref<Key> getKey();
     virtual bool canUpdate(Object::Ref<Widget> other);
     virtual Object::Ref<Element> createElement() = 0;
 
 protected:
     const Object::Ref<Key> _key;
+
+public:
+    const Object::Ref<Key> &key = _key;
 };
 
-inline Object::Ref<Key> Widget::getKey()
-{
-    return this->_key;
-}

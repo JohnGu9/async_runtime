@@ -9,14 +9,14 @@ void Element::attach()
     Object::Ref<Element> parent = this->parent.lock();
     assert(parent != nullptr && "Element can't find out its parent. ");
     this->_inheritances = parent->_inheritances;
-    if (Object::Ref<Key> key = this->widget->getKey())
+    if (Object::Ref<Key> key = this->widget->key)
         key->setElement(Object::cast<>(this));
 }
 
 void Element::detach()
 {
     this->_inheritances = nullptr; // release map reference
-    if (Object::Ref<Key> key = this->widget->getKey())
+    if (Object::Ref<Key> key = this->widget->key)
         key->dispose();
     this->widget = nullptr;
 }

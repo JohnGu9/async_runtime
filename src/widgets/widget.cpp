@@ -6,6 +6,6 @@ bool Widget::canUpdate(Object::Ref<Widget> other)
 {
     if (other == nullptr)
         return false;
-    return this->runtimeType() == other->runtimeType() && this->getKey() == other->getKey();
+    return this->runtimeType() == other->runtimeType() && this->key == other->key;
 }
 
