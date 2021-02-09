@@ -67,6 +67,18 @@ bool String::isNotEmpty() const
     return !this->isEmpty();
 }
 
+bool String::startsWith(String prefix) const
+{
+    return this->_ptr->rfind(prefix.c_str(), 0) == 0;
+}
+
+bool String::endsWith(String suffix) const
+{
+    if (suffix._ptr->size() > this->_ptr->size())
+        return false;
+    return std::equal(suffix._ptr->rbegin(), suffix._ptr->rend(), this->_ptr->rbegin());
+}
+
 const std::string &String::toStdString() const
 {
     return *(this->_ptr);

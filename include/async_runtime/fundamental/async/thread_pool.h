@@ -69,7 +69,7 @@ auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop)
+        if (_stop && not ThreadPool::thisThreadName.startsWith(this->name))
         {
             assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();
@@ -93,7 +93,7 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop)
+        if (_stop && not ThreadPool::thisThreadName.startsWith(this->name))
         {
             assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();

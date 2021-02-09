@@ -41,6 +41,8 @@ public:
 
     virtual bool isEmpty() const;
     virtual bool isNotEmpty() const;
+    virtual bool startsWith(String) const;
+    virtual bool endsWith(String) const;
     virtual const std::string &toStdString() const;
     virtual const char *c_str() const;
 };
