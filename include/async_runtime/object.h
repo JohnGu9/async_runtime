@@ -105,10 +105,14 @@ Object::Ref<T> Object::cast()
 template <typename T>
 Object::Ref<T> Object::covariant()
 {
+#ifdef DEBUG
     if (T *castedPointer = dynamic_cast<T *>(this))
         return Object::cast<>(castedPointer);
     else
-        assert(false && "Covariant failed. ");
+        assert(false && "Covariant Failed. ");
+#else
+    return std::dynamic_pointer_cast<T>(this->shared_from_this());
+#endif
 }
 
 void print(Object::Ref<Object> object);
