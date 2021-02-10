@@ -6,7 +6,7 @@
 
 Object::Ref<ThreadPool> File::sharedThreadPool()
 {
-    static Object::Ref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1, "FileSharedThreadPool");
+    static Object::Ref<ThreadPool> sharedThreadPool = Object::create<AutoReleaseThreadPool>(1, "FileSharedThreadPool");
     return sharedThreadPool;
 }
 
@@ -28,26 +28,26 @@ File::~File()
     assert(this->_isDisposed && "Detect memory leak. Call dispose before release File object. ");
 }
 
-Object::Ref<Future<bool>> File::exists()
+Object::Ref<Future<bool> > File::exists()
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Completer<bool>> completer = Object::create<Completer<bool>>(_state.get());
+    Object::Ref<Completer<bool> > completer = Object::create<Completer<bool> >(_state.get());
     this->post([self, completer] { completer->complete(self->existsSync()); });
     return completer->future;
 }
 
-Object::Ref<Future<int>> File::remove()
+Object::Ref<Future<int> > File::remove()
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Completer<int>> completer = Object::create<Completer<int>>(_state.get());
+    Object::Ref<Completer<int> > completer = Object::create<Completer<int> >(_state.get());
     this->post([self, completer] { completer->complete(self->removeSync()); });
     return completer->future;
 }
 
-Object::Ref<Future<long long>> File::size()
+Object::Ref<Future<long long> > File::size()
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Completer<long long>> completer = Object::create<Completer<long long>>(_state.get());
+    Object::Ref<Completer<long long> > completer = Object::create<Completer<long long> >(_state.get());
     this->post([self, completer] { completer->complete(self->sizeSync()); });
     return completer->future;
 }
@@ -77,10 +77,10 @@ long long File::sizeSync()
     return end - begin;
 }
 
-Object::Ref<Future<void>> File::append(String str)
+Object::Ref<Future<void> > File::append(String str)
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
+    Object::Ref<Completer<void> > completer = Object::create<Completer<void> >(_state.get());
     this->post([self, completer, str] {
         {
             Object::Ref<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
@@ -93,10 +93,10 @@ Object::Ref<Future<void>> File::append(String str)
     return completer->future;
 }
 
-Object::Ref<Future<void>> File::overwrite(String str)
+Object::Ref<Future<void> > File::overwrite(String str)
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
+    Object::Ref<Completer<void> > completer = Object::create<Completer<void> >(_state.get());
     this->post([self, completer, str] {
         {
             Object::Ref<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
@@ -109,10 +109,10 @@ Object::Ref<Future<void>> File::overwrite(String str)
     return completer->future;
 }
 
-Object::Ref<Future<void>> File::clear()
+Object::Ref<Future<void> > File::clear()
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
+    Object::Ref<Completer<void> > completer = Object::create<Completer<void> >(_state.get());
     this->post([self, completer] {
         {
             Object::Ref<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
@@ -124,10 +124,10 @@ Object::Ref<Future<void>> File::clear()
     return completer->future;
 }
 
-Object::Ref<Future<String>> File::read()
+Object::Ref<Future<String> > File::read()
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Completer<String>> completer = Object::create<Completer<String>>(_state.get());
+    Object::Ref<Completer<String> > completer = Object::create<Completer<String> >(_state.get());
     this->post([self, completer] {
         std::string str;
         {
@@ -145,10 +145,10 @@ Object::Ref<Future<String>> File::read()
     return completer->future;
 }
 
-Object::Ref<Stream<String>> File::readAsStream(size_t segmentationLength)
+Object::Ref<Stream<String> > File::readAsStream(size_t segmentationLength)
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
+    Object::Ref<Stream<String> > stream = Object::create<Stream<String> >(_state.get());
     this->post([self, stream, segmentationLength] {
         {
             Object::Ref<Lock::SharedLock> readLock = self->_lock->sharedLock();
@@ -170,10 +170,10 @@ Object::Ref<Stream<String>> File::readAsStream(size_t segmentationLength)
     return stream;
 }
 
-Object::Ref<Stream<String>> File::readWordAsStream()
+Object::Ref<Stream<String> > File::readWordAsStream()
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
+    Object::Ref<Stream<String> > stream = Object::create<Stream<String> >(_state.get());
     this->post([self, stream] {
         String str;
         {
@@ -188,10 +188,10 @@ Object::Ref<Stream<String>> File::readWordAsStream()
     return stream;
 }
 
-Object::Ref<Stream<String>> File::readLineAsStream()
+Object::Ref<Stream<String> > File::readLineAsStream()
 {
     Object::Ref<File> self = Object::cast<>(this);
-    Object::Ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
+    Object::Ref<Stream<String> > stream = Object::create<Stream<String> >(_state.get());
     this->post([self, stream] {
         {
             Object::Ref<Lock::SharedLock> readLock = self->_lock->sharedLock();

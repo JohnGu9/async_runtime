@@ -41,24 +41,24 @@ class Completer<void> : public Completer<std::nullptr_t>
     friend class AsyncSnapshot;
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
+    friend Object::Ref<Future<R> > async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
+    friend Object::Ref<Future<R> > async(State<StatefulWidget> *state, Function<R()> fn);
 
 public:
-    Completer(Object::Ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<void>>(callbackHandler)) {}
-    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<void>>(state)) {}
+    Completer(Object::Ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<void> >(callbackHandler)) {}
+    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<void> >(state)) {}
 
     virtual void complete()
     {
-        Object::Ref<Completer<void>> self = Object::cast<>(this);
+        Object::Ref<Completer<void> > self = Object::cast<>(this);
         this->_callbackHandler->post([self] { self->completeSync(); });
     }
 
     void cancel() override
     {
-        Object::Ref<Completer<void>> self = Object::cast<>(this);
+        Object::Ref<Completer<void> > self = Object::cast<>(this);
         this->_callbackHandler->post([self] {
             if (self->_isCompleted)
                 return false; // already completed
@@ -79,10 +79,10 @@ protected:
         this->_future->_callbackList = nullptr;
     }
 
-    Object::Ref<Future<void>> _future;
+    Object::Ref<Future<void> > _future;
 
 public:
-    const Object::Ref<Future<void>> &future = _future;
+    const Object::Ref<Future<void> > &future = _future;
 };
 
 template <typename T>
@@ -98,30 +98,30 @@ class Completer : public Completer<std::nullptr_t>
     friend class AsyncSnapshot;
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
+    friend Object::Ref<Future<R> > async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
+    friend Object::Ref<Future<R> > async(State<StatefulWidget> *state, Function<R()> fn);
 
 public:
-    Completer(Object::Ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<T>>(callbackHandler)) {}
-    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<T>>(state)) {}
+    Completer(Object::Ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<T> >(callbackHandler)) {}
+    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<T> >(state)) {}
 
     virtual void complete(const T &value)
     {
-        Object::Ref<Completer<T>> self = Object::cast<>(this);
-        this->_callbackHandler->post([self, value] { self->completeSync(value); });
+        Object::Ref<Completer<T> > self = Object::cast<>(this);
+        this->_callbackHandler->post([self](const T &value) { self->completeSync(value); }, std::move(value));
     }
 
     virtual void complete(T &&value)
     {
-        Object::Ref<Completer<T>> self = Object::cast<>(this);
-        this->_callbackHandler->post([self, value] { self->completeSync(value); });
+        Object::Ref<Completer<T> > self = Object::cast<>(this);
+        this->_callbackHandler->post([self](const T &value) { self->completeSync(value); }, std::move(value));
     }
 
     void cancel() override
     {
-        Object::Ref<Completer<T>> self = Object::cast<>(this);
+        Object::Ref<Completer<T> > self = Object::cast<>(this);
         this->_callbackHandler->post([self] {
             if (!self->_isCompleted)
                 self->_isCancelled = true;
@@ -141,8 +141,8 @@ protected:
         this->_future->_callbackList = nullptr;
     }
 
-    Object::Ref<Future<T>> _future;
+    Object::Ref<Future<T> > _future;
 
 public:
-    const Object::Ref<Future<T>> &future = _future;
+    const Object::Ref<Future<T> > &future = _future;
 };

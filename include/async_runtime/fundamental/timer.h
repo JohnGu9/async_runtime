@@ -29,7 +29,6 @@ protected:
     void dispose() override;
 
     std::atomic_bool _clear;
-    std::atomic_bool _completed;
     Object::Ref<Thread> _thread;
 
     // now Timer can't reuse

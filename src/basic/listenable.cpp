@@ -20,5 +20,5 @@ void Listenable::removeListener(Function<void(Object::Ref<Listenable>)> fn)
 void Listenable::dispose()
 {
     this->_isDisposed = true;
-    this->_listeners->clear();
+    this->_listeners = nullptr;
 }

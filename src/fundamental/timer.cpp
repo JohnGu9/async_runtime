@@ -3,10 +3,10 @@
 #include "async_runtime/fundamental/timer.h"
 
 Timer::Timer(State<StatefulWidget> *state, const _CreateOnly &)
-    : Dispatcher(state), _clear(false), _completed(false) {}
+    : Dispatcher(state), _clear(false) {}
 
 Timer::Timer(Object::Ref<ThreadPool> callbackHandler, const _CreateOnly &)
-    : Dispatcher(callbackHandler), _clear(false), _completed(false) {}
+    : Dispatcher(callbackHandler), _clear(false) {}
 
 Object::Ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn)
 {
@@ -52,16 +52,10 @@ void Timer::_setTimeout(Duration delay, Function<void()> function)
     Object::Ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
     _thread = std::make_shared<Thread>([=] {
         if (self->_clear)
-        {
-            self->_completed = true;
             return;
-        }
         std::this_thread::sleep_until(current + delay.toChronoMilliseconds());
         if (self->_clear)
-        {
-            self->_completed = true;
             return;
-        }
         self->microTask(function);
     });
 }
@@ -75,19 +69,13 @@ void Timer::_setInterval(Duration interval, Function<void()> function)
     _thread = std::make_shared<Thread>([=] {
         system_clock::time_point nextTime = current;
         if (self->_clear)
-        {
-            self->_completed = true;
             return;
-        }
-        for (;;)
+        while (true)
         {
             nextTime += interval.toChronoMilliseconds();
             std::this_thread::sleep_until(nextTime);
             if (self->_clear)
-            {
-                self->_completed = true;
                 return;
-            }
             self->microTask(function);
         }
     });

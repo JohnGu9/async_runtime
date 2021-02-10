@@ -45,6 +45,8 @@ template <>
 class AsyncSnapshot<void> : public AsyncSnapshot<std::nullptr_t>
 {
 public:
+    AsyncSnapshot(Object::Ref<Future<void>> future)
+        : AsyncSnapshot<std::nullptr_t>(future->_completed ? ConnectionState::done : ConnectionState::active) {}
     bool hasData() override { return false; }
 };
 

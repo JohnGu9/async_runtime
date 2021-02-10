@@ -157,7 +157,7 @@ public:
             self->_listener = fn;
             for (auto &cache : self->_cache)
                 self->_listener(std::move(cache));
-            self->_cache->clear();
+            self->_cache = nullptr;
             if (self->_isClosed)
                 self->_onClose->completeSync();
         });
@@ -179,10 +179,10 @@ public:
     {
         Object::Ref<Stream<T>> self = Object::cast<>(this);
         this->_callbackHandler->post([self] {
-            assert(!self->_isClosed);
-            if (self->_cache->empty())
-                self->_onClose->completeSync();
+            assert(not self->_isClosed);
             self->_isClosed = true;
+            if (self->_cache == nullptr)
+                self->_onClose->completeSync();
         });
     }
 

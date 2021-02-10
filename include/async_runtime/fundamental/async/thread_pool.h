@@ -33,7 +33,6 @@ public:
     void dispose() override; // join thread
 
 protected:
-    virtual void onConstruction(size_t threads);
     virtual std::function<void()> workerBuilder(size_t);
     virtual void unregisterName();
 
@@ -59,6 +58,7 @@ public:
 template <class F, class... Args>
 auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
 {
+    assert(this->threads() > 0);
     using return_type = typename std::result_of<F(Args...)>::type;
 
     auto task = std::make_shared<std::packaged_task<return_type()>>(
@@ -83,6 +83,7 @@ auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result
 template <class F, class... Args>
 auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
 {
+    assert(this->threads() > 0);
     using return_type = typename std::result_of<F(Args...)>::type;
 
     auto task = std::make_shared<std::packaged_task<return_type()>>(
@@ -105,21 +106,13 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
 
 class AutoReleaseThreadPool : public ThreadPool
 {
-    struct _MakeSharedOnly
-    {
-        explicit _MakeSharedOnly(int) {}
-    };
-
 public:
-    static Object::Ref<AutoReleaseThreadPool> factory(size_t threads = 1, String name = nullptr);
-
-    AutoReleaseThreadPool(_MakeSharedOnly, size_t threads = 1, String name = nullptr) : ThreadPool(threads, name) {}
+    AutoReleaseThreadPool(size_t threads = 1, String name = nullptr);
     virtual ~AutoReleaseThreadPool();
     void dispose() override;
     virtual void close();
 
 protected:
-    void onConstruction(size_t threads) override;
     std::function<void()> workerBuilder(size_t) override;
 
     bool _join = false;

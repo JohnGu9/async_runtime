@@ -23,29 +23,21 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
     }
-    this->onConstruction(threads);
-}
-
-ThreadPool::~ThreadPool()
-{
-#ifdef DEBUG
-    {
-        Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
-        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
-    }
-    {
-        std::unique_lock<std::mutex> lock(_queueMutex);
-        assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
-    }
-#endif
-}
-
-void ThreadPool::onConstruction(size_t threads)
-{
-    assert(threads > 0);
     _workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
         _workers.emplace_back(this->workerBuilder(i));
+}
+
+ThreadPool::~ThreadPool(){
+#ifdef DEBUG
+    {Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
+}
+{
+    std::unique_lock<std::mutex> lock(_queueMutex);
+    assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+}
+#endif
 }
 
 std::function<void()> ThreadPool::workerBuilder(size_t threadId)
@@ -67,16 +59,16 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 #endif
 #endif
 
-        for (;;)
+        while (true)
         {
             std::function<void()> task;
             {
                 std::unique_lock<std::mutex> lock(this->_queueMutex);
-                this->_condition.wait(lock, [this] { return this->_stop || !this->_microTasks.empty() || !this->_tasks.empty(); });
+                this->_condition.wait(lock, [this] {
+                    return this->_stop || !this->_microTasks.empty() || !this->_tasks.empty();
+                });
 
-                if (this->_stop &&
-                    this->_microTasks.empty() &&
-                    this->_tasks.empty())
+                if (this->_stop && this->_microTasks.empty() && this->_tasks.empty())
                     return;
 
                 if (!this->_microTasks.empty())
@@ -139,14 +131,12 @@ void ThreadPool::unregisterName()
 //
 ////////////////////////////
 
-Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, String name)
+AutoReleaseThreadPool::AutoReleaseThreadPool(size_t threads, String name)
+    : ThreadPool(0, name)
 {
-    assert(threads > 0);
-    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(_MakeSharedOnly(0), threads, name);
-    instance->_workers.reserve(threads);
+    this->_workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
-        instance->_workers.emplace_back(instance->workerBuilder(i));
-    return instance;
+        this->_workers.emplace_back(AutoReleaseThreadPool::workerBuilder(i));
 }
 
 AutoReleaseThreadPool::~AutoReleaseThreadPool()
@@ -187,8 +177,6 @@ void AutoReleaseThreadPool::close()
     _condition.notify_all();
     unregisterName();
 }
-
-void AutoReleaseThreadPool::onConstruction(size_t threads) {}
 
 std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
