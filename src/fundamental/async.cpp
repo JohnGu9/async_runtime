@@ -25,7 +25,7 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
     }
     _workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
-        _workers.emplace_back(this->workerBuilder(i));
+        _workers.emplace_back(ThreadPool::workerBuilder(i));
 }
 
 ThreadPool::~ThreadPool(){
@@ -131,12 +131,19 @@ void ThreadPool::unregisterName()
 //
 ////////////////////////////
 
-AutoReleaseThreadPool::AutoReleaseThreadPool(size_t threads, String name)
+Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, String name)
+{
+    assert(threads > 0);
+    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(AutoReleaseThreadPool::_FactoryOnly(), threads, name);
+    instance->_workers.reserve(threads);
+    for (size_t i = 0; i < threads; ++i)
+        instance->_workers.emplace_back(instance->workerBuilder(i));
+    return instance;
+}
+
+AutoReleaseThreadPool::AutoReleaseThreadPool(_FactoryOnly, size_t threads, String name)
     : ThreadPool(0, name)
 {
-    this->_workers.reserve(threads);
-    for (size_t i = 0; i < threads; ++i)
-        this->_workers.emplace_back(AutoReleaseThreadPool::workerBuilder(i));
 }
 
 AutoReleaseThreadPool::~AutoReleaseThreadPool()

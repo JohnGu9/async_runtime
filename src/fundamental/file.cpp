@@ -6,7 +6,7 @@
 
 Object::Ref<ThreadPool> File::sharedThreadPool()
 {
-    static Object::Ref<ThreadPool> sharedThreadPool = Object::create<AutoReleaseThreadPool>(1, "FileSharedThreadPool");
+    static Object::Ref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1, "FileSharedThreadPool");
     return sharedThreadPool;
 }
 

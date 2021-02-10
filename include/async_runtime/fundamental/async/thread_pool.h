@@ -106,8 +106,13 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
 
 class AutoReleaseThreadPool : public ThreadPool
 {
+    struct _FactoryOnly
+    {
+    };
+
 public:
-    AutoReleaseThreadPool(size_t threads = 1, String name = nullptr);
+    static Object::Ref<AutoReleaseThreadPool> factory(size_t threads = 1, String name = nullptr);
+    AutoReleaseThreadPool(_FactoryOnly, size_t threads = 1, String name = nullptr);
     virtual ~AutoReleaseThreadPool();
     void dispose() override;
     virtual void close();
