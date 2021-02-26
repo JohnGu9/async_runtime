@@ -4,7 +4,7 @@
 class SchedulerElement : public InheritedElement
 {
 public:
-    SchedulerElement(Object::Ref<SchedulerProxy> widget) : InheritedElement(widget) {}
+    SchedulerElement(ref<SchedulerProxy> widget) : InheritedElement(widget) {}
 
     void attach() override
     {
@@ -21,22 +21,22 @@ public:
         this->getHandler()->post([this] { this->toBuild(); }).get();
     }
 
-    void notify(Object::Ref<Widget> newWidget) override
+    void notify(ref<Widget> newWidget) override
     {
         this->getHandler()->post([this, newWidget] { this->toNotify(newWidget); }).get();
     }
 
-    void update(Object::Ref<Widget> newWidget) override
+    void update(ref<Widget> newWidget) override
     {
         this->getHandler()->post([this, newWidget] { this->toUpdate(newWidget); }).get();
     }
 
-    void visitDescendant(Function<bool(Object::Ref<Element>)> fn) override
+    void visitDescendant(Function<bool(ref<Element>)> fn) override
     {
         this->getHandler()->post([this, fn] { this->toVisitDescendant(fn); }).get();
     }
 
-    void visitAncestor(Function<bool(Object::Ref<Element>)> fn) override
+    void visitAncestor(Function<bool(ref<Element>)> fn) override
     {
         Scheduler::Handler handler = this->getHandler();
         Scheduler::Handler parentHandler = this->getParentHandler();
@@ -52,10 +52,10 @@ protected:
     virtual void toAttach() { InheritedElement::attach(); }
     virtual void toDetach() { InheritedElement::detach(); }
     virtual void toBuild() { InheritedElement::build(); }
-    virtual void toNotify(Object::Ref<Widget> newWidget) { InheritedElement::notify(newWidget); }
-    virtual void toUpdate(Object::Ref<Widget> newWidget) { InheritedElement::update(newWidget); }
-    virtual void toVisitDescendant(Function<bool(Object::Ref<Element>)> fn) { InheritedElement::visitDescendant(fn); }
-    virtual void toVisitAncestor(Function<bool(Object::Ref<Element>)> fn) { InheritedElement::visitAncestor(fn); }
+    virtual void toNotify(ref<Widget> newWidget) { InheritedElement::notify(newWidget); }
+    virtual void toUpdate(ref<Widget> newWidget) { InheritedElement::update(newWidget); }
+    virtual void toVisitDescendant(Function<bool(ref<Element>)> fn) { InheritedElement::visitDescendant(fn); }
+    virtual void toVisitAncestor(Function<bool(ref<Element>)> fn) { InheritedElement::visitAncestor(fn); }
 };
 
 class _SchedulerState : public State<Scheduler>
@@ -75,36 +75,36 @@ class _SchedulerState : public State<Scheduler>
         super::dispose();
     }
 
-    Object::Ref<Widget> build(Object::Ref<BuildContext>) override
+    ref<Widget> build(ref<BuildContext>) override
     {
         return Object::create<SchedulerProxy>(this->getWidget()->child, this->_handler);
     }
 };
 
-Scheduler::Scheduler(Object::Ref<Widget> child, String name, Object::Ref<Key> key)
+Scheduler::Scheduler(ref<Widget> child, String name, ref<Key> key)
     : child(child), name(name), StatefulWidget(key) { assert(this->child); }
 
-Object::Ref<State<StatefulWidget>> Scheduler::createState()
+ref<State<StatefulWidget>> Scheduler::createState()
 {
     return Object::create<_SchedulerState>();
 }
 
-Scheduler::Handler Scheduler::of(Object::Ref<BuildContext> context)
+Scheduler::Handler Scheduler::of(ref<BuildContext> context)
 {
-    if (Object::Ref<SchedulerProxy> proxy = context->dependOnInheritedWidgetOfExactType<SchedulerProxy>())
+    if (ref<SchedulerProxy> proxy = context->dependOnInheritedWidgetOfExactType<SchedulerProxy>())
         return proxy->_handler;
     return nullptr;
 }
 
-SchedulerProxy::SchedulerProxy(Object::Ref<Widget> child, Handler handler)
+SchedulerProxy::SchedulerProxy(ref<Widget> child, Handler handler)
     : _handler(handler), InheritedWidget(child, Object::create<ValueKey<Handler>>(handler))
 {
     assert(handler->threads() == 1);
 }
 
-bool SchedulerProxy::updateShouldNotify(Object::Ref<InheritedWidget> oldWidget)
+bool SchedulerProxy::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
-    if (Object::Ref<SchedulerProxy> old = oldWidget->cast<SchedulerProxy>())
+    if (ref<SchedulerProxy> old = oldWidget->cast<SchedulerProxy>())
         return old->_handler != this->_handler;
     else
     {
@@ -113,7 +113,7 @@ bool SchedulerProxy::updateShouldNotify(Object::Ref<InheritedWidget> oldWidget)
     }
 }
 
-Object::Ref<Element> SchedulerProxy::createElement()
+ref<Element> SchedulerProxy::createElement()
 {
     return Object::create<SchedulerElement>(Object::cast<>(this));
 }

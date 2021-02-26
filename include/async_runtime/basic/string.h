@@ -35,7 +35,7 @@ public:
     virtual String operator+(const char c) const;
     virtual String operator+(const char *const str) const;
     virtual String operator+(const String &other) const;
-    virtual String operator+(Object::Ref<Object> object) const;
+    virtual String operator+(ref<Object> object) const;
     template <typename T>
     String operator+(const T &value) const;
 

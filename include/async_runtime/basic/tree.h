@@ -6,8 +6,8 @@ class Tree : public Object
 {
 public:
     Tree() : children({}) {}
-    Object::WeakRef<Tree> parent;
-    List<Object::Ref<Tree>> children;
+    weakref<Tree> parent;
+    List<ref<Tree>> children;
     String info;
 
     virtual void ps(std::ostream &ss)

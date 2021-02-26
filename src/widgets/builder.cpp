@@ -1,8 +1,8 @@
 #include "async_runtime/widgets/builder.h"
 
-Builder::Builder(Function<Object::Ref<Widget>(Object::Ref<BuildContext>)> fn, Object::Ref<Key> key) : _fn(fn), StatelessWidget(key) {}
+Builder::Builder(Function<ref<Widget>(ref<BuildContext>)> fn, ref<Key> key) : _fn(fn), StatelessWidget(key) {}
 
-Object::Ref<Widget> Builder::build(Object::Ref<BuildContext> context)
+ref<Widget> Builder::build(ref<BuildContext> context)
 {
     return _fn(context);
 }

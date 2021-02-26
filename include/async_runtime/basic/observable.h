@@ -3,39 +3,39 @@
 #include "../object.h"
 
 template <typename T>
-class Observable : public virtual Object::Ref<T>
+class Observable : public virtual ref<T>
 {
 
 public:
-    Observable() : Object::Ref<T>(nullptr) {}
-    Observable(std::nullptr_t) : Object::Ref<T>(nullptr) {}
+    Observable() : ref<T>(nullptr) {}
+    Observable(std::nullptr_t) : ref<T>(nullptr) {}
     template <typename R>
-    Observable(Object::Ref<R> ref) : Object::Ref<T>(ref) {}
+    Observable(ref<R> ref) : ref<T>(ref) {}
     template <typename R>
-    Observable(Observable<R> other) : Object::Ref<T>(other) {}
+    Observable(Observable<R> other) : ref<T>(other) {}
 
     Function<void()> willChange;
     Function<void()> didChanged;
 
-    T *operator->() const { return Object::Ref<T>::operator->(); }
+    T *operator->() const { return ref<T>::operator->(); }
 
     template <typename R>
     Observable<T> &operator=(Observable<R> other)
     {
         if (willChange != nullptr)
             willChange();
-        Object::Ref<T>::operator=(other);
+        ref<T>::operator=(other);
         if (didChanged != nullptr)
             didChanged();
         return *this;
     }
 
     template <typename R>
-    Observable<T> &operator=(Object::Ref<R> ref)
+    Observable<T> &operator=(ref<R> ref)
     {
         if (willChange != nullptr)
             willChange();
-        Object::Ref<T>::operator=(ref);
+        ref<T>::operator=(ref);
         if (didChanged != nullptr)
             didChanged();
         return *this;

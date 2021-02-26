@@ -3,7 +3,7 @@
 #include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/widgets/stateful_widget.h"
 
-Dispatcher::Dispatcher(Object::Ref<ThreadPool> handler) : _callbackHandler(handler) {}
+Dispatcher::Dispatcher(ref<ThreadPool> handler) : _callbackHandler(handler) {}
 
 Dispatcher::Dispatcher(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
 
@@ -13,12 +13,12 @@ void Dispatcher::run(Function<void()> fn) { this->_callbackHandler->post(fn.toSt
 
 void Dispatcher::microTask(Function<void()> fn) { this->_callbackHandler->microTask(fn.toStdFunction()); }
 
-AsyncDispatcher::AsyncDispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool> threadPool, size_t threads = 1)
+AsyncDispatcher::AsyncDispatcher(ref<ThreadPool> handler, ref<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(handler),
       _ownThreadPool(threadPool != nullptr ? nullptr : Object::create<ThreadPool>(threads)),
       _threadPool(threadPool != nullptr ? threadPool : _ownThreadPool) { assert(this->_threadPool); }
 
-AsyncDispatcher::AsyncDispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool> threadPool, size_t threads = 1)
+AsyncDispatcher::AsyncDispatcher(State<StatefulWidget> *state, ref<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(state),
       _ownThreadPool(threadPool != nullptr ? nullptr : Object::create<ThreadPool>(threads)),
       _threadPool(threadPool != nullptr ? threadPool : _ownThreadPool) { assert(this->_threadPool); }
@@ -27,7 +27,7 @@ void AsyncDispatcher::post(Function<void()> fn) { this->_threadPool->post(fn.toS
 
 void AsyncDispatcher::post(Function<void(RunOnMainThread runner)> fn)
 {
-    Object::Ref<AsyncDispatcher> self = Object::cast<>(this);
+    ref<AsyncDispatcher> self = Object::cast<>(this);
     this->_threadPool->post(
         fn.toStdFunction(),
         [self](Function<void()> job) { self->run(job); });

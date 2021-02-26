@@ -8,16 +8,16 @@ class Widget;
 class Key : public Object
 {
 public:
-    virtual bool equal(Object::Ref<Key> other) = 0;
-    virtual void setElement(Object::Ref<Element> element);
+    virtual bool equal(ref<Key> other) = 0;
+    virtual void setElement(ref<Element> element);
     virtual void dispose();
-    virtual Object::Ref<const Widget> getCurrentWidget();
+    virtual ref<const Widget> getCurrentWidget();
 
 protected:
-    virtual Object::Ref<Element> getElement();
+    virtual ref<Element> getElement();
 
 private:
-    Object::WeakRef<Element> _element;
+    weakref<Element> _element;
 };
 
 template <typename T>
@@ -25,7 +25,7 @@ class ValueKey : public Key
 {
 public:
     ValueKey(T &value) : _value(value) {}
-    virtual bool equal(Object::Ref<Key> other) override
+    virtual bool equal(ref<Key> other) override
     {
         if (auto castedPointer = other->cast<ValueKey<T>>())
             return castedPointer->_value == this->_value;
@@ -39,20 +39,20 @@ protected:
 class GlobalKey : public Key
 {
 public:
-    inline virtual bool equal(Object::Ref<Key> other)
+    inline virtual bool equal(ref<Key> other)
     {
         return Object::identical(this->shared_from_this(), other);
     }
 
-    virtual Object::Ref<BuildContext> getCurrentContext();
-    virtual Object::Ref<State<StatefulWidget>> getCurrentState();
+    virtual ref<BuildContext> getCurrentContext();
+    virtual ref<State<StatefulWidget>> getCurrentState();
 };
 
 class GlobalObjectKey : public GlobalKey
 {
 public:
-    GlobalObjectKey(Object::Ref<Object> object) : _object(object){};
-    virtual bool equal(Object::Ref<Key> other)
+    GlobalObjectKey(ref<Object> object) : _object(object){};
+    virtual bool equal(ref<Key> other)
     {
         if (auto castedPointer = other->cast<GlobalObjectKey>())
             return Object::identical(this->_object, castedPointer->_object);
@@ -61,10 +61,10 @@ public:
 
 protected:
     GlobalObjectKey() = delete;
-    Object::Ref<Object> _object;
+    ref<Object> _object;
 };
 
-inline bool operator==(Object::Ref<Key> key0, Object::Ref<Key> key1)
+inline bool operator==(ref<Key> key0, ref<Key> key1)
 {
     if (key0 == nullptr)
         return key1 == nullptr;

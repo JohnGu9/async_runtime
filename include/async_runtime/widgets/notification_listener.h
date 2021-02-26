@@ -6,12 +6,12 @@
 class NotificationListener : public StatelessWidget
 {
 public:
-    NotificationListener(Object::Ref<Widget> child, Function<bool(Object::Ref<Notification> notification)> onNotification, Object::Ref<Key> key = nullptr);
-    virtual bool onNotification(Object::Ref<Notification> notification) { return this->_onNotification(notification); }
-    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
-    Object::Ref<Element> createElement() override;
+    NotificationListener(ref<Widget> child, Function<bool(ref<Notification> notification)> onNotification, ref<Key> key = nullptr);
+    virtual bool onNotification(ref<Notification> notification) { return this->_onNotification(notification); }
+    ref<Widget> build(ref<BuildContext> context) override;
+    ref<Element> createElement() override;
 
 protected:
-    Object::Ref<Widget> _child;
-    Function<bool(Object::Ref<Notification> notification)> _onNotification;
+    ref<Widget> _child;
+    Function<bool(ref<Notification> notification)> _onNotification;
 };

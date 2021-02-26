@@ -9,16 +9,16 @@ class Widget;
 class Element : public BuildContext
 {
 public:
-    Element(Object::Ref<Widget> widget);
-    Object::WeakRef<Element> parent;
+    Element(ref<Widget> widget);
+    weakref<Element> parent;
 
     virtual void attach();
     virtual void detach();
     virtual void build() = 0;
 
-    virtual void update(Object::Ref<Widget> newWidget);
-    virtual void notify(Object::Ref<Widget> newWidget);
+    virtual void update(ref<Widget> newWidget);
+    virtual void notify(ref<Widget> newWidget);
 
-    virtual void visitDescendant(Function<bool(Object::Ref<Element>)>) = 0;
-    virtual void visitAncestor(Function<bool(Object::Ref<Element>)>);
+    virtual void visitDescendant(Function<bool(ref<Element>)>) = 0;
+    virtual void visitAncestor(Function<bool(ref<Element>)>);
 };

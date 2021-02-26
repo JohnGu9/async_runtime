@@ -8,14 +8,14 @@ class Widget : public virtual Object
     Widget() = delete;
 
 public:
-    Widget(Object::Ref<Key> key);
-    virtual bool canUpdate(Object::Ref<Widget> other);
-    virtual Object::Ref<Element> createElement() = 0;
+    Widget(ref<Key> key);
+    virtual bool canUpdate(ref<Widget> other);
+    virtual ref<Element> createElement() = 0;
 
 protected:
-    const Object::Ref<Key> _key;
+    const ref<Key> _key;
 
 public:
-    const Object::Ref<Key> &key = _key;
+    const ref<Key> &key = _key;
 };
 

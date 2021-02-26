@@ -12,7 +12,7 @@ void State<StatefulWidget>::setState(Function<void()> fn)
     this->_element->build();
 }
 
-Object::Ref<Element> StatefulWidget::createElement()
+ref<Element> StatefulWidget::createElement()
 {
     return Object::create<StatefulElement>(Object::cast<>(this));
 }

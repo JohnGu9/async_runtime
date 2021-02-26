@@ -26,7 +26,7 @@ protected:
     ConnectionState::Value _state;
 
     template <typename T>
-    static T &getDataFromFuture(Object::Ref<Future<T>> future)
+    static T &getDataFromFuture(ref<Future<T>> future)
     {
         return future->_data;
     }
@@ -35,7 +35,7 @@ public:
     const ConnectionState::Value &state = _state;
 
     template <typename T>
-    static const std::atomic_bool &getCompletedFromFuture(Object::Ref<Future<T>> future)
+    static const std::atomic_bool &getCompletedFromFuture(ref<Future<T>> future)
     {
         return future->_completed;
     }
@@ -45,7 +45,7 @@ template <>
 class AsyncSnapshot<void> : public AsyncSnapshot<std::nullptr_t>
 {
 public:
-    AsyncSnapshot(Object::Ref<Future<void>> future)
+    AsyncSnapshot(ref<Future<void>> future)
         : AsyncSnapshot<std::nullptr_t>(future->_completed ? ConnectionState::done : ConnectionState::active) {}
     bool hasData() override { return false; }
 };
@@ -61,13 +61,13 @@ public:
         : _data(data), data(_data),
           AsyncSnapshot<std::nullptr_t>(ConnectionState::active),
           _hasData(true) {}
-    AsyncSnapshot(Object::Ref<Future<T>> future)
+    AsyncSnapshot(ref<Future<T>> future)
         : data(future->_data),
           AsyncSnapshot<std::nullptr_t>(future->_completed ? ConnectionState::done : ConnectionState::active),
           _hasData(future->_completed) {}
 
 protected:
-    Object::Ref<Future<T>> _future;
+    ref<Future<T>> _future;
     T _data;
     bool _hasData;
 

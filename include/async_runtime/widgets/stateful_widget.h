@@ -8,11 +8,11 @@
 class StatefulWidget : public Widget
 {
 public:
-    StatefulWidget(Object::Ref<Key> key = nullptr) : Widget(key) {}
-    virtual Object::Ref<State<StatefulWidget>> createState() = 0;
+    StatefulWidget(ref<Key> key = nullptr) : Widget(key) {}
+    virtual ref<State<StatefulWidget>> createState() = 0;
 
 protected:
-    Object::Ref<Element> createElement() override;
+    ref<Element> createElement() override;
 };
 
 template <>
@@ -30,25 +30,25 @@ public:
     // @mustCallSuper
     virtual void initState() {}
     // @mustCallSuper
-    virtual void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) {}
+    virtual void didWidgetUpdated(ref<StatefulWidget> oldWidget) {}
     // @mustCallSuper
     virtual void didDependenceChanged() {}
     // @mustCallSuper
     virtual void dispose() {}
 
-    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
+    virtual ref<Widget> build(ref<BuildContext> context) = 0;
 
 private:
     bool _mounted;
-    Object::Ref<StatefulElement> _element;
-    Object::Ref<BuildContext> _context;
+    ref<StatefulElement> _element;
+    ref<BuildContext> _context;
 
 protected:
     // @immutable
     void setState(Function<void()> fn);
 
     const bool &mounted = _mounted;
-    const Object::Ref<BuildContext> &context = _context;
+    const ref<BuildContext> &context = _context;
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
@@ -56,7 +56,7 @@ class State : public State<StatefulWidget>
 {
 public:
 protected:
-    virtual Object::Ref<const T> getWidget()
+    virtual ref<const T> getWidget()
     {
         return _element->_statefulWidget->cast<T>();
     }

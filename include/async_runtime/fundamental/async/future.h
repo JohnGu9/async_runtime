@@ -15,13 +15,13 @@ class Future<std::nullptr_t> : public Object, protected StateHelper
     friend class AsyncSnapshot;
 
 protected:
-    Future(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
+    Future(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
     Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _completed(false) {}
     std::atomic_bool _completed;
-    Object::Ref<ThreadPool> _callbackHandler;
+    ref<ThreadPool> _callbackHandler;
 
 public:
-    virtual Object::Ref<Future<std::nullptr_t>> than(Function<void()>) = 0;
+    virtual ref<Future<std::nullptr_t>> than(Function<void()>) = 0;
 
     // not recommend to use these two functions
     // async function should always be async
@@ -43,29 +43,29 @@ class Future<void> : public Future<std::nullptr_t>
     friend class AsyncSnapshot;
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
+    friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
+    friend ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
 
 public:
-    static Object::Ref<Future<void>> race(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set);
-    static Object::Ref<Future<void>> wait(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set);
+    static ref<Future<void>> race(State<StatefulWidget> *state, Set<ref<Future<>>> &&set);
+    static ref<Future<void>> wait(State<StatefulWidget> *state, Set<ref<Future<>>> &&set);
 
-    static Object::Ref<Future<void>> value(Object::Ref<ThreadPool> callbackHandler);
-    static Object::Ref<Future<void>> value(State<StatefulWidget> *state);
+    static ref<Future<void>> value(ref<ThreadPool> callbackHandler);
+    static ref<Future<void>> value(State<StatefulWidget> *state);
 
-    static Object::Ref<Future<void>> delay(Object::Ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout = nullptr);
-    static Object::Ref<Future<void>> delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout = nullptr);
+    static ref<Future<void>> delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout = nullptr);
+    static ref<Future<void>> delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout = nullptr);
 
-    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
+    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
     Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
 
     template <typename ReturnType = void>
-    Object::Ref<Future<ReturnType>> than(Function<ReturnType()>);
-    Object::Ref<Future<std::nullptr_t>> than(Function<void()>) override;
+    ref<Future<ReturnType>> than(Function<ReturnType()>);
+    ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
-    virtual Object::Ref<Future<void>> timeout(Duration, Function<void()> onTimeout);
+    virtual ref<Future<void>> timeout(Duration, Function<void()> onTimeout);
 
 protected:
     List<Function<void()>> _callbackList;
@@ -84,32 +84,32 @@ class Future : public Future<std::nullptr_t>
     friend class AsyncSnapshot;
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(Object::Ref<ThreadPool> callbackHandler, Function<R()> fn);
+    friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
 
     template <typename R>
-    friend Object::Ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
+    friend ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
 
 public:
-    static Object::Ref<Future<T>> value(Object::Ref<ThreadPool> callbackHandler, const T &);
-    static Object::Ref<Future<T>> value(State<StatefulWidget> *state, const T &);
-    static Object::Ref<Future<T>> value(Object::Ref<ThreadPool> callbackHandler, T &&);
-    static Object::Ref<Future<T>> value(State<StatefulWidget> *state, T &&);
+    static ref<Future<T>> value(ref<ThreadPool> callbackHandler, const T &);
+    static ref<Future<T>> value(State<StatefulWidget> *state, const T &);
+    static ref<Future<T>> value(ref<ThreadPool> callbackHandler, T &&);
+    static ref<Future<T>> value(State<StatefulWidget> *state, T &&);
 
-    Future(Object::Ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
+    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
     Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
 
-    Future(Object::Ref<ThreadPool> callbackHandler, const T &data)
+    Future(ref<ThreadPool> callbackHandler, const T &data)
         : _data(data), _callbackList({}), Future<std::nullptr_t>(callbackHandler) { this->_completed = true; }
     Future(State<StatefulWidget> *state, const T &data)
         : _data(data), _callbackList({}), Future<std::nullptr_t>(state) { this->_completed = true; }
 
     template <typename ReturnType = void, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
-    Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);
+    ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);
     template <typename ReturnType = void, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
-    Object::Ref<Future<ReturnType>> than(Function<ReturnType(const T &)> fn);
-    Object::Ref<Future<std::nullptr_t>> than(Function<void()>) override;
+    ref<Future<ReturnType>> than(Function<ReturnType(const T &)> fn);
+    ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
-    virtual Object::Ref<Future<T>> timeout(Duration, Function<void()> onTimeout);
+    virtual ref<Future<T>> timeout(Duration, Function<void()> onTimeout);
 
 protected:
     T _data;

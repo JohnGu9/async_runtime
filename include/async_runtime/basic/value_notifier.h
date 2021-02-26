@@ -18,8 +18,8 @@ template <typename T>
 class ValueNotifier : public ValueListenable<T>, public ValueNotifier<std::nullptr_t>
 {
 public:
-    static Object::Ref<ValueNotifier<T>> fromValue(const T &value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
-    static Object::Ref<ValueNotifier<T>> fromValue(T &&value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
+    static ref<ValueNotifier<T>> fromValue(const T &value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
+    static ref<ValueNotifier<T>> fromValue(T &&value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
     ValueNotifier() = delete;
     ValueNotifier(const T &value) : _value(value) {}
     ValueNotifier(T &&value) : _value(value) {}

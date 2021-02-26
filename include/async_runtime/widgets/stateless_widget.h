@@ -5,9 +5,9 @@
 class StatelessWidget : public Widget
 {
 public:
-    StatelessWidget(Object::Ref<Key> key = nullptr) : Widget(key) {}
-    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) = 0;
+    StatelessWidget(ref<Key> key = nullptr) : Widget(key) {}
+    virtual ref<Widget> build(ref<BuildContext> context) = 0;
 
 protected:
-    Object::Ref<Element> createElement() override;
+    ref<Element> createElement() override;
 };

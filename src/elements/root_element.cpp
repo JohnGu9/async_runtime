@@ -13,20 +13,20 @@ static inline void shutdownInfo()
 struct _MockWidget : Widget
 {
     _MockWidget() : Widget(nullptr) {}
-    Object::Ref<Element> createElement() override { return nullptr; }
+    ref<Element> createElement() override { return nullptr; }
 };
 
 /// Root Element
-RootElement::RootElement(Object::Ref<Widget> widget) : _consoleStop(false), SingleChildElement(nullptr)
+RootElement::RootElement(ref<Widget> widget) : _consoleStop(false), SingleChildElement(nullptr)
 {
     assert(widget != nullptr);
     this->_stdoutKey = Object::create<GlobalKey>();
     this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _stdoutKey), "RootThread");
 }
 
-void RootElement::update(Object::Ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
+void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
 
-void RootElement::notify(Object::Ref<Widget> newWidget) { assert(false && "RootElement dependence would never change. "); }
+void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement dependence would never change. "); }
 
 void RootElement::attach()
 {
@@ -39,8 +39,8 @@ void RootElement::attach()
 void RootElement::build()
 {
     assert(this->_childElement != nullptr);
-    Object::Ref<Widget> widget = this->_child;
-    Object::Ref<Widget> lastWidget = this->_childElement->widget;
+    ref<Widget> widget = this->_child;
+    ref<Widget> lastWidget = this->_childElement->widget;
     if (Object::identical(widget, lastWidget))
         return;
     else if (widget->canUpdate(lastWidget))
@@ -55,26 +55,26 @@ void RootElement::detach()
     Element::detach();
 }
 
-void RootElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
+void RootElement::visitDescendant(Function<bool(ref<Element>)> fn)
 {
     assert(this->_childElement != nullptr);
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);
 }
 
-void RootElement::visitAncestor(Function<bool(Object::Ref<Element>)>) {}
+void RootElement::visitAncestor(Function<bool(ref<Element>)>) {}
 
 Logger::Handler RootElement::getStdoutHandler()
 {
-    if (Object::Ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState())
-        if (Object::Ref<StdoutLoggerState> state = currentState->cast<StdoutLoggerState>())
+    if (ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState())
+        if (ref<StdoutLoggerState> state = currentState->cast<StdoutLoggerState>())
             return state->_handler;
     return nullptr;
 }
 
 Scheduler::Handler RootElement::getMainHandler()
 {
-    if (Object::Ref<BuildContext> context = this->_stdoutKey->getCurrentContext())
+    if (ref<BuildContext> context = this->_stdoutKey->getCurrentContext())
         return Scheduler::of(context);
     return nullptr;
 }
@@ -163,16 +163,16 @@ void RootElement::onCommand(const std::string &in)
     else if (command == "ls")
     {
         Map<Element *, List<Element *>> map = {{this, List<Element *>::empty()}};
-        this->visitDescendant([&map](Object::Ref<Element> element) -> bool {
-            Object::Ref<Element> parent = element->parent.lock();
+        this->visitDescendant([&map](ref<Element> element) -> bool {
+            ref<Element> parent = element->parent.lock();
             map[parent.get()]->push_back(element.get());
             map[element.get()] = List<Element *>::empty();
             return false;
         });
-        Object::Ref<Tree> tree = Object::create<Tree>();
-        Function<void(Element *, Object::Ref<Tree>)> buildTree;
+        ref<Tree> tree = Object::create<Tree>();
+        Function<void(Element *, ref<Tree>)> buildTree;
         buildTree =
-            [&](Element *currentElement, Object::Ref<Tree> currentTree) {
+            [&](Element *currentElement, ref<Tree> currentTree) {
                 std::stringstream ss;
                 ss << font_wrapper(BOLDBLUE, currentElement->runtimeType()) << " [" << (size_t)currentElement << "] " << std::endl
                    << "  widget: " << currentElement->widget->runtimeType() << std::endl;
@@ -182,7 +182,7 @@ void RootElement::onCommand(const std::string &in)
                 List<Element *> &children = map[currentElement];
                 for (Element *child : children)
                 {
-                    Object::Ref<Tree> childTree = Object::create<Tree>();
+                    ref<Tree> childTree = Object::create<Tree>();
                     buildTree(child, childTree);
                     currentTree->children->push_back(childTree);
                 }

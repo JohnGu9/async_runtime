@@ -7,14 +7,14 @@ class MultiChildWidget : public Widget
     friend class MultiChildElement;
 
 public:
-    static Object::Ref<MultiChildWidget> fromChildren(List<Object::Ref<Widget>> children, Object::Ref<Key> key = nullptr);
-    MultiChildWidget(List<Object::Ref<Widget>> children, Object::Ref<Key> key = nullptr)
+    static ref<MultiChildWidget> fromChildren(List<ref<Widget>> children, ref<Key> key = nullptr);
+    MultiChildWidget(List<ref<Widget>> children, ref<Key> key = nullptr)
         : _children(children), Widget(key) { assert(_children && "children can't be null. "); }
-    MultiChildWidget(Object::Ref<Key> key = nullptr) : _children({}), Widget(key) { assert(_children && "children can't be null. "); }
+    MultiChildWidget(ref<Key> key = nullptr) : _children({}), Widget(key) { assert(_children && "children can't be null. "); }
 
-    virtual Object::Ref<MultiChildWidget> setChildren(List<Object::Ref<Widget>>);
+    virtual ref<MultiChildWidget> setChildren(List<ref<Widget>>);
 
 protected:
-    List<Object::Ref<Widget>> _children;
-    Object::Ref<Element> createElement() override;
+    List<ref<Widget>> _children;
+    ref<Element> createElement() override;
 };

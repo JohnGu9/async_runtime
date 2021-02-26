@@ -2,12 +2,12 @@
 #include "async_runtime/elements/notification_listener_element.h"
 #include "async_runtime/widgets/notification_listener.h"
 
-void Notification::dispatch(Object::Ref<BuildContext> context)
+void Notification::dispatch(ref<BuildContext> context)
 {
-    Object::Ref<Element> element = context->cast<Element>();
-    Object::Ref<Notification> self = Object::cast<>(this);
-    element->visitAncestor([self](Object::Ref<Element> element) -> bool {
-        if (Object::Ref<NotificationListenerElement> listenerElement = element->cast<NotificationListenerElement>())
+    ref<Element> element = context->cast<Element>();
+    ref<Notification> self = Object::cast<>(this);
+    element->visitAncestor([self](ref<Element> element) -> bool {
+        if (ref<NotificationListenerElement> listenerElement = element->cast<NotificationListenerElement>())
             return listenerElement->_notificationListenerWidget->onNotification(self);
         return false;
     });

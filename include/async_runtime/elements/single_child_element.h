@@ -5,11 +5,11 @@
 class SingleChildElement : public Element
 {
 public:
-    SingleChildElement(Object::Ref<Widget> widget);
+    SingleChildElement(ref<Widget> widget);
 
 protected:
-    Object::Ref<Element> _childElement;
-    void attachElement(Object::Ref<Element>);
-    void reattachElement(Object::Ref<Element>);
+    ref<Element> _childElement;
+    void attachElement(ref<Element>);
+    void reattachElement(ref<Element>);
     void detachElement();
 };

@@ -1,9 +1,9 @@
 #include "async_runtime/elements/single_child_element.h"
 #include "async_runtime/widgets/widget.h"
 
-SingleChildElement::SingleChildElement(Object::Ref<Widget> widget) : Element(widget) {}
+SingleChildElement::SingleChildElement(ref<Widget> widget) : Element(widget) {}
 
-void SingleChildElement::attachElement(Object::Ref<Element> element)
+void SingleChildElement::attachElement(ref<Element> element)
 {
     assert(element);
     this->_childElement = element;
@@ -11,7 +11,7 @@ void SingleChildElement::attachElement(Object::Ref<Element> element)
     this->_childElement->attach();
 }
 
-void SingleChildElement::reattachElement(Object::Ref<Element> element)
+void SingleChildElement::reattachElement(ref<Element> element)
 {
     assert(element != nullptr && "Widget [createElement] return null isn't allowed. ");
     assert(this->_childElement && "Child element already detach from build tree. System callback invoke by mistake. ");

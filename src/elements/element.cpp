@@ -2,42 +2,42 @@
 #include "async_runtime/widgets/widget.h"
 
 /// Element
-Element::Element(Object::Ref<Widget> widget) : BuildContext(widget) {}
+Element::Element(ref<Widget> widget) : BuildContext(widget) {}
 
 void Element::attach()
 {
-    Object::Ref<Element> parent = this->parent.lock();
+    ref<Element> parent = this->parent.lock();
     assert(parent != nullptr && "Element can't find out its parent. ");
     this->_inheritances = parent->_inheritances;
-    if (Object::Ref<Key> key = this->widget->key)
+    if (ref<Key> key = this->widget->key)
         key->setElement(Object::cast<>(this));
 }
 
 void Element::detach()
 {
     this->_inheritances = nullptr; // release map reference
-    if (Object::Ref<Key> key = this->widget->key)
+    if (ref<Key> key = this->widget->key)
         key->dispose();
     this->widget = nullptr;
 }
 
-void Element::update(Object::Ref<Widget> newWidget)
+void Element::update(ref<Widget> newWidget)
 {
     this->widget = newWidget;
     this->build();
 }
 
-void Element::notify(Object::Ref<Widget> newWidget)
+void Element::notify(ref<Widget> newWidget)
 {
     this->widget = newWidget;
-    Object::Ref<Element> parent = this->parent.lock();
+    ref<Element> parent = this->parent.lock();
     assert(parent != nullptr && "Element can't find out its parent. ");
     this->_inheritances = parent->_inheritances; // update inheritances
 }
 
-void Element::visitAncestor(Function<bool(Object::Ref<Element>)> fn)
+void Element::visitAncestor(Function<bool(ref<Element>)> fn)
 {
-    Object::Ref<Element> parent = this->parent.lock();
+    ref<Element> parent = this->parent.lock();
     assert(parent != nullptr && "Element can't find out its parent. ");
     if (fn(parent) == false)
         parent->visitAncestor(fn);

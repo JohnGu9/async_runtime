@@ -7,22 +7,22 @@ template <typename T = Object>
 class ValueListenableBuilder : public StatefulWidget
 {
 public:
-    ValueListenableBuilder(Object::Ref<ValueListenable<T>> valueListenable,
-                           Function<Object::Ref<Widget>(
-                               Object::Ref<BuildContext> context,
+    ValueListenableBuilder(ref<ValueListenable<T>> valueListenable,
+                           Function<ref<Widget>(
+                               ref<BuildContext> context,
                                T value,
-                               Object::Ref<Widget> child)>
+                               ref<Widget> child)>
                                builder,
-                           Object::Ref<Widget> child = nullptr,
-                           Object::Ref<Key> key = nullptr)
+                           ref<Widget> child = nullptr,
+                           ref<Key> key = nullptr)
         : builder(builder), child(child), valueListenable(valueListenable), StatefulWidget(key)
     {
     }
 
-    Function<Object::Ref<Widget>(Object::Ref<BuildContext>, T, Object::Ref<Widget>)> builder;
-    Object::Ref<Widget> child;
-    Object::Ref<ValueListenable<T>> valueListenable;
-    Object::Ref<State<StatefulWidget>> createState() override;
+    Function<ref<Widget>(ref<BuildContext>, T, ref<Widget>)> builder;
+    ref<Widget> child;
+    ref<ValueListenable<T>> valueListenable;
+    ref<State<StatefulWidget>> createState() override;
 
 protected:
     class _State;
@@ -33,22 +33,22 @@ class ValueListenableBuilder<T>::_State : public State<ValueListenableBuilder<T>
 {
 public:
     using super = State<ValueListenableBuilder<T>>;
-    Object::Ref<ValueListenable<T>> _valueListenable;
+    ref<ValueListenable<T>> _valueListenable;
 
-    Function<void(Object::Ref<Listenable>)> _listener =
-        [this](Object::Ref<Listenable> listenable) { this->setState([this] {}); };
+    Function<void(ref<Listenable>)> _listener =
+        [this](ref<Listenable> listenable) { this->setState([this] {}); };
 
     void initState() override
     {
         super::initState();
-        Object::Ref<ValueListenableBuilder<T>::_State> self = Object::cast<>(this);
+        ref<ValueListenableBuilder<T>::_State> self = Object::cast<>(this);
         this->_valueListenable = this->getWidget()->valueListenable;
         this->_valueListenable->addListener(_listener);
     }
 
-    void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
     {
-        Object::Ref<ValueListenable<T>> newListenable = this->getWidget()->valueListenable;
+        ref<ValueListenable<T>> newListenable = this->getWidget()->valueListenable;
         if (newListenable != _valueListenable)
         {
             this->_valueListenable->removeListener(this->_listener);
@@ -64,7 +64,7 @@ public:
         super::dispose();
     }
 
-    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
+    ref<Widget> build(ref<BuildContext> context) override
     {
         return this->getWidget()->builder(
             context,
@@ -74,7 +74,7 @@ public:
 };
 
 template <typename T>
-inline Object::Ref<State<StatefulWidget>> ValueListenableBuilder<T>::createState()
+inline ref<State<StatefulWidget>> ValueListenableBuilder<T>::createState()
 {
     return Object::create<ValueListenableBuilder<T>::_State>();
 }

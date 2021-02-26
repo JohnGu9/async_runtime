@@ -2,13 +2,13 @@
 #include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/widgets/stateful_widget.h"
 
-Object::Ref<BuildContext> StateHelper::getContextfromState(State<StatefulWidget> *state)
+ref<BuildContext> StateHelper::getContextfromState(State<StatefulWidget> *state)
 {
     assert(state->_mounted && "Can not access context from an unmounted state");
     return state->_element;
 }
 
-Object::Ref<ThreadPool> StateHelper::getHandlerfromState(State<StatefulWidget> *state)
+ref<ThreadPool> StateHelper::getHandlerfromState(State<StatefulWidget> *state)
 {
     assert(state->_mounted && "Can not access context from an unmounted state");
     return Scheduler::of(getContextfromState(state));

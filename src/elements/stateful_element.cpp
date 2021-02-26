@@ -27,7 +27,7 @@ String StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::Value 
 }
 
 /// Stateful Element
-StatefulElement::StatefulElement(Object::Ref<StatefulWidget> widget)
+StatefulElement::StatefulElement(ref<StatefulWidget> widget)
     : _statefulWidget(widget), SingleChildElement(widget), _lifeCycle(StatefulElement::_LifeCycle::uninitialized)
 {
     _state = _statefulWidget->createState();
@@ -43,7 +43,7 @@ void StatefulElement::attach()
     this->_state->initState();
     this->_state->_context = this->_state->_element; // context only available after initState
     this->_state->didDependenceChanged();
-    Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
+    ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
     this->attachElement(widget->createElement());
     this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
@@ -68,9 +68,9 @@ void StatefulElement::build()
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_childElement != nullptr);
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
-    Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
+    ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
-    Object::Ref<Widget> oldWidget = this->_childElement->widget;
+    ref<Widget> oldWidget = this->_childElement->widget;
     if (Object::identical(widget, oldWidget))
         return;
     else if (widget->canUpdate(oldWidget))
@@ -80,32 +80,32 @@ void StatefulElement::build()
     this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
 
-void StatefulElement::update(Object::Ref<Widget> newWidget)
+void StatefulElement::update(ref<Widget> newWidget)
 {
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
-    Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
+    ref<StatefulWidget> oldWidget = this->_statefulWidget;
     this->_statefulWidget = newWidget->covariant<StatefulWidget>();
     this->_state->didWidgetUpdated(oldWidget);
     Element::update(newWidget);
     this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
 
-void StatefulElement::notify(Object::Ref<Widget> newWidget)
+void StatefulElement::notify(ref<Widget> newWidget)
 {
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_childElement != nullptr);
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     Element::notify(newWidget);
     {
-        Object::Ref<StatefulWidget> oldWidget = this->_statefulWidget;
+        ref<StatefulWidget> oldWidget = this->_statefulWidget;
         this->_statefulWidget = newWidget->covariant<StatefulWidget>();
         this->_state->didWidgetUpdated(oldWidget);
     }
     this->_state->didDependenceChanged();
-    Object::Ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
+    ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
-    Object::Ref<Widget> oldWidget = this->_childElement->widget;
+    ref<Widget> oldWidget = this->_childElement->widget;
     if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
         this->_childElement->notify(widget);
     else
@@ -113,7 +113,7 @@ void StatefulElement::notify(Object::Ref<Widget> newWidget)
     this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
 
-void StatefulElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
+void StatefulElement::visitDescendant(Function<bool(ref<Element>)> fn)
 {
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);

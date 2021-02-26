@@ -6,13 +6,13 @@ class RootElement;
 class RootInheritedWidget : public InheritedWidget
 {
 public:
-    static Object::Ref<RootInheritedWidget> of(Object::Ref<BuildContext> context);
-    RootInheritedWidget(Object::Ref<Widget> child, Object::Ref<RootElement> root, Object::Ref<Key> key = nullptr)
+    static ref<RootInheritedWidget> of(ref<BuildContext> context);
+    RootInheritedWidget(ref<Widget> child, ref<RootElement> root, ref<Key> key = nullptr)
         : _root(root), InheritedWidget(child, key) {}
 
-    bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) override;
+    bool updateShouldNotify(ref<InheritedWidget> oldWidget) override;
     virtual void requestExit();
 
 protected:
-    Object::WeakRef<RootElement> _root;
+    weakref<RootElement> _root;
 };

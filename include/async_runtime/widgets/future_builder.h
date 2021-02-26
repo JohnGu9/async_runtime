@@ -6,14 +6,14 @@ template <typename T>
 class FutureBuilder : public StatefulWidget
 {
 public:
-    FutureBuilder(Object::Ref<Future<T>> future,
-                  Function<Object::Ref<Widget>(Object::Ref<BuildContext>, Object::Ref<AsyncSnapshot<T>>)> builder)
+    FutureBuilder(ref<Future<T>> future,
+                  Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)> builder)
         : future(future), builder(builder) { assert(future && builder); }
 
-    Object::Ref<Future<T>> future;
-    Function<Object::Ref<Widget>(Object::Ref<BuildContext>, Object::Ref<AsyncSnapshot<T>>)> builder;
+    ref<Future<T>> future;
+    Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)> builder;
 
-    Object::Ref<State<>> createState() override;
+    ref<State<>> createState() override;
 
 protected:
     class _State;
@@ -28,10 +28,10 @@ public:
     void initState() override
     {
         super::initState();
-        Object::Ref<Future<T>> future = this->getWidget()->future;
+        ref<Future<T>> future = this->getWidget()->future;
         if (not AsyncSnapshot<>::getCompletedFromFuture(future))
         {
-            Object::Ref<FutureBuilder<T>::_State> self = Object::cast<>(this);
+            ref<FutureBuilder<T>::_State> self = Object::cast<>(this);
             future->than([self, future] {
                 if (self->getWidget()->future == future)
                     self->setState([] {});
@@ -39,13 +39,13 @@ public:
         }
     }
 
-    void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
     {
-        Object::Ref<FutureBuilder<T>> old = oldWidget->covariant<FutureBuilder<T>>();
-        Object::Ref<Future<T>> future = this->getWidget()->future;
+        ref<FutureBuilder<T>> old = oldWidget->covariant<FutureBuilder<T>>();
+        ref<Future<T>> future = this->getWidget()->future;
         if (old->future != future && (not AsyncSnapshot<>::getCompletedFromFuture(future)))
         {
-            Object::Ref<FutureBuilder<T>::_State> self = Object::cast<>(this);
+            ref<FutureBuilder<T>::_State> self = Object::cast<>(this);
             future->than([self, future] {
                 if (self->getWidget()->future == future)
                     self->setState([] {});
@@ -54,7 +54,7 @@ public:
         super::didWidgetUpdated(oldWidget);
     }
 
-    Object::Ref<Widget> build(Object::Ref<BuildContext> context) override
+    ref<Widget> build(ref<BuildContext> context) override
     {
         return this->getWidget()->builder(
             context,
@@ -63,7 +63,7 @@ public:
 };
 
 template <typename T>
-Object::Ref<State<>> FutureBuilder<T>::createState()
+ref<State<>> FutureBuilder<T>::createState()
 {
     return Object::create<FutureBuilder<T>::_State>();
 }

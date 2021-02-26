@@ -111,7 +111,7 @@ class AutoReleaseThreadPool : public ThreadPool
     };
 
 public:
-    static Object::Ref<AutoReleaseThreadPool> factory(size_t threads = 1, String name = nullptr);
+    static ref<AutoReleaseThreadPool> factory(size_t threads = 1, String name = nullptr);
     AutoReleaseThreadPool(_FactoryOnly, size_t threads = 1, String name = nullptr);
     virtual ~AutoReleaseThreadPool();
     void dispose() override;

@@ -19,7 +19,7 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
     }
     {
         assert(this->_name && this->_name.isNotEmpty());
-        Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+        ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
     }
@@ -30,7 +30,7 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
 
 ThreadPool::~ThreadPool(){
 #ifdef DEBUG
-    {Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+    {ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
 assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
 }
 {
@@ -121,7 +121,7 @@ void ThreadPool::dispose()
 
 void ThreadPool::unregisterName()
 {
-    Object::Ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+    ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
     ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
 }
 
@@ -131,10 +131,10 @@ void ThreadPool::unregisterName()
 //
 ////////////////////////////
 
-Object::Ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, String name)
+ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, String name)
 {
     assert(threads > 0);
-    Object::Ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(AutoReleaseThreadPool::_FactoryOnly(), threads, name);
+    ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(AutoReleaseThreadPool::_FactoryOnly(), threads, name);
     instance->_workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
         instance->_workers.emplace_back(instance->workerBuilder(i));
@@ -187,7 +187,7 @@ void AutoReleaseThreadPool::close()
 
 std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
-    Object::Ref<AutoReleaseThreadPool> self = Object::cast<>(this);
+    ref<AutoReleaseThreadPool> self = Object::cast<>(this);
     return [self, threadId] { self->ThreadPool::workerBuilder(threadId)(); };
 }
 
@@ -221,22 +221,22 @@ void Future<std::nullptr_t>::sync(Duration timeout)
 //
 ////////////////////////////
 
-Object::Ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set)
+ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<ref<Future<>>> &&set)
 {
     if (set->empty())
         return Future<void>::value(state);
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
+    ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
     for (auto &future : set)
         future->than([completer] { completer->complete(); });
     return completer->future;
 }
 
-Object::Ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<Object::Ref<Future<>>> &&set)
+ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<ref<Future<>>> &&set)
 {
     size_t size = set->size();
     if (size == 0)
         return Future<void>::value(state);
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
+    ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
     size_t *count = new size_t(0);
     for (auto &future : set)
         future->than([completer, count, size] {
@@ -252,25 +252,25 @@ Object::Ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<O
     return completer->future;
 }
 
-Object::Ref<Future<void>> Future<void>::value(Object::Ref<ThreadPool> callbackHandler)
+ref<Future<void>> Future<void>::value(ref<ThreadPool> callbackHandler)
 {
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
+    ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
     completer->complete();
     return completer->future;
 }
 
-Object::Ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
+ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
 {
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
+    ref<Completer<void>> completer = Object::create<Completer<void>>(state);
     completer->complete();
     return completer->future;
 }
 
 #include "async_runtime/fundamental/timer.h"
-Object::Ref<Future<void>> Future<void>::delay(Object::Ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout)
 {
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
-    Object::Ref<Timer> timer = Timer::delay(callbackHandler, duration, [completer, onTimeout] {
+    ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
+    ref<Timer> timer = Timer::delay(callbackHandler, duration, [completer, onTimeout] {
         if (onTimeout != nullptr)
             onTimeout();
         completer->complete();
@@ -278,10 +278,10 @@ Object::Ref<Future<void>> Future<void>::delay(Object::Ref<ThreadPool> callbackHa
     return completer->future;
 }
 
-Object::Ref<Future<void>> Future<void>::delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout)
 {
-    Object::Ref<Completer<void>> completer = Object::create<Completer<void>>(state);
-    Object::Ref<Timer> timer = Timer::delay(state, duration, [completer, onTimeout] {
+    ref<Completer<void>> completer = Object::create<Completer<void>>(state);
+    ref<Timer> timer = Timer::delay(state, duration, [completer, onTimeout] {
         if (onTimeout != nullptr)
             onTimeout();
         completer->complete();
@@ -289,9 +289,9 @@ Object::Ref<Future<void>> Future<void>::delay(State<StatefulWidget> *state, Dura
     return completer->future;
 }
 
-Object::Ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
+ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
 {
-    Object::Ref<Future<void>> self = Object::cast<>(this);
+    ref<Future<void>> self = Object::cast<>(this);
     this->_callbackHandler->post([self, fn] {
         if (self->_completed == false)
             self->_callbackList->push_back(fn);
@@ -301,7 +301,7 @@ Object::Ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
     return self;
 }
 
-Object::Ref<Future<void>> Future<void>::timeout(Duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::timeout(Duration, Function<void()> onTimeout)
 {
     //TODO: implement function
     return Object::cast<>(this);

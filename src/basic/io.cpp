@@ -1,7 +1,7 @@
 #include "async_runtime/object.h"
 #include "async_runtime/basic/io.h"
 
-void print(Object::Ref<Object> object) { std::cout << object->toString() << std::endl; }
+void print(ref<Object> object) { std::cout << object->toString() << std::endl; }
 
 void print(String str) { std::cout << str << std::endl; }
 

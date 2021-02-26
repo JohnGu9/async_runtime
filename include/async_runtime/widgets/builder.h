@@ -6,9 +6,9 @@
 class Builder : public StatelessWidget
 {
 public:
-    Builder(Function<Object::Ref<Widget>(Object::Ref<BuildContext>)> fn, Object::Ref<Key> key = nullptr);
-    virtual Object::Ref<Widget> build(Object::Ref<BuildContext> context) override;
+    Builder(Function<ref<Widget>(ref<BuildContext>)> fn, ref<Key> key = nullptr);
+    virtual ref<Widget> build(ref<BuildContext> context) override;
 
 protected:
-    Function<Object::Ref<Widget>(Object::Ref<BuildContext>)> _fn;
+    Function<ref<Widget>(ref<BuildContext>)> _fn;
 };

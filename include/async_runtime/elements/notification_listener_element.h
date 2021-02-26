@@ -6,10 +6,10 @@ class NotificationListener;
 class NotificationListenerElement : public StatelessElement
 {
 public:
-    NotificationListenerElement(Object::Ref<NotificationListener> child);
-    Object::Ref<NotificationListener> _notificationListenerWidget;
+    NotificationListenerElement(ref<NotificationListener> child);
+    ref<NotificationListener> _notificationListenerWidget;
 
     void detach() override;
-    void update(Object::Ref<Widget> newWidget) override;
-    void notify(Object::Ref<Widget> newWidget) override;
+    void update(ref<Widget> newWidget) override;
+    void notify(ref<Widget> newWidget) override;
 };

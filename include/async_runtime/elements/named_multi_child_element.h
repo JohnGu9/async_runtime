@@ -6,16 +6,16 @@ class NamedMultiChildWidget;
 class NamedMultiChildElement : public Element
 {
 public:
-    NamedMultiChildElement(Object::Ref<NamedMultiChildWidget> widget);
+    NamedMultiChildElement(ref<NamedMultiChildWidget> widget);
     void attach() override;
     void detach() override;
     void build() override;
-    void update(Object::Ref<Widget> newWidget) override;
-    void notify(Object::Ref<Widget> newWidget) override;
+    void update(ref<Widget> newWidget) override;
+    void notify(ref<Widget> newWidget) override;
 
-    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(ref<Element>)>) override;
 
 protected:
-    Object::Ref<NamedMultiChildWidget> _namedMultiChildWidget;
-    Map<String, Object::Ref<Element> > _childrenElements;
+    ref<NamedMultiChildWidget> _namedMultiChildWidget;
+    Map<String, ref<Element> > _childrenElements;
 };

@@ -24,10 +24,10 @@ public:
     Server(State<StatefulWidget> *state) : Dispatcher(state) {}
 
 protected:
-    Object::Ref<Stream<Http::Response> > _stream;
+    ref<Stream<Http::Response> > _stream;
 
 public:
-    const Object::Ref<Stream<Http::Response> > &stream = _stream;
+    const ref<Stream<Http::Response> > &stream = _stream;
 };
 
 class Http::Request : public Object

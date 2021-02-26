@@ -2,18 +2,18 @@
 #include "async_runtime/widgets/multi_child_widget.h"
 
 // MultiChild Element
-MultiChildElement::MultiChildElement(Object::Ref<MultiChildWidget> widget)
+MultiChildElement::MultiChildElement(ref<MultiChildWidget> widget)
     : _childrenElements({}), _multiChildWidget(widget), Element(widget) {}
 
 void MultiChildElement::attach()
 {
     Element::attach();
-    List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
+    List<ref<Widget>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children->size(); i++)
     {
-        Object::Ref<Widget> &widget = children[i];
+        ref<Widget> &widget = children[i];
         this->_childrenElements->push_back(widget->createElement());
-        Object::Ref<Element> &childElement = this->_childrenElements[i];
+        ref<Element> &childElement = this->_childrenElements[i];
         assert(childElement != nullptr);
         childElement->parent = Object::cast<>(this);
         childElement->attach();
@@ -22,14 +22,14 @@ void MultiChildElement::attach()
 
 void MultiChildElement::build()
 {
-    List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
+    List<ref<Widget>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children->size(); i++)
     {
-        Object::Ref<Widget> &widget = children[i];
+        ref<Widget> &widget = children[i];
         if (i < this->_childrenElements->size()) // update widget
         {
             assert(_childrenElements[i] != nullptr && "Widget [createElement] return null isn't allowed. ");
-            Object::Ref<Widget> &oldWidget = _childrenElements[i]->widget;
+            ref<Widget> &oldWidget = _childrenElements[i]->widget;
             if (Object::identical(widget, oldWidget))
                 return;
             else if (widget->canUpdate(oldWidget))
@@ -46,7 +46,7 @@ void MultiChildElement::build()
         else // append widget
         {
             this->_childrenElements->push_back(widget->createElement());
-            Object::Ref<Element> &childElement = this->_childrenElements[i];
+            ref<Element> &childElement = this->_childrenElements[i];
             assert(childElement != nullptr);
             childElement->parent = Object::cast<>(this);
             childElement->attach();
@@ -58,33 +58,33 @@ void MultiChildElement::build()
         for (size_t i = 0; i < redundant; i++)
         {
             auto iter = this->_childrenElements->rbegin();
-            Object::Ref<Element> element = *iter;
+            ref<Element> element = *iter;
             element->detach();
             this->_childrenElements->pop_back();
         }
     }
 }
 
-void MultiChildElement::update(Object::Ref<Widget> newWidget)
+void MultiChildElement::update(ref<Widget> newWidget)
 {
     this->_multiChildWidget = newWidget->covariant<MultiChildWidget>();
     Element::update(newWidget);
 }
 
-void MultiChildElement::notify(Object::Ref<Widget> newWidget)
+void MultiChildElement::notify(ref<Widget> newWidget)
 {
     Element::notify(newWidget);
     this->_multiChildWidget = newWidget->covariant<MultiChildWidget>();
 
-    List<Object::Ref<Widget>> &children = this->_multiChildWidget->_children;
+    List<ref<Widget>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children->size(); i++)
     {
-        Object::Ref<Widget> &widget = children[i];
+        ref<Widget> &widget = children[i];
         if (i < this->_childrenElements->size()) // update widget
         {
-            Object::Ref<Element> &element = this->_childrenElements[i];
+            ref<Element> &element = this->_childrenElements[i];
             assert(element != nullptr && "Widget [createElement] return null isn't allowed. ");
-            Object::Ref<Widget> &oldWidget = _childrenElements[i]->widget;
+            ref<Widget> &oldWidget = _childrenElements[i]->widget;
             if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
                 element->notify(widget);
             else
@@ -100,7 +100,7 @@ void MultiChildElement::notify(Object::Ref<Widget> newWidget)
         else // append widget
         {
             this->_childrenElements->push_back(widget->createElement());
-            Object::Ref<Element> &childElement = this->_childrenElements[i];
+            ref<Element> &childElement = this->_childrenElements[i];
             assert(childElement != nullptr);
             childElement->parent = Object::cast<>(this);
             childElement->attach();
@@ -127,7 +127,7 @@ void MultiChildElement::detach()
     Element::detach();
 }
 
-void MultiChildElement::visitDescendant(Function<bool(Object::Ref<Element>)> fn)
+void MultiChildElement::visitDescendant(Function<bool(ref<Element>)> fn)
 {
     for (size_t i = 0; i < this->_childrenElements->size(); i++)
     {

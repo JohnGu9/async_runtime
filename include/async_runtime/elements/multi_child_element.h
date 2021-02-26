@@ -6,16 +6,16 @@ class MultiChildWidget;
 class MultiChildElement : public Element
 {
 public:
-    MultiChildElement(Object::Ref<MultiChildWidget> widget);
+    MultiChildElement(ref<MultiChildWidget> widget);
     void attach() override;
     void detach() override;
     void build() override;
-    void update(Object::Ref<Widget> newWidget) override;
-    void notify(Object::Ref<Widget> newWidget) override;
+    void update(ref<Widget> newWidget) override;
+    void notify(ref<Widget> newWidget) override;
 
-    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(ref<Element>)>) override;
 
 protected:
-    Object::Ref<MultiChildWidget> _multiChildWidget;
-    List<Object::Ref<Element> > _childrenElements;
+    ref<MultiChildWidget> _multiChildWidget;
+    List<ref<Element> > _childrenElements;
 };

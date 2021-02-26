@@ -9,10 +9,10 @@ class StatefulElement : public SingleChildElement
     friend class State;
 
 public:
-    StatefulElement(Object::Ref<StatefulWidget> widget);
+    StatefulElement(ref<StatefulWidget> widget);
 
-    Object::Ref<StatefulWidget> _statefulWidget;
-    Object::Ref<State<StatefulWidget> > _state;
+    ref<StatefulWidget> _statefulWidget;
+    ref<State<StatefulWidget> > _state;
 
 protected:
     class _LifeCycle
@@ -34,8 +34,8 @@ protected:
     void attach() override;
     void detach() override;
     void build() override;
-    void notify(Object::Ref<Widget> newWidget) override;
-    void update(Object::Ref<Widget> newWidget) override;
+    void notify(ref<Widget> newWidget) override;
+    void update(ref<Widget> newWidget) override;
 
-    void visitDescendant(Function<bool(Object::Ref<Element>)>) override;
+    void visitDescendant(Function<bool(ref<Element>)>) override;
 };

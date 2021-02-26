@@ -11,27 +11,27 @@ class LoggerHandler : public virtual Object, public StateHelper, public Disposab
 public:
     LoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}
 
-    virtual Object::Ref<Future<bool>> write(String str) = 0;
-    virtual Object::Ref<Future<bool>> writeLine(String str) = 0;
+    virtual ref<Future<bool>> write(String str) = 0;
+    virtual ref<Future<bool>> writeLine(String str) = 0;
 
 protected:
     LoggerHandler() {}
-    Object::Ref<State<StatefulWidget>> _state;
+    ref<State<StatefulWidget>> _state;
 };
 
 class Logger : public InheritedWidget
 {
 public:
-    using Handler = Object::Ref<LoggerHandler>;
-    static Handler of(Object::Ref<BuildContext> context);
+    using Handler = ref<LoggerHandler>;
+    static Handler of(ref<BuildContext> context);
 
     // support hot switch
-    static Object::Ref<Widget> stdout(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
-    static Object::Ref<Widget> file(String path, Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
-    static Object::Ref<Widget> block(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
+    static ref<Widget> stdout(ref<Widget> child, ref<Key> key = nullptr);
+    static ref<Widget> file(String path, ref<Widget> child, ref<Key> key = nullptr);
+    static ref<Widget> block(ref<Widget> child, ref<Key> key = nullptr);
 
-    Logger(Object::Ref<Widget> child, Handler handler, Object::Ref<Key> key = nullptr);
-    bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) override;
+    Logger(ref<Widget> child, Handler handler, ref<Key> key = nullptr);
+    bool updateShouldNotify(ref<InheritedWidget> oldWidget) override;
 
 protected:
     Handler _handler;
@@ -40,10 +40,10 @@ protected:
 class StdoutLogger : public StatefulWidget
 {
 public:
-    static Logger::Handler of(Object::Ref<BuildContext> context);
-    StdoutLogger(Object::Ref<Widget> child, Object::Ref<Key> key = nullptr);
-    Object::Ref<State<StatefulWidget>> createState() override;
-    Object::Ref<Widget> child;
+    static Logger::Handler of(ref<BuildContext> context);
+    StdoutLogger(ref<Widget> child, ref<Key> key = nullptr);
+    ref<State<StatefulWidget>> createState() override;
+    ref<Widget> child;
 };
 
 class StdoutLoggerState : public State<StdoutLogger>
@@ -54,10 +54,10 @@ public:
 
     void initState() override;
     void dispose() override;
-    Object::Ref<Widget> build(Object::Ref<BuildContext>) override;
+    ref<Widget> build(ref<BuildContext>) override;
 };
 
-inline Object::Ref<State<StatefulWidget>> StdoutLogger::createState()
+inline ref<State<StatefulWidget>> StdoutLogger::createState()
 {
     return Object::create<StdoutLoggerState>();
 }

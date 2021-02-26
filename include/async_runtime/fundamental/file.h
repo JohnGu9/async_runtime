@@ -8,31 +8,31 @@
 
 class File : public AsyncDispatcher
 {
-    static Object::Ref<ThreadPool> sharedThreadPool();
+    static ref<ThreadPool> sharedThreadPool();
 
 public:
-    static Object::Ref<File> fromPath(State<StatefulWidget> *state, String path, size_t threads = 0);
+    static ref<File> fromPath(State<StatefulWidget> *state, String path, size_t threads = 0);
     File(State<StatefulWidget> *state, String path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
     virtual ~File();
 
-    virtual Object::Ref<Future<bool>> exists();
-    virtual Object::Ref<Future<int>> remove();
-    virtual Object::Ref<Future<long long>> size(); // unit: byte
+    virtual ref<Future<bool>> exists();
+    virtual ref<Future<int>> remove();
+    virtual ref<Future<long long>> size(); // unit: byte
 
     virtual bool existsSync();
     virtual int removeSync();
     virtual long long sizeSync(); // unit: byte
 
     // write
-    virtual Object::Ref<Future<void>> append(String str);
-    virtual Object::Ref<Future<void>> overwrite(String str);
-    virtual Object::Ref<Future<void>> clear();
+    virtual ref<Future<void>> append(String str);
+    virtual ref<Future<void>> overwrite(String str);
+    virtual ref<Future<void>> clear();
 
     // read
-    virtual Object::Ref<Future<String>> read();
-    virtual Object::Ref<Stream<String>> readAsStream(size_t segmentationLength);
-    virtual Object::Ref<Stream<String>> readWordAsStream();
-    virtual Object::Ref<Stream<String>> readLineAsStream();
+    virtual ref<Future<String>> read();
+    virtual ref<Stream<String>> readAsStream(size_t segmentationLength);
+    virtual ref<Stream<String>> readWordAsStream();
+    virtual ref<Stream<String>> readLineAsStream();
 
     void dispose() override;
 
@@ -40,8 +40,8 @@ protected:
     String _path;
     std::atomic_bool _isDisposed;
 
-    Object::Ref<State<StatefulWidget>> _state;
-    Object::Ref<Lock> _lock;
+    ref<State<StatefulWidget>> _state;
+    ref<Lock> _lock;
 
 public:
     const String &path = _path;

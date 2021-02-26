@@ -8,10 +8,10 @@ class _Logger : public StatefulWidget
     friend class _LoggerState;
 
 public:
-    _Logger(Object::Ref<Widget> child, String path, Object::Ref<Key> key)
+    _Logger(ref<Widget> child, String path, ref<Key> key)
         : child(child), path(path), StatefulWidget(key) {}
-    Object::Ref<State<StatefulWidget>> createState() override;
-    Object::Ref<Widget> child;
+    ref<State<StatefulWidget>> createState() override;
+    ref<Widget> child;
     String path;
 };
 
@@ -22,7 +22,7 @@ public:
     {
     public:
         _StdoutLoggerHandler(State<StatefulWidget> *state) : LoggerHandler(state) { assert(state); }
-        Object::Ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(String str) override
         {
             return async<bool>(this->_state.get(), [str] {
                 std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
@@ -30,7 +30,7 @@ public:
             });
         }
 
-        Object::Ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(String str) override
         {
             return async<bool>(this->_state.get(), [str] {
                 info_print(str);
@@ -43,18 +43,18 @@ public:
 
     class _FileLoggerHandler : public LoggerHandler
     {
-        Object::Ref<File> _file;
+        ref<File> _file;
 
     public:
         _FileLoggerHandler(State<StatefulWidget> *state, String path)
             : _file(File::fromPath(state, path)), LoggerHandler(state) { _file->clear(); }
 
-        Object::Ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(String str) override
         {
             return this->_file->append(str)->than<bool>([] { return true; });
         }
 
-        Object::Ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(String str) override
         {
             return this->_file->append(str + '\n')->than<bool>([] { return true; });
         }
@@ -71,12 +71,12 @@ public:
 
     public:
         _LoggerProxyHandler(Logger::Handler proxyTarget) : _proxyTarget(proxyTarget), LoggerHandler() {}
-        Object::Ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(String str) override
         {
             return this->_proxyTarget->write(str);
         }
 
-        Object::Ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(String str) override
         {
             return this->_proxyTarget->writeLine(str);
         }
@@ -88,11 +88,11 @@ public:
     {
     public:
         _LoggerBlocker(State<StatefulWidget> *state) : LoggerHandler(state) {}
-        Object::Ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(String str) override
         {
             return Future<bool>::value(this->_state.get(), true);
         }
-        Object::Ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(String str) override
         {
             return Future<bool>::value(this->_state.get(), true);
         }
@@ -103,9 +103,9 @@ public:
     using super = State<_Logger>;
     Logger::Handler _handler;
 
-    void didWidgetUpdated(Object::Ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
     {
-        if (Object::Ref<_Logger> old = oldWidget->cast<_Logger>())
+        if (ref<_Logger> old = oldWidget->cast<_Logger>())
         {
             this->_handler->dispose();
 
@@ -145,28 +145,28 @@ public:
         super::dispose();
     }
 
-    Object::Ref<Widget> build(Object::Ref<BuildContext>) override
+    ref<Widget> build(ref<BuildContext>) override
     {
         return Object::create<Logger>(this->getWidget()->child, _handler);
     }
 };
 
-Object::Ref<State<StatefulWidget>> _Logger::createState()
+ref<State<StatefulWidget>> _Logger::createState()
 {
     return Object::create<_LoggerState>();
 }
 
-Logger::Handler Logger::of(Object::Ref<BuildContext> context)
+Logger::Handler Logger::of(ref<BuildContext> context)
 {
     return context->dependOnInheritedWidgetOfExactType<Logger>()->_handler;
 }
 
-Logger::Logger(Object::Ref<Widget> child, Handler handler, Object::Ref<Key> key)
+Logger::Logger(ref<Widget> child, Handler handler, ref<Key> key)
     : _handler(handler), InheritedWidget(child, key) { assert(this->_handler); }
 
-bool Logger::updateShouldNotify(Object::Ref<InheritedWidget> oldWidget)
+bool Logger::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
-    if (Object::Ref<Logger> old = oldWidget->cast<Logger>())
+    if (ref<Logger> old = oldWidget->cast<Logger>())
         return old->_handler != this->_handler;
     else
     {
@@ -175,18 +175,18 @@ bool Logger::updateShouldNotify(Object::Ref<InheritedWidget> oldWidget)
     }
 }
 
-Object::Ref<Widget> Logger::stdout(Object::Ref<Widget> child, Object::Ref<Key> key)
+ref<Widget> Logger::stdout(ref<Widget> child, ref<Key> key)
 {
     return Object::create<_Logger>(child, "", key);
 }
 
-Object::Ref<Widget> Logger::file(String path, Object::Ref<Widget> child, Object::Ref<Key> key)
+ref<Widget> Logger::file(String path, ref<Widget> child, ref<Key> key)
 {
     assert(!path.isEmpty() && "path can't be empty");
     return Object::create<_Logger>(child, path, key);
 }
 
-Object::Ref<Widget> Logger::block(Object::Ref<Widget> child, Object::Ref<Key> key)
+ref<Widget> Logger::block(ref<Widget> child, ref<Key> key)
 {
     return Object::create<_Logger>(child, String(), key);
 }
@@ -197,12 +197,12 @@ class _StdoutLoggerInheritedWidget : public InheritedWidget
     Logger::Handler _handler;
 
 public:
-    _StdoutLoggerInheritedWidget(Object::Ref<Widget> child, Logger::Handler handler, Object::Ref<Key> key = nullptr)
+    _StdoutLoggerInheritedWidget(ref<Widget> child, Logger::Handler handler, ref<Key> key = nullptr)
         : _handler(handler), InheritedWidget(Object::create<Logger>(child, handler), key) { assert(handler); }
 
-    bool updateShouldNotify(Object::Ref<InheritedWidget> oldWidget) override
+    bool updateShouldNotify(ref<InheritedWidget> oldWidget) override
     {
-        if (Object::Ref<_StdoutLoggerInheritedWidget> old = oldWidget->cast<_StdoutLoggerInheritedWidget>())
+        if (ref<_StdoutLoggerInheritedWidget> old = oldWidget->cast<_StdoutLoggerInheritedWidget>())
             return old->_handler != this->_handler;
         else
         {
@@ -223,17 +223,17 @@ void StdoutLoggerState::dispose()
     super::dispose();
 }
 
-Object::Ref<Widget> StdoutLoggerState::build(Object::Ref<BuildContext>)
+ref<Widget> StdoutLoggerState::build(ref<BuildContext>)
 {
     return Object::create<_StdoutLoggerInheritedWidget>(
         this->getWidget()->child,
         this->_handler);
 }
 
-Logger::Handler StdoutLogger::of(Object::Ref<BuildContext> context)
+Logger::Handler StdoutLogger::of(ref<BuildContext> context)
 {
     return context->dependOnInheritedWidgetOfExactType<_StdoutLoggerInheritedWidget>()->_handler;
 }
 
-StdoutLogger::StdoutLogger(Object::Ref<Widget> child, Object::Ref<Key> key)
+StdoutLogger::StdoutLogger(ref<Widget> child, ref<Key> key)
     : child(child), StatefulWidget(key) { assert(child); }

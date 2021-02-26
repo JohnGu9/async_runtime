@@ -12,10 +12,10 @@ class Stream<std::nullptr_t> : public Object, StateHelper
     friend class AsyncSnapshot;
 
 protected:
-    Stream(Object::Ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
+    Stream(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
     Stream(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
 
-    Object::Ref<ThreadPool> _callbackHandler;
+    ref<ThreadPool> _callbackHandler;
 
 public:
     virtual void close() = 0;
@@ -31,7 +31,7 @@ class Stream<void> : public Stream<std::nullptr_t>
     friend class AsyncSnapshot;
 
 public:
-    Stream(Object::Ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
+    Stream(ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
     Stream(State<StatefulWidget> *state) : Stream<std::nullptr_t>(state), _onClose(Object::create<Completer<void>>(state)) {}
     virtual ~Stream()
     {
@@ -39,9 +39,9 @@ public:
             this->_onClose->completeSync();
     }
 
-    virtual Object::Ref<Stream<void>> sink()
+    virtual ref<Stream<void>> sink()
     {
-        Object::Ref<Stream<void>> self = Object::cast<>(this);
+        ref<Stream<void>> self = Object::cast<>(this);
         this->_callbackHandler->post([self] {
             assert(!self->_isClosed);
             if (self->_listener)
@@ -52,9 +52,9 @@ public:
         return self;
     }
 
-    virtual Object::Ref<StreamSubscription<void>> listen(Function<void()> fn)
+    virtual ref<StreamSubscription<void>> listen(Function<void()> fn)
     {
-        Object::Ref<Stream<void>> self = Object::cast<>(this);
+        ref<Stream<void>> self = Object::cast<>(this);
         this->_callbackHandler->post([self, fn] {
             assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
             self->_listener = fn;
@@ -67,20 +67,20 @@ public:
         return Object::create<StreamSubscription<void>>(self);
     }
 
-    virtual Object::Ref<Stream<void>> onClose(Function<void()> fn)
+    virtual ref<Stream<void>> onClose(Function<void()> fn)
     {
         this->_onClose->future->than(fn);
         return Object::cast<>(this);
     }
 
-    virtual Object::Ref<Future<void>> asFuture()
+    virtual ref<Future<void>> asFuture()
     {
         return this->_onClose->future;
     }
 
     void close() override
     {
-        Object::Ref<Stream<void>> self = Object::cast<>(this);
+        ref<Stream<void>> self = Object::cast<>(this);
         this->_callbackHandler->post([self] {
             assert(!self->_isClosed);
             if (self->_sinkCounter == 0)
@@ -90,8 +90,8 @@ public:
     }
 
 protected:
-    Object::Ref<Completer<void>> _onClose;
-    Object::Ref<ThreadPool> _callbackHandler;
+    ref<Completer<void>> _onClose;
+    ref<ThreadPool> _callbackHandler;
     size_t _sinkCounter;
 
     Function<void()> _listener;
@@ -108,7 +108,7 @@ class Stream : public Stream<std::nullptr_t>
     friend class AsyncSnapshot;
 
 public:
-    Stream(Object::Ref<ThreadPool> callbackHandler)
+    Stream(ref<ThreadPool> callbackHandler)
         : Stream<std::nullptr_t>(callbackHandler),
           _onClose(Object::create<Completer<void>>(callbackHandler)),
           _cache({}) {}
@@ -122,9 +122,9 @@ public:
             this->_onClose->completeSync();
     }
 
-    virtual Object::Ref<Stream<T>> sink(const T &value)
+    virtual ref<Stream<T>> sink(const T &value)
     {
-        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = Object::cast<>(this);
         this->_callbackHandler->post([self, value] {
             assert(!self->_isClosed);
             if (self->_listener)
@@ -135,9 +135,9 @@ public:
         return self;
     }
 
-    virtual Object::Ref<Stream<T>> sink(T &&value)
+    virtual ref<Stream<T>> sink(T &&value)
     {
-        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = Object::cast<>(this);
         this->_callbackHandler->post([self, value] {
             assert(!self->_isClosed);
             if (self->_listener)
@@ -148,9 +148,9 @@ public:
         return self;
     }
 
-    virtual Object::Ref<StreamSubscription<T>> listen(Function<void(T)> fn)
+    virtual ref<StreamSubscription<T>> listen(Function<void(T)> fn)
     {
-        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = Object::cast<>(this);
         assert(!static_cast<bool>(this->_listener) && "Single listener stream can't have more than one listener");
         this->_callbackHandler->post([self, fn] {
             assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
@@ -164,20 +164,20 @@ public:
         return Object::create<StreamSubscription<T>>(self);
     }
 
-    virtual Object::Ref<Stream<T>> onClose(Function<void()> fn)
+    virtual ref<Stream<T>> onClose(Function<void()> fn)
     {
         this->_onClose->future->than(fn);
         return Object::cast<>(this);
     }
 
-    virtual Object::Ref<Future<void>> asFuture()
+    virtual ref<Future<void>> asFuture()
     {
         return this->_onClose->future;
     }
 
     void close() override
     {
-        Object::Ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = Object::cast<>(this);
         this->_callbackHandler->post([self] {
             assert(not self->_isClosed);
             self->_isClosed = true;
@@ -187,7 +187,7 @@ public:
     }
 
 protected:
-    Object::Ref<Completer<void>> _onClose;
+    ref<Completer<void>> _onClose;
     List<T> _cache;
 
     Function<void(T)> _listener;

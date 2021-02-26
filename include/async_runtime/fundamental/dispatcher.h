@@ -8,7 +8,7 @@ class ThreadPool;
 class Dispatcher : public virtual Object, public StateHelper, public Disposable
 {
 public:
-    Dispatcher(Object::Ref<ThreadPool> handler);
+    Dispatcher(ref<ThreadPool> handler);
     Dispatcher(State<StatefulWidget> *state);
     void dispose() override;
 
@@ -17,15 +17,15 @@ protected:
     virtual void microTask(Function<void()>);
 
 private:
-    Object::Ref<ThreadPool> _callbackHandler; // main thread for callback
+    ref<ThreadPool> _callbackHandler; // main thread for callback
 };
 
 class AsyncDispatcher : public Dispatcher
 {
 public:
     using RunOnMainThread = Function<void(Function<void()> job)>;
-    AsyncDispatcher(Object::Ref<ThreadPool> handler, Object::Ref<ThreadPool>, size_t threads);
-    AsyncDispatcher(State<StatefulWidget> *state, Object::Ref<ThreadPool>, size_t threads);
+    AsyncDispatcher(ref<ThreadPool> handler, ref<ThreadPool>, size_t threads);
+    AsyncDispatcher(State<StatefulWidget> *state, ref<ThreadPool>, size_t threads);
     virtual ~AsyncDispatcher();
     void dispose() override;
 
@@ -34,6 +34,6 @@ protected:
     virtual void post(Function<void(RunOnMainThread runner)>);
 
 private:
-    Object::Ref<ThreadPool> _ownThreadPool;
-    Object::Ref<ThreadPool> _threadPool; // work thread
+    ref<ThreadPool> _ownThreadPool;
+    ref<ThreadPool> _threadPool; // work thread
 };
