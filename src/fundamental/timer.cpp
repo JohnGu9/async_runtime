@@ -89,6 +89,6 @@ void Timer::cancel()
 void Timer::dispose()
 {
     this->cancel();
-    this->_thread->detach(); // timer would wait thread complete.
+    this->_thread->detach(); // timer would not wait thread complete.
     Dispatcher::dispose();
 }

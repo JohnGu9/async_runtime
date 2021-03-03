@@ -2,8 +2,23 @@
 
 #include "../async.h"
 
+template <typename T>
+class FutureOr
+{
+public:
+    FutureOr(T &&value) : _value(value), _future(nullptr) {}
+    FutureOr(ref<Future<T>> future) : _value(nullptr), _future(future) { assert(_future != nullptr); }
+
+    ref<Future<T>> toFuture() { return _future; }
+    T &toValue() { return _value; }
+
+protected:
+    T &_value;
+    ref<Future<T>> _future;
+};
+
 template <>
-class Future<std::nullptr_t> : public Object, protected StateHelper
+class Future<std::nullptr_t> : public virtual Object, protected StateHelper
 {
     template <typename R>
     friend class Completer;
@@ -65,7 +80,7 @@ public:
     ref<Future<ReturnType>> than(Function<ReturnType()>);
     ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
-    virtual ref<Future<void>> timeout(Duration, Function<void()> onTimeout);
+    virtual ref<Future<void>> timeout(Duration, Function<void()> onTimeout = nullptr);
 
 protected:
     List<Function<void()>> _callbackList;
@@ -109,7 +124,7 @@ public:
     ref<Future<ReturnType>> than(Function<ReturnType(const T &)> fn);
     ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
-    virtual ref<Future<T>> timeout(Duration, Function<void()> onTimeout);
+    virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
 protected:
     T _data;

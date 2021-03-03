@@ -147,10 +147,20 @@ ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
 }
 
 template <typename T>
-ref<Future<T>> Future<T>::timeout(Duration, Function<void()> onTimeout)
+ref<Future<T>> Future<T>::timeout(Duration duration, Function<T()> onTimeout)
 {
-    //TODO: implement function
-    return Object::cast<>(this);
+    ref<Future<T>> self = Object::cast<>(this);
+    ref<Completer<T>> completer = Object::create<Completer<T>>(this->_callbackHandler);
+    Future<void>::delay(this->_callbackHandler, duration)
+        ->than([=] {
+            if (completer->future->_callbackList != nullptr)
+                completer->completeSync(onTimeout());
+        });
+    this->than([=] {
+        if (completer->future->_callbackList != nullptr)
+            completer->completeSync(this->_data);
+    });
+    return completer->future;
 }
 
 ////////////////////////////

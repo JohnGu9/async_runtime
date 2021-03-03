@@ -301,10 +301,24 @@ ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
     return self;
 }
 
-ref<Future<void>> Future<void>::timeout(Duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::timeout(Duration duration, Function<void()> onTimeout)
 {
-    //TODO: implement function
-    return Object::cast<>(this);
+    ref<Future<void>> self = Object::cast<>(this);
+    ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
+    Future<void>::delay(this->_callbackHandler, duration)
+        ->than([=] {
+            if (completer->future->_callbackList != nullptr)
+            {
+                if (onTimeout != nullptr)
+                    onTimeout();
+                completer->completeSync();
+            }
+        });
+    this->than([=] {
+        if (completer->future->_callbackList != nullptr)
+            completer->completeSync();
+    });
+    return completer->future;
 }
 
 ////////////////////////////
