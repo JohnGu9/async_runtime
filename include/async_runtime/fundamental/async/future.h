@@ -3,6 +3,21 @@
 #include "../async.h"
 
 template <typename T>
+class FutureOr;
+
+template <>
+class FutureOr<void>
+{
+public:
+    FutureOr() : _future(nullptr) {}
+    FutureOr(ref<Future<void>> future) : _future(future) { assert(_future != nullptr); }
+    ref<Future<void>> toFuture() { return _future; }
+
+protected:
+    ref<Future<void>> _future;
+};
+
+template <typename T>
 class FutureOr
 {
 public:
@@ -64,8 +79,8 @@ class Future<void> : public Future<std::nullptr_t>
     friend ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
 
 public:
-    static ref<Future<void>> race(State<StatefulWidget> *state, Set<ref<Future<>>> &&set);
-    static ref<Future<void>> wait(State<StatefulWidget> *state, Set<ref<Future<>>> &&set);
+    static ref<Future<void>> race(State<StatefulWidget> *state, Set<ref<Future<>>> set);
+    static ref<Future<void>> wait(State<StatefulWidget> *state, Set<ref<Future<>>> set);
 
     static ref<Future<void>> value(ref<ThreadPool> callbackHandler);
     static ref<Future<void>> value(State<StatefulWidget> *state);

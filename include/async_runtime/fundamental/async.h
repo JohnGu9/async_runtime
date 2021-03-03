@@ -153,11 +153,11 @@ ref<Future<T>> Future<T>::timeout(Duration duration, Function<T()> onTimeout)
     ref<Completer<T>> completer = Object::create<Completer<T>>(this->_callbackHandler);
     Future<void>::delay(this->_callbackHandler, duration)
         ->than([=] {
-            if (completer->future->_callbackList != nullptr)
+            if (completer->_isCompleted == false)
                 completer->completeSync(onTimeout());
         });
     this->than([=] {
-        if (completer->future->_callbackList != nullptr)
+        if (completer->_isCompleted == false)
             completer->completeSync(this->_data);
     });
     return completer->future;

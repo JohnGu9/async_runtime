@@ -221,7 +221,7 @@ void Future<std::nullptr_t>::sync(Duration timeout)
 //
 ////////////////////////////
 
-ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<ref<Future<>>> &&set)
+ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<ref<Future<>>> set)
 {
     if (set->empty())
         return Future<void>::value(state);
@@ -231,7 +231,7 @@ ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<ref<Futur
     return completer->future;
 }
 
-ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<ref<Future<>>> &&set)
+ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<ref<Future<>>> set)
 {
     size_t size = set->size();
     if (size == 0)
@@ -307,7 +307,7 @@ ref<Future<void>> Future<void>::timeout(Duration duration, Function<void()> onTi
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     Future<void>::delay(this->_callbackHandler, duration)
         ->than([=] {
-            if (completer->future->_callbackList != nullptr)
+            if (completer->_isCompleted == false)
             {
                 if (onTimeout != nullptr)
                     onTimeout();
@@ -315,7 +315,7 @@ ref<Future<void>> Future<void>::timeout(Duration duration, Function<void()> onTi
             }
         });
     this->than([=] {
-        if (completer->future->_callbackList != nullptr)
+        if (completer->_isCompleted == false)
             completer->completeSync();
     });
     return completer->future;

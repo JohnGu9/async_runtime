@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <sstream>
+#include <exception>
 #include <assert.h>
 #include "basic/io.h"
 #include "basic/ref.h"
@@ -102,14 +103,13 @@ ref<T> Object::cast()
 template <typename T>
 ref<T> Object::covariant()
 {
-#ifdef DEBUG
     if (T *castedPointer = dynamic_cast<T *>(this))
         return Object::cast<>(castedPointer);
     else
-        assert(false && "Covariant Failed. ");
-#else
-    return std::dynamic_pointer_cast<T>(this->shared_from_this());
-#endif
+    {
+        static const std::string massage = "Invail type covariant from [";
+        throw std::runtime_error(massage + typeid(*this).name() + "] to [" + typeid(T).name() + "]");
+    }
 }
 
 void print(ref<Object> object);
