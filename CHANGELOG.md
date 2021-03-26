@@ -1,5 +1,5 @@
-# AsyncRuntime [0.1.0]
+# AsyncRuntime [0.2.0-nullsafety]
 
 ## Break Change
-- [ref] replace [Object::Ref]
-- [weakref] replace [Object::WeakRef]
+- [ref] only refer non-null object
+- [option] can refer null object
