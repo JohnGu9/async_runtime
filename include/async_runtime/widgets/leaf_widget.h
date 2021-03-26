@@ -6,6 +6,6 @@ class LeafWidget : public Widget
 {
 public:
     static ref<LeafWidget> factory();
-    LeafWidget(ref<Key> key = nullptr);
+    LeafWidget(option<Key> key = nullptr);
     ref<Element> createElement() override;
 };

@@ -11,16 +11,16 @@ public:
                            Function<ref<Widget>(
                                ref<BuildContext> context,
                                T value,
-                               ref<Widget> child)>
+                               option<Widget> child)>
                                builder,
-                           ref<Widget> child = nullptr,
-                           ref<Key> key = nullptr)
+                           option<Widget> child = nullptr,
+                           option<Key> key = nullptr)
         : builder(builder), child(child), valueListenable(valueListenable), StatefulWidget(key)
     {
     }
 
-    Function<ref<Widget>(ref<BuildContext>, T, ref<Widget>)> builder;
-    ref<Widget> child;
+    Function<ref<Widget>(ref<BuildContext>, T, option<Widget>)> builder;
+    option<Widget> child;
     ref<ValueListenable<T>> valueListenable;
     ref<State<StatefulWidget>> createState() override;
 
@@ -33,10 +33,10 @@ class ValueListenableBuilder<T>::_State : public State<ValueListenableBuilder<T>
 {
 public:
     using super = State<ValueListenableBuilder<T>>;
-    ref<ValueListenable<T>> _valueListenable;
+    lateref<ValueListenable<T>> _valueListenable;
 
     Function<void(ref<Listenable>)> _listener =
-        [this](ref<Listenable> listenable) { this->setState([this] {}); };
+        [this](option<Listenable> listenable) { this->setState([this] {}); };
 
     void initState() override
     {

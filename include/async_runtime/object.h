@@ -34,7 +34,7 @@ public:
     template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
     template <typename T0, typename T1>
-    static bool identical(const ref<T0> &, const ref<T1> &);
+    static bool identical(const option<T0> &, const option<T1> &);
 
     // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -44,7 +44,7 @@ public:
 
     // dynamic cast
     template <typename T>
-    ref<T> cast();
+    option<T> cast();
     template <typename T>
     ref<T> covariant();
 
@@ -57,6 +57,8 @@ public:
 
     Object(const Object &) = delete;
     Object &operator=(const Object &) = delete;
+
+    ref<Object> shared_from_this() { return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this()); }
 };
 
 #define Self Object::cast<>(this)
@@ -77,7 +79,7 @@ ref<T> Object::create(_Args &&...__args)
 }
 
 template <typename T0, typename T1>
-bool Object::identical(const ref<T0> &object0, const ref<T1> &object1)
+bool Object::identical(const option<T0> &object0, const option<T1> &object1)
 {
     return (size_t)(object0.get()) == (size_t)(object1.get());
 }
@@ -95,7 +97,7 @@ ref<T> Object::cast(T *other)
 }
 
 template <typename T>
-ref<T> Object::cast()
+option<T> Object::cast()
 {
     return std::dynamic_pointer_cast<T>(this->shared_from_this());
 }
@@ -112,7 +114,7 @@ ref<T> Object::covariant()
     }
 }
 
-void print(ref<Object> object);
+void print(option<Object> object);
 
 #include "basic/string.h"
 #include "basic/duration.h"

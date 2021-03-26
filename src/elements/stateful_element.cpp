@@ -44,7 +44,6 @@ void StatefulElement::attach()
     this->_state->_context = this->_state->_element; // context only available after initState
     this->_state->didDependenceChanged();
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
-    assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
     this->attachElement(widget->createElement());
     this->_lifeCycle = StatefulElement::_LifeCycle::mounted;
 }
@@ -56,20 +55,17 @@ void StatefulElement::detach()
     this->detachElement();
     this->_state->dispose();
     this->_state->_mounted = false;
-    this->_state->_context = nullptr;
-    this->_state->_element = nullptr;
-    this->_state = nullptr;
-    this->_statefulWidget = nullptr;
+    this->_state->_context = lateref<BuildContext>();
+    this->_state->_element = lateref<StatefulElement>();
+    this->_state = lateref<State<>>();
     Element::detach();
 }
 
 void StatefulElement::build()
 {
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
-    assert(this->_childElement != nullptr);
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
-    assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
     ref<Widget> oldWidget = this->_childElement->widget;
     if (Object::identical(widget, oldWidget))
         return;
@@ -94,7 +90,6 @@ void StatefulElement::update(ref<Widget> newWidget)
 void StatefulElement::notify(ref<Widget> newWidget)
 {
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
-    assert(this->_childElement != nullptr);
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     Element::notify(newWidget);
     {
@@ -104,7 +99,6 @@ void StatefulElement::notify(ref<Widget> newWidget)
     }
     this->_state->didDependenceChanged();
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
-    assert(widget != nullptr && "State build method should not return null. Try to return a [LeafWidget] to end the build tree. ");
     ref<Widget> oldWidget = this->_childElement->widget;
     if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
         this->_childElement->notify(widget);

@@ -2,7 +2,7 @@
 
 StatefulBuilder::StatefulBuilder(
     Function<ref<Widget>(ref<BuildContext> /*context*/, Function<void(Function<void()>)> /*setState*/)> builder,
-    ref<Key> key) : builder(builder), StatefulWidget(key) {}
+    option<Key> key) : builder(builder), StatefulWidget(key) {}
 
 class _StatefulBuilderState : public State<StatefulBuilder>
 {

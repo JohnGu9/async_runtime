@@ -29,7 +29,7 @@ protected:
     void dispose() override;
 
     std::atomic_bool _clear;
-    ref<Thread> _thread;
+    lateref<Thread> _thread;
 
     // now Timer can't reuse
     // Please create new Timer for new task

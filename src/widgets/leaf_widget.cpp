@@ -7,7 +7,7 @@ ref<LeafWidget> LeafWidget::factory()
     return singleton;
 }
 
-LeafWidget::LeafWidget(ref<Key> key) : Widget(key){};
+LeafWidget::LeafWidget(option<Key> key) : Widget(key){};
 
 ref<Element> LeafWidget::createElement()
 {

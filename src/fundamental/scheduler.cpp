@@ -39,16 +39,24 @@ public:
     void visitAncestor(Function<bool(ref<Element>)> fn) override
     {
         Scheduler::Handler handler = this->getHandler();
-        Scheduler::Handler parentHandler = this->getParentHandler();
-        if (handler != parentHandler && parentHandler != nullptr)
+        lateref<ThreadPool> parentHandler;
+        if (handler != parentHandler && this->getParentHandler().isNotNull(parentHandler))
+        {
             parentHandler->post([this, fn] { this->toVisitAncestor(fn); }).get();
-        else
-            InheritedElement::visitAncestor(fn);
+        }
+
+        InheritedElement::visitAncestor(fn);
     }
 
 protected:
-    virtual Scheduler::Handler getHandler() { return this->_inheritWidget->cast<SchedulerProxy>()->_handler; }
-    virtual Scheduler::Handler getParentHandler() { return Scheduler::of(this->parent.lock()); }
+    virtual Scheduler::Handler getHandler() { return this->_inheritWidget->cast<SchedulerProxy>().assertNotNull()->_handler; }
+    virtual option<ThreadPool> getParentHandler()
+    {
+        lateref<BuildContext> context;
+        if (option<BuildContext>(this->parent.lock()).isNotNull(context))
+            return Scheduler::of(context);
+        return nullptr;
+    }
     virtual void toAttach() { InheritedElement::attach(); }
     virtual void toDetach() { InheritedElement::detach(); }
     virtual void toBuild() { InheritedElement::build(); }
@@ -61,7 +69,7 @@ protected:
 class _SchedulerState : public State<Scheduler>
 {
     using super = State<Scheduler>;
-    Scheduler::Handler _handler;
+    lateref<ThreadPool> _handler;
 
     void initState() override
     {
@@ -81,8 +89,8 @@ class _SchedulerState : public State<Scheduler>
     }
 };
 
-Scheduler::Scheduler(ref<Widget> child, String name, ref<Key> key)
-    : child(child), name(name), StatefulWidget(key) { assert(this->child); }
+Scheduler::Scheduler(ref<Widget> child, String name, option<Key> key)
+    : child(child), name(name), StatefulWidget(key) {}
 
 ref<State<StatefulWidget>> Scheduler::createState()
 {
@@ -91,9 +99,7 @@ ref<State<StatefulWidget>> Scheduler::createState()
 
 Scheduler::Handler Scheduler::of(ref<BuildContext> context)
 {
-    if (ref<SchedulerProxy> proxy = context->dependOnInheritedWidgetOfExactType<SchedulerProxy>())
-        return proxy->_handler;
-    return nullptr;
+    return context->dependOnInheritedWidgetOfExactType<SchedulerProxy>().assertNotNull()->_handler;
 }
 
 SchedulerProxy::SchedulerProxy(ref<Widget> child, Handler handler)
@@ -104,13 +110,8 @@ SchedulerProxy::SchedulerProxy(ref<Widget> child, Handler handler)
 
 bool SchedulerProxy::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
-    if (ref<SchedulerProxy> old = oldWidget->cast<SchedulerProxy>())
-        return old->_handler != this->_handler;
-    else
-    {
-        assert(false);
-        return true;
-    }
+    ref<SchedulerProxy> old = oldWidget->covariant<SchedulerProxy>();
+    return old->_handler != this->_handler;
 }
 
 ref<Element> SchedulerProxy::createElement()

@@ -19,7 +19,7 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
     }
     {
         assert(this->_name && this->_name.isNotEmpty());
-        ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+        option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
     }
@@ -30,13 +30,14 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
 
 ThreadPool::~ThreadPool(){
 #ifdef DEBUG
-    {ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
-assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
-}
-{
-    std::unique_lock<std::mutex> lock(_queueMutex);
-    assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
-}
+    {
+        option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
+    }
+    {
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+    }
 #endif
 }
 
@@ -121,7 +122,7 @@ void ThreadPool::dispose()
 
 void ThreadPool::unregisterName()
 {
-    ref<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+    option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
     ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
 }
 

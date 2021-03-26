@@ -10,11 +10,11 @@ class FutureOr<void>
 {
 public:
     FutureOr() : _future(nullptr) {}
-    FutureOr(ref<Future<void>> future) : _future(future) { assert(_future != nullptr); }
-    ref<Future<void>> toFuture() { return _future; }
+    FutureOr(ref<Future<void>> future) : _future(future) {}
+    option<Future<void>> toFuture() { return _future; }
 
 protected:
-    ref<Future<void>> _future;
+    option<Future<void>> _future;
 };
 
 template <typename T>
@@ -22,14 +22,14 @@ class FutureOr
 {
 public:
     FutureOr(T &&value) : _value(value), _future(nullptr) {}
-    FutureOr(ref<Future<T>> future) : _value(nullptr), _future(future) { assert(_future != nullptr); }
+    FutureOr(ref<Future<T>> future) : _value(nullptr), _future(future) {}
 
-    ref<Future<T>> toFuture() { return _future; }
+    option<Future<T>> toFuture() { return _future; }
     T &toValue() { return _value; }
 
 protected:
     T &_value;
-    ref<Future<T>> _future;
+    option<Future<T>> _future;
 };
 
 template <>

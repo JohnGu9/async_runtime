@@ -4,11 +4,14 @@
 
 void Notification::dispatch(ref<BuildContext> context)
 {
-    ref<Element> element = context->cast<Element>();
+    ref<Element> element = context->cast<Element>().assertNotNull();
     ref<Notification> self = Object::cast<>(this);
     element->visitAncestor([self](ref<Element> element) -> bool {
-        if (ref<NotificationListenerElement> listenerElement = element->cast<NotificationListenerElement>())
+        lateref<NotificationListenerElement> listenerElement;
+        if (element->cast<NotificationListenerElement>().isNotNull(listenerElement))
+        {
             return listenerElement->_notificationListenerWidget->onNotification(self);
+        }
         return false;
     });
 }

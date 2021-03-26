@@ -8,7 +8,7 @@
 class StatefulWidget : public Widget
 {
 public:
-    StatefulWidget(ref<Key> key = nullptr) : Widget(key) {}
+    StatefulWidget(option<Key> key = nullptr) : Widget(key) {}
     virtual ref<State<StatefulWidget>> createState() = 0;
 
 protected:
@@ -40,8 +40,8 @@ public:
 
 private:
     bool _mounted;
-    ref<StatefulElement> _element;
-    ref<BuildContext> _context;
+    lateref<StatefulElement> _element;
+    lateref<BuildContext> _context;
 
 protected:
     // @immutable
@@ -58,6 +58,6 @@ public:
 protected:
     virtual ref<const T> getWidget()
     {
-        return _element->_statefulWidget->cast<T>();
+        return _element->_statefulWidget->covariant<T>();
     }
 };

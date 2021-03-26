@@ -24,8 +24,8 @@ class AsyncDispatcher : public Dispatcher
 {
 public:
     using RunOnMainThread = Function<void(Function<void()> job)>;
-    AsyncDispatcher(ref<ThreadPool> handler, ref<ThreadPool>, size_t threads);
-    AsyncDispatcher(State<StatefulWidget> *state, ref<ThreadPool>, size_t threads);
+    AsyncDispatcher(ref<ThreadPool> handler, option<ThreadPool>, size_t threads);
+    AsyncDispatcher(State<StatefulWidget> *state, option<ThreadPool>, size_t threads);
     virtual ~AsyncDispatcher();
     void dispose() override;
 
@@ -34,6 +34,6 @@ protected:
     virtual void post(Function<void(RunOnMainThread runner)>);
 
 private:
-    ref<ThreadPool> _ownThreadPool;
-    ref<ThreadPool> _threadPool; // work thread
+    option<ThreadPool> _ownThreadPool;
+    lateref<ThreadPool> _threadPool; // work thread
 };

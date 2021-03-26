@@ -2,7 +2,7 @@
 #include "async_runtime/elements/stateful_element.h"
 #include "async_runtime/widgets/widget.h"
 
-void Key::setElement(ref<Element> element)
+void Key::setElement(option<Element> element)
 {
     assert(!this->_element.lock() && "One key can't mount more than one element. ");
     this->_element = element;
@@ -10,19 +10,23 @@ void Key::setElement(ref<Element> element)
 
 void Key::dispose()
 {
-    this->_element = ref<Element>(nullptr);
+    this->_element = option<Element>(nullptr);
 }
 
-ref<Element> Key::getElement() { return this->_element.lock(); }
+option<Element> Key::getElement() { return this->_element.lock(); }
 
-ref<const Widget> Key::getCurrentWidget() { return this->_element.lock()->widget; }
+option<const Widget> Key::getCurrentWidget() { return this->_element.lock()->widget; }
 
-ref<BuildContext> GlobalKey::getCurrentContext() { return this->getElement(); }
+option<BuildContext> GlobalKey::getCurrentContext() { return this->getElement(); }
 
-ref<State<StatefulWidget>> GlobalKey::getCurrentState()
+option<State<StatefulWidget>> GlobalKey::getCurrentState()
 {
-    if (ref<Element> element = this->getElement())
-        if (ref<StatefulElement> statefulElement = element->cast<StatefulElement>())
+    lateref<Element> element;
+    if (this->getElement().isNotNull(element))
+    {
+        lateref<StatefulElement> statefulElement;
+        if (element->cast<StatefulElement>().isNotNull(statefulElement))
             return statefulElement->_state;
+    }
     return nullptr;
 }

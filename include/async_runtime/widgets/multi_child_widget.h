@@ -7,10 +7,10 @@ class MultiChildWidget : public Widget
     friend class MultiChildElement;
 
 public:
-    static ref<MultiChildWidget> fromChildren(List<ref<Widget>> children, ref<Key> key = nullptr);
-    MultiChildWidget(List<ref<Widget>> children, ref<Key> key = nullptr)
+    static ref<MultiChildWidget> fromChildren(List<ref<Widget>> children, option<Key> key = nullptr);
+    MultiChildWidget(List<ref<Widget>> children, option<Key> key = nullptr)
         : _children(children), Widget(key) { assert(_children && "children can't be null. "); }
-    MultiChildWidget(ref<Key> key = nullptr) : _children({}), Widget(key) { assert(_children && "children can't be null. "); }
+    MultiChildWidget(option<Key> key = nullptr) : _children({}), Widget(key) { assert(_children && "children can't be null. "); }
 
     virtual ref<MultiChildWidget> setChildren(List<ref<Widget>>);
 

@@ -6,19 +6,19 @@ Element::Element(ref<Widget> widget) : BuildContext(widget) {}
 
 void Element::attach()
 {
-    ref<Element> parent = this->parent.lock();
-    assert(parent != nullptr && "Element can't find out its parent. ");
+    ref<Element> parent = option<Element>(this->parent.lock()).assertNotNull();
     this->_inheritances = parent->_inheritances;
-    if (ref<Key> key = this->widget->key)
+    lateref<Key> key;
+    if (this->widget->key.isNotNull(key))
         key->setElement(Object::cast<>(this));
 }
 
 void Element::detach()
 {
     this->_inheritances = nullptr; // release map reference
-    if (ref<Key> key = this->widget->key)
+    lateref<Key> key;
+    if (this->widget->key.isNotNull(key))
         key->dispose();
-    this->widget = nullptr;
 }
 
 void Element::update(ref<Widget> newWidget)
@@ -30,15 +30,13 @@ void Element::update(ref<Widget> newWidget)
 void Element::notify(ref<Widget> newWidget)
 {
     this->widget = newWidget;
-    ref<Element> parent = this->parent.lock();
-    assert(parent != nullptr && "Element can't find out its parent. ");
+    ref<Element> parent = option<Element>(this->parent.lock()).assertNotNull();
     this->_inheritances = parent->_inheritances; // update inheritances
 }
 
 void Element::visitAncestor(Function<bool(ref<Element>)> fn)
 {
-    ref<Element> parent = this->parent.lock();
-    assert(parent != nullptr && "Element can't find out its parent. ");
+    ref<Element> parent = option<Element>(this->parent.lock()).assertNotNull();
     if (fn(parent) == false)
         parent->visitAncestor(fn);
 }

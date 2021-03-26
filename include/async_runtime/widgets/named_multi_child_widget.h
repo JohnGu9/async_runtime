@@ -7,11 +7,11 @@ class NamedMultiChildWidget : public Widget
     friend class NamedMultiChildElement;
 
 public:
-    static ref<NamedMultiChildWidget> fromChildren(Map<String, ref<Widget>> children, ref<Key> key = nullptr);
-    NamedMultiChildWidget(Map<String, ref<Widget>> children, ref<Key> key = nullptr)
+    static ref<NamedMultiChildWidget> fromChildren(Map<String, lateref<Widget>> children, option<Key> key = nullptr);
+    NamedMultiChildWidget(Map<String, lateref<Widget>> children, option<Key> key = nullptr)
         : _children(children), Widget(key) { assert(_children && "children can't be null. "); }
 
 protected:
-    Map<String, ref<Widget>> _children;
+    Map<String, lateref<Widget>> _children;
     ref<Element> createElement() override;
 };

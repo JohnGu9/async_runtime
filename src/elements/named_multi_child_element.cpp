@@ -7,12 +7,11 @@ NamedMultiChildElement::NamedMultiChildElement(ref<NamedMultiChildWidget> widget
 void NamedMultiChildElement::attach()
 {
     Element::attach();
-    Map<String, ref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    Map<String, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
     for (auto &iter : children)
     {
         ref<Widget> &widget = iter.second;
         ref<Element> element = widget->createElement();
-        assert(element != nullptr);
         this->_childrenElements[iter.first] = element;
         element->parent = Object::cast<>(this);
         element->attach();
@@ -24,13 +23,12 @@ void NamedMultiChildElement::detach()
     for (auto &iter : this->_childrenElements)
         iter.second->detach();
     this->_childrenElements = nullptr;
-    this->_namedMultiChildWidget = nullptr;
     Element::detach();
 }
 
 void NamedMultiChildElement::build()
 {
-    Map<String, ref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    Map<String, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
@@ -69,7 +67,6 @@ void NamedMultiChildElement::build()
             {
                 element->detach();
                 ref<Element> newElement = widget->createElement();
-                assert(newElement != nullptr);
                 elementIterator->second = newElement;
                 elementIterator->second->parent = Object::cast<>(this);
                 elementIterator->second->attach();
@@ -89,7 +86,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     Element::notify(newWidget);
     this->_namedMultiChildWidget = newWidget->covariant<NamedMultiChildWidget>();
 
-    Map<String, ref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    Map<String, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
@@ -126,7 +123,6 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
             {
                 element->detach();
                 ref<Element> newElement = widget->createElement();
-                assert(newElement != nullptr);
                 elementIterator->second = newElement;
                 elementIterator->second->parent = Object::cast<>(this);
                 elementIterator->second->attach();

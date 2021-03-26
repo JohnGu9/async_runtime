@@ -17,8 +17,8 @@ public:
     ref<Widget> widget;
 
     template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type * = nullptr>
-    ref<T> dependOnInheritedWidgetOfExactType();
+    option<T> dependOnInheritedWidgetOfExactType();
 
 protected:
-    Map<Object::RuntimeType, ref<Inheritance>> _inheritances;
+    Map<Object::RuntimeType, lateref<Inheritance>> _inheritances;
 };

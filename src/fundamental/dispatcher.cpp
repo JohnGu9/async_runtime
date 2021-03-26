@@ -13,15 +13,19 @@ void Dispatcher::run(Function<void()> fn) { this->_callbackHandler->post(fn.toSt
 
 void Dispatcher::microTask(Function<void()> fn) { this->_callbackHandler->microTask(fn.toStdFunction()); }
 
-AsyncDispatcher::AsyncDispatcher(ref<ThreadPool> handler, ref<ThreadPool> threadPool, size_t threads = 1)
+AsyncDispatcher::AsyncDispatcher(ref<ThreadPool> handler, option<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(handler),
-      _ownThreadPool(threadPool != nullptr ? nullptr : Object::create<ThreadPool>(threads)),
-      _threadPool(threadPool != nullptr ? threadPool : _ownThreadPool) { assert(this->_threadPool); }
+      _ownThreadPool(threadPool != nullptr ? option<ThreadPool>::null() : Object::create<ThreadPool>(threads))
+{
+    _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
+}
 
-AsyncDispatcher::AsyncDispatcher(State<StatefulWidget> *state, ref<ThreadPool> threadPool, size_t threads = 1)
+AsyncDispatcher::AsyncDispatcher(State<StatefulWidget> *state, option<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(state),
-      _ownThreadPool(threadPool != nullptr ? nullptr : Object::create<ThreadPool>(threads)),
-      _threadPool(threadPool != nullptr ? threadPool : _ownThreadPool) { assert(this->_threadPool); }
+      _ownThreadPool(threadPool != nullptr ? option<ThreadPool>::null() : Object::create<ThreadPool>(threads))
+{
+    _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
+}
 
 void AsyncDispatcher::post(Function<void()> fn) { this->_threadPool->post(fn.toStdFunction()); }
 
@@ -35,12 +39,13 @@ void AsyncDispatcher::post(Function<void(RunOnMainThread runner)> fn)
 
 AsyncDispatcher::~AsyncDispatcher()
 {
-    assert((this->_ownThreadPool == nullptr || this->_ownThreadPool->isActive()) && "Detect memory leak from Dispatcher. Call [dispose]");
+    assert((this->_ownThreadPool == nullptr || this->_ownThreadPool.assertNotNull()->isActive()) && "Detect memory leak from Dispatcher. Call [dispose]");
 }
 
 void AsyncDispatcher::dispose()
 {
-    if (this->_ownThreadPool != nullptr)
-        this->_ownThreadPool->dispose();
+    lateref<ThreadPool> ownThreadPool;
+    if (this->_ownThreadPool.isNotNull(ownThreadPool))
+        ownThreadPool->dispose();
     Dispatcher::dispose();
 }

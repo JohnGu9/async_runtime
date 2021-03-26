@@ -8,7 +8,7 @@ class FutureBuilder : public StatefulWidget
 public:
     FutureBuilder(ref<Future<T>> future,
                   Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)> builder)
-        : future(future), builder(builder) { assert(future && builder); }
+        : future(future), builder(builder) {}
 
     ref<Future<T>> future;
     Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)> builder;

@@ -30,8 +30,8 @@ protected:
     std::mutex _mutex;
     std::condition_variable _condition;
 
-    ref<Widget> _child;
-    ref<GlobalKey> _stdoutKey;
+    lateref<Widget> _child;
+    lateref<GlobalKey> _stdoutKey;
     std::atomic_bool _consoleStop;
     virtual void _console();
 };

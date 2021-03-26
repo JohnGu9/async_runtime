@@ -6,7 +6,7 @@
 class NotificationListener : public StatelessWidget
 {
 public:
-    NotificationListener(ref<Widget> child, Function<bool(ref<Notification> notification)> onNotification, ref<Key> key = nullptr);
+    NotificationListener(ref<Widget> child, Function<bool(ref<Notification> notification)> onNotification, option<Key> key = nullptr);
     virtual bool onNotification(ref<Notification> notification) { return this->_onNotification(notification); }
     ref<Widget> build(ref<BuildContext> context) override;
     ref<Element> createElement() override;

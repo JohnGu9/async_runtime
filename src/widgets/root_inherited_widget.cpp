@@ -4,27 +4,20 @@
 
 ref<RootInheritedWidget> RootInheritedWidget::of(ref<BuildContext> context)
 {
-    return context->dependOnInheritedWidgetOfExactType<RootInheritedWidget>();
+    return context->dependOnInheritedWidgetOfExactType<RootInheritedWidget>().assertNotNull();
 }
 
 bool RootInheritedWidget::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
-    if (ref<RootInheritedWidget> old = oldWidget->cast<RootInheritedWidget>())
-        return old->_root.lock() != this->_root.lock();
-    else
-    {
-        assert(false);
-        return true;
-    }
+    ref<RootInheritedWidget> old = oldWidget->covariant<RootInheritedWidget>();
+    return old->_root.lock() != this->_root.lock();
 }
 
-void RootInheritedWidget::requestExit()
+void RootInheritedWidget::exit()
 {
-    if (ref<RootElement> root = this->_root.lock())
-        root->getMainHandler()->post([root] {
-            root->_consoleStop = true;
-            root->_condition.notify_all();
-        });
-    else
-        throw "Missing [RootElement]";
+    ref<RootElement> root = option<RootElement>(this->_root.lock()).assertNotNull();
+    root->getMainHandler()->post([root] {
+        root->_consoleStop = true;
+        root->_condition.notify_all();
+    });
 }

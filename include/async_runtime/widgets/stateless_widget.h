@@ -5,7 +5,7 @@
 class StatelessWidget : public Widget
 {
 public:
-    StatelessWidget(ref<Key> key = nullptr) : Widget(key) {}
+    StatelessWidget(option<Key> key = nullptr) : Widget(key) {}
     virtual ref<Widget> build(ref<BuildContext> context) = 0;
 
 protected:

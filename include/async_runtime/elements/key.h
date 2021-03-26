@@ -8,13 +8,13 @@ class Widget;
 class Key : public Object
 {
 public:
-    virtual bool equal(ref<Key> other) = 0;
-    virtual void setElement(ref<Element> element);
+    virtual bool equal(option<Key> other) = 0;
+    virtual void setElement(option<Element> element);
     virtual void dispose();
-    virtual ref<const Widget> getCurrentWidget();
+    virtual option<const Widget> getCurrentWidget();
 
 protected:
-    virtual ref<Element> getElement();
+    virtual option<Element> getElement();
 
 private:
     weakref<Element> _element;
@@ -25,10 +25,17 @@ class ValueKey : public Key
 {
 public:
     ValueKey(T &value) : _value(value) {}
-    virtual bool equal(ref<Key> other) override
+    virtual bool equal(option<Key> other) override
     {
-        if (auto castedPointer = other->cast<ValueKey<T>>())
-            return castedPointer->_value == this->_value;
+        lateref<Key> nonNullOther;
+        if (other.isNotNull(nonNullOther))
+        {
+            lateref<ValueKey<T>> castedPointer;
+            if (nonNullOther->cast<ValueKey<T>>().isNotNull(castedPointer))
+            {
+                return castedPointer->_value == this->_value;
+            }
+        }
         return false;
     }
 
@@ -39,34 +46,43 @@ protected:
 class GlobalKey : public Key
 {
 public:
-    inline virtual bool equal(ref<Key> other)
+    inline virtual bool equal(option<Key> other)
     {
         return Object::identical(this->shared_from_this(), other);
     }
 
-    virtual ref<BuildContext> getCurrentContext();
-    virtual ref<State<StatefulWidget>> getCurrentState();
+    virtual option<BuildContext> getCurrentContext();
+    virtual option<State<StatefulWidget>> getCurrentState();
 };
 
 class GlobalObjectKey : public GlobalKey
 {
 public:
-    GlobalObjectKey(ref<Object> object) : _object(object){};
-    virtual bool equal(ref<Key> other)
+    GlobalObjectKey(option<Object> object) : _object(object){};
+    virtual bool equal(option<Key> other)
     {
-        if (auto castedPointer = other->cast<GlobalObjectKey>())
-            return Object::identical(this->_object, castedPointer->_object);
+        lateref<Key> nonNullOther;
+        if (other.isNotNull(nonNullOther))
+        {
+            lateref<GlobalObjectKey> castedPointer;
+            if (nonNullOther->cast<GlobalObjectKey>().isNotNull(castedPointer))
+                return Object::identical(this->_object, castedPointer->_object);
+        }
         return false;
     }
 
 protected:
     GlobalObjectKey() = delete;
-    ref<Object> _object;
+    option<Object> _object;
 };
 
-inline bool operator==(ref<Key> key0, ref<Key> key1)
+inline bool operator==(option<Key> key0, option<Key> key1)
 {
-    if (key0 == nullptr)
-        return key1 == nullptr;
-    return key0->equal(key1);
+    lateref<Key> nonNullKey0;
+    if (key0.isNotNull(nonNullKey0))
+    {
+        return nonNullKey0->equal(key1);
+    }
+
+    return key1 == nullptr;
 }

@@ -16,7 +16,7 @@ public:
 
 protected:
     LoggerHandler() {}
-    ref<State<StatefulWidget>> _state;
+    lateref<State<StatefulWidget>> _state;
 };
 
 class Logger : public InheritedWidget
@@ -26,11 +26,11 @@ public:
     static Handler of(ref<BuildContext> context);
 
     // support hot switch
-    static ref<Widget> stdout(ref<Widget> child, ref<Key> key = nullptr);
-    static ref<Widget> file(String path, ref<Widget> child, ref<Key> key = nullptr);
-    static ref<Widget> block(ref<Widget> child, ref<Key> key = nullptr);
+    static ref<Widget> stdout(ref<Widget> child, option<Key> key = nullptr);
+    static ref<Widget> file(String path, ref<Widget> child, option<Key> key = nullptr);
+    static ref<Widget> block(ref<Widget> child, option<Key> key = nullptr);
 
-    Logger(ref<Widget> child, Handler handler, ref<Key> key = nullptr);
+    Logger(ref<Widget> child, Handler handler, option<Key> key = nullptr);
     bool updateShouldNotify(ref<InheritedWidget> oldWidget) override;
 
 protected:
@@ -41,7 +41,7 @@ class StdoutLogger : public StatefulWidget
 {
 public:
     static Logger::Handler of(ref<BuildContext> context);
-    StdoutLogger(ref<Widget> child, ref<Key> key = nullptr);
+    StdoutLogger(ref<Widget> child, option<Key> key = nullptr);
     ref<State<StatefulWidget>> createState() override;
     ref<Widget> child;
 };
@@ -50,7 +50,7 @@ class StdoutLoggerState : public State<StdoutLogger>
 {
 public:
     using super = State<StdoutLogger>;
-    Logger::Handler _handler;
+    lateref<LoggerHandler> _handler;
 
     void initState() override;
     void dispose() override;

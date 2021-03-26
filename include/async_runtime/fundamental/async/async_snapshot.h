@@ -26,7 +26,7 @@ protected:
     ConnectionState::Value _state;
 
     template <typename T>
-    static T &getDataFromFuture(ref<Future<T>> future)
+    static T &getDataFromFuture(option<Future<T>> future)
     {
         return future->_data;
     }
@@ -67,7 +67,7 @@ public:
           _hasData(future->_completed) {}
 
 protected:
-    ref<Future<T>> _future;
+    option<Future<T>> _future;
     T _data;
     bool _hasData;
 

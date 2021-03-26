@@ -4,7 +4,7 @@
 NotificationListener::NotificationListener(
     ref<Widget> child,
     Function<bool(ref<Notification> notification)> onNotification,
-    ref<Key> key)
+    option<Key> key)
     : _child(child), _onNotification(onNotification), StatelessWidget(key) {}
 
 ref<Widget> NotificationListener::build(ref<BuildContext> context)

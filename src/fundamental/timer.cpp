@@ -50,7 +50,7 @@ void Timer::_setTimeout(Duration delay, Function<void()> function)
     using std::chrono::system_clock;
     system_clock::time_point current = system_clock::now();
     ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    _thread = std::make_shared<Thread>([=] {
+    _thread = Object::create<Thread>([=] {
         if (self->_clear)
             return;
         std::this_thread::sleep_until(current + delay.toChronoMilliseconds());
@@ -66,7 +66,7 @@ void Timer::_setInterval(Duration interval, Function<void()> function)
     using std::chrono::system_clock;
     system_clock::time_point current = system_clock::now();
     ref<Timer> self = Object::cast<>(this); // hold a ref of self inside the Function
-    _thread = std::make_shared<Thread>([=] {
+    _thread = Object::create<Thread>([=] {
         system_clock::time_point nextTime = current;
         if (self->_clear)
             return;

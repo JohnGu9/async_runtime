@@ -15,14 +15,14 @@ class Lock : public Object
 public:
     class SharedLock;
     class UniqueLock;
-    class InvailedLock;
+    class InvalidLock;
     class WithLockMixin;
 
     Lock() {}
     ~Lock();
 
-    virtual ref<Lock::SharedLock> sharedLock();
-    virtual ref<Lock::UniqueLock> uniqueLock();
+    virtual option<Lock::SharedLock> sharedLock();
+    virtual option<Lock::UniqueLock> uniqueLock();
 
 protected:
     size_t _sharedCounter = 0;
@@ -52,10 +52,10 @@ protected:
     Lock &_lock;
 };
 
-class Lock::InvailedLock : public Lock
+class Lock::InvalidLock : public Lock
 {
-    ref<Lock::SharedLock> sharedLock() override { return nullptr; }
-    ref<Lock::UniqueLock> uniqueLock() override { return nullptr; }
+    option<Lock::SharedLock> sharedLock() override { return nullptr; }
+    option<Lock::UniqueLock> uniqueLock() override { return nullptr; }
 };
 
 class Lock::WithLockMixin
@@ -63,15 +63,14 @@ class Lock::WithLockMixin
     ref<Lock> _lock;
 
 public:
-    WithLockMixin(ref<Lock> lock = nullptr) : _lock(lock == nullptr ? Object::create<Lock>() : lock) {}
-    WithLockMixin(const WithLockMixin &other) : _lock(other.lock) { assert(this->_lock != nullptr); }
+    WithLockMixin(option<Lock> lock = nullptr) : _lock(lock.isNotNullElse(Object::create<Lock>)) {}
+    WithLockMixin(const WithLockMixin &other) : _lock(other.lock) {}
 
     const ref<Lock> &lock = _lock;
 
     WithLockMixin &operator=(const WithLockMixin &other)
     {
         this->_lock = other.lock;
-        assert(this->_lock != nullptr);
         return *this;
     }
 };

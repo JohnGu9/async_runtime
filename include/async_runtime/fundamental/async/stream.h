@@ -91,7 +91,6 @@ public:
 
 protected:
     ref<Completer<void>> _onClose;
-    ref<ThreadPool> _callbackHandler;
     size_t _sinkCounter;
 
     Function<void()> _listener;

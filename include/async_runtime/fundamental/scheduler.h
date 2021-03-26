@@ -10,7 +10,7 @@ public:
     using Handler = ref<ThreadPool>;
     static Handler of(ref<BuildContext> context);
 
-    Scheduler(ref<Widget> child, String name = nullptr, ref<Key> key = nullptr);
+    Scheduler(ref<Widget> child, String name = nullptr, option<Key> key = nullptr);
     ref<Widget> child;
     String name;
     ref<State<StatefulWidget>> createState() override;

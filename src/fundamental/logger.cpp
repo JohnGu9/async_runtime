@@ -8,7 +8,7 @@ class _Logger : public StatefulWidget
     friend class _LoggerState;
 
 public:
-    _Logger(ref<Widget> child, String path, ref<Key> key)
+    _Logger(ref<Widget> child, String path, option<Key> key)
         : child(child), path(path), StatefulWidget(key) {}
     ref<State<StatefulWidget>> createState() override;
     ref<Widget> child;
@@ -101,25 +101,19 @@ public:
     };
 
     using super = State<_Logger>;
-    Logger::Handler _handler;
+    lateref<LoggerHandler> _handler;
 
     void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
     {
-        if (ref<_Logger> old = oldWidget->cast<_Logger>())
-        {
-            this->_handler->dispose();
+        ref<_Logger> old = oldWidget->covariant<_Logger>();
+        this->_handler->dispose();
 
-            if (not this->getWidget()->path)
-                this->_handler = Object::create<_LoggerBlocker>(this);
-            else if (this->getWidget()->path.isEmpty())
-                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
-            else
-                this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->path);
-        }
+        if (not this->getWidget()->path)
+            this->_handler = Object::create<_LoggerBlocker>(this);
+        else if (this->getWidget()->path.isEmpty())
+            this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
         else
-        {
-            assert(false);
-        }
+            this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->path);
 
         super::didWidgetUpdated(oldWidget);
     }
@@ -128,7 +122,6 @@ public:
     {
         if (this->_handler != nullptr)
             this->_handler->dispose();
-
         if (not this->getWidget()->path)
             this->_handler = Object::create<_LoggerBlocker>(this);
         else if (this->getWidget()->path.isEmpty())
@@ -158,35 +151,30 @@ ref<State<StatefulWidget>> _Logger::createState()
 
 Logger::Handler Logger::of(ref<BuildContext> context)
 {
-    return context->dependOnInheritedWidgetOfExactType<Logger>()->_handler;
+    return context->dependOnInheritedWidgetOfExactType<Logger>().assertNotNull()->_handler;
 }
 
-Logger::Logger(ref<Widget> child, Handler handler, ref<Key> key)
-    : _handler(handler), InheritedWidget(child, key) { assert(this->_handler); }
+Logger::Logger(ref<Widget> child, Handler handler, option<Key> key)
+    : _handler(handler), InheritedWidget(child, key) {}
 
 bool Logger::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
-    if (ref<Logger> old = oldWidget->cast<Logger>())
-        return old->_handler != this->_handler;
-    else
-    {
-        assert(false);
-        return true;
-    }
+    ref<Logger> old = oldWidget->covariant<Logger>();
+    return old->_handler != this->_handler;
 }
 
-ref<Widget> Logger::stdout(ref<Widget> child, ref<Key> key)
+ref<Widget> Logger::stdout(ref<Widget> child, option<Key> key)
 {
     return Object::create<_Logger>(child, "", key);
 }
 
-ref<Widget> Logger::file(String path, ref<Widget> child, ref<Key> key)
+ref<Widget> Logger::file(String path, ref<Widget> child, option<Key> key)
 {
     assert(!path.isEmpty() && "path can't be empty");
     return Object::create<_Logger>(child, path, key);
 }
 
-ref<Widget> Logger::block(ref<Widget> child, ref<Key> key)
+ref<Widget> Logger::block(ref<Widget> child, option<Key> key)
 {
     return Object::create<_Logger>(child, String(), key);
 }
@@ -197,18 +185,13 @@ class _StdoutLoggerInheritedWidget : public InheritedWidget
     Logger::Handler _handler;
 
 public:
-    _StdoutLoggerInheritedWidget(ref<Widget> child, Logger::Handler handler, ref<Key> key = nullptr)
-        : _handler(handler), InheritedWidget(Object::create<Logger>(child, handler), key) { assert(handler); }
+    _StdoutLoggerInheritedWidget(ref<Widget> child, Logger::Handler handler, option<Key> key = nullptr)
+        : _handler(handler), InheritedWidget(Object::create<Logger>(child, handler), key) {}
 
     bool updateShouldNotify(ref<InheritedWidget> oldWidget) override
     {
-        if (ref<_StdoutLoggerInheritedWidget> old = oldWidget->cast<_StdoutLoggerInheritedWidget>())
-            return old->_handler != this->_handler;
-        else
-        {
-            assert(false);
-            return true;
-        }
+        ref<_StdoutLoggerInheritedWidget> old = oldWidget->covariant<_StdoutLoggerInheritedWidget>();
+        return old->_handler != this->_handler;
     }
 };
 void StdoutLoggerState::initState()
@@ -232,8 +215,8 @@ ref<Widget> StdoutLoggerState::build(ref<BuildContext>)
 
 Logger::Handler StdoutLogger::of(ref<BuildContext> context)
 {
-    return context->dependOnInheritedWidgetOfExactType<_StdoutLoggerInheritedWidget>()->_handler;
+    return context->dependOnInheritedWidgetOfExactType<_StdoutLoggerInheritedWidget>().assertNotNull()->_handler;
 }
 
-StdoutLogger::StdoutLogger(ref<Widget> child, ref<Key> key)
-    : child(child), StatefulWidget(key) { assert(child); }
+StdoutLogger::StdoutLogger(ref<Widget> child, option<Key> key)
+    : child(child), StatefulWidget(key) {}

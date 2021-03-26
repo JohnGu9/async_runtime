@@ -5,7 +5,7 @@
 class InheritedWidget : public StatelessWidget, public Inheritance
 {
 public:
-    InheritedWidget(ref<Widget> child, ref<Key> key = nullptr);
+    InheritedWidget(ref<Widget> child, option<Key> key = nullptr);
     virtual bool updateShouldNotify(ref<InheritedWidget> oldWidget) = 0;
     ref<Widget> build(ref<BuildContext> context) override;
     ref<Element> createElement() override;
@@ -15,13 +15,14 @@ protected:
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
-inline ref<T> BuildContext::dependOnInheritedWidgetOfExactType()
+inline option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
     auto iter = this->_inheritances->find(typeid(T).name());
     if (iter == this->_inheritances.end())
     {
 #ifdef DEBUG
-        if (ref<Element> element = this->cast<Element>())
+        lateref<Element> element;
+        if (option<Element>(this->cast<Element>()).isNotNull(element))
         {
             String str = element->widget->runtimeType();
             element->visitAncestor([&str](ref<Element> element) {

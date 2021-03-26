@@ -8,14 +8,14 @@ class Widget : public virtual Object
     Widget() = delete;
 
 public:
-    Widget(ref<Key> key);
+    Widget(option<Key> key);
     virtual bool canUpdate(ref<Widget> other);
     virtual ref<Element> createElement() = 0;
 
 protected:
-    const ref<Key> _key;
+    const option<Key> _key;
 
 public:
-    const ref<Key> &key = _key;
+    const option<Key> &key = _key;
 };
 

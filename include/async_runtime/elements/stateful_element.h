@@ -11,8 +11,8 @@ class StatefulElement : public SingleChildElement
 public:
     StatefulElement(ref<StatefulWidget> widget);
 
-    ref<StatefulWidget> _statefulWidget;
-    ref<State<StatefulWidget> > _state;
+    lateref<StatefulWidget> _statefulWidget;
+    lateref<State<StatefulWidget> > _state;
 
 protected:
     class _LifeCycle

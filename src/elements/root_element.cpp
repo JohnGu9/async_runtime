@@ -13,13 +13,12 @@ static inline void shutdownInfo()
 struct _MockWidget : Widget
 {
     _MockWidget() : Widget(nullptr) {}
-    ref<Element> createElement() override { return nullptr; }
+    ref<Element> createElement() override { return Object::create<RootElement>(Object::cast<>(this)); }
 };
 
 /// Root Element
-RootElement::RootElement(ref<Widget> widget) : _consoleStop(false), SingleChildElement(nullptr)
+RootElement::RootElement(ref<Widget> widget) : _consoleStop(false), SingleChildElement(Object::create<_MockWidget>())
 {
-    assert(widget != nullptr);
     this->_stdoutKey = Object::create<GlobalKey>();
     this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _stdoutKey), "RootThread");
 }
@@ -30,7 +29,6 @@ void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement d
 
 void RootElement::attach()
 {
-    this->widget = Object::create<_MockWidget>();
     this->_child = Object::create<RootInheritedWidget>(this->_child, Object::cast<>(this));
     this->_inheritances = {};
     this->attachElement(this->_child->createElement());
@@ -38,7 +36,6 @@ void RootElement::attach()
 
 void RootElement::build()
 {
-    assert(this->_childElement != nullptr);
     ref<Widget> widget = this->_child;
     ref<Widget> lastWidget = this->_childElement->widget;
     if (Object::identical(widget, lastWidget))
@@ -57,7 +54,6 @@ void RootElement::detach()
 
 void RootElement::visitDescendant(Function<bool(ref<Element>)> fn)
 {
-    assert(this->_childElement != nullptr);
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);
 }
@@ -66,17 +62,15 @@ void RootElement::visitAncestor(Function<bool(ref<Element>)>) {}
 
 Logger::Handler RootElement::getStdoutHandler()
 {
-    if (ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState())
-        if (ref<StdoutLoggerState> state = currentState->cast<StdoutLoggerState>())
-            return state->_handler;
-    return nullptr;
+    ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState().assertNotNull();
+    ref<StdoutLoggerState> state = currentState->cast<StdoutLoggerState>().assertNotNull();
+    return state->_handler;
 }
 
 Scheduler::Handler RootElement::getMainHandler()
 {
-    if (ref<BuildContext> context = this->_stdoutKey->getCurrentContext())
-        return Scheduler::of(context);
-    return nullptr;
+    ref<BuildContext> context = this->_stdoutKey->getCurrentContext().assertNotNull();
+    return Scheduler::of(context);
 }
 
 void RootElement::scheduleRootWidget()
@@ -164,7 +158,7 @@ void RootElement::onCommand(const std::string &in)
     {
         Map<Element *, List<Element *>> map = {{this, List<Element *>::empty()}};
         this->visitDescendant([&map](ref<Element> element) -> bool {
-            ref<Element> parent = element->parent.lock();
+            option<Element> parent = element->parent.lock();
             map[parent.get()]->push_back(element.get());
             map[element.get()] = List<Element *>::empty();
             return false;

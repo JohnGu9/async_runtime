@@ -6,12 +6,12 @@ Lock::~Lock()
     assert(this->_sharedCounter == 0 && this->_unique == nullptr);
 }
 
-ref<Lock::SharedLock> Lock::sharedLock()
+option<Lock::SharedLock> Lock::sharedLock()
 {
     return Object::create<Lock::SharedLock>(*this);
 }
 
-ref<Lock::UniqueLock> Lock::uniqueLock()
+option<Lock::UniqueLock> Lock::uniqueLock()
 {
     return Object::create<Lock::UniqueLock>(*this);
 }

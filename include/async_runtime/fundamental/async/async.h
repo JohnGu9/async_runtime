@@ -24,7 +24,7 @@ inline ref<Future<void>> async(State<StatefulWidget> *state, Function<void()> fn
 }
 
 template <typename T>
-ref<Future<T>> async(ref<ThreadPool> callbackHandler, Function<T()> fn)
+option<Future<T>> async(ref<ThreadPool> callbackHandler, Function<T()> fn)
 {
     ref<Completer<T>> completer = Object::create<Completer<T>>(callbackHandler);
     completer->_callbackHandler->post([fn, completer] { completer->completeSync(fn()); });

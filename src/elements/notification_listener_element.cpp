@@ -7,20 +7,17 @@ NotificationListenerElement::NotificationListenerElement(ref<NotificationListene
 
 void NotificationListenerElement::update(ref<Widget> newWidget)
 {
-    this->_notificationListenerWidget = newWidget->cast<NotificationListener>();
-    assert(this->_notificationListenerWidget);
+    this->_notificationListenerWidget = newWidget->cast<NotificationListener>().assertNotNull();
     StatelessElement::update(newWidget);
 }
 
 void NotificationListenerElement::notify(ref<Widget> newWidget)
 {
-    this->_notificationListenerWidget = newWidget->cast<NotificationListener>();
-    assert(this->_notificationListenerWidget);
+    this->_notificationListenerWidget = newWidget->cast<NotificationListener>().assertNotNull();
     StatelessElement::notify(newWidget);
 }
 
 void NotificationListenerElement::detach()
 {
-    _notificationListenerWidget = nullptr;
     StatelessElement::detach();
 }
