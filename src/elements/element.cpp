@@ -6,7 +6,7 @@ Element::Element(ref<Widget> widget) : BuildContext(widget) {}
 
 void Element::attach()
 {
-    ref<Element> parent = option<Element>(this->parent.lock()).assertNotNull();
+    ref<Element> parent = this->parent.assertNotNull();
     this->_inheritances = parent->_inheritances;
     lateref<Key> key;
     if (this->widget->key.isNotNull(key))
@@ -30,13 +30,13 @@ void Element::update(ref<Widget> newWidget)
 void Element::notify(ref<Widget> newWidget)
 {
     this->widget = newWidget;
-    ref<Element> parent = option<Element>(this->parent.lock()).assertNotNull();
+    ref<Element> parent = this->parent.assertNotNull();
     this->_inheritances = parent->_inheritances; // update inheritances
 }
 
 void Element::visitAncestor(Function<bool(ref<Element>)> fn)
 {
-    ref<Element> parent = option<Element>(this->parent.lock()).assertNotNull();
+    ref<Element> parent = this->parent.assertNotNull();
     if (fn(parent) == false)
         parent->visitAncestor(fn);
 }

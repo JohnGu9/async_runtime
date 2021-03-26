@@ -158,7 +158,7 @@ void RootElement::onCommand(const std::string &in)
     {
         Map<Element *, List<Element *>> map = {{this, List<Element *>::empty()}};
         this->visitDescendant([&map](ref<Element> element) -> bool {
-            option<Element> parent = element->parent.lock();
+            option<Element> parent = element->parent.toOption();
             map[parent.get()]->push_back(element.get());
             map[element.get()] = List<Element *>::empty();
             return false;

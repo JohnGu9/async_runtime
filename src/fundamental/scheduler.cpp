@@ -53,7 +53,7 @@ protected:
     virtual option<ThreadPool> getParentHandler()
     {
         lateref<BuildContext> context;
-        if (option<BuildContext>(this->parent.lock()).isNotNull(context))
+        if (this->parent.isNotNull(context))
             return Scheduler::of(context);
         return nullptr;
     }

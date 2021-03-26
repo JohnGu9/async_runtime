@@ -9,7 +9,7 @@ class Key : public Object
 {
 public:
     virtual bool equal(option<Key> other) = 0;
-    virtual void setElement(option<Element> element);
+    virtual void setElement(ref<Element> element);
     virtual void dispose();
     virtual option<const Widget> getCurrentWidget();
 

@@ -3,19 +3,33 @@
 #include <memory>
 #include "function.h"
 
-template <typename T>
-using weakref = std::weak_ptr<T>;
-
 // nullable object
 template <typename T>
 class option;
 // non-nullable object
 template <typename T>
 class ref;
+// non-nullable object
+template <typename T>
+class lateref;
+// ref dead lock
+template <typename T>
+class weakref;
 
 template <typename T>
 class option : public std::shared_ptr<T>
 {
+    template <typename R>
+    friend class weakref;
+
+    template <typename R>
+    friend class ref;
+
+    template <typename R>
+    friend class lateref;
+
+    friend class Object;
+
 public:
     static option<T> null()
     {
@@ -27,8 +41,7 @@ public:
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const ref<R> &other);
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)){};
+
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const option<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)) {}
 
@@ -38,18 +51,20 @@ public:
 
     T *operator->() const = delete;
     operator bool() const = delete;
-};
 
-template <typename T>
-bool operator==(const option<T> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<T>>(opt) == nullptr; }
-template <typename T>
-bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<T>>(opt) != nullptr; }
+protected:
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    option(const std::shared_ptr<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)){};
+};
 
 template <typename T>
 class ref : public option<T>
 {
     template <typename R>
     friend class option;
+
+    template <typename R>
+    friend class weakref;
 
     friend class Object;
 
@@ -86,6 +101,9 @@ class lateref : public ref<T>
     template <typename R>
     friend class option;
 
+    template <typename R>
+    friend class weakref;
+
     friend class Object;
 
 public:
@@ -104,6 +122,58 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const std::shared_ptr<R> &other) : ref<T>(other) {}
 };
+
+template <typename T>
+class weakref : public std::weak_ptr<T>
+{
+public:
+    weakref() {}
+    weakref(std::nullptr_t) {}
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    weakref(const option<R> &other) : std::weak_ptr<T>(other) {}
+
+    std::weak_ptr<T> lock() const = delete;
+
+    ref<T> assertNotNull() const
+    {
+        const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
+        if (ptr != nullptr)
+        {
+            return ref<T>(ptr);
+        }
+        else
+        {
+            throw "";
+        }
+    }
+
+    option<T> toOption() const
+    {
+        return option<T>(std::weak_ptr<T>::lock());
+    }
+
+    template <typename R, typename std::enable_if<std::is_base_of<R, T>::value>::type * = nullptr>
+    bool isNotNull(ref<R> &object) const
+    {
+        const std::shared_ptr<R> ptr = std::weak_ptr<T>::lock();
+        if (ptr != nullptr)
+        {
+            object = ptr;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+};
+
+/// function implement
+
+template <typename T>
+bool operator==(const option<T> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<T>>(opt) == nullptr; }
+template <typename T>
+bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<T>>(opt) != nullptr; }
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>

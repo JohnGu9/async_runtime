@@ -99,7 +99,7 @@ ref<T> Object::cast(T *other)
 template <typename T>
 option<T> Object::cast()
 {
-    return std::dynamic_pointer_cast<T>(this->shared_from_this());
+    return option<T>(std::dynamic_pointer_cast<T>(this->shared_from_this()));
 }
 
 template <typename T>

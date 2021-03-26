@@ -10,12 +10,12 @@ ref<RootInheritedWidget> RootInheritedWidget::of(ref<BuildContext> context)
 bool RootInheritedWidget::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
     ref<RootInheritedWidget> old = oldWidget->covariant<RootInheritedWidget>();
-    return old->_root.lock() != this->_root.lock();
+    return old->_root.toOption() != this->_root.toOption();
 }
 
 void RootInheritedWidget::exit()
 {
-    ref<RootElement> root = option<RootElement>(this->_root.lock()).assertNotNull();
+    ref<RootElement> root = this->_root.assertNotNull();
     root->getMainHandler()->post([root] {
         root->_consoleStop = true;
         root->_condition.notify_all();
