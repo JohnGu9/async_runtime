@@ -1,7 +1,9 @@
 #pragma once
 
 #include <memory>
-#include "function.h"
+#include <functional>
+#include <exception>
+#define finalref const ref
 
 // nullable object
 template <typename T>
@@ -16,11 +18,32 @@ class lateref;
 template <typename T>
 class weakref;
 
+// the namespace not for public usage
+// ar just for async runtime internal usage
+namespace ar
+{
+    template <typename T>
+    class RefImplement;
+
+    template <typename T>
+    class ToRefMixin
+    {
+    public:
+        virtual ~ToRefMixin() {}
+        virtual bool isNotNull(ref<T> &) const = 0;
+        virtual ref<T> isNotNullElse(std::function<ref<T>()>) const = 0;
+        virtual ref<T> assertNotNull() const = 0;
+    };
+};
+
 template <typename T>
-class option : public std::shared_ptr<T>
+class option : public std::shared_ptr<T>, public ar::ToRefMixin<T>
 {
     template <typename R>
     friend class weakref;
+
+    template <typename R>
+    friend class ar::RefImplement;
 
     template <typename R>
     friend class ref;
@@ -45,9 +68,9 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const option<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)) {}
 
-    bool isNotNull(ref<T> &) const;
-    ref<T> isNotNullElse(Function<ref<T>()>) const;
-    ref<T> assertNotNull() const;
+    bool isNotNull(ref<T> &) const override;
+    ref<T> isNotNullElse(std::function<ref<T>()>) const override;
+    ref<T> assertNotNull() const override;
 
     T *operator->() const = delete;
     operator bool() const = delete;
@@ -58,7 +81,7 @@ protected:
 };
 
 template <typename T>
-class ref : public option<T>
+class ar::RefImplement : public option<T>
 {
     template <typename R>
     friend class option;
@@ -69,10 +92,10 @@ class ref : public option<T>
     friend class Object;
 
 public:
-    ref(std::nullptr_t) = delete;
+    RefImplement(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : option<T>(other) {}
+    RefImplement(const RefImplement<R> &other) : option<T>(other) {}
 
     T *operator->() const { return std::shared_ptr<T>::operator->(); }
 
@@ -80,18 +103,43 @@ public:
     bool operator==(std::nullptr_t) const = delete;
     bool operator!=(std::nullptr_t) const = delete;
 
-    bool isNotNull(ref<T> &) const = delete;
-    ref<T> isNotNullElse(Function<ref<T>()>) const = delete;
-    ref<T> assertNotNull() const = delete;
+protected:
+    RefImplement() {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    RefImplement(const option<R> &other) : option<T>(other) {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    RefImplement(const std::shared_ptr<R> &other) : option<T>(other) {}
+
+    bool isNotNull(ref<T> &object) const override { return option<T>::isNotNull(object); }
+    ref<T> isNotNullElse(std::function<ref<T>()> fn) const override { return option<T>::isNotNullElse(fn); }
+    ref<T> assertNotNull() const override { return option<T>::assertNotNull(); }
+};
+
+template <typename T>
+class ref : public ar::RefImplement<T>
+{
+    template <typename R>
+    friend class option;
+
+    template <typename R>
+    friend class weakref;
+
+    friend class Object;
+
+public:
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    ref(const ref<R> &other) : ar::RefImplement<T>(other) {}
 
 protected:
     ref() {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    ref(const option<R> &other) : option<T>(other) {}
+    ref(const option<R> &other) : ar::RefImplement<T>(other) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    ref(const std::shared_ptr<R> &other) : option<T>(other) {}
+    ref(const std::shared_ptr<R> &other) : ar::RefImplement<T>(other) {}
 };
 
 // non-nullable object
@@ -124,7 +172,7 @@ protected:
 };
 
 template <typename T>
-class weakref : public std::weak_ptr<T>
+class weakref : public std::weak_ptr<T>, public ar::ToRefMixin<T>
 {
 public:
     weakref() {}
@@ -134,7 +182,7 @@ public:
 
     std::weak_ptr<T> lock() const = delete;
 
-    ref<T> assertNotNull() const
+    ref<T> assertNotNull() const override
     {
         const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
         if (ptr != nullptr)
@@ -143,19 +191,27 @@ public:
         }
         else
         {
-            throw "";
+            static const std::string massage = "";
+            throw std::runtime_error(massage + typeid(*this).name() + " assert not null on a null ref. ");
         }
     }
 
-    option<T> toOption() const
+    ref<T> isNotNullElse(std::function<ref<T>()> fn) const override
     {
-        return option<T>(std::weak_ptr<T>::lock());
+        const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
+        if (ptr != nullptr)
+        {
+            return ref<T>(ptr);
+        }
+        else
+        {
+            return fn();
+        }
     }
 
-    template <typename R, typename std::enable_if<std::is_base_of<R, T>::value>::type * = nullptr>
-    bool isNotNull(ref<R> &object) const
+    bool isNotNull(ref<T> &object) const override
     {
-        const std::shared_ptr<R> ptr = std::weak_ptr<T>::lock();
+        const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
         if (ptr != nullptr)
         {
             object = ptr;
@@ -165,6 +221,11 @@ public:
         {
             return false;
         }
+    }
+
+    option<T> toOption() const
+    {
+        return option<T>(std::weak_ptr<T>::lock());
     }
 };
 
@@ -195,7 +256,7 @@ bool option<T>::isNotNull(ref<T> &object) const
 }
 
 template <typename T>
-ref<T> option<T>::isNotNullElse(Function<ref<T>()> fn) const
+ref<T> option<T>::isNotNullElse(std::function<ref<T>()> fn) const
 {
     const std::shared_ptr<T> ptr = static_cast<const std::shared_ptr<T>>(*this);
     if (ptr != nullptr)
@@ -218,17 +279,18 @@ ref<T> option<T>::assertNotNull() const
     }
     else
     {
-        throw "Assert not null but the object is null indeed. ";
+        static const std::string massage = "";
+        throw std::runtime_error(massage + typeid(*this).name() + " assert not null on a null ref. ");
     }
 }
 
 namespace std
 {
     template <typename T>
-    struct hash<option<T>>
+    struct hash<::option<T>>
     {
 
-        std::size_t operator()(const option<T> &other) const
+        std::size_t operator()(const ::option<T> &other) const
         {
             static const auto hs = hash<std::shared_ptr<T>>();
             return hs(static_cast<std::shared_ptr<T>>(other));

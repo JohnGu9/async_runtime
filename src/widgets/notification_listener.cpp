@@ -14,5 +14,5 @@ ref<Widget> NotificationListener::build(ref<BuildContext> context)
 
 ref<Element> NotificationListener::createElement()
 {
-    return Object::create<NotificationListenerElement>(Object::cast<>(this));
+    return Object::create<NotificationListenerElement>(self());
 }

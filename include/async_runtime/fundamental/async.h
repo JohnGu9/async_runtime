@@ -42,7 +42,7 @@ class AsyncSnapshot;
 template <>
 inline ref<Future<void>> Future<void>::than(Function<void()> fn)
 {
-    ref<Future<void>> self = Object::cast<>(this);
+    ref<Future<void>> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
@@ -59,7 +59,7 @@ inline ref<Future<void>> Future<void>::than(Function<void()> fn)
 template <typename ReturnType>
 ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
 {
-    ref<Future<void>> self = Object::cast<>(this);
+    ref<Future<void>> self = self();
     ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
@@ -105,7 +105,7 @@ template <typename ReturnType, typename std::enable_if<std::is_void<ReturnType>:
 ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
-    ref<Future<T>> self = Object::cast<>(this);
+    ref<Future<T>> self = self();
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
             self->_callbackList->push_back([completer, fn](const T &value) { fn(value); completer->completeSync(); });
@@ -123,7 +123,7 @@ template <typename ReturnType, typename std::enable_if<!std::is_void<ReturnType>
 ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
 {
     ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
-    ref<Future<T>> self = Object::cast<>(this);
+    ref<Future<T>> self = self();
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
             self->_callbackList->push_back([completer, fn](const T &value) { completer->completeSync(fn(value)); });
@@ -136,7 +136,7 @@ ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
 template <typename T>
 ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
 {
-    ref<Future<T>> self = Object::cast<>(this);
+    ref<Future<T>> self = self();
     this->_callbackHandler->post([self, fn] {
         if (self->_completed == false)
             self->_callbackList->push_back([fn](const T &) { fn(); });
@@ -149,7 +149,7 @@ ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
 template <typename T>
 ref<Future<T>> Future<T>::timeout(Duration duration, Function<T()> onTimeout)
 {
-    ref<Future<T>> self = Object::cast<>(this);
+    ref<Future<T>> self = self();
     ref<Completer<T>> completer = Object::create<Completer<T>>(this->_callbackHandler);
     Future<void>::delay(this->_callbackHandler, duration)
         ->than([=] {

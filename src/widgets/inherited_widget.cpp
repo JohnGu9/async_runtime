@@ -7,5 +7,5 @@ ref<Widget> InheritedWidget::build(ref<BuildContext> context) { return _child; }
 
 ref<Element> InheritedWidget::createElement()
 {
-    return Object::create<InheritedElement>(Object::cast<>(this));
+    return Object::create<InheritedElement>(self());
 }

@@ -188,7 +188,7 @@ void AutoReleaseThreadPool::close()
 
 std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
-    ref<AutoReleaseThreadPool> self = Object::cast<>(this);
+    ref<AutoReleaseThreadPool> self = self();
     return [self, threadId] { self->ThreadPool::workerBuilder(threadId)(); };
 }
 
@@ -292,7 +292,7 @@ ref<Future<void>> Future<void>::delay(State<StatefulWidget> *state, Duration dur
 
 ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
 {
-    ref<Future<void>> self = Object::cast<>(this);
+    ref<Future<void>> self = self();
     this->_callbackHandler->post([self, fn] {
         if (self->_completed == false)
             self->_callbackList->push_back(fn);
@@ -304,7 +304,7 @@ ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
 
 ref<Future<void>> Future<void>::timeout(Duration duration, Function<void()> onTimeout)
 {
-    ref<Future<void>> self = Object::cast<>(this);
+    ref<Future<void>> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     Future<void>::delay(this->_callbackHandler, duration)
         ->than([=] {

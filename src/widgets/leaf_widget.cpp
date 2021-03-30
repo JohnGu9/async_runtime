@@ -11,5 +11,5 @@ LeafWidget::LeafWidget(option<Key> key) : Widget(key){};
 
 ref<Element> LeafWidget::createElement()
 {
-    return Object::create<LeafElement>(Object::cast<>(this));
+    return Object::create<LeafElement>(self());
 }

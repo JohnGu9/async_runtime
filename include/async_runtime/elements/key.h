@@ -48,7 +48,7 @@ class GlobalKey : public Key
 public:
     inline virtual bool equal(option<Key> other)
     {
-        return Object::identical(this->shared_from_this(), other);
+        return Object::identical(self(), other);
     }
 
     virtual option<BuildContext> getCurrentContext();

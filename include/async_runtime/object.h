@@ -24,13 +24,20 @@ class Set;
 template <typename T>
 class List;
 
+#define self() Object::cast<>(this)
+
 class Object : public std::enable_shared_from_this<Object>
 {
+    ref<Object> shared_from_this() { return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this()); }
+
 public:
     using RuntimeType = String;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
+    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
+    static void detach(ref<T> &);
+
     template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
     template <typename T0, typename T1>
@@ -51,22 +58,27 @@ public:
     virtual String toString();
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();
+    virtual void init() {}
 
     Object() {}
     virtual ~Object() {}
 
     Object(const Object &) = delete;
     Object &operator=(const Object &) = delete;
-
-    ref<Object> shared_from_this() { return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this()); }
 };
-
-#define Self Object::cast<>(this)
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, class... _Args>
 ref<T> Object::create(_Args &&...__args)
 {
-    return std::make_shared<T>(std::forward<_Args>(__args)...);
+    finalref<T> object = std::make_shared<T>(std::forward<_Args>(__args)...);
+    object->init();
+    return object;
+}
+
+template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
+void Object::detach(ref<T> &object)
+{
+    static_cast<std::shared_ptr<T>>(object) = nullptr;
 }
 
 template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
@@ -99,7 +111,7 @@ ref<T> Object::cast(T *other)
 template <typename T>
 option<T> Object::cast()
 {
-    return option<T>(std::dynamic_pointer_cast<T>(this->shared_from_this()));
+    return std::dynamic_pointer_cast<T>(this->shared_from_this());
 }
 
 template <typename T>

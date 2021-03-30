@@ -9,5 +9,5 @@ ref<NamedMultiChildWidget> NamedMultiChildWidget::fromChildren(
 
 ref<Element> NamedMultiChildWidget::createElement()
 {
-    return Object::create<NamedMultiChildElement>(Object::cast<>(this));
+    return Object::create<NamedMultiChildElement>(self());
 }

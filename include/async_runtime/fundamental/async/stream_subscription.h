@@ -16,7 +16,7 @@ public:
     StreamSubscription(ref<Stream<T>> stream) : _stream(stream) {}
     void unsubscribe() override
     {
-        ref<StreamSubscription<T>> self = Object::cast<>(this);
+        ref<StreamSubscription<T>> self = self();
         _stream->_callbackHandler->post([self] {
             self->_stream->_listener = nullptr;
         });

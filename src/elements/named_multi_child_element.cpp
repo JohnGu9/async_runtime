@@ -13,7 +13,7 @@ void NamedMultiChildElement::attach()
         ref<Widget> &widget = iter.second;
         ref<Element> element = widget->createElement();
         this->_childrenElements[iter.first] = element;
-        element->parent = Object::cast<>(this);
+        element->parent = self();
         element->attach();
     }
 }
@@ -52,7 +52,7 @@ void NamedMultiChildElement::build()
         {
             ref<Element> newElement = widget->createElement();
             this->_childrenElements[key] = newElement;
-            newElement->parent = Object::cast<>(this);
+            newElement->parent = self();
             newElement->attach();
         }
         else
@@ -68,7 +68,7 @@ void NamedMultiChildElement::build()
                 element->detach();
                 ref<Element> newElement = widget->createElement();
                 elementIterator->second = newElement;
-                elementIterator->second->parent = Object::cast<>(this);
+                elementIterator->second->parent = self();
                 elementIterator->second->attach();
             }
         }
@@ -110,7 +110,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
         {
             ref<Element> newElement = widget->createElement();
             this->_childrenElements[key] = newElement;
-            newElement->parent = Object::cast<>(this);
+            newElement->parent = self();
             newElement->attach();
         }
         else
@@ -124,7 +124,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
                 element->detach();
                 ref<Element> newElement = widget->createElement();
                 elementIterator->second = newElement;
-                elementIterator->second->parent = Object::cast<>(this);
+                elementIterator->second->parent = self();
                 elementIterator->second->attach();
             }
         }

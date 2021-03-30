@@ -4,8 +4,8 @@
 
 void Notification::dispatch(ref<BuildContext> context)
 {
-    ref<Element> element = context->cast<Element>().assertNotNull();
-    ref<Notification> self = Object::cast<>(this);
+    ref<Element> element = context->covariant<Element>();
+    ref<Notification> self = self();
     element->visitAncestor([self](ref<Element> element) -> bool {
         lateref<NotificationListenerElement> listenerElement;
         if (element->cast<NotificationListenerElement>().isNotNull(listenerElement))

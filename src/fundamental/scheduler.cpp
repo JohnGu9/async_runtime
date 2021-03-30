@@ -8,62 +8,57 @@ public:
 
     void attach() override
     {
-        this->getHandler()->post([this] { this->toAttach(); }).get();
+        this->getHandler()->post([this] { this->InheritedElement::attach(); }).get();
     }
 
     void detach() override
     {
-        this->getHandler()->post([this] { this->toDetach(); }).get();
+        this->getHandler()->post([this] { this->InheritedElement::detach(); }).get();
     }
 
     void build() override
     {
-        this->getHandler()->post([this] { this->toBuild(); }).get();
+        this->getHandler()->post([this] { this->InheritedElement::build(); }).get();
     }
 
     void notify(ref<Widget> newWidget) override
     {
-        this->getHandler()->post([this, newWidget] { this->toNotify(newWidget); }).get();
+        this->getHandler()->post([this, newWidget] { this->InheritedElement::notify(newWidget); }).get();
     }
 
     void update(ref<Widget> newWidget) override
     {
-        this->getHandler()->post([this, newWidget] { this->toUpdate(newWidget); }).get();
+        this->getHandler()->post([this, newWidget] { this->InheritedElement::update(newWidget); }).get();
     }
 
     void visitDescendant(Function<bool(ref<Element>)> fn) override
     {
-        this->getHandler()->post([this, fn] { this->toVisitDescendant(fn); }).get();
+        this->getHandler()->post([this, fn] { this->InheritedElement::visitDescendant(fn); }).get();
     }
 
     void visitAncestor(Function<bool(ref<Element>)> fn) override
     {
         Scheduler::Handler handler = this->getHandler();
         lateref<ThreadPool> parentHandler;
-        if (handler != parentHandler && this->getParentHandler().isNotNull(parentHandler))
+        if (this->getParentHandler().isNotNull(parentHandler) && handler != parentHandler)
         {
-            parentHandler->post([this, fn] { this->toVisitAncestor(fn); }).get();
+            parentHandler->post([this, fn] { this->InheritedElement::visitAncestor(fn); }).get();
         }
-
-        InheritedElement::visitAncestor(fn);
+        else
+        {
+            InheritedElement::visitAncestor(fn);
+        }
     }
 
 protected:
-    virtual Scheduler::Handler getHandler() { return this->_inheritWidget->cast<SchedulerProxy>().assertNotNull()->_handler; }
+    virtual Scheduler::Handler getHandler() { return this->_inheritWidget->covariant<SchedulerProxy>()->_handler; }
     virtual option<ThreadPool> getParentHandler()
     {
-        lateref<BuildContext> context;
+        lateref<Element> context;
         if (this->parent.isNotNull(context))
             return Scheduler::of(context);
         return nullptr;
     }
-    virtual void toAttach() { InheritedElement::attach(); }
-    virtual void toDetach() { InheritedElement::detach(); }
-    virtual void toBuild() { InheritedElement::build(); }
-    virtual void toNotify(ref<Widget> newWidget) { InheritedElement::notify(newWidget); }
-    virtual void toUpdate(ref<Widget> newWidget) { InheritedElement::update(newWidget); }
-    virtual void toVisitDescendant(Function<bool(ref<Element>)> fn) { InheritedElement::visitDescendant(fn); }
-    virtual void toVisitAncestor(Function<bool(ref<Element>)> fn) { InheritedElement::visitAncestor(fn); }
 };
 
 class _SchedulerState : public State<Scheduler>
@@ -116,5 +111,5 @@ bool SchedulerProxy::updateShouldNotify(ref<InheritedWidget> oldWidget)
 
 ref<Element> SchedulerProxy::createElement()
 {
-    return Object::create<SchedulerElement>(Object::cast<>(this));
+    return Object::create<SchedulerElement>(self());
 }

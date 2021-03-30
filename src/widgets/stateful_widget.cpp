@@ -14,5 +14,5 @@ void State<StatefulWidget>::setState(Function<void()> fn)
 
 ref<Element> StatefulWidget::createElement()
 {
-    return Object::create<StatefulElement>(Object::cast<>(this));
+    return Object::create<StatefulElement>(self());
 }

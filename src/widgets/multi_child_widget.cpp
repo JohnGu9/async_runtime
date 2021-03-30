@@ -8,11 +8,11 @@ ref<MultiChildWidget> MultiChildWidget::fromChildren(List<ref<Widget>> children,
 
 ref<Element> MultiChildWidget::createElement()
 {
-    return Object::create<MultiChildElement>(Object::cast<>(this));
+    return Object::create<MultiChildElement>(self());
 }
 
 ref<MultiChildWidget> MultiChildWidget::setChildren(List<ref<Widget>> children)
 {
     this->_children = std::forward<List<ref<Widget>>>(children);
-    return Object::cast<>(this);
+    return self();
 }

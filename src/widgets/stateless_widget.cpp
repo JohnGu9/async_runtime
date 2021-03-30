@@ -3,5 +3,5 @@
 
 ref<Element> StatelessWidget::createElement()
 {
-    return Object::create<StatelessElement>(Object::cast<>(this));
+    return Object::create<StatelessElement>(self());
 }

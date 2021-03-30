@@ -7,13 +7,13 @@ NotificationListenerElement::NotificationListenerElement(ref<NotificationListene
 
 void NotificationListenerElement::update(ref<Widget> newWidget)
 {
-    this->_notificationListenerWidget = newWidget->cast<NotificationListener>().assertNotNull();
+    this->_notificationListenerWidget = newWidget->covariant<NotificationListener>();
     StatelessElement::update(newWidget);
 }
 
 void NotificationListenerElement::notify(ref<Widget> newWidget)
 {
-    this->_notificationListenerWidget = newWidget->cast<NotificationListener>().assertNotNull();
+    this->_notificationListenerWidget = newWidget->covariant<NotificationListener>();
     StatelessElement::notify(newWidget);
 }
 

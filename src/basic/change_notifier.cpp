@@ -3,5 +3,5 @@
 void ChangeNotifier::notifyListeners()
 {
     for (auto const &fn : this->_listeners)
-        fn(Object::cast<>(this));
+        fn(self());
 }

@@ -32,7 +32,7 @@ File::~File()
 
 ref<Future<bool>> File::exists()
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Completer<bool>> completer = Object::create<Completer<bool>>(_state.get());
     this->post([self, completer] { completer->complete(self->existsSync()); });
     return completer->future;
@@ -40,7 +40,7 @@ ref<Future<bool>> File::exists()
 
 ref<Future<int>> File::remove()
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Completer<int>> completer = Object::create<Completer<int>>(_state.get());
     this->post([self, completer] { completer->complete(self->removeSync()); });
     return completer->future;
@@ -48,7 +48,7 @@ ref<Future<int>> File::remove()
 
 ref<Future<long long>> File::size()
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Completer<long long>> completer = Object::create<Completer<long long>>(_state.get());
     this->post([self, completer] { completer->complete(self->sizeSync()); });
     return completer->future;
@@ -81,7 +81,7 @@ long long File::sizeSync()
 
 ref<Future<void>> File::append(String str)
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->post([self, completer, str] {
         {
@@ -97,7 +97,7 @@ ref<Future<void>> File::append(String str)
 
 ref<Future<void>> File::overwrite(String str)
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->post([self, completer, str] {
         {
@@ -113,7 +113,7 @@ ref<Future<void>> File::overwrite(String str)
 
 ref<Future<void>> File::clear()
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->post([self, completer] {
         {
@@ -128,7 +128,7 @@ ref<Future<void>> File::clear()
 
 ref<Future<String>> File::read()
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Completer<String>> completer = Object::create<Completer<String>>(_state.get());
     this->post([self, completer] {
         std::string str;
@@ -149,7 +149,7 @@ ref<Future<String>> File::read()
 
 ref<Stream<String>> File::readAsStream(size_t segmentationLength)
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
     this->post([self, stream, segmentationLength] {
         {
@@ -174,7 +174,7 @@ ref<Stream<String>> File::readAsStream(size_t segmentationLength)
 
 ref<Stream<String>> File::readWordAsStream()
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
     this->post([self, stream] {
         String str;
@@ -192,7 +192,7 @@ ref<Stream<String>> File::readWordAsStream()
 
 ref<Stream<String>> File::readLineAsStream()
 {
-    ref<File> self = Object::cast<>(this);
+    ref<File> self = self();
     ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
     this->post([self, stream] {
         {

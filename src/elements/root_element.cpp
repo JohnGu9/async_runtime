@@ -13,7 +13,7 @@ static inline void shutdownInfo()
 struct _MockWidget : Widget
 {
     _MockWidget() : Widget(nullptr) {}
-    ref<Element> createElement() override { return Object::create<RootElement>(Object::cast<>(this)); }
+    ref<Element> createElement() override { return Object::create<RootElement>(self()); }
 };
 
 /// Root Element
@@ -29,7 +29,7 @@ void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement d
 
 void RootElement::attach()
 {
-    this->_child = Object::create<RootInheritedWidget>(this->_child, Object::cast<>(this));
+    this->_child = Object::create<RootInheritedWidget>(this->_child, self());
     this->_inheritances = {};
     this->attachElement(this->_child->createElement());
 }
@@ -63,7 +63,7 @@ void RootElement::visitAncestor(Function<bool(ref<Element>)>) {}
 Logger::Handler RootElement::getStdoutHandler()
 {
     ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState().assertNotNull();
-    ref<StdoutLoggerState> state = currentState->cast<StdoutLoggerState>().assertNotNull();
+    ref<StdoutLoggerState> state = currentState->covariant<StdoutLoggerState>();
     return state->_handler;
 }
 
@@ -80,7 +80,7 @@ void RootElement::scheduleRootWidget()
     {
         std::unique_lock<std::mutex> lock(this->_mutex);
         {
-            auto self = Object::cast<>(this);
+            auto self = self();
             thread = Thread([self] {
                 self->_console();
                 shutdownInfo();

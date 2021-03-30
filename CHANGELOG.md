@@ -3,3 +3,4 @@
 ## Break Change
 - [ref] only refer non-null object
 - [option] can refer null object
+- [weakref] new api

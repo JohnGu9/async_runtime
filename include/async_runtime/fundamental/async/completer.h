@@ -52,13 +52,13 @@ public:
 
     virtual void complete()
     {
-        ref<Completer<void> > self = Object::cast<>(this);
+        ref<Completer<void> > self = self();
         this->_callbackHandler->post([self] { self->completeSync(); });
     }
 
     void cancel() override
     {
-        ref<Completer<void> > self = Object::cast<>(this);
+        ref<Completer<void> > self = self();
         this->_callbackHandler->post([self] {
             if (self->_isCompleted)
                 return false; // already completed
@@ -109,19 +109,19 @@ public:
 
     virtual void complete(const T &value)
     {
-        ref<Completer<T> > self = Object::cast<>(this);
+        ref<Completer<T> > self = self();
         this->_callbackHandler->post([self](const T &value) { self->completeSync(value); }, std::move(value));
     }
 
     virtual void complete(T &&value)
     {
-        ref<Completer<T> > self = Object::cast<>(this);
+        ref<Completer<T> > self = self();
         this->_callbackHandler->post([self](const T &value) { self->completeSync(value); }, std::move(value));
     }
 
     void cancel() override
     {
-        ref<Completer<T> > self = Object::cast<>(this);
+        ref<Completer<T> > self = self();
         this->_callbackHandler->post([self] {
             if (!self->_isCompleted)
                 self->_isCancelled = true;

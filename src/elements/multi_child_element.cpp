@@ -14,7 +14,7 @@ void MultiChildElement::attach()
         ref<Widget> &widget = children[i];
         this->_childrenElements->push_back(widget->createElement());
         ref<Element> &childElement = this->_childrenElements[i];
-        childElement->parent = Object::cast<>(this);
+        childElement->parent = self();
         childElement->attach();
     }
 }
@@ -36,7 +36,7 @@ void MultiChildElement::build()
             {
                 this->_childrenElements[i]->detach();
                 this->_childrenElements[i] = widget->createElement();
-                this->_childrenElements[i]->parent = Object::cast<>(this);
+                this->_childrenElements[i]->parent = self();
                 this->_childrenElements[i]->attach();
             }
         }
@@ -44,7 +44,7 @@ void MultiChildElement::build()
         {
             this->_childrenElements->push_back(widget->createElement());
             ref<Element> &childElement = this->_childrenElements[i];
-            childElement->parent = Object::cast<>(this);
+            childElement->parent = self();
             childElement->attach();
         }
     }
@@ -87,7 +87,7 @@ void MultiChildElement::notify(ref<Widget> newWidget)
                 element->detach();
                 this->_childrenElements[i] = widget->createElement();
                 element = this->_childrenElements[i];
-                element->parent = Object::cast<>(this);
+                element->parent = self();
                 element->attach();
             }
         }
@@ -95,7 +95,7 @@ void MultiChildElement::notify(ref<Widget> newWidget)
         {
             this->_childrenElements->push_back(widget->createElement());
             ref<Element> &childElement = this->_childrenElements[i];
-            childElement->parent = Object::cast<>(this);
+            childElement->parent = self();
             childElement->attach();
         }
     }

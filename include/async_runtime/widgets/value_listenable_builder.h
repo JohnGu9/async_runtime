@@ -41,7 +41,7 @@ public:
     void initState() override
     {
         super::initState();
-        ref<ValueListenableBuilder<T>::_State> self = Object::cast<>(this);
+        ref<ValueListenableBuilder<T>::_State> self = self();
         this->_valueListenable = this->getWidget()->valueListenable;
         this->_valueListenable->addListener(_listener);
     }

@@ -6,7 +6,7 @@ SingleChildElement::SingleChildElement(ref<Widget> widget) : Element(widget) {}
 void SingleChildElement::attachElement(ref<Element> element)
 {
     this->_childElement = element;
-    this->_childElement->parent = Object::cast<>(this);
+    this->_childElement->parent = self();
     this->_childElement->attach();
 }
 
@@ -14,11 +14,12 @@ void SingleChildElement::reattachElement(ref<Element> element)
 {
     this->_childElement->detach();
     this->_childElement = element;
-    this->_childElement->parent = Object::cast<>(this);
+    this->_childElement->parent = self();
     this->_childElement->attach();
 }
 
 void SingleChildElement::detachElement()
 {
     this->_childElement->detach();
+    Object::detach(this->_childElement);
 }

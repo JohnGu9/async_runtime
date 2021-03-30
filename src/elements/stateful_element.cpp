@@ -38,7 +38,7 @@ void StatefulElement::attach()
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_state->_mounted == false && "This [State] class mount twice is not allowed. User should not reuse [State] class or manually call [initState]");
     Element::attach();
-    this->_state->_element = Object::cast<>(this);
+    this->_state->_element = self();
     this->_state->_mounted = true;
     this->_state->initState();
     this->_state->_context = this->_state->_element; // context only available after initState
@@ -55,9 +55,9 @@ void StatefulElement::detach()
     this->detachElement();
     this->_state->dispose();
     this->_state->_mounted = false;
-    this->_state->_context = lateref<BuildContext>();
-    this->_state->_element = lateref<StatefulElement>();
-    this->_state = lateref<State<>>();
+    Object::detach(this->_state->_context);
+    Object::detach(this->_state->_element);
+    Object::detach(this->_state);
     Element::detach();
 }
 

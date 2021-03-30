@@ -41,7 +41,7 @@ public:
 
     virtual ref<Stream<void>> sink()
     {
-        ref<Stream<void>> self = Object::cast<>(this);
+        ref<Stream<void>> self = self();
         this->_callbackHandler->post([self] {
             assert(!self->_isClosed);
             if (self->_listener)
@@ -54,7 +54,7 @@ public:
 
     virtual ref<StreamSubscription<void>> listen(Function<void()> fn)
     {
-        ref<Stream<void>> self = Object::cast<>(this);
+        ref<Stream<void>> self = self();
         this->_callbackHandler->post([self, fn] {
             assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
             self->_listener = fn;
@@ -70,7 +70,7 @@ public:
     virtual ref<Stream<void>> onClose(Function<void()> fn)
     {
         this->_onClose->future->than(fn);
-        return Object::cast<>(this);
+        return self();
     }
 
     virtual ref<Future<void>> asFuture()
@@ -80,7 +80,7 @@ public:
 
     void close() override
     {
-        ref<Stream<void>> self = Object::cast<>(this);
+        ref<Stream<void>> self = self();
         this->_callbackHandler->post([self] {
             assert(!self->_isClosed);
             if (self->_sinkCounter == 0)
@@ -123,7 +123,7 @@ public:
 
     virtual ref<Stream<T>> sink(const T &value)
     {
-        ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = self();
         this->_callbackHandler->post([self, value] {
             assert(!self->_isClosed);
             if (self->_listener)
@@ -136,7 +136,7 @@ public:
 
     virtual ref<Stream<T>> sink(T &&value)
     {
-        ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = self();
         this->_callbackHandler->post([self, value] {
             assert(!self->_isClosed);
             if (self->_listener)
@@ -149,7 +149,7 @@ public:
 
     virtual ref<StreamSubscription<T>> listen(Function<void(T)> fn)
     {
-        ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = self();
         assert(!static_cast<bool>(this->_listener) && "Single listener stream can't have more than one listener");
         this->_callbackHandler->post([self, fn] {
             assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
@@ -166,7 +166,7 @@ public:
     virtual ref<Stream<T>> onClose(Function<void()> fn)
     {
         this->_onClose->future->than(fn);
-        return Object::cast<>(this);
+        return self();
     }
 
     virtual ref<Future<void>> asFuture()
@@ -176,7 +176,7 @@ public:
 
     void close() override
     {
-        ref<Stream<T>> self = Object::cast<>(this);
+        ref<Stream<T>> self = self();
         this->_callbackHandler->post([self] {
             assert(not self->_isClosed);
             self->_isClosed = true;

@@ -10,7 +10,7 @@ void Element::attach()
     this->_inheritances = parent->_inheritances;
     lateref<Key> key;
     if (this->widget->key.isNotNull(key))
-        key->setElement(Object::cast<>(this));
+        key->setElement(self());
 }
 
 void Element::detach()

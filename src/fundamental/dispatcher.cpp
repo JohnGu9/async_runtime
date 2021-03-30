@@ -31,7 +31,7 @@ void AsyncDispatcher::post(Function<void()> fn) { this->_threadPool->post(fn.toS
 
 void AsyncDispatcher::post(Function<void(RunOnMainThread runner)> fn)
 {
-    ref<AsyncDispatcher> self = Object::cast<>(this);
+    ref<AsyncDispatcher> self = self();
     this->_threadPool->post(
         fn.toStdFunction(),
         [self](Function<void()> job) { self->run(job); });
