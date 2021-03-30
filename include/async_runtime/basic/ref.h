@@ -191,8 +191,7 @@ public:
         }
         else
         {
-            static const std::string massage = "";
-            throw std::runtime_error(massage + typeid(*this).name() + " assert not null on a null ref. ");
+            throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
         }
     }
 
@@ -279,8 +278,7 @@ ref<T> option<T>::assertNotNull() const
     }
     else
     {
-        static const std::string massage = "";
-        throw std::runtime_error(massage + typeid(*this).name() + " assert not null on a null ref. ");
+        throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
     }
 }
 

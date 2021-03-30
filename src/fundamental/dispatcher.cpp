@@ -39,7 +39,7 @@ void AsyncDispatcher::post(Function<void(RunOnMainThread runner)> fn)
 
 AsyncDispatcher::~AsyncDispatcher()
 {
-    assert((this->_ownThreadPool == nullptr || this->_ownThreadPool.assertNotNull()->isActive()) && "Detect memory leak from Dispatcher. Call [dispose]");
+    assert((this->_ownThreadPool == nullptr || !this->_ownThreadPool.assertNotNull()->isActive()) && "Detect memory leak from Dispatcher. Call [dispose]");
 }
 
 void AsyncDispatcher::dispose()
