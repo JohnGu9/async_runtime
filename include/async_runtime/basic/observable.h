@@ -3,46 +3,44 @@
 #include "../object.h"
 
 template <typename T>
-class Observable : public virtual option<T>
+class observable : public virtual option<T>
 {
+    static void _invalid() {}
 
 public:
-    Observable() : option<T>(nullptr) {}
-    Observable(std::nullptr_t) : option<T>(nullptr) {}
-    template <typename R>
-    Observable(option<R> ref) : option<T>(ref) {}
-    template <typename R>
-    Observable(Observable<R> other) : option<T>(other) {}
+    observable() : option<T>(nullptr) {}
+    observable(std::nullptr_t) : option<T>(nullptr) {}
 
-    Function<void()> willChange;
-    Function<void()> didChanged;
+    template <typename R>
+    observable(option<R> ref) : option<T>(ref) {}
+    template <typename R>
+    observable(observable<R> other) : option<T>(other) {}
+
+    Function<void()> willChange = _invalid;
+    Function<void()> didChanged = _invalid;
 
     T *operator->() const { return option<T>::operator->(); }
 
     template <typename R>
-    Observable<T> &operator=(Observable<R> other)
+    observable<T> &operator=(observable<R> other)
     {
-        if (willChange != nullptr)
-            willChange();
+        willChange();
         option<T>::operator=(other);
-        if (didChanged != nullptr)
-            didChanged();
+        didChanged();
         return *this;
     }
 
     template <typename R>
-    Observable<T> &operator=(option<R> ref)
+    observable<T> &operator=(option<R> ref)
     {
-        if (willChange != nullptr)
-            willChange();
+        willChange();
         ref<T>::operator=(ref);
-        if (didChanged != nullptr)
-            didChanged();
+        didChanged();
         return *this;
     }
 
     template <typename R>
-    bool operator==(Observable<R> other)
+    bool operator==(observable<R> other)
     {
         return Object::identical(*this, other);
     }

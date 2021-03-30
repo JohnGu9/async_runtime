@@ -14,7 +14,7 @@ class ref;
 // non-nullable object
 template <typename T>
 class lateref;
-// ref dead lock
+// weakref for nullable object
 template <typename T>
 class weakref;
 
@@ -289,7 +289,6 @@ namespace std
     template <typename T>
     struct hash<::option<T>>
     {
-
         std::size_t operator()(const ::option<T> &other) const
         {
             static const auto hs = hash<std::shared_ptr<T>>();
