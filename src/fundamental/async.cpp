@@ -1,5 +1,10 @@
 #include "async_runtime/fundamental/async.h"
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <windows.h>
+#include <processthreadsapi.h>
+#endif
+
 ////////////////////////////
 //
 // ThreadPool implement
@@ -50,8 +55,7 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
         std::string debugThreadName = ThreadPool::thisThreadName.toStdString();
         std::string debugThreadPoolRuntimeType = this->runtimeType().toStdString();
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        // Windows not support thread name yet for now
-        // yeah, I'm lazy
+        SetThreadDescription(GetCurrentThread(), ThreadPool::thisThreadName.c_str());
 #elif __APPLE__
         pthread_setname_np(ThreadPool::thisThreadName.c_str());
 #elif __linux__
