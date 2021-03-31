@@ -30,14 +30,13 @@ ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
 
 ThreadPool::~ThreadPool(){
 #ifdef DEBUG
-    {
-        option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
-        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
-    }
-    {
-        std::unique_lock<std::mutex> lock(_queueMutex);
-        assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
-    }
+    {option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
+}
+{
+    std::unique_lock<std::mutex> lock(_queueMutex);
+    assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+}
 #endif
 }
 
@@ -151,7 +150,7 @@ AutoReleaseThreadPool::~AutoReleaseThreadPool()
 {
     _stop = true;
     _condition.notify_all();
-    if (not _join)
+    if (!_join)
     {
         for (std::thread &worker : _workers)
             worker.detach();
@@ -347,6 +346,6 @@ String AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::ConnectionSta
         return "AsyncSnapshot<>::ConnectionState::done";
     default:
         assert(false && "The enum doesn't exists. ");
-        break;
+        return "The enum doesn't exists";
     }
 }

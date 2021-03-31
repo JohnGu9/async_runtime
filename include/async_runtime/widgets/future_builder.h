@@ -29,7 +29,7 @@ public:
     {
         super::initState();
         ref<Future<T>> future = this->getWidget()->future;
-        if (not AsyncSnapshot<>::getCompletedFromFuture(future))
+        if (!AsyncSnapshot<>::getCompletedFromFuture(future))
         {
             ref<FutureBuilder<T>::_State> self = self();
             future->than([self, future] {
@@ -43,7 +43,7 @@ public:
     {
         ref<FutureBuilder<T>> old = oldWidget->covariant<FutureBuilder<T>>();
         ref<Future<T>> future = this->getWidget()->future;
-        if (old->future != future && (not AsyncSnapshot<>::getCompletedFromFuture(future)))
+        if (old->future != future && !AsyncSnapshot<>::getCompletedFromFuture(future))
         {
             ref<FutureBuilder<T>::_State> self = self();
             future->than([self, future] {

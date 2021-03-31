@@ -43,10 +43,13 @@ private:
     lateref<StatefulElement> _element;
     lateref<BuildContext> _context;
 
+#ifdef _WIN32
+public:
+#else
 protected:
+#endif
     // @immutable
     void setState(Function<void()> fn);
-
     const bool &mounted = _mounted;
     const ref<BuildContext> &context = _context;
 };

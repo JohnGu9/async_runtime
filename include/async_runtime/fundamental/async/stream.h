@@ -178,7 +178,7 @@ public:
     {
         ref<Stream<T>> self = self();
         this->_callbackHandler->post([self] {
-            assert(not self->_isClosed);
+            assert(!self->_isClosed);
             self->_isClosed = true;
             if (self->_cache == nullptr)
                 self->_onClose->completeSync();

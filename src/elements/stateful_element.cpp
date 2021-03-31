@@ -22,7 +22,7 @@ String StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::Value 
         return "StatefulElement::_LifeCycle::unmount";
     default:
         assert(false && "The enum doesn't exists. ");
-        break;
+        return "The enum doesn't exists";
     }
 }
 

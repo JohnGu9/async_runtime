@@ -38,6 +38,7 @@ public:
     Function<void(ref<Listenable>)> _listener =
         [this](option<Listenable> listenable) { this->setState([this] {}); };
 
+
     void initState() override
     {
         super::initState();

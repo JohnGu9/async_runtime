@@ -25,7 +25,11 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/fundamental fundamental_src
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/elements elements_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/widgets widgets_src)
 
-
+if(MSVC) # in msvc, async_runtime not support shared library mode
+add_library(async_runtime 
+    ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+else()
 add_library(async_runtime SHARED 
     ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES})

@@ -26,7 +26,7 @@ public:
     static Handler of(ref<BuildContext> context);
 
     // support hot switch
-    static ref<Widget> stdout(ref<Widget> child, option<Key> key = nullptr);
+    static ref<Widget> cout(ref<Widget> child, option<Key> key = nullptr);
     static ref<Widget> file(String path, ref<Widget> child, option<Key> key = nullptr);
     static ref<Widget> block(ref<Widget> child, option<Key> key = nullptr);
 

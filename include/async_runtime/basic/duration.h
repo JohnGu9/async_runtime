@@ -85,7 +85,7 @@ public:
     Duration operator*(double factor) const
     {
         double result = factor * _duration;
-        return Duration(std::round(result));
+        return Duration(std::llround(result));
     }
 
     /**
@@ -99,7 +99,7 @@ public:
         // By doing the check here instead of relying on "~/" below we get the
         // exception even with dart2js.
         assert(quotient != 0);
-        return Duration(std::round(_duration / quotient));
+        return Duration(std::llround(_duration / quotient));
     }
 
     /**

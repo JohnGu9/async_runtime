@@ -164,7 +164,7 @@ bool Logger::updateShouldNotify(ref<InheritedWidget> oldWidget)
     return old->_handler != this->_handler;
 }
 
-ref<Widget> Logger::stdout(ref<Widget> child, option<Key> key)
+ref<Widget> Logger::cout(ref<Widget> child, option<Key> key)
 {
     return Object::create<_Logger>(child, "", key);
 }

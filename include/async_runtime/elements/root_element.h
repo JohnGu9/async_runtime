@@ -31,7 +31,7 @@ protected:
     std::condition_variable _condition;
 
     lateref<Widget> _child;
-    lateref<GlobalKey> _stdoutKey;
+    lateref<GlobalKey> _coutKey;
     std::atomic_bool _consoleStop;
     virtual void _console();
 };

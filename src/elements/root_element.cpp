@@ -19,8 +19,8 @@ struct _MockWidget : Widget
 /// Root Element
 RootElement::RootElement(ref<Widget> widget) : _consoleStop(false), SingleChildElement(Object::create<_MockWidget>())
 {
-    this->_stdoutKey = Object::create<GlobalKey>();
-    this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _stdoutKey), "RootThread");
+    this->_coutKey = Object::create<GlobalKey>();
+    this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _coutKey), "RootThread");
 }
 
 void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
@@ -62,14 +62,14 @@ void RootElement::visitAncestor(Function<bool(ref<Element>)>) {}
 
 Logger::Handler RootElement::getStdoutHandler()
 {
-    ref<State<StatefulWidget>> currentState = this->_stdoutKey->getCurrentState().assertNotNull();
+    ref<State<StatefulWidget>> currentState = this->_coutKey->getCurrentState().assertNotNull();
     ref<StdoutLoggerState> state = currentState->covariant<StdoutLoggerState>();
     return state->_handler;
 }
 
 Scheduler::Handler RootElement::getMainHandler()
 {
-    ref<BuildContext> context = this->_stdoutKey->getCurrentContext().assertNotNull();
+    ref<BuildContext> context = this->_coutKey->getCurrentContext().assertNotNull();
     return Scheduler::of(context);
 }
 

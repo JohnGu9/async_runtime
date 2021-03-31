@@ -12,7 +12,7 @@ class String
     friend std::ostream &operator<<(std::ostream &os, const String &dt);
     friend std::istream &operator>>(std::istream &os, String &str);
     friend String getline(std::istream &is);
-    friend class std::hash<String>;
+    friend struct std::hash<String>;
 
     std::shared_ptr<const std::string> _ptr;
     String(const std::shared_ptr<const std::string> other);
