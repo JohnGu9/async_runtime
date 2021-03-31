@@ -8,9 +8,9 @@
 
 class Timer : public Dispatcher
 {
-    struct _CreateOnly
+    struct _FactoryOnly
     {
-        constexpr _CreateOnly() {}
+        constexpr _FactoryOnly() {}
     };
 
 public:
@@ -19,8 +19,8 @@ public:
     static ref<Timer> delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> fn);
     static ref<Timer> periodic(ref<ThreadPool> callbackHandler, Duration interval, Function<void()> fn);
 
-    Timer(State<StatefulWidget> *state, const _CreateOnly &);
-    Timer(ref<ThreadPool> callbackHandler, const _CreateOnly &);
+    Timer(State<StatefulWidget> *state, const _FactoryOnly &);
+    Timer(ref<ThreadPool> callbackHandler, const _FactoryOnly &);
 
     virtual ~Timer();
     virtual void cancel();

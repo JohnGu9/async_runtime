@@ -2,15 +2,15 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
 
-Timer::Timer(State<StatefulWidget> *state, const _CreateOnly &)
+Timer::Timer(State<StatefulWidget> *state, const _FactoryOnly &)
     : Dispatcher(state), _clear(false) {}
 
-Timer::Timer(ref<ThreadPool> callbackHandler, const _CreateOnly &)
+Timer::Timer(ref<ThreadPool> callbackHandler, const _FactoryOnly &)
     : Dispatcher(callbackHandler), _clear(false) {}
 
 ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn)
 {
-    static const _CreateOnly lock = _CreateOnly();
+    static const _FactoryOnly lock = _FactoryOnly();
     ref<Timer> timer = Object::create<Timer>(state, lock);
     timer->_setTimeout(duration, fn);
     return timer;
@@ -18,7 +18,7 @@ ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Functio
 
 ref<Timer> Timer::periodic(State<StatefulWidget> *state, Duration interval, Function<void()> fn)
 {
-    static const _CreateOnly lock = _CreateOnly();
+    static const _FactoryOnly lock = _FactoryOnly();
     ref<Timer> timer = Object::create<Timer>(state, lock);
     timer->_setInterval(interval, fn);
     return timer;
@@ -26,14 +26,14 @@ ref<Timer> Timer::periodic(State<StatefulWidget> *state, Duration interval, Func
 
 ref<Timer> Timer::delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> fn)
 {
-    ref<Timer> timer = Object::create<Timer>(callbackHandler, _CreateOnly());
+    ref<Timer> timer = Object::create<Timer>(callbackHandler, _FactoryOnly());
     timer->_setTimeout(duration, fn);
     return timer;
 }
 
 ref<Timer> Timer::periodic(ref<ThreadPool> callbackHandler, Duration interval, Function<void()> fn)
 {
-    ref<Timer> timer = Object::create<Timer>(callbackHandler, _CreateOnly());
+    ref<Timer> timer = Object::create<Timer>(callbackHandler, _FactoryOnly());
     timer->_setInterval(interval, fn);
     return timer;
 }
