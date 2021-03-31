@@ -3,12 +3,15 @@
 #include "async.h"
 #include "dispatcher.h"
 
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include <httplib.h>
+
 namespace Http
 {
     class Client;
     class Server;
-    class Request;
-    class Response;
+    using Request = httplib::Request;
+    using Response = httplib::Response;
 
 }; // namespace Http
 
@@ -22,20 +25,4 @@ class Http::Server : public Dispatcher
 {
 public:
     Server(State<StatefulWidget> *state) : Dispatcher(state) {}
-
-protected:
-    option<Stream<Http::Response> > _stream;
-
-public:
-    const option<Stream<Http::Response> > &stream = _stream;
-};
-
-class Http::Request : public Object
-{
-public:
-};
-
-class Http::Response : public Object
-{
-public:
 };
