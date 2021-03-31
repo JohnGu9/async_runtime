@@ -10,9 +10,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
-message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+message(STATUS "Using OpenSSL version ${OPENSSL_VERSION}")
 message(STATUS "Using OpenSSL include ${OPENSSL_INCLUDE_DIR}")
-message(STATUS "Using OpenSSL librarys ${OPENSSL_LIBRARIES}")
+message(STATUS "Using OpenSSL libraries ${OPENSSL_LIBRARIES}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/vendor/cpp-httplib)
 

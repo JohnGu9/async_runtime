@@ -120,10 +120,7 @@ ref<T> Object::covariant()
     if (T *castedPointer = dynamic_cast<T *>(this))
         return Object::cast<>(castedPointer);
     else
-    {
-        static const std::string massage = "Invail type covariant from [";
-        throw std::runtime_error(massage + typeid(*this).name() + "] to [" + typeid(T).name() + "]");
-    }
+        throw std::runtime_error(std::string("Invail type covariant from [") + typeid(*this).name() + "] to [" + typeid(T).name() + "]");
 }
 
 void print(option<Object> object);

@@ -108,7 +108,7 @@ public:
         ref<_Logger> old = oldWidget->covariant<_Logger>();
         this->_handler->dispose();
 
-        if (not this->getWidget()->path)
+        if (this->getWidget()->path == nullptr)
             this->_handler = Object::create<_LoggerBlocker>(this);
         else if (this->getWidget()->path.isEmpty())
             this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
@@ -122,7 +122,8 @@ public:
     {
         if (this->_handler != nullptr)
             this->_handler->dispose();
-        if (not this->getWidget()->path)
+
+        if (this->getWidget()->path == nullptr)
             this->_handler = Object::create<_LoggerBlocker>(this);
         else if (this->getWidget()->path.isEmpty())
             this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
@@ -170,7 +171,7 @@ ref<Widget> Logger::stdout(ref<Widget> child, option<Key> key)
 
 ref<Widget> Logger::file(String path, ref<Widget> child, option<Key> key)
 {
-    assert(!path.isEmpty() && "path can't be empty");
+    assert(path.isNotEmpty() && "path can't be empty");
     return Object::create<_Logger>(child, path, key);
 }
 
