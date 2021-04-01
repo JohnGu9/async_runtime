@@ -13,7 +13,7 @@
 /// And it will behave like a nullsafety object and with some extra feature
 ///
 ///
-/// example: 
+/// example:
 ///
 /// ref<String> string = "This is a non-null String object"; // directly init ref<String> from char[]
 ///
@@ -173,4 +173,24 @@ namespace std
             return hs(static_cast<std::string>(*other));
         }
     };
+
+    template <>
+    struct hash<::option<String>>
+    {
+        std::size_t operator()(const ::option<String> &other) const
+        {
+            lateref<String> str;
+            if (other.isNotNull(str))
+            {
+                static const auto hs = hash<::ref<String>>();
+                return hs(str);
+            }
+            else
+            {
+                static const auto result = hash<std::shared_ptr<String>>()(nullptr);
+                return result;
+            }
+        }
+    };
+
 };
