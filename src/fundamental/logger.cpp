@@ -8,11 +8,11 @@ class _Logger : public StatefulWidget
     friend class _LoggerState;
 
 public:
-    _Logger(ref<Widget> child, String path, option<Key> key)
+    _Logger(ref<Widget> child, option<String> path, option<Key> key)
         : child(child), path(path), StatefulWidget(key) {}
     ref<State<StatefulWidget>> createState() override;
     ref<Widget> child;
-    String path;
+    option<String> path;
 };
 
 class _LoggerState : public State<_Logger>
@@ -25,7 +25,7 @@ public:
     public:
         _StdoutLoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) { assert(state); }
 
-        ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(ref<String> str) override
         {
             return async<bool>(this->_state.get(), [str] {
                 std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
@@ -33,7 +33,7 @@ public:
             });
         }
 
-        ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(ref<String> str) override
         {
             return async<bool>(this->_state.get(), [str] {
                 info_print(str);
@@ -49,15 +49,15 @@ public:
         ref<File> _file;
 
     public:
-        _FileLoggerHandler(State<StatefulWidget> *state, String path)
+        _FileLoggerHandler(State<StatefulWidget> *state, ref<String> path)
             : _file(File::fromPath(state, path)) { _file->clear(); }
 
-        ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(ref<String> str) override
         {
             return this->_file->append(str)->than<bool>([] { return true; });
         }
 
-        ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(ref<String> str) override
         {
             return this->_file->append(str + '\n')->than<bool>([] { return true; });
         }
@@ -74,12 +74,12 @@ public:
 
     public:
         _LoggerProxyHandler(Logger::Handler proxyTarget) : _proxyTarget(proxyTarget), LoggerHandler() {}
-        ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(ref<String> str) override
         {
             return this->_proxyTarget->write(str);
         }
 
-        ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(ref<String> str) override
         {
             return this->_proxyTarget->writeLine(str);
         }
@@ -93,11 +93,11 @@ public:
 
     public:
         _LoggerBlocker(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}
-        ref<Future<bool>> write(String str) override
+        ref<Future<bool>> write(ref<String> str) override
         {
             return Future<bool>::value(this->_state.get(), true);
         }
-        ref<Future<bool>> writeLine(String str) override
+        ref<Future<bool>> writeLine(ref<String> str) override
         {
             return Future<bool>::value(this->_state.get(), true);
         }
@@ -110,12 +110,16 @@ public:
 
     void initState() override
     {
-        if (this->getWidget()->path == nullptr)
-            this->_handler = Object::create<_LoggerBlocker>(this);
-        else if (this->getWidget()->path.isEmpty())
-            this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
+        lateref<String> path;
+        if (this->getWidget()->path.isNotNull(path))
+        {
+            if (path->isEmpty())
+                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
+            else
+                this->_handler = Object::create<_FileLoggerHandler>(this, path);
+        }
         else
-            this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->path);
+            this->_handler = Object::create<_LoggerBlocker>(this);
     }
 
     void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
@@ -124,12 +128,16 @@ public:
         {
             this->_handler->dispose();
 
-            if (this->getWidget()->path == nullptr)
-                this->_handler = Object::create<_LoggerBlocker>(this);
-            else if (this->getWidget()->path.isEmpty())
-                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
+            lateref<String> path;
+            if (this->getWidget()->path.isNotNull(path))
+            {
+                if (path->isEmpty())
+                    this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
+                else
+                    this->_handler = Object::create<_FileLoggerHandler>(this, path);
+            }
             else
-                this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->path);
+                this->_handler = Object::create<_LoggerBlocker>(this);
         }
 
         super::didWidgetUpdated(oldWidget);
@@ -171,9 +179,9 @@ ref<Widget> Logger::cout(ref<Widget> child, option<Key> key)
     return Object::create<_Logger>(child, "", key);
 }
 
-ref<Widget> Logger::file(String path, ref<Widget> child, option<Key> key)
+ref<Widget> Logger::file(ref<String> path, ref<Widget> child, option<Key> key)
 {
-    assert(path.isNotEmpty() && "path can't be empty");
+    assert(path->isNotEmpty() && "path can't be empty");
     return Object::create<_Logger>(child, path, key);
 }
 

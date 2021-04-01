@@ -8,7 +8,7 @@ const List<StatefulElement::_LifeCycle::Value>
         StatefulElement::_LifeCycle::building,
         StatefulElement::_LifeCycle::unmount};
 
-String StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::Value value)
+ref<String> StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::Value value)
 {
     switch (value)
     {

@@ -14,12 +14,12 @@
 // source from https://github.com/progschj/ThreadPool
 class ThreadPool : public Object, public Disposable
 {
-    static Set<String> _namePool;
+    static Set<ref<String>> _namePool;
 
 public:
-    static thread_local String thisThreadName;
+    static thread_local ref<String> thisThreadName;
 
-    ThreadPool(size_t threads, String name = nullptr);
+    ThreadPool(size_t threads, option<String> name = nullptr);
     virtual ~ThreadPool();
 
     template <class F, class... Args>
@@ -27,7 +27,7 @@ public:
     template <class F, class... Args>
     auto microTask(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
-    virtual String childrenThreadName(size_t id);
+    virtual ref<String> childrenThreadName(size_t id);
     virtual size_t threads() const;
     virtual bool isActive();
     void dispose() override; // join thread
@@ -36,7 +36,7 @@ protected:
     virtual std::function<void()> workerBuilder(size_t);
     virtual void unregisterName();
 
-    String _name;
+    ref<String> _name;
 
     // need to keep track of threads so we can join them
     std::vector<Thread> _workers;
@@ -51,7 +51,7 @@ protected:
     bool _stop;
 
 public:
-    const String &name = _name;
+    const ref<String> &name = _name;
 };
 
 // add new work item to the pool
@@ -67,7 +67,7 @@ auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop && !ThreadPool::thisThreadName.startsWith(this->name))
+        if (_stop && !ThreadPool::thisThreadName->startsWith(this->name))
         {
             assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();
@@ -92,7 +92,7 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop && !(ThreadPool::thisThreadName).startsWith(this->name))
+        if (_stop && !(ThreadPool::thisThreadName)->startsWith(this->name))
         {
             assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
             (*task)();
@@ -111,8 +111,8 @@ class AutoReleaseThreadPool : public ThreadPool
     };
 
 public:
-    static ref<AutoReleaseThreadPool> factory(size_t threads = 1, String name = nullptr);
-    AutoReleaseThreadPool(_FactoryOnly, size_t threads = 1, String name = nullptr);
+    static ref<AutoReleaseThreadPool> factory(size_t threads = 1, option<String> name = nullptr);
+    AutoReleaseThreadPool(_FactoryOnly, size_t threads = 1, option<String> name = nullptr);
     virtual ~AutoReleaseThreadPool();
     void dispose() override;
     virtual void close();

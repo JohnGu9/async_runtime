@@ -16,7 +16,7 @@ public:
             done
         };
         static const List<Value> values;
-        static String toString(Value value);
+        static ref<String> toString(Value value);
     };
 
     virtual bool hasData() = 0;

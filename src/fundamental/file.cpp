@@ -12,7 +12,7 @@ ref<ThreadPool> File::sharedThreadPool()
     return sharedThreadPool;
 }
 
-File::File(State<StatefulWidget> *state, String path, size_t threads)
+File::File(State<StatefulWidget> *state, ref<String> path, size_t threads)
     : _path(path), _state(Object::cast<>(state)),
       _lock(threads > 1 ? Object::create<Lock>() /* if multithread read/write, need an actually lock */
                         : invalidLock /* if only one thread, don't need actually lock */),
@@ -20,7 +20,7 @@ File::File(State<StatefulWidget> *state, String path, size_t threads)
 {
 }
 
-ref<File> File::fromPath(State<StatefulWidget> *state, String path, size_t threads)
+ref<File> File::fromPath(State<StatefulWidget> *state, ref<String> path, size_t threads)
 {
     return Object::create<File>(state, path, threads);
 }
@@ -57,21 +57,21 @@ ref<Future<long long>> File::size()
 bool File::existsSync()
 {
     option<Lock::SharedLock> readLock = this->_lock->sharedLock();
-    std::ifstream f(path.c_str());
+    std::ifstream f(path->c_str());
     return f.good();
 }
 
 int File::removeSync()
 {
     option<Lock::UniqueLock> writeLock = this->_lock->uniqueLock();
-    return std::remove(path.c_str());
+    return std::remove(path->c_str());
 }
 
 long long File::sizeSync()
 {
     using std::ifstream;
     option<Lock::SharedLock> readLock = this->_lock->sharedLock();
-    ifstream file(path.toStdString(), std::ios::binary);
+    ifstream file(*path, std::ios::binary);
     const ifstream::streampos begin = file.tellg();
     file.seekg(0, std::ios::end);
     const ifstream::streampos end = file.tellg();
@@ -79,14 +79,14 @@ long long File::sizeSync()
     return end - begin;
 }
 
-ref<Future<void>> File::append(String str)
+ref<Future<void>> File::append(ref<String> str)
 {
     ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->post([self, completer, str] {
         {
             option<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
-            std::ofstream file(self->_path.toStdString(), std::ios::app);
+            std::ofstream file(*(self->_path), std::ios::app);
             file << str;
             file.close();
         }
@@ -95,14 +95,14 @@ ref<Future<void>> File::append(String str)
     return completer->future;
 }
 
-ref<Future<void>> File::overwrite(String str)
+ref<Future<void>> File::overwrite(ref<String> str)
 {
     ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
     this->post([self, completer, str] {
         {
             option<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
-            std::ofstream file(self->_path.toStdString(), std::ofstream::trunc);
+            std::ofstream file(*(self->_path), std::ofstream::trunc);
             file << str;
             file.close();
         }
@@ -118,7 +118,7 @@ ref<Future<void>> File::clear()
     this->post([self, completer] {
         {
             option<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
-            std::ofstream file(self->_path.toStdString(), std::ofstream::trunc);
+            std::ofstream file(*(self->_path), std::ofstream::trunc);
             file.close();
         }
         completer->complete();
@@ -126,15 +126,15 @@ ref<Future<void>> File::clear()
     return completer->future;
 }
 
-ref<Future<String>> File::read()
+ref<Future<ref<String>>> File::read()
 {
     ref<File> self = self();
-    ref<Completer<String>> completer = Object::create<Completer<String>>(_state.get());
+    ref<Completer<ref<String>>> completer = Object::create<Completer<ref<String>>>(_state.get());
     this->post([self, completer] {
         std::string str;
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(self->_path.toStdString(), std::ios::in | std::ios::ate);
+            std::ifstream file(*(self->_path), std::ios::in | std::ios::ate);
             std::ifstream::streampos filesize = file.tellg();
             str.reserve(filesize);
             file.seekg(0);
@@ -147,14 +147,14 @@ ref<Future<String>> File::read()
     return completer->future;
 }
 
-ref<Stream<String>> File::readAsStream(size_t segmentationLength)
+ref<Stream<ref<String>>> File::readAsStream(size_t segmentationLength)
 {
     ref<File> self = self();
-    ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
+    ref<Stream<ref<String>>> stream = Object::create<Stream<ref<String>>>(_state.get());
     this->post([self, stream, segmentationLength] {
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(self->_path.toStdString(), std::ios::in | std::ios::ate);
+            std::ifstream file(*(self->_path), std::ios::in | std::ios::ate);
             file.seekg(0);
             size_t i;
             while (!file.eof() && self->_isDisposed == false)
@@ -172,15 +172,15 @@ ref<Stream<String>> File::readAsStream(size_t segmentationLength)
     return stream;
 }
 
-ref<Stream<String>> File::readWordAsStream()
+ref<Stream<ref<String>>> File::readWordAsStream()
 {
     ref<File> self = self();
-    ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
+    ref<Stream<ref<String>>> stream = Object::create<Stream<ref<String>>>(_state.get());
     this->post([self, stream] {
         String str;
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(self->_path.toStdString());
+            std::ifstream file(*(self->_path));
             while (file >> str && self->_isDisposed == false)
                 stream->sink(str);
             file.close();
@@ -190,15 +190,16 @@ ref<Stream<String>> File::readWordAsStream()
     return stream;
 }
 
-ref<Stream<String>> File::readLineAsStream()
+ref<Stream<ref<String>>> File::readLineAsStream()
 {
     ref<File> self = self();
-    ref<Stream<String>> stream = Object::create<Stream<String>>(_state.get());
+    ref<Stream<ref<String>>> stream = Object::create<Stream<ref<String>>>(_state.get());
     this->post([self, stream] {
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(self->_path.toStdString());
-            while (String str = getline(file) && self->_isDisposed == false)
+            std::ifstream file(*(self->_path));
+            lateref<String> str;
+            while ((str = getline(file))->isNotEmpty() && self->_isDisposed == false)
                 stream->sink(str);
             file.close();
         }

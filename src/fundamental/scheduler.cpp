@@ -84,7 +84,7 @@ class _SchedulerState : public State<Scheduler>
     }
 };
 
-Scheduler::Scheduler(ref<Widget> child, String name, option<Key> key)
+Scheduler::Scheduler(ref<Widget> child, option<String> name, option<Key> key)
     : child(child), name(name), StatefulWidget(key) {}
 
 ref<State<StatefulWidget>> Scheduler::createState()

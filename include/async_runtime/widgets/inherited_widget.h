@@ -24,7 +24,7 @@ inline option<T> BuildContext::dependOnInheritedWidgetOfExactType()
         lateref<Element> element;
         if (option<Element>(this->cast<Element>()).isNotNull(element))
         {
-            String str = element->widget->runtimeType();
+            ref<String> str = element->widget->runtimeType();
             element->visitAncestor([&str](ref<Element> element) {
                 str = str + " > " + element->widget->runtimeType();
                 return false;

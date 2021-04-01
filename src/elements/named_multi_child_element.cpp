@@ -7,7 +7,7 @@ NamedMultiChildElement::NamedMultiChildElement(ref<NamedMultiChildWidget> widget
 void NamedMultiChildElement::attach()
 {
     Element::attach();
-    Map<String, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    Map<ref<String>, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
     for (auto &iter : children)
     {
         ref<Widget> &widget = iter.second;
@@ -28,7 +28,7 @@ void NamedMultiChildElement::detach()
 
 void NamedMultiChildElement::build()
 {
-    Map<String, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    Map<ref<String>, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
@@ -44,7 +44,7 @@ void NamedMultiChildElement::build()
 
     for (auto &iter : children)
     {
-        const String &key = iter.first;
+        const ref<String> &key = iter.first;
         ref<Widget> &widget = iter.second;
         auto elementIterator = this->_childrenElements->find(key);
 
@@ -86,7 +86,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     Element::notify(newWidget);
     this->_namedMultiChildWidget = newWidget->covariant<NamedMultiChildWidget>();
 
-    Map<String, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    Map<ref<String>, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
@@ -102,7 +102,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
 
     for (auto &iter : children)
     {
-        const String &key = iter.first;
+        const ref<String> &key = iter.first;
         ref<Widget> &widget = iter.second;
         auto elementIterator = this->_childrenElements->find(key);
 

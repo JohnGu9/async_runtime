@@ -14,6 +14,6 @@ void print(option<Object> object)
     }
 }
 
-void print(String str) { std::cout << str << std::endl; }
+void print(ref<String>  str) { std::cout << *str << std::endl; }
 
 void print(const char *const str) { std::cout << str << std::endl; }

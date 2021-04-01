@@ -8,14 +8,15 @@ public:
     Tree() : children({}) {}
     weakref<Tree> parent;
     List<ref<Tree>> children;
-    String info;
+    option<String> info;
 
     virtual void ps(std::ostream &ss)
     {
-        if (info.isEmpty())
-            ss << '[' << this->runtimeType() << ']' << std::endl;
+        lateref<String> in;
+        if (info.isNotNull(in) && in->isNotEmpty())
+            ss << in << std::endl;
         else
-            ss << info << std::endl;
+            ss << '[' << this->runtimeType() << ']' << std::endl;
     }
 
     void toStringStream(std::ostream &ss) override

@@ -11,8 +11,8 @@
 /// class MyLoggerHandler : public LoggerHandler
 /// {
 /// public:
-///     ref<Future<bool>> write(String str) override { / **** / }
-///     ref<Future<bool>> writeLine(String str) override { / **** / }
+///     ref<Future<bool>> write(ref<String> str) override { / **** / }
+///     ref<Future<bool>> writeLine(ref<String> str) override { / **** / }
 ///
 ///     // depend on situation implement dispose for resource recycle, or not
 ///     void dispose() override { / **** / }
@@ -45,8 +45,8 @@ class LoggerHandler : public virtual Object, public Disposable
 public:
     LoggerHandler() {}
 
-    virtual ref<Future<bool>> write(String str) = 0;
-    virtual ref<Future<bool>> writeLine(String str) = 0;
+    virtual ref<Future<bool>> write(ref<String> str) = 0;
+    virtual ref<Future<bool>> writeLine(ref<String> str) = 0;
 
 };
 
@@ -58,7 +58,7 @@ public:
 
     // support hot switch
     static ref<Widget> cout(ref<Widget> child, option<Key> key = nullptr);
-    static ref<Widget> file(String path, ref<Widget> child, option<Key> key = nullptr);
+    static ref<Widget> file(ref<String> path, ref<Widget> child, option<Key> key = nullptr);
     static ref<Widget> block(ref<Widget> child, option<Key> key = nullptr);
 
     Logger(ref<Widget> child, Handler handler, option<Key> key = nullptr);

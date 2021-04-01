@@ -10,9 +10,9 @@ public:
     using Handler = ref<ThreadPool>;
     static Handler of(ref<BuildContext> context);
 
-    Scheduler(ref<Widget> child, String name = nullptr, option<Key> key = nullptr);
+    Scheduler(ref<Widget> child, option<String> name = nullptr, option<Key> key = nullptr);
     ref<Widget> child;
-    String name;
+    option<String> name;
     ref<State<StatefulWidget>> createState() override;
 };
 

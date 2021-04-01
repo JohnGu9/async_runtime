@@ -17,5 +17,5 @@ public:
 
 protected:
     ref<NamedMultiChildWidget> _namedMultiChildWidget;
-    Map<String, lateref<Element> > _childrenElements;
+    Map<ref<String>, lateref<Element> > _childrenElements;
 };

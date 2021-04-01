@@ -31,7 +31,7 @@ class Object : public std::enable_shared_from_this<Object>
     ref<Object> shared_from_this() { return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this()); }
 
 public:
-    using RuntimeType = String;
+    using RuntimeType = ref<String>;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
@@ -55,7 +55,7 @@ public:
     template <typename T>
     ref<T> covariant();
 
-    virtual String toString();
+    virtual ref<String> toString();
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();
     virtual void init() {}

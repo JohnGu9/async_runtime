@@ -26,7 +26,7 @@ protected:
             unmount,
         };
         static const List<Value> values;
-        static String toString(Value value);
+        static ref<String> toString(Value value);
     };
 
     _LifeCycle::Value _lifeCycle;

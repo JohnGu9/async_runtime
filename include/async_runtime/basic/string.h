@@ -3,73 +3,159 @@
 #include <string>
 #include <sstream>
 #include <memory>
+#include "ref.h"
 #include "../object.h"
 
-class String
-{
-    friend String operator+(const char c, const String &string);
-    friend String operator+(const char *const str, const String &string);
-    friend std::ostream &operator<<(std::ostream &os, const String &dt);
-    friend std::istream &operator>>(std::istream &os, String &str);
-    friend String getline(std::istream &is);
-    friend struct std::hash<String>;
+template <>
+class option<String>;
+template <>
+class ref<String>;
 
-    std::shared_ptr<const std::string> _ptr;
-    String(const std::shared_ptr<const std::string> other);
+class String : public Object, public std::string
+{
+    friend ref<String> operator+(const char c, const ref<String> &string);
+    friend ref<String> operator+(const char *const str, const ref<String> &string);
+
+    template <typename T>
+    friend class ref;
+    String &operator=(const std::string &other)
+    {
+        std::string::operator=(other);
+        return *this;
+    }
+    String &operator=(std::string &&other)
+    {
+        std::string::operator=(std::move(other));
+        return *this;
+    }
 
 public:
     String() {}
-    String(std::nullptr_t) {}
-    String(const String &other);
-    String(const char *const str);
-    String(const char str);
-    String(std::string &&str);
-    String(const std::stringstream &os);
-    String(std::stringstream &&os);
-    virtual ~String();
-
-    virtual operator bool() const;
-    virtual bool operator==(std::nullptr_t) const;
-    virtual bool operator==(const String &other) const;
-    virtual bool operator==(const char *const other) const;
-    virtual String operator+(const char c) const;
-    virtual String operator+(const char *const str) const;
-    virtual String operator+(const String &other) const;
-    virtual String operator+(ref<Object> object) const;
-    template <typename T>
-    String operator+(const T &value) const;
+    String(const char *const str) : std::string(str) {}
+    String(const std::string &str) : std::string(str) {}
+    String(std::string &&str) : std::string(std::move(str)) {}
 
     virtual bool isEmpty() const;
     virtual bool isNotEmpty() const;
-    virtual bool startsWith(String) const;
-    virtual bool endsWith(String) const;
-    virtual const std::string &toStdString() const;
-    virtual const char *c_str() const;
+    virtual bool startsWith(ref<String>) const;
+    virtual bool endsWith(ref<String>) const;
 };
 
-template <typename T>
-String String::operator+(const T &value) const
+template <>
+class option<String> : public std::shared_ptr<String>, public ar::ToRefMixin<String>
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>(this->toStdString());
-    *ptr += std::to_string(value);
-    return String(ptr);
-}
+    template <typename R>
+    friend class weakref;
 
-String operator+(const char c, const String &string);
-String operator+(const char *const str, const String &string);
-std::ostream &operator<<(std::ostream &os, const String &str);
-std::istream &operator>>(std::istream &is, String &str);
-String getline(std::istream &os);
-void print(String str);
+    template <typename R>
+    friend class ar::RefImplement;
+
+    template <typename R>
+    friend class ref;
+
+    template <typename R>
+    friend class lateref;
+
+    friend class Object;
+
+public:
+    static option<String> null()
+    {
+        static const option<String> instance = nullptr;
+        return instance;
+    }
+    option() {}
+    option(std::nullptr_t) : std::shared_ptr<String>(nullptr) {}
+    option(const char *const str) : std::shared_ptr<String>(std::make_shared<String>(str)) {}
+    option(const std::string &str) : std::shared_ptr<String>(std::make_shared<String>(str)) {}
+    option(std::string &&str) : std::shared_ptr<String>(std::make_shared<String>(std::move(str))) {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
+    option(const ref<R> &other);
+
+    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
+    option(const option<R> &other) : std::shared_ptr<String>(std::static_pointer_cast<String>(other)) {}
+
+    bool isNotNull(ref<String> &) const override;
+    ref<String> isNotNullElse(std::function<ref<String>()>) const override;
+    ref<String> assertNotNull() const override;
+
+    String *operator->() const = delete;
+    operator bool() const = delete;
+
+protected:
+    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
+    option(const std::shared_ptr<R> &other) : std::shared_ptr<String>(std::static_pointer_cast<String>(other)){};
+};
+
+template <>
+class ref<String> : public ar::RefImplement<String>
+{
+protected:
+    template <typename R>
+    friend class option;
+
+    template <typename R>
+    friend class weakref;
+
+    template <typename R>
+    friend class Future;
+
+    friend ref<String> operator+(const char c, const ref<String> &string);
+    friend ref<String> operator+(const char *const str, const ref<String> &string);
+    friend std::ostream &operator<<(std::ostream &os, const ref<String> &dt);
+    friend std::istream &operator>>(std::istream &os, ref<String> &str);
+    friend ref<String> getline(std::istream &is);
+
+    ref() {}
+    ref(const std::shared_ptr<String> &other) : ar::RefImplement<String>(other) {}
+
+public:
+    ref(const std::string &str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
+    ref(std::string &&str) : ar::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
+    ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
+    ref(const char str) : ar::RefImplement<String>(std::make_shared<String>(std::to_string(str))) {}
+
+    virtual bool operator==(const ref<String> &other) const { return *(*this) == *other; }
+    virtual bool operator==(const char *const other) const { return *(*this) == other; }
+    virtual ref<String> operator+(const char c) const;
+    virtual ref<String> operator+(const char *const str) const;
+    virtual ref<String> operator+(const ref<String> &other) const;
+    virtual ref<String> operator+(ref<Object> object) const;
+
+    template <typename T>
+    ref<String> operator+(const T &value) const
+    {
+        std::shared_ptr<String> ptr = std::make_shared<String>();
+        *ptr += *(*this) + std::to_string(value);
+        return ref<String>(ptr);
+    }
+};
+
+ref<String> operator+(const char c, const ref<String> &string);
+ref<String> operator+(const char *const str, const ref<String> &string);
+std::ostream &operator<<(std::ostream &os, const ref<String> &str);
+std::istream &operator>>(std::istream &is, ref<String> &str);
+ref<String> getline(std::istream &os);
+void print(ref<String> str);
+
+template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
+option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cast<std::shared_ptr<R>>(other)) {}
+
+template <>
+bool operator==(const option<String> &opt, std::nullptr_t);
+template <>
+bool operator!=(const option<String> &opt, std::nullptr_t);
 
 namespace std
 {
     template <>
-    struct hash<String>
+    struct hash<::ref<String>>
     {
-        std::size_t operator()(const String &str) const
+        std::size_t operator()(const ::ref<String> &other) const
         {
-            return hash<std::string>()(*(str._ptr));
+            static const auto hs = hash<std::string>();
+            return hs(static_cast<std::string>(*other));
         }
     };
-} // namespace std
+};

@@ -11,19 +11,27 @@
 //
 ////////////////////////////
 
-Set<String> ThreadPool::_namePool = Set<String>::empty();
+static ref<String> emptyString = "";
 
-thread_local String ThreadPool::thisThreadName = String();
+Set<ref<String>> ThreadPool::_namePool = Set<ref<String>>::empty();
 
-ThreadPool::ThreadPool(size_t threads, String name) : _stop(false), _name(name)
+thread_local ref<String> ThreadPool::thisThreadName = "MainThread";
+
+ThreadPool::ThreadPool(size_t threads, option<String> name) : _stop(false), _name(emptyString)
 {
-    if (this->_name == nullptr)
+    lateref<String> n;
+    if (name.isNotNull(n))
     {
-        static const String prefix = "ThreadPool#";
-        this->_name = prefix + size_t(this);
+        this->_name = n;
     }
+    else
     {
-        assert(this->_name && this->_name.isNotEmpty());
+        static const std::string prefix = "ThreadPool#";
+        this->_name = prefix + std::to_string(size_t(this));
+    }
+
+    {
+        assert(this->_name->isNotEmpty());
         option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
@@ -49,15 +57,15 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
     return [this, threadId] {
         ThreadPool::thisThreadName = this->childrenThreadName(threadId);
-        assert(ThreadPool::thisThreadName && ThreadPool::thisThreadName.isNotEmpty());
+        assert(ThreadPool::thisThreadName->isNotEmpty());
 
 #ifdef DEBUG
-        std::string debugThreadName = ThreadPool::thisThreadName.toStdString();
-        std::string debugThreadPoolRuntimeType = this->runtimeType().toStdString();
+        std::string debugThreadName = ThreadPool::thisThreadName->c_str();
+        std::string debugThreadPoolRuntimeType = this->runtimeType()->c_str();
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        SetThreadDescription(GetCurrentThread(), ThreadPool::thisThreadName.c_str());
+        SetThreadDescription(GetCurrentThread(), ThreadPool::thisThreadName->c_str());
 #elif __APPLE__
-        pthread_setname_np(ThreadPool::thisThreadName.c_str());
+        pthread_setname_np(ThreadPool::thisThreadName->c_str());
 #elif __linux__
         pthread_setname_np(pthread_self(), ThreadPool::thisThreadName.c_str());
 #endif
@@ -93,7 +101,7 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
     };
 }
 
-String ThreadPool::childrenThreadName(size_t id) { return this->name + "#" + id; }
+ref<String> ThreadPool::childrenThreadName(size_t id) { return this->name + "#" + id; }
 
 size_t ThreadPool::threads() const { return this->_workers.size(); }
 
@@ -135,7 +143,7 @@ void ThreadPool::unregisterName()
 //
 ////////////////////////////
 
-ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, String name)
+ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, option<String> name)
 {
     assert(threads > 0);
     ref<AutoReleaseThreadPool> instance = Object::create<AutoReleaseThreadPool>(AutoReleaseThreadPool::_FactoryOnly(), threads, name);
@@ -145,7 +153,7 @@ ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, String
     return instance;
 }
 
-AutoReleaseThreadPool::AutoReleaseThreadPool(_FactoryOnly, size_t threads, String name)
+AutoReleaseThreadPool::AutoReleaseThreadPool(_FactoryOnly, size_t threads, option<String> name)
     : ThreadPool(0, name)
 {
 }
@@ -338,7 +346,7 @@ const List<AsyncSnapshot<>::ConnectionState::Value>
         AsyncSnapshot<>::ConnectionState::done,
 };
 
-String AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::ConnectionState::Value value)
+ref<String> AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::ConnectionState::Value value)
 {
     switch (value)
     {

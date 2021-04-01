@@ -2,7 +2,7 @@
 #include "async_runtime/widgets/named_multi_child_widget.h"
 
 ref<NamedMultiChildWidget> NamedMultiChildWidget::fromChildren(
-    Map<String, lateref<Widget>> children, option<Key> key)
+    Map<ref<String>, lateref<Widget>> children, option<Key> key)
 {
     return Object::create<NamedMultiChildWidget>(children, key);
 }

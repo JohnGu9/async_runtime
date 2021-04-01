@@ -1,65 +1,81 @@
 #include "async_runtime/basic/string.h"
 
-String::String(const std::shared_ptr<const std::string> other) : _ptr(other) {}
-String::String(const String &other) : _ptr(other._ptr) {}
+template <>
+bool operator==(const option<String> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<String>>(opt) == nullptr; }
+template <>
+bool operator!=(const option<String> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<String>>(opt) != nullptr; }
 
-String::String(const char *const str) : _ptr(std::make_shared<const std::string>(str)) {}
-String::String(const char str) : _ptr(std::make_shared<const std::string>(std::to_string(str))) {}
-String::String(std::string &&str) : _ptr(std::make_shared<const std::string>(std::forward<std::string>(str))) {}
-
-String::String(const std::stringstream &os) : _ptr(std::make_shared<const std::string>(os.str())) {}
-String::String(std::stringstream &&os) : _ptr(std::make_shared<const std::string>(os.str())) {}
-
-String::~String() {}
-
-String::operator bool() const { return this->_ptr != nullptr; }
-
-bool String::operator==(std::nullptr_t) const
+bool option<String>::isNotNull(ref<String> &object) const
 {
-    return this->_ptr == nullptr;
+    const std::shared_ptr<String> ptr = static_cast<const std::shared_ptr<String>>(*this);
+    if (ptr != nullptr)
+    {
+        object = ptr;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
-bool String::operator==(const String &other) const
+ref<String> option<String>::isNotNullElse(std::function<ref<String>()> fn) const
 {
-    return other._ptr == this->_ptr || *(other._ptr) == *(this->_ptr);
+    const std::shared_ptr<String> ptr = static_cast<const std::shared_ptr<String>>(*this);
+    if (ptr != nullptr)
+    {
+        return ref<String>(ptr);
+    }
+    else
+    {
+        return fn();
+    }
 }
 
-bool String::operator==(const char *const other) const
+ref<String> option<String>::assertNotNull() const
 {
-    return *(this->_ptr) == other;
+    const std::shared_ptr<String> ptr = static_cast<const std::shared_ptr<String>>(*this);
+    if (ptr != nullptr)
+    {
+        return ref<String>(ptr);
+    }
+    else
+    {
+        throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
+    }
 }
 
-String String::operator+(const char c) const
+ref<String> ref<String>::operator+(const char c) const
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>();
-    *ptr = *(this->_ptr) + c;
-    return String(ptr);
+    std::shared_ptr<String> ptr = std::make_shared<String>();
+    *ptr = *(*this) + c;
+    return ref<String>(ptr);
 }
 
-String String::operator+(const char *const str) const
+ref<String> ref<String>::operator+(const char *const str) const
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>();
-    *ptr = *(this->_ptr) + str;
-    return String(ptr);
+    std::shared_ptr<String> ptr = std::make_shared<String>();
+    *ptr = *(*this) + str;
+    return ref<String>(ptr);
 }
 
-String String::operator+(const String &other) const
+ref<String> ref<String>::operator+(const ref<String> &other) const
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>();
-    *ptr = *(this->_ptr) + *(other._ptr);
-    return String(ptr);
+    std::shared_ptr<String> ptr = std::make_shared<String>();
+    *ptr = *(*this) + *other;
+    return ref<String>(ptr);
 }
 
-String String::operator+(ref<Object> object) const
+ref<String> ref<String>::operator+(ref<Object> object) const
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>(this->toStdString());
-    *ptr += object->toString().toStdString();
-    return String(ptr);
+    std::shared_ptr<String> ptr = std::make_shared<String>();
+    *ptr = *(*this) + *(object->toString());
+    return ref<String>(ptr);
 }
 
 bool String::isEmpty() const
 {
-    return this->_ptr->empty();
+    return this->empty();
 }
 
 bool String::isNotEmpty() const
@@ -67,59 +83,51 @@ bool String::isNotEmpty() const
     return !this->isEmpty();
 }
 
-bool String::startsWith(String prefix) const
+bool String::startsWith(ref<String> prefix) const
 {
-    return this->_ptr->rfind(prefix.c_str(), 0) == 0;
-}
-
-bool String::endsWith(String suffix) const
-{
-    if (suffix._ptr->size() > this->_ptr->size())
+    if (prefix->size() > this->size())
         return false;
-    return std::equal(suffix._ptr->rbegin(), suffix._ptr->rend(), this->_ptr->rbegin());
+    return this->find(*prefix) == 0;
 }
 
-const std::string &String::toStdString() const
+bool String::endsWith(ref<String> suffix) const
 {
-    return *(this->_ptr);
+    if (suffix->size() > this->size())
+        return false;
+    return std::equal(suffix->rbegin(), suffix->rend(), this->rbegin());
 }
 
-const char *String::c_str() const
+std::ostream &operator<<(std::ostream &os, const ref<String> &str)
 {
-    return this->_ptr->c_str();
-}
-
-std::ostream &operator<<(std::ostream &os, const String &str)
-{
-    os << *(str._ptr);
+    os << str->c_str();
     return os;
 }
 
-std::istream &operator>>(std::istream &is, String &str)
+std::istream &operator>>(std::istream &is, ref<String> &str)
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>();
+    std::shared_ptr<String> ptr = std::make_shared<String>();
     is >> *ptr;
-    str._ptr = ptr;
+    str = ptr;
     return is;
 }
 
-String getline(std::istream &is)
+ref<String> getline(std::istream &is)
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>();
+    std::shared_ptr<String> ptr = std::make_shared<String>();
     getline(is, *ptr);
-    return String(ptr);
+    return ref<String>(ptr);
 }
 
-String operator+(const char c, const String &string)
+ref<String> operator+(const char c, const ref<String> &string)
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>(std::to_string(c));
-    *ptr += *(string._ptr);
-    return String(ptr);
+    std::shared_ptr<String> ptr = std::make_shared<String>();
+    *ptr = std::to_string(c) + *string;
+    return ref<String>(ptr);
 }
 
-String operator+(const char *const str, const String &string)
+ref<String> operator+(const char *const str, const ref<String> &string)
 {
-    std::shared_ptr<std::string> ptr = std::make_shared<std::string>(str);
-    *ptr += *(string._ptr);
-    return String(ptr);
+    std::shared_ptr<String> ptr = std::make_shared<String>(str);
+    *ptr = std::string(str) + *string;
+    return ref<String>(ptr);
 }
