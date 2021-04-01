@@ -6,17 +6,48 @@
 #include "async.h"
 #include "disposable.h"
 
-class LoggerHandler : public virtual Object, public StateHelper, public Disposable
+/// Create custom logger [MyLoggerHandler] example:
+///
+/// class MyLoggerHandler : public LoggerHandler
+/// {
+/// public:
+///     ref<Future<bool>> write(String str) override { / **** / }
+///     ref<Future<bool>> writeLine(String str) override { / **** / }
+///
+///     // depend on situation implement dispose for resource recycle, or not
+///     void dispose() override { / **** / }
+/// }
+///
+///
+/// Wrap your widget with [Logger]
+///
+/// Object::create<Logger>(
+///     [YourWidget], // your widget to wrap
+///     Object::create<MyLoggerHandler>(), // put your handler into [Logger]
+/// );
+///
+///
+/// Get [MyLoggerHandler] from [BuildContext]
+///
+/// ref<Widget> build(ref<BuildContext> context) override
+/// {
+///     ref<LoggerHandler> myLoggerHandler = Logger::of(context);
+///     myLoggerHandler->writeLine("get MyLoggerHandler");
+///
+///     / **** /
+///
+///     return [YourWidget];
+/// }
+///
+
+class LoggerHandler : public virtual Object, public Disposable
 {
 public:
-    LoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}
+    LoggerHandler() {}
 
     virtual ref<Future<bool>> write(String str) = 0;
     virtual ref<Future<bool>> writeLine(String str) = 0;
 
-protected:
-    LoggerHandler() {}
-    lateref<State<StatefulWidget>> _state;
 };
 
 class Logger : public InheritedWidget

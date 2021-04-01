@@ -99,12 +99,14 @@ bool Object::identical(const option<T0> &object0, const option<T1> &object1)
 template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 ref<T> Object::cast(R *other)
 {
+    assert(other != nullptr);
     return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 ref<T> Object::cast(T *other)
 {
+    assert(other != nullptr);
     return std::shared_ptr<T>(other->shared_from_this(), other);
 }
 

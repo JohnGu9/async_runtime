@@ -20,8 +20,11 @@ class _LoggerState : public State<_Logger>
 public:
     class _StdoutLoggerHandler : public LoggerHandler
     {
+        ref<State<StatefulWidget>> _state;
+
     public:
-        _StdoutLoggerHandler(State<StatefulWidget> *state) : LoggerHandler(state) { assert(state); }
+        _StdoutLoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) { assert(state); }
+
         ref<Future<bool>> write(String str) override
         {
             return async<bool>(this->_state.get(), [str] {
@@ -47,7 +50,7 @@ public:
 
     public:
         _FileLoggerHandler(State<StatefulWidget> *state, String path)
-            : _file(File::fromPath(state, path)), LoggerHandler(state) { _file->clear(); }
+            : _file(File::fromPath(state, path)) { _file->clear(); }
 
         ref<Future<bool>> write(String str) override
         {
@@ -86,8 +89,10 @@ public:
 
     class _LoggerBlocker : public LoggerHandler
     {
+        ref<State<StatefulWidget>> _state;
+
     public:
-        _LoggerBlocker(State<StatefulWidget> *state) : LoggerHandler(state) {}
+        _LoggerBlocker(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}
         ref<Future<bool>> write(String str) override
         {
             return Future<bool>::value(this->_state.get(), true);
@@ -103,34 +108,31 @@ public:
     using super = State<_Logger>;
     lateref<LoggerHandler> _handler;
 
-    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    void initState() override
     {
-        ref<_Logger> old = oldWidget->covariant<_Logger>();
-        this->_handler->dispose();
-
         if (this->getWidget()->path == nullptr)
             this->_handler = Object::create<_LoggerBlocker>(this);
         else if (this->getWidget()->path.isEmpty())
             this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
         else
             this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->path);
-
-        super::didWidgetUpdated(oldWidget);
     }
 
-    void didDependenceChanged() override
+    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
     {
-        if (this->_handler != nullptr)
+        if (oldWidget->covariant<_Logger>()->path != this->getWidget()->path)
+        {
             this->_handler->dispose();
 
-        if (this->getWidget()->path == nullptr)
-            this->_handler = Object::create<_LoggerBlocker>(this);
-        else if (this->getWidget()->path.isEmpty())
-            this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
-        else
-            this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->path);
+            if (this->getWidget()->path == nullptr)
+                this->_handler = Object::create<_LoggerBlocker>(this);
+            else if (this->getWidget()->path.isEmpty())
+                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
+            else
+                this->_handler = Object::create<_FileLoggerHandler>(this, this->getWidget()->path);
+        }
 
-        super::didDependenceChanged();
+        super::didWidgetUpdated(oldWidget);
     }
 
     void dispose() override

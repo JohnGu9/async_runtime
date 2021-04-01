@@ -41,7 +41,7 @@ void StatefulElement::attach()
     this->_state->_element = self();
     this->_state->_mounted = true;
     this->_state->initState();
-    this->_state->_context = this->_state->_element; // context only available after initState
+    this->_state->_context = self(); // context only available after initState
     this->_state->didDependenceChanged();
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     this->attachElement(widget->createElement());

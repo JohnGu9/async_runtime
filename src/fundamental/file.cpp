@@ -4,11 +4,11 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/widgets/stateful_widget.h"
 
-static const ref<Lock::InvalidLock> invalidLock = Object::create<Lock::InvalidLock>();
+static finalref<Lock::InvalidLock> invalidLock = Object::create<Lock::InvalidLock>();
 
 ref<ThreadPool> File::sharedThreadPool()
 {
-    static ref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1, "FileSharedThreadPool");
+    static finalref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1, "FileSharedThreadPool");
     return sharedThreadPool;
 }
 
