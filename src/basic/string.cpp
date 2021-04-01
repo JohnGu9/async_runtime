@@ -99,8 +99,7 @@ bool String::endsWith(ref<String> suffix) const
 
 std::ostream &operator<<(std::ostream &os, const ref<String> &str)
 {
-    os << str->c_str();
-    return os;
+    return os << str->c_str();
 }
 
 std::istream &operator>>(std::istream &is, ref<String> &str)
@@ -127,7 +126,7 @@ ref<String> operator+(const char c, const ref<String> &string)
 
 ref<String> operator+(const char *const str, const ref<String> &string)
 {
-    std::shared_ptr<String> ptr = std::make_shared<String>(str);
+    std::shared_ptr<String> ptr = std::make_shared<String>();
     *ptr = std::string(str) + *string;
     return ref<String>(ptr);
 }
