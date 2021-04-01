@@ -87,7 +87,7 @@ bool String::startsWith(ref<String> prefix) const
 {
     if (prefix->size() > this->size())
         return false;
-    return this->find(*prefix) == 0;
+    return std::equal(prefix->begin(), prefix->end(), this->begin());
 }
 
 bool String::endsWith(ref<String> suffix) const

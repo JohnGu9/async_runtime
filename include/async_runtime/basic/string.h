@@ -6,6 +6,21 @@
 #include "ref.h"
 #include "../object.h"
 
+/// [String] is [Object] now
+/// Do not use [String] directly
+/// Wrap [String] with nullsafety api like [ref] or [option]
+/// Use ref<String> or option<String>
+/// And it will behave like a nullsafety object and with some extra feature
+///
+///
+/// example: 
+///
+/// ref<String> string = "This is a non-null String object"; // directly init ref<String> from char[]
+///
+/// option<String> nullableString = "This is a nullable String object, but now it isn't null with value \"this string\""; // directly init option<String> from char[]
+/// option<String> nullString = nullptr; // this is a null String object
+///
+
 template <>
 class option<String>;
 template <>

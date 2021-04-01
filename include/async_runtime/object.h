@@ -8,8 +8,6 @@
 #include "basic/ref.h"
 
 // native copyable type that don't not need ref
-class String;
-// native copyable type that don't not need ref
 class Duration;
 // native copyable type that don't not need ref
 template <typename T = std::nullptr_t>
@@ -26,6 +24,7 @@ class List;
 
 #define self() Object::cast<>(this)
 
+class String;
 class Object : public std::enable_shared_from_this<Object>
 {
     ref<Object> shared_from_this() { return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this()); }
