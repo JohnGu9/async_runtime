@@ -18,6 +18,7 @@ class ThreadPool : public Object, public Disposable
 
 public:
     static thread_local ref<String> thisThreadName;
+    static void setThreadName(ref<String> name);
 
     ThreadPool(size_t threads, option<String> name = nullptr);
     virtual ~ThreadPool();
@@ -58,7 +59,6 @@ public:
 template <class F, class... Args>
 auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
 {
-    assert(this->threads() > 0);
     using return_type = typename std::result_of<F(Args...)>::type;
 
     auto task = std::make_shared<std::packaged_task<return_type()>>(
@@ -83,7 +83,6 @@ auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result
 template <class F, class... Args>
 auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
 {
-    assert(this->threads() > 0);
     using return_type = typename std::result_of<F(Args...)>::type;
 
     auto task = std::make_shared<std::packaged_task<return_type()>>(

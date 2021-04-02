@@ -58,7 +58,7 @@ public:
         this->_callbackHandler->post([self, fn] {
             assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
             self->_listener = fn;
-            for (int c = 0; c < self->_sinkCounter; c++)
+            for (size_t c = 0; c < self->_sinkCounter; c++)
                 self->_listener();
             self->_sinkCounter = 0;
             if (self->_isClosed)

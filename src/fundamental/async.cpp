@@ -17,6 +17,21 @@ Set<ref<String>> ThreadPool::_namePool = Set<ref<String>>::empty();
 
 thread_local ref<String> ThreadPool::thisThreadName = "MainThread";
 
+void ThreadPool::setThreadName(ref<String> name)
+{
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    wchar_t *wtext = new wchar_t[name->length() + 1];
+    size_t outputSize;
+    mbstowcs_s(&outputSize, wtext, name->length() + 1, name->c_str(), name->length());
+    SetThreadDescription(GetCurrentThread(), wtext);
+    delete[] wtext;
+#elif __APPLE__
+    pthread_setname_np(name->c_str());
+#elif __linux__
+    pthread_setname_np(pthread_self(), name->c_str());
+#endif
+}
+
 ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString), _stop(false)
 {
     lateref<String> n;
@@ -62,13 +77,7 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 #ifdef DEBUG
         const std::string debugThreadName = ThreadPool::thisThreadName->toStdString();
         const std::string debugThreadPoolRuntimeType = this->runtimeType()->toStdString();
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        SetThreadDescription(GetCurrentThread(), ThreadPool::thisThreadName->c_str());
-#elif __APPLE__
-        pthread_setname_np(ThreadPool::thisThreadName->c_str());
-#elif __linux__
-        pthread_setname_np(pthread_self(), ThreadPool::thisThreadName->c_str());
-#endif
+        setThreadName(ThreadPool::thisThreadName);
 #endif
 
         while (true)

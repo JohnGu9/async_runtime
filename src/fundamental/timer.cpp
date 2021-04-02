@@ -51,6 +51,9 @@ void Timer::_setTimeout(Duration delay, Function<void()> function)
     system_clock::time_point current = system_clock::now();
     ref<Timer> self = self(); // hold a ref of self inside the Function
     _thread = std::make_shared<Thread>([=] {
+#ifdef DEBUG
+        ThreadPool::setThreadName("TimerThread");
+#endif
         if (self->_clear)
             return;
         std::this_thread::sleep_until(current + delay.toChronoMilliseconds());
@@ -68,6 +71,9 @@ void Timer::_setInterval(Duration interval, Function<void()> function)
     ref<Timer> self = self(); // hold a ref of self inside the Function
     _thread = std::make_shared<Thread>([=] {
         system_clock::time_point nextTime = current;
+#ifdef DEBUG
+        ThreadPool::setThreadName("TimerThread");
+#endif
         if (self->_clear)
             return;
         while (true)

@@ -82,6 +82,9 @@ void RootElement::scheduleRootWidget()
         {
             auto self = self();
             thread = Thread([self] {
+#ifdef DEBUG
+                ThreadPool::setThreadName("ConsoleThread");
+#endif
                 self->_console();
                 shutdownInfo();
                 self->_condition.notify_all();

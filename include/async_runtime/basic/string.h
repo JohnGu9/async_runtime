@@ -72,6 +72,8 @@ public:
 
     virtual const std::string &toStdString() const { return *this; }
     virtual const char *const c_str() const { return std::string::c_str(); }
+    virtual size_t length() const { return std::string::length(); }
+    virtual size_t size() const { return std::string::size(); }
 };
 
 template <>
