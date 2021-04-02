@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 #include <exception>
+#include <assert.h>
 #define finalref const ref
 
 // nullable object
