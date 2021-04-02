@@ -85,7 +85,7 @@ class _SchedulerState : public State<Scheduler>
 };
 
 Scheduler::Scheduler(ref<Widget> child, option<String> name, option<Key> key)
-    : child(child), name(name), StatefulWidget(key) {}
+    : StatefulWidget(key), child(child), name(name) {}
 
 ref<State<StatefulWidget>> Scheduler::createState()
 {
@@ -98,7 +98,7 @@ Scheduler::Handler Scheduler::of(ref<BuildContext> context)
 }
 
 SchedulerProxy::SchedulerProxy(ref<Widget> child, Handler handler)
-    : _handler(handler), InheritedWidget(child, Object::create<ValueKey<Handler>>(handler))
+    : InheritedWidget(child, Object::create<ValueKey<Handler>>(handler)), _handler(handler)
 {
     assert(handler->threads() == 1);
 }

@@ -28,7 +28,7 @@ ref<String> StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::V
 
 /// Stateful Element
 StatefulElement::StatefulElement(ref<StatefulWidget> widget)
-    : _statefulWidget(widget), SingleChildElement(widget), _lifeCycle(StatefulElement::_LifeCycle::uninitialized)
+    : SingleChildElement(widget), _statefulWidget(widget), _lifeCycle(StatefulElement::_LifeCycle::uninitialized)
 {
     _state = _statefulWidget->createState();
 }

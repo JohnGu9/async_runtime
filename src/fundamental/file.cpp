@@ -13,10 +13,11 @@ ref<ThreadPool> File::sharedThreadPool()
 }
 
 File::File(State<StatefulWidget> *state, ref<String> path, size_t threads)
-    : _path(path), _state(Object::cast<>(state)),
+    : AsyncDispatcher(state, threads == 0 ? sharedThreadPool() : option<ThreadPool>::null(), threads),
+      _path(path), _state(Object::cast<>(state)),
       _lock(threads > 1 ? Object::create<Lock>() /* if multithread read/write, need an actually lock */
-                        : invalidLock /* if only one thread, don't need actually lock */),
-      AsyncDispatcher(state, threads == 0 ? sharedThreadPool() : option<ThreadPool>::null(), threads)
+                        : invalidLock /* if only one thread, don't need actually lock */)
+
 {
 }
 

@@ -3,7 +3,7 @@
 
 // NotificationListener Element
 NotificationListenerElement::NotificationListenerElement(ref<NotificationListener> widget)
-    : _notificationListenerWidget(widget), StatelessElement(widget) {}
+    : StatelessElement(widget), _notificationListenerWidget(widget) {}
 
 void NotificationListenerElement::update(ref<Widget> newWidget)
 {

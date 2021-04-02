@@ -3,7 +3,7 @@
 
 // MultiChild Element
 MultiChildElement::MultiChildElement(ref<MultiChildWidget> widget)
-    : _childrenElements({}), _multiChildWidget(widget), Element(widget) {}
+    : Element(widget), _multiChildWidget(widget), _childrenElements({}) {}
 
 void MultiChildElement::attach()
 {

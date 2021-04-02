@@ -17,7 +17,7 @@ struct _MockWidget : Widget
 };
 
 /// Root Element
-RootElement::RootElement(ref<Widget> widget) : _consoleStop(false), SingleChildElement(Object::create<_MockWidget>())
+RootElement::RootElement(ref<Widget> widget) : SingleChildElement(Object::create<_MockWidget>()), _consoleStop(false)
 {
     this->_coutKey = Object::create<GlobalKey>();
     this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _coutKey), "RootThread");

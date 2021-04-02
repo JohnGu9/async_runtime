@@ -2,7 +2,7 @@
 #include "async_runtime/widgets/stateless_widget.h"
 
 /// Stateless Element
-StatelessElement::StatelessElement(ref<StatelessWidget> widget) : _statelessWidget(widget), SingleChildElement(widget) {}
+StatelessElement::StatelessElement(ref<StatelessWidget> widget) : SingleChildElement(widget), _statelessWidget(widget) {}
 
 void StatelessElement::attach()
 {

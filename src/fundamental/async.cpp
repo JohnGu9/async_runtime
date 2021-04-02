@@ -17,7 +17,7 @@ Set<ref<String>> ThreadPool::_namePool = Set<ref<String>>::empty();
 
 thread_local ref<String> ThreadPool::thisThreadName = "MainThread";
 
-ThreadPool::ThreadPool(size_t threads, option<String> name) : _stop(false), _name(emptyString)
+ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString), _stop(false)
 {
     lateref<String> n;
     if (name.isNotNull(n))

@@ -2,7 +2,7 @@
 #include "async_runtime/widgets/named_multi_child_widget.h"
 
 NamedMultiChildElement::NamedMultiChildElement(ref<NamedMultiChildWidget> widget)
-    : _childrenElements({}), _namedMultiChildWidget(widget), Element(widget) {}
+    : Element(widget), _namedMultiChildWidget(widget), _childrenElements({}) {}
 
 void NamedMultiChildElement::attach()
 {

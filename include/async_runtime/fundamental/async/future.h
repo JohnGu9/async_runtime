@@ -17,8 +17,8 @@ class Future<std::nullptr_t> : public virtual Object, protected StateHelper
 protected:
     Future(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
     Future(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _completed(false) {}
-    std::atomic_bool _completed;
     ref<ThreadPool> _callbackHandler;
+    std::atomic_bool _completed;
 
 public:
     virtual ref<Future<std::nullptr_t>> than(Function<void()>) = 0;
@@ -99,9 +99,9 @@ public:
     Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
 
     Future(ref<ThreadPool> callbackHandler, const T &data)
-        : _data(data), _callbackList({}), Future<std::nullptr_t>(callbackHandler) { this->_completed = true; }
+        : Future<std::nullptr_t>(callbackHandler), _data(data), _callbackList({}) { this->_completed = true; }
     Future(State<StatefulWidget> *state, const T &data)
-        : _data(data), _callbackList({}), Future<std::nullptr_t>(state) { this->_completed = true; }
+        : Future<std::nullptr_t>(state), _data(data), _callbackList({}) { this->_completed = true; }
 
     template <typename ReturnType = void, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
     ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);

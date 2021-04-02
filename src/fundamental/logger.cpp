@@ -9,7 +9,7 @@ class _Logger : public StatefulWidget
 
 public:
     _Logger(ref<Widget> child, option<String> path, option<Key> key)
-        : child(child), path(path), StatefulWidget(key) {}
+        : StatefulWidget(key), child(child), path(path) {}
     ref<State<StatefulWidget>> createState() override;
     ref<Widget> child;
     option<String> path;
@@ -73,7 +73,7 @@ public:
         Logger::Handler _proxyTarget;
 
     public:
-        _LoggerProxyHandler(Logger::Handler proxyTarget) : _proxyTarget(proxyTarget), LoggerHandler() {}
+        _LoggerProxyHandler(Logger::Handler proxyTarget) : _proxyTarget(proxyTarget) {}
         ref<Future<bool>> write(ref<String> str) override
         {
             return this->_proxyTarget->write(str);
@@ -166,7 +166,7 @@ Logger::Handler Logger::of(ref<BuildContext> context)
 }
 
 Logger::Logger(ref<Widget> child, Handler handler, option<Key> key)
-    : _handler(handler), InheritedWidget(child, key) {}
+    : InheritedWidget(child, key), _handler(handler) {}
 
 bool Logger::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
@@ -197,7 +197,7 @@ class _StdoutLoggerInheritedWidget : public InheritedWidget
 
 public:
     _StdoutLoggerInheritedWidget(ref<Widget> child, Logger::Handler handler, option<Key> key = nullptr)
-        : _handler(handler), InheritedWidget(Object::create<Logger>(child, handler), key) {}
+        : InheritedWidget(Object::create<Logger>(child, handler), key), _handler(handler) {}
 
     bool updateShouldNotify(ref<InheritedWidget> oldWidget) override
     {
@@ -230,4 +230,4 @@ Logger::Handler StdoutLogger::of(ref<BuildContext> context)
 }
 
 StdoutLogger::StdoutLogger(ref<Widget> child, option<Key> key)
-    : child(child), StatefulWidget(key) {}
+    : StatefulWidget(key), child(child) {}

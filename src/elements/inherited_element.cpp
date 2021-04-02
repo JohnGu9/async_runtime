@@ -2,7 +2,7 @@
 #include "async_runtime/widgets/inherited_widget.h"
 
 /// Inherited Element
-InheritedElement::InheritedElement(ref<InheritedWidget> widget) : _inheritWidget(widget), SingleChildElement(widget) {}
+InheritedElement::InheritedElement(ref<InheritedWidget> widget) : SingleChildElement(widget), _inheritWidget(widget) {}
 
 void InheritedElement::attach()
 {
