@@ -187,7 +187,7 @@ ref<Widget> Logger::file(ref<String> path, ref<Widget> child, option<Key> key)
 
 ref<Widget> Logger::block(ref<Widget> child, option<Key> key)
 {
-    return Object::create<_Logger>(child, String(), key);
+    return Object::create<_Logger>(child, nullptr, key);
 }
 
 class _StdoutLoggerInheritedWidget : public InheritedWidget

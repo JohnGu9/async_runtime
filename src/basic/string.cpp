@@ -59,6 +59,20 @@ ref<String> ref<String>::operator+(const char *const str) const
     return ref<String>(ptr);
 }
 
+ref<String> ref<String>::operator+(const std::string &other) const
+{
+    std::shared_ptr<String> ptr = std::make_shared<String>();
+    *ptr = *(*this) + other;
+    return ref<String>(ptr);
+}
+
+ref<String> ref<String>::operator+(std::string &&other) const
+{
+    std::shared_ptr<String> ptr = std::make_shared<String>();
+    *ptr = *(*this) + other;
+    return ref<String>(ptr);
+}
+
 ref<String> ref<String>::operator+(const ref<String> &other) const
 {
     std::shared_ptr<String> ptr = std::make_shared<String>();
@@ -99,7 +113,7 @@ bool String::endsWith(ref<String> suffix) const
 
 std::ostream &operator<<(std::ostream &os, const ref<String> &str)
 {
-    return os << str->c_str();
+    return os << *str;
 }
 
 std::istream &operator>>(std::istream &is, ref<String> &str)
@@ -130,3 +144,5 @@ ref<String> operator+(const char *const str, const ref<String> &string)
     *ptr = std::string(str) + *string;
     return ref<String>(ptr);
 }
+
+std::string std::to_string(bool b) { return b ? "true" : "false"; }

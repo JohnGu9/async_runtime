@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     if(MSVC)
-        add_compile_definitions(DEBUG)
+        add_compile_definitions(DEBUG=1)
     else()    
         ADD_DEFINITIONS(-DDEBUG)
     endif()

@@ -97,7 +97,11 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(const RefImplement<R> &other) : option<T>(other) {}
 
-    T *operator->() const { return std::shared_ptr<T>::operator->(); }
+    T *operator->() const
+    {
+        assert(std::shared_ptr<T>::get() && "NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
+        return std::shared_ptr<T>::operator->();
+    }
 
     std::shared_ptr<T> &operator=(std::nullptr_t) = delete;
     bool operator==(std::nullptr_t) const = delete;

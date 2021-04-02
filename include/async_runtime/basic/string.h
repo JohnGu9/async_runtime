@@ -15,10 +15,18 @@
 ///
 /// example:
 ///
-/// ref<String> string = "This is a non-null String object"; // directly init ref<String> from char[]
+/// ref<String> string = "This is a non-null String object"; // directly init ref<String> from const char* const
 ///
-/// option<String> nullableString = "This is a nullable String object, but now it isn't null with value \"this string\""; // directly init option<String> from char[]
+/// option<String> nullableString = "This is a nullable String object, but now it isn't null with value \"this string\""; // directly init option<String> from const char* const
 /// option<String> nullString = nullptr; // this is a null String object
+///
+/// ref<String> newString = string + nullableString.assertNotNull(); // append two ref<String> to a new ref<String>
+///
+/// if (newString == string) { / *** / } // compare two ref<String>
+/// else { / *** / }
+///
+/// ref<String> withTrueString = string + true; // append any type that support std::to_string
+/// ref<String> withTrueString = string + 1.023;
 ///
 
 template <>
@@ -26,13 +34,20 @@ class option<String>;
 template <>
 class ref<String>;
 
-class String : public Object, public std::string
+class String : public Object, protected std::string
 {
-    friend ref<String> operator+(const char c, const ref<String> &string);
-    friend ref<String> operator+(const char *const str, const ref<String> &string);
-
     template <typename T>
     friend class ref;
+
+    template <typename T>
+    friend struct std::hash;
+
+    friend ref<String> operator+(const char c, const ref<String> &string);
+    friend ref<String> operator+(const char *const str, const ref<String> &string);
+    friend std::ostream &operator<<(std::ostream &os, const ref<String> &str);
+    friend std::istream &operator>>(std::istream &is, ref<String> &str);
+    friend ref<String> getline(std::istream &is);
+
     String &operator=(const std::string &other)
     {
         std::string::operator=(other);
@@ -46,7 +61,7 @@ class String : public Object, public std::string
 
 public:
     String() {}
-    String(const char *const str) : std::string(str) {}
+    String(const char *const str) : std::string(str) { assert(str); }
     String(const std::string &str) : std::string(str) {}
     String(std::string &&str) : std::string(std::move(str)) {}
 
@@ -54,6 +69,9 @@ public:
     virtual bool isNotEmpty() const;
     virtual bool startsWith(ref<String>) const;
     virtual bool endsWith(ref<String>) const;
+
+    virtual const std::string &toStdString() const { return *this; }
+    virtual const char *const c_str() const { return std::string::c_str(); }
 };
 
 template <>
@@ -131,12 +149,18 @@ public:
     ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(const char str) : ar::RefImplement<String>(std::make_shared<String>(std::to_string(str))) {}
 
-    virtual bool operator==(const ref<String> &other) const { return *(*this) == *other; }
-    virtual bool operator==(const char *const other) const { return *(*this) == other; }
-    virtual ref<String> operator+(const char c) const;
-    virtual ref<String> operator+(const char *const str) const;
-    virtual ref<String> operator+(const ref<String> &other) const;
-    virtual ref<String> operator+(ref<Object> object) const;
+    bool operator==(const ref<String> &other) const { return *(*this) == *other; }
+    bool operator==(const char *const other) const { return *(*this) == other; }
+    bool operator==(const std::string &other) const { return *(*this) == other; }
+    bool operator==(std::string &&other) const { return *(*this) == std::move(other); }
+
+    ref<String> operator+(const char c) const;
+    ref<String> operator+(const char *const str) const;
+    ref<String> operator+(const std::string &other) const;
+    ref<String> operator+(std::string &&other) const;
+
+    ref<String> operator+(const ref<String> &other) const;
+    ref<String> operator+(ref<Object> object) const;
 
     template <typename T>
     ref<String> operator+(const T &value) const
@@ -164,6 +188,8 @@ bool operator!=(const option<String> &opt, std::nullptr_t);
 
 namespace std
 {
+    std::string to_string(bool b);
+
     template <>
     struct hash<::ref<String>>
     {

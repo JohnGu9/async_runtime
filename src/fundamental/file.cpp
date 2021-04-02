@@ -71,7 +71,7 @@ long long File::sizeSync()
 {
     using std::ifstream;
     option<Lock::SharedLock> readLock = this->_lock->sharedLock();
-    ifstream file(*path, std::ios::binary);
+    ifstream file(path->toStdString(), std::ios::binary);
     const ifstream::streampos begin = file.tellg();
     file.seekg(0, std::ios::end);
     const ifstream::streampos end = file.tellg();
@@ -86,7 +86,7 @@ ref<Future<void>> File::append(ref<String> str)
     this->post([self, completer, str] {
         {
             option<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
-            std::ofstream file(*(self->_path), std::ios::app);
+            std::ofstream file(self->_path->toStdString(), std::ios::app);
             file << str;
             file.close();
         }
@@ -102,7 +102,7 @@ ref<Future<void>> File::overwrite(ref<String> str)
     this->post([self, completer, str] {
         {
             option<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
-            std::ofstream file(*(self->_path), std::ofstream::trunc);
+            std::ofstream file(self->_path->toStdString(), std::ofstream::trunc);
             file << str;
             file.close();
         }
@@ -118,7 +118,7 @@ ref<Future<void>> File::clear()
     this->post([self, completer] {
         {
             option<Lock::UniqueLock> writeLock = self->_lock->uniqueLock();
-            std::ofstream file(*(self->_path), std::ofstream::trunc);
+            std::ofstream file(self->_path->toStdString(), std::ofstream::trunc);
             file.close();
         }
         completer->complete();
@@ -134,7 +134,7 @@ ref<Future<ref<String>>> File::read()
         std::string str;
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(*(self->_path), std::ios::in | std::ios::ate);
+            std::ifstream file(self->_path->toStdString(), std::ios::in | std::ios::ate);
             std::ifstream::streampos filesize = file.tellg();
             str.reserve(filesize);
             file.seekg(0);
@@ -154,7 +154,7 @@ ref<Stream<ref<String>>> File::readAsStream(size_t segmentationLength)
     this->post([self, stream, segmentationLength] {
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(*(self->_path), std::ios::in | std::ios::ate);
+            std::ifstream file(self->_path->toStdString(), std::ios::in | std::ios::ate);
             file.seekg(0);
             size_t i;
             while (!file.eof() && self->_isDisposed == false)
@@ -177,12 +177,12 @@ ref<Stream<ref<String>>> File::readWordAsStream()
     ref<File> self = self();
     ref<Stream<ref<String>>> stream = Object::create<Stream<ref<String>>>(_state.get());
     this->post([self, stream] {
-        String str;
+        std::string str;
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(*(self->_path));
+            std::ifstream file(self->_path->toStdString());
             while (file >> str && self->_isDisposed == false)
-                stream->sink(str);
+                stream->sink(std::move(str));
             file.close();
         }
         stream->close();
@@ -197,7 +197,7 @@ ref<Stream<ref<String>>> File::readLineAsStream()
     this->post([self, stream] {
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
-            std::ifstream file(*(self->_path));
+            std::ifstream file(self->_path->toStdString());
             lateref<String> str;
             while ((str = getline(file))->isNotEmpty() && self->_isDisposed == false)
                 stream->sink(str);

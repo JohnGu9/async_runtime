@@ -60,14 +60,14 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
         assert(ThreadPool::thisThreadName->isNotEmpty());
 
 #ifdef DEBUG
-        std::string debugThreadName = ThreadPool::thisThreadName->c_str();
-        std::string debugThreadPoolRuntimeType = this->runtimeType()->c_str();
+        std::string debugThreadName = ThreadPool::thisThreadName->toStdString();
+        std::string debugThreadPoolRuntimeType = this->runtimeType()->toStdString();
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         SetThreadDescription(GetCurrentThread(), ThreadPool::thisThreadName->c_str());
 #elif __APPLE__
         pthread_setname_np(ThreadPool::thisThreadName->c_str());
 #elif __linux__
-        pthread_setname_np(pthread_self(), ThreadPool::thisThreadName.c_str());
+        pthread_setname_np(pthread_self(), ThreadPool::thisThreadName->c_str());
 #endif
 #endif
 
