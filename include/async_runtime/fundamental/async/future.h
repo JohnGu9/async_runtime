@@ -2,36 +2,6 @@
 
 #include "../async.h"
 
-template <typename T>
-class FutureOr;
-
-template <>
-class FutureOr<void>
-{
-public:
-    FutureOr() : _future(nullptr) {}
-    FutureOr(ref<Future<void>> future) : _future(future) {}
-    option<Future<void>> toFuture() { return _future; }
-
-protected:
-    option<Future<void>> _future;
-};
-
-template <typename T>
-class FutureOr
-{
-public:
-    FutureOr(T &&value) : _value(value), _future(nullptr) {}
-    FutureOr(ref<Future<T>> future) : _value(nullptr), _future(future) {}
-
-    option<Future<T>> toFuture() { return _future; }
-    T &toValue() { return _value; }
-
-protected:
-    T &_value;
-    option<Future<T>> _future;
-};
-
 template <>
 class Future<std::nullptr_t> : public virtual Object, protected StateHelper
 {

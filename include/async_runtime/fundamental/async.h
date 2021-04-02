@@ -46,7 +46,7 @@ inline ref<Future<void>> Future<void>::than(Function<void()> fn)
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList->push_back([completer, fn] { fn(); completer->completeSync(); });
+            self->_callbackList->emplace_back([completer, fn] { fn(); completer->completeSync(); });
         else
         {
             fn();
@@ -63,7 +63,7 @@ ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
     ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList->push_back([completer, fn] { completer->completeSync(fn()); });
+            self->_callbackList->emplace_back([completer, fn] { completer->completeSync(fn()); });
         else
             completer->completeSync(fn());
     });
@@ -108,7 +108,7 @@ ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
     ref<Future<T>> self = self();
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList->push_back([completer, fn](const T &value) { fn(value); completer->completeSync(); });
+            self->_callbackList->emplace_back([completer, fn](const T &value) { fn(value); completer->completeSync(); });
         else
         {
             fn(self->_data);
@@ -126,7 +126,7 @@ ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
     ref<Future<T>> self = self();
     this->_callbackHandler->post([self, completer, fn] {
         if (self->_completed == false)
-            self->_callbackList->push_back([completer, fn](const T &value) { completer->completeSync(fn(value)); });
+            self->_callbackList->emplace_back([completer, fn](const T &value) { completer->completeSync(fn(value)); });
         else
             completer->completeSync(fn(self->_data));
     });
@@ -139,7 +139,7 @@ ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
     ref<Future<T>> self = self();
     this->_callbackHandler->post([self, fn] {
         if (self->_completed == false)
-            self->_callbackList->push_back([fn](const T &) { fn(); });
+            self->_callbackList->emplace_back([fn](const T &) { fn(); });
         else
             fn();
     });

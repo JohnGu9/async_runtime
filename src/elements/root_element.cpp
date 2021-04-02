@@ -110,7 +110,7 @@ void RootElement::_console()
     std::string input;
     for (;;)
     {
-        this->getStdoutHandler()->write(">> ").get();
+        this->getStdoutHandler()->write(">> ")->sync();
         std::getline(std::cin, input);
         if (this->_consoleStop)
             return;
@@ -118,10 +118,10 @@ void RootElement::_console()
         {
             std::stringstream ss;
             ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
-            this->getStdoutHandler()->write(ss.str()).get();
+            this->getStdoutHandler()->write(ss.str())->sync();
             if (std::getline(std::cin, input) && (input == "y" || input == "yes" || this->_consoleStop))
                 return;
-            this->getStdoutHandler()->writeLine("cancel").get();
+            this->getStdoutHandler()->writeLine("cancel")->sync();
         }
         else
             onCommand(input);
@@ -159,7 +159,7 @@ void RootElement::onCommand(const std::string &in)
         Map<Element *, List<Element *>> map = {{this, List<Element *>::empty()}};
         this->visitDescendant([&map](ref<Element> element) -> bool {
             option<Element> parent = element->parent.toOption();
-            map[parent.get()]->push_back(element.get());
+            map[parent.get()]->emplace_back(element.get());
             map[element.get()] = List<Element *>::empty();
             return false;
         });
@@ -178,7 +178,7 @@ void RootElement::onCommand(const std::string &in)
                 {
                     ref<Tree> childTree = Object::create<Tree>();
                     buildTree(child, childTree);
-                    currentTree->children->push_back(childTree);
+                    currentTree->children->emplace_back(childTree);
                 }
             };
         buildTree(this, tree);

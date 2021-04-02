@@ -26,8 +26,8 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _stop(false), _nam
     }
     else
     {
-        static const std::string prefix = "ThreadPool#";
-        this->_name = prefix + std::to_string(size_t(this));
+        static finalref<String> prefix = "ThreadPool#";
+        this->_name = prefix + size_t(this);
     }
 
     {
@@ -60,8 +60,8 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
         assert(ThreadPool::thisThreadName->isNotEmpty());
 
 #ifdef DEBUG
-        std::string debugThreadName = ThreadPool::thisThreadName->toStdString();
-        std::string debugThreadPoolRuntimeType = this->runtimeType()->toStdString();
+        const std::string debugThreadName = ThreadPool::thisThreadName->toStdString();
+        const std::string debugThreadPoolRuntimeType = this->runtimeType()->toStdString();
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         SetThreadDescription(GetCurrentThread(), ThreadPool::thisThreadName->c_str());
 #elif __APPLE__
@@ -306,7 +306,7 @@ ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
     ref<Future<void>> self = self();
     this->_callbackHandler->post([self, fn] {
         if (self->_completed == false)
-            self->_callbackList->push_back(fn);
+            self->_callbackList->emplace_back(fn);
         else
             fn();
     });
