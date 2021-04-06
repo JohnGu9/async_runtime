@@ -73,9 +73,9 @@ long long File::sizeSync()
     using std::ifstream;
     option<Lock::SharedLock> readLock = this->_lock->sharedLock();
     ifstream file(path->toStdString(), std::ios::binary);
-    const ifstream::streampos begin = file.tellg();
+    const std::streampos begin = file.tellg();
     file.seekg(0, std::ios::end);
-    const ifstream::streampos end = file.tellg();
+    const std::streampos end = file.tellg();
     file.close();
     return end - begin;
 }
@@ -136,7 +136,7 @@ ref<Future<ref<String>>> File::read()
         {
             option<Lock::SharedLock> readLock = self->_lock->sharedLock();
             std::ifstream file(self->_path->toStdString(), std::ios::in | std::ios::ate);
-            std::ifstream::streampos filesize = file.tellg();
+            std::streampos filesize = file.tellg();
             str.reserve(filesize);
             file.seekg(0);
             while (!file.eof())

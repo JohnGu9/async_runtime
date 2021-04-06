@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
 
+message(STATUS "Compiler Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
+
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-DDEBUG)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 find_package(Threads REQUIRED)
