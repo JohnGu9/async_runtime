@@ -9,9 +9,9 @@ Dispatcher::Dispatcher(State<StatefulWidget> *state) : _callbackHandler(getHandl
 
 void Dispatcher::dispose() {}
 
-void Dispatcher::run(Function<void()> fn) { this->_callbackHandler->post(fn.toStdFunction()); }
+std::future<void> Dispatcher::run(Function<void()> fn) { return this->_callbackHandler->post(fn.toStdFunction()); }
 
-void Dispatcher::microTask(Function<void()> fn) { this->_callbackHandler->microTask(fn.toStdFunction()); }
+std::future<void> Dispatcher::microTask(Function<void()> fn) { return this->_callbackHandler->microTask(fn.toStdFunction()); }
 
 AsyncDispatcher::AsyncDispatcher(ref<ThreadPool> handler, option<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(handler),
@@ -27,12 +27,12 @@ AsyncDispatcher::AsyncDispatcher(State<StatefulWidget> *state, option<ThreadPool
     _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
 }
 
-void AsyncDispatcher::post(Function<void()> fn) { this->_threadPool->post(fn.toStdFunction()); }
+std::future<void> AsyncDispatcher::post(Function<void()> fn) { return this->_threadPool->post(fn.toStdFunction()); }
 
-void AsyncDispatcher::post(Function<void(RunOnMainThread runner)> fn)
+std::future<void> AsyncDispatcher::post(Function<void(RunOnMainThread runner)> fn)
 {
     ref<AsyncDispatcher> self = self();
-    this->_threadPool->post(
+    return this->_threadPool->post(
         fn.toStdFunction(),
         [self](Function<void()> job) { self->run(job); });
 }

@@ -158,7 +158,7 @@ ref<Future<T>> Future<T>::timeout(Duration duration, Function<T()> onTimeout)
         });
     this->than([=] {
         if (completer->_isCompleted == false)
-            completer->completeSync(this->_data);
+            completer->completeSync(std::move(this->_data));
     });
     return completer->future;
 }

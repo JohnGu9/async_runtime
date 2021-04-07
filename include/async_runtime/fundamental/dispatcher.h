@@ -13,10 +13,9 @@ public:
     void dispose() override;
 
 protected:
-    virtual void run(Function<void()>);
-    virtual void microTask(Function<void()>);
+    virtual std::future<void> run(Function<void()>);
+    virtual std::future<void> microTask(Function<void()>);
 
-private:
     ref<ThreadPool> _callbackHandler; // main thread for callback
 };
 
@@ -30,10 +29,9 @@ public:
     void dispose() override;
 
 protected:
-    virtual void post(Function<void()>);
-    virtual void post(Function<void(RunOnMainThread runner)>);
+    virtual std::future<void> post(Function<void()>);
+    virtual std::future<void> post(Function<void(RunOnMainThread runner)>);
 
-private:
     option<ThreadPool> _ownThreadPool;
     lateref<ThreadPool> _threadPool; // work thread
 };

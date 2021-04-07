@@ -133,6 +133,9 @@ class ref : public ar::RefImplement<T>
 
     friend class Object;
 
+    template <typename R>
+    friend class Future;
+
 public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : ar::RefImplement<T>(other) {}

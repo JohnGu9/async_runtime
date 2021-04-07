@@ -103,21 +103,3 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
     return res;
 }
 
-class AutoReleaseThreadPool : public ThreadPool
-{
-    struct _FactoryOnly
-    {
-    };
-
-public:
-    static ref<AutoReleaseThreadPool> factory(size_t threads = 1, option<String> name = nullptr);
-    AutoReleaseThreadPool(_FactoryOnly, size_t threads = 1, option<String> name = nullptr);
-    virtual ~AutoReleaseThreadPool();
-    void dispose() override;
-    virtual void close();
-
-protected:
-    std::function<void()> workerBuilder(size_t) override;
-
-    bool _join = false;
-};

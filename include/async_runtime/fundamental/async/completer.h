@@ -110,7 +110,7 @@ public:
     virtual void complete(const T &value)
     {
         ref<Completer<T>> self = self();
-        this->_callbackHandler->post([self](const T &value) { self->completeSync(value); }, std::move(value));
+        this->_callbackHandler->post([self, value] { self->completeSync(value); });
     }
 
     virtual void complete(T &&value)
