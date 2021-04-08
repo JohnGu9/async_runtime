@@ -1,10 +1,5 @@
 #include "async_runtime/basic/string.h"
 
-template <>
-bool operator==(const option<String> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<String>>(opt) == nullptr; }
-template <>
-bool operator!=(const option<String> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<String>>(opt) != nullptr; }
-
 bool option<String>::isNotNull(ref<String> &object) const
 {
     const std::shared_ptr<String> ptr = static_cast<const std::shared_ptr<String>>(*this);
@@ -17,6 +12,29 @@ bool option<String>::isNotNull(ref<String> &object) const
     {
         return false;
     }
+}
+
+bool option<String>::operator==(const option<String> &other) const
+{
+    if (static_cast<const std::shared_ptr<String>>(*this) == nullptr)
+    {
+        if (static_cast<const std::shared_ptr<String>>(other) == nullptr)
+            return true;
+        else
+            return false;
+    }
+    else
+    {
+        if (static_cast<const std::shared_ptr<String>>(other) == nullptr)
+            return true;
+        else
+            return this->get() == other.get();
+    }
+}
+
+bool option<String>::operator!=(const option<String> &other) const
+{
+    return this->operator==(other);
 }
 
 ref<String> option<String>::isNotNullElse(std::function<ref<String>()> fn) const

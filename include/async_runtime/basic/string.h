@@ -77,7 +77,7 @@ public:
 };
 
 template <>
-class option<String> : public std::shared_ptr<String>, public ar::ToRefMixin<String>
+class option<String> : protected std::shared_ptr<String>, public ar::ToRefMixin<String>
 {
     template <typename R>
     friend class weakref;
@@ -99,6 +99,7 @@ public:
         static const option<String> instance = nullptr;
         return instance;
     }
+
     option() {}
     option(std::nullptr_t) : std::shared_ptr<String>(nullptr) {}
     option(const char *const str) : std::shared_ptr<String>(std::make_shared<String>(str)) {}
@@ -114,6 +115,8 @@ public:
     bool isNotNull(ref<String> &) const override;
     ref<String> isNotNullElse(std::function<ref<String>()>) const override;
     ref<String> assertNotNull() const override;
+    bool operator==(const option<String> &other) const;
+    bool operator!=(const option<String> &other) const;
 
     String *operator->() const = delete;
     operator bool() const = delete;
@@ -182,11 +185,6 @@ void print(ref<String> str);
 
 template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
 option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cast<std::shared_ptr<R>>(other)) {}
-
-template <>
-bool operator==(const option<String> &opt, std::nullptr_t);
-template <>
-bool operator!=(const option<String> &opt, std::nullptr_t);
 
 namespace std
 {

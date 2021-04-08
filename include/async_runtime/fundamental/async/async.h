@@ -10,17 +10,17 @@ ref<Future<T>> async(State<StatefulWidget> *state, Function<T()> fn);
 template <>
 inline ref<Future<void>> async(ref<ThreadPool> callbackHandler, Function<void()> fn)
 {
-    ref<Future<void>> future = Object::create<Future<void>>(callbackHandler);
-    future->_callbackHandler->post(fn);
-    return future;
+    ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
+    completer->_callbackHandler->post([fn, completer] { fn(); completer->completeSync(); });
+    return completer->future;
 }
 
 template <>
 inline ref<Future<void>> async(State<StatefulWidget> *state, Function<void()> fn)
 {
-    ref<Future<void>> future = Object::create<Future<void>>(state);
-    future->_callbackHandler->post(fn);
-    return future;
+    ref<Completer<void>> completer = Object::create<Completer<void>>(state);
+    completer->_callbackHandler->post([fn, completer] { fn(); completer->completeSync(); });
+    return completer->future;
 }
 
 template <typename T>

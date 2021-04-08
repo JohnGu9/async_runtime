@@ -8,7 +8,7 @@ static finalref<Lock::InvalidLock> invalidLock = Object::create<Lock::InvalidLoc
 
 ref<ThreadPool> File::sharedThreadPool()
 {
-    static finalref<ThreadPool> sharedThreadPool = Object::create<ThreadPool>(1, "FileSharedThreadPool");
+    static finalref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1, "FileSharedThreadPool");
     return sharedThreadPool;
 }
 

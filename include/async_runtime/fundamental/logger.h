@@ -13,9 +13,6 @@
 /// public:
 ///     ref<Future<bool>> write(ref<String> str) override { / **** / }
 ///     ref<Future<bool>> writeLine(ref<String> str) override { / **** / }
-///
-///     // depend on situation implement dispose for resource recycle, or not
-///     void dispose() override { / **** / }
 /// }
 ///
 ///
