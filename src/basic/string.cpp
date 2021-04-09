@@ -105,6 +105,16 @@ ref<String> ref<String>::operator+(ref<Object> object) const
     return ref<String>(ptr);
 }
 
+size_t String::find(ref<String> pattern) const { return std::string::find(pattern->c_str()); }
+
+size_t String::find_first_of(ref<String> pattern) const { return std::string::find_first_of(pattern->c_str()); }
+
+size_t String::find_first_not_of(ref<String> pattern) const { return std::string::find_first_not_of(pattern->c_str()); }
+
+size_t String::find_last_of(ref<String> pattern) const { return std::string::find_last_of(pattern->c_str()); }
+
+size_t String::find_last_not_of(ref<String> pattern) const { return std::string::find_last_not_of(pattern->c_str()); }
+
 bool String::isEmpty() const
 {
     return this->empty();
@@ -127,6 +137,11 @@ bool String::endsWith(ref<String> suffix) const
     if (suffix->size() > this->size())
         return false;
     return std::equal(suffix->rbegin(), suffix->rend(), this->rbegin());
+}
+
+ref<String> String::substr(size_t begin, size_t length) const
+{
+    return std::make_shared<String>(&this->operator[](begin), length);
 }
 
 std::ostream &operator<<(std::ostream &os, const ref<String> &str)

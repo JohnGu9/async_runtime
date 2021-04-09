@@ -28,33 +28,47 @@ ref<String> Http::Client::Result::errorString() const
     switch (error)
     {
     case httplib::Success:
-        return "Success";
+        static finalref<String> success = "Success";
+        return success;
     case httplib::Unknown:
-        return "Unknown";
+        static finalref<String> unknown = "Unknown";
+        return unknown;
     case httplib::Connection:
-        return "Connection";
+        static finalref<String> connection = "Connection";
+        return connection;
     case httplib::BindIPAddress:
-        return "BindIPAddress";
+        static finalref<String> bindIPAddress = "BindIPAddress";
+        return bindIPAddress;
     case httplib::Read:
-        return "Read";
+        static finalref<String> read = "Read";
+        return read;
     case httplib::Write:
-        return "Write";
+        static finalref<String> write = "Write";
+        return write;
     case httplib::ExceedRedirectCount:
-        return "ExceedRedirectCount";
+        static finalref<String> exceedRedirectCount = "ExceedRedirectCount";
+        return exceedRedirectCount;
     case httplib::Canceled:
-        return "Canceled";
+        static finalref<String> canceled = "Canceled";
+        return canceled;
     case httplib::SSLConnection:
-        return "SSLConnection";
+        static finalref<String> SSLConnection = "SSLConnection";
+        return SSLConnection;
     case httplib::SSLLoadingCerts:
-        return "SSLLoadingCerts";
+        static finalref<String> SSLLoadingCerts = "SSLLoadingCerts";
+        return SSLLoadingCerts;
     case httplib::SSLServerVerification:
-        return "SSLServerVerification";
+        static finalref<String> SSLServerVerification = "SSLServerVerification";
+        return SSLServerVerification;
     case httplib::UnsupportedMultipartBoundaryChars:
-        return "UnsupportedMultipartBoundaryChars";
+        static finalref<String> unsupportedMultipartBoundaryChars = "UnsupportedMultipartBoundaryChars";
+        return unsupportedMultipartBoundaryChars;
     case httplib::Compression:
-        return "Compression";
+        static finalref<String> compression = "Compression";
+        return compression;
     default:
-        return "Unknown Error Type";
+        static finalref<String> unknownErrorType = "UnknownErrorType";
+        return unknownErrorType;
     }
 }
 

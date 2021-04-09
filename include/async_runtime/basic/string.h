@@ -62,18 +62,28 @@ class String : public Object, protected std::string
 public:
     String() {}
     String(const char *const str) : std::string(str) { assert(str); }
+    String(const char *const str, size_t length) : std::string(str, length) { assert(str); }
     String(const std::string &str) : std::string(str) {}
     String(std::string &&str) : std::string(std::move(str)) {}
 
+    // new interface
     virtual bool isEmpty() const;
     virtual bool isNotEmpty() const;
     virtual bool startsWith(ref<String>) const;
     virtual bool endsWith(ref<String>) const;
-
     virtual const std::string &toStdString() const { return *this; }
+
+    // inherited interface
     virtual const char *const c_str() const { return std::string::c_str(); }
     virtual size_t length() const { return std::string::length(); }
     virtual size_t size() const { return std::string::size(); }
+    virtual const char &operator[](size_t index) const { return std::string::operator[](index); }
+    virtual size_t find(ref<String> pattern) const;
+    virtual size_t find_first_of(ref<String> pattern) const;
+    virtual size_t find_first_not_of(ref<String> pattern) const;
+    virtual size_t find_last_of(ref<String> pattern) const;
+    virtual size_t find_last_not_of(ref<String> pattern) const;
+    virtual ref<String> substr(size_t begin = 0, size_t length = SIZE_T_MAX) const;
 };
 
 template <>
@@ -139,6 +149,8 @@ protected:
     template <typename R>
     friend class Future;
 
+    friend class String;
+
     friend ref<String> operator+(const char c, const ref<String> &string);
     friend ref<String> operator+(const char *const str, const ref<String> &string);
     friend std::ostream &operator<<(std::ostream &os, const ref<String> &dt);
@@ -154,7 +166,7 @@ public:
     ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(const char str) : ar::RefImplement<String>(std::make_shared<String>(std::to_string(str))) {}
 
-    bool operator==(const ref<String> &other) const { return *(*this) == *other; }
+    bool operator==(const ref<String> &other) const { return std::equal((*this)->begin(), (*this)->end(), other->begin()); }
     bool operator==(const char *const other) const { return *(*this) == other; }
     bool operator==(const std::string &other) const { return *(*this) == other; }
     bool operator==(std::string &&other) const { return *(*this) == std::move(other); }
@@ -163,7 +175,6 @@ public:
     ref<String> operator+(const char *const str) const;
     ref<String> operator+(const std::string &other) const;
     ref<String> operator+(std::string &&other) const;
-
     ref<String> operator+(const ref<String> &other) const;
     ref<String> operator+(ref<Object> object) const;
 

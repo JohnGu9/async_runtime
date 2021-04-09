@@ -17,6 +17,6 @@ ref<String> Object::toString()
 
 void Object::toStringStream(std::ostream &os)
 {
-    os << "RuntimeType: " << this->runtimeType()
-       << "[" << (size_t)this << "]";
+    os << "class<" << this->runtimeType()
+       << ">[" << (size_t)this << ']';
 }
