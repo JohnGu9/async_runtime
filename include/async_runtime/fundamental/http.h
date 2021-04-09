@@ -23,11 +23,16 @@ public:
     class Result : public Object
     {
     public:
-        Result() {}
-        Result(httplib::Result &&other) {}
+        Result(httplib::Result &&other);
+
+        const std::unique_ptr<Response> response;
+        const httplib::Error error;
+        const httplib::Headers requestHeaders;
+
+        ref<String> errorString() const;
     };
 
-    Client(State<StatefulWidget> *state, ref<String> address, unsigned char port = 80)
+    Client(State<StatefulWidget> *state, ref<String> address, int port = 80)
         : Dispatcher(state), _client(address->c_str(), port) {}
 
     void dispose() override;
@@ -52,7 +57,7 @@ public:
     Server(State<StatefulWidget> *state) : Dispatcher(state) {}
     virtual ~Server() { assert(!_server.is_running() && "Http::Server was dropped before dispose. "); }
 
-    virtual Server *listen(ref<String> address, unsigned char port);
+    virtual Server *listen(ref<String> address, int port);
     virtual bool isRunning();
     void dispose() override;
 
@@ -68,4 +73,5 @@ public:
 
 protected:
     httplib::Server _server;
+    Thread _listenThread;
 };
