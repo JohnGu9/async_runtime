@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
 #include <httplib.h>
 
 #include "async.h"
@@ -47,6 +52,11 @@ public:
 
 protected:
     httplib::Client _client;
+
+public:
+    /// Directly access httplib::Client
+    /// Be careful callback go outside async runtime thread
+    httplib::Client &httplibClient = _client;
 };
 
 class Http::Server : public Dispatcher
@@ -54,7 +64,7 @@ class Http::Server : public Dispatcher
 public:
     using Handler = httplib::Server::Handler;
 
-    Server(State<StatefulWidget> *state) : Dispatcher(state) {}
+    Server(State<StatefulWidget> *state);
     virtual ~Server() { assert(!_server.is_running() && "Http::Server was dropped before dispose. "); }
 
     virtual Server *listen(ref<String> address, int port);
@@ -74,4 +84,9 @@ public:
 protected:
     httplib::Server _server;
     Thread _listenThread;
+
+public:
+    /// Directly access httplib::Server
+    /// Be careful callback go outside async runtime thread
+    httplib::Server &httplibServer = _server;
 };

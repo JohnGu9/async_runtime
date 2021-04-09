@@ -137,13 +137,25 @@ ref<Future<Res>> Http::Client::options(ref<String> pattern)
     return completer->future;
 }
 
+class _ThreadPoolTaskQueue : public httplib::TaskQueue
+{
+    ref<ThreadPool> _threadPool;
+
+public:
+    _ThreadPoolTaskQueue(ref<ThreadPool> threadPool) : _threadPool(threadPool) {}
+    void enqueue(std::function<void()> fn) override { _threadPool->post(fn); }
+    void shutdown() override { Object::detach(_threadPool); }
+};
+
+Http::Server::Server(State<StatefulWidget> *state) : Dispatcher(state)
+{
+    _server.new_task_queue = [this] { return new _ThreadPoolTaskQueue(this->_callbackHandler); };
+}
+
 Http::Server *Http::Server::listen(ref<String> address, int port)
 {
     _server.bind_to_port(address->c_str(), port);
-    _listenThread = Thread(
-        [this] {
-            _server.listen_after_bind();
-        });
+    _listenThread = Thread([this] { _server.listen_after_bind(); });
     return this;
 }
 
@@ -161,49 +173,37 @@ void Http::Server::dispose()
 
 Http::Server *Http::Server::onGet(ref<String> pattern, Handler handler)
 {
-    _server.Get(pattern->c_str(), [this, handler](const Request &request, Response &response) {
-        this->run([&] { handler(request, response); }).get();
-    });
+    _server.Get(pattern->c_str(), std::move(handler));
     return this;
 }
 
 Http::Server *Http::Server::onPost(ref<String> pattern, Handler handler)
 {
-    _server.Post(pattern->c_str(), [this, handler](const Request &request, Response &response) {
-        this->run([&] { handler(request, response); }).get();
-    });
+    _server.Post(pattern->c_str(), std::move(handler));
     return this;
 }
 
 Http::Server *Http::Server::onPut(ref<String> pattern, Handler handler)
 {
-    _server.Put(pattern->c_str(), [this, handler](const Request &request, Response &response) {
-        this->run([&] { handler(request, response); }).get();
-    });
+    _server.Put(pattern->c_str(), std::move(handler));
     return this;
 }
 
 Http::Server *Http::Server::onPatch(ref<String> pattern, Handler handler)
 {
-    _server.Patch(pattern->c_str(), [this, handler](const Request &request, Response &response) {
-        this->run([&] { handler(request, response); }).get();
-    });
+    _server.Patch(pattern->c_str(), std::move(handler));
     return this;
 }
 
 Http::Server *Http::Server::onDelete(ref<String> pattern, Handler handler)
 {
-    _server.Delete(pattern->c_str(), [this, handler](const Request &request, Response &response) {
-        this->run([&] { handler(request, response); }).get();
-    });
+    _server.Delete(pattern->c_str(), std::move(handler));
     return this;
 }
 
 Http::Server *Http::Server::onOptions(ref<String> pattern, Handler handler)
 {
-    _server.Options(pattern->c_str(), [this, handler](const Request &request, Response &response) {
-        this->run([&] { handler(request, response); }).get();
-    });
+    _server.Options(pattern->c_str(), std::move(handler));
     return this;
 }
 

@@ -9,7 +9,7 @@ void runApp(ref<Widget> widget)
 #endif
 
     debug_print("Debug mode on");
-    debug_print("Root widget is [" << widget->toString() << "]");
+    debug_print("Root widget is " << widget->toString());
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " start");
 
     ref<RootElement> root = Object::create<RootElement>(widget);
