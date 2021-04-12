@@ -8,7 +8,7 @@ void InheritedElement::attach()
 {
     Element::attach();
     this->_inheritances = this->_inheritances.copy();
-    this->_inheritances[this->_inheritWidget->runtimeType()] = Object::cast<Inheritance>(this->_inheritWidget.get());
+    this->_inheritances[this->_inheritWidget->runtimeType()] = this->_inheritWidget;
     ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
     this->attachElement(widget->createElement());
 }
@@ -44,7 +44,7 @@ void InheritedElement::update(ref<Widget> newWidget)
 void InheritedElement::notify(ref<Widget> newWidget)
 {
     Element::notify(newWidget);
-    this->_inheritances[this->_inheritWidget->runtimeType()] = Object::cast<Inheritance>(this->_inheritWidget.get());
+    this->_inheritances[this->_inheritWidget->runtimeType()] = this->_inheritWidget;
     this->_inheritWidget = newWidget->covariant<InheritedWidget>();
 
     ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
