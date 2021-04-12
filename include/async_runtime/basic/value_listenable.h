@@ -2,6 +2,7 @@
 
 #include "listenable.h"
 #include "change_notifier.h"
+#include "getter_setter.h"
 
 template <typename T = std::nullptr_t>
 class ValueListenable;
@@ -14,10 +15,6 @@ protected:
 };
 
 template <typename T>
-class ValueListenable : public ValueListenable<std::nullptr_t>
+class ValueListenable : public ValueListenable<std::nullptr_t>, public getter<T>
 {
-public:
-    // @mustCallSuper
-    virtual T &getValue() = 0;
-    virtual const T &getValue() const = 0;
 };

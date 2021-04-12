@@ -15,7 +15,7 @@ protected:
 };
 
 template <typename T>
-class ValueNotifier : public ValueListenable<T>, public ValueNotifier<std::nullptr_t>
+class ValueNotifier : public ValueListenable<T>, public ValueNotifier<std::nullptr_t>, public setter<T>
 {
 public:
     static ref<ValueNotifier<T>> fromValue(const T &value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
@@ -23,9 +23,9 @@ public:
     ValueNotifier() = delete;
     ValueNotifier(const T &value) : _value(value) {}
     ValueNotifier(T &&value) : _value(value) {}
-    virtual void setValue(const T &value);
-    virtual void setValue(T &&value);
 
+    void setValue(const T &value) override;
+    void setValue(T &&value) override;
     T &getValue() override;
     const T &getValue() const override;
 
