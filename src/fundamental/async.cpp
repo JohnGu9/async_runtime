@@ -41,8 +41,8 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString)
     }
     else
     {
-        static finalref<String> prefix = "ThreadPool#";
-        this->_name = prefix + size_t(this);
+        static finalref<String> prefix = "ThreadPool<";
+        this->_name = prefix + size_t(this) + ">";
     }
 
     {
@@ -110,7 +110,7 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
     };
 }
 
-ref<String> ThreadPool::childrenThreadName(size_t id) { return this->name + "#" + id; }
+ref<String> ThreadPool::childrenThreadName(size_t id) { return this->name + "[" + id + "]"; }
 
 size_t ThreadPool::threads() const { return this->_workers.size(); }
 

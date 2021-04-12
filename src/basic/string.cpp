@@ -105,15 +105,15 @@ ref<String> ref<String>::operator+(ref<Object> object) const
     return ref<String>(ptr);
 }
 
-size_t String::find(ref<String> pattern) const { return std::string::find(pattern->c_str()); }
+size_t String::find(ref<String> pattern) const { return std::string::find(*pattern); }
 
-size_t String::find_first_of(ref<String> pattern) const { return std::string::find_first_of(pattern->c_str()); }
+size_t String::find_first_of(ref<String> pattern) const { return std::string::find_first_of(*pattern); }
 
-size_t String::find_first_not_of(ref<String> pattern) const { return std::string::find_first_not_of(pattern->c_str()); }
+size_t String::find_first_not_of(ref<String> pattern) const { return std::string::find_first_not_of(*pattern); }
 
-size_t String::find_last_of(ref<String> pattern) const { return std::string::find_last_of(pattern->c_str()); }
+size_t String::find_last_of(ref<String> pattern) const { return std::string::find_last_of(*pattern); }
 
-size_t String::find_last_not_of(ref<String> pattern) const { return std::string::find_last_not_of(pattern->c_str()); }
+size_t String::find_last_not_of(ref<String> pattern) const { return std::string::find_last_not_of(*pattern); }
 
 bool String::isEmpty() const
 {
@@ -178,4 +178,3 @@ ref<String> operator+(const char *const str, const ref<String> &string)
     return ref<String>(ptr);
 }
 
-std::string std::to_string(bool b) { return b ? "true" : "false"; }

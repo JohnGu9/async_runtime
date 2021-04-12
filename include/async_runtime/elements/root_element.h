@@ -4,10 +4,10 @@
 
 class GlobalKey;
 class LoggerHandler;
-class RootInheritedWidget;
+class Process;
 class RootElement : public SingleChildElement
 {
-    friend RootInheritedWidget;
+    friend Process;
 
 public:
     RootElement(ref<Widget> child);

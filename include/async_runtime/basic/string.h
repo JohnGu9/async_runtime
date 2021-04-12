@@ -60,6 +60,10 @@ class String : public Object, protected std::string
     }
 
 public:
+    using const_iterator = std::string::const_iterator;
+    using const_reverse_iterator = std::string::const_reverse_iterator;
+    class View;
+
     String() {}
     String(const char *const str) : std::string(str) { assert(str); }
     String(const char *const str, size_t length) : std::string(str, length) { assert(str); }
@@ -77,7 +81,13 @@ public:
     virtual const char *const c_str() const { return std::string::c_str(); }
     virtual size_t length() const { return std::string::length(); }
     virtual size_t size() const { return std::string::size(); }
+
     virtual const char &operator[](size_t index) const { return std::string::operator[](index); }
+    virtual const_iterator begin() const { return std::string::begin(); }
+    virtual const_iterator end() const { return std::string::end(); }
+    virtual const_reverse_iterator rbegin() const { return std::string::rbegin(); }
+    virtual const_reverse_iterator rend() const { return std::string::rend(); }
+
     virtual size_t find(ref<String> pattern) const;
     virtual size_t find_first_of(ref<String> pattern) const;
     virtual size_t find_first_not_of(ref<String> pattern) const;
@@ -187,6 +197,13 @@ public:
     }
 };
 
+class String::View : public String
+{
+    ref<String> _parent;
+
+public:
+};
+
 ref<String> operator+(const char c, const ref<String> &string);
 ref<String> operator+(const char *const str, const ref<String> &string);
 std::ostream &operator<<(std::ostream &os, const ref<String> &str);
@@ -199,7 +216,7 @@ option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cas
 
 namespace std
 {
-    std::string to_string(bool b);
+    inline std::string to_string(bool b) { return b ? "true" : "false"; }
 
     template <>
     struct hash<::ref<String>>

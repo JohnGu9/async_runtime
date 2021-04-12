@@ -2,7 +2,7 @@
 #include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/elements/root_element.h"
 #include "async_runtime/elements/key.h"
-#include "async_runtime/widgets/root_inherited_widget.h"
+#include "async_runtime/widgets/process.h"
 #include "async_runtime/basic/tree.h"
 
 static inline void shutdownInfo()
@@ -29,7 +29,7 @@ void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement d
 
 void RootElement::attach()
 {
-    this->_child = Object::create<RootInheritedWidget>(this->_child, self());
+    this->_child = Object::create<Process>(this->_child, self());
     this->_inheritances = {};
     this->attachElement(this->_child->createElement());
 }
