@@ -21,13 +21,14 @@ public:
     class _StdoutLoggerHandler : public LoggerHandler
     {
         ref<State<StatefulWidget>> _state;
+        State<StatefulWidget> *_pointer;
 
     public:
-        _StdoutLoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) { assert(state); }
+        _StdoutLoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)), _pointer(state) { assert(state); }
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return async<bool>(this->_state.get(), [str] {
+            return async<bool>(_pointer, [str] {
                 std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
                 return true;
             });
@@ -35,7 +36,7 @@ public:
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return async<bool>(this->_state.get(), [str] {
+            return async<bool>(_pointer, [str] {
                 info_print(str);
                 return true;
             });
@@ -90,16 +91,17 @@ public:
     class _LoggerBlocker : public LoggerHandler
     {
         ref<State<StatefulWidget>> _state;
+        State<StatefulWidget> *_pointer;
 
     public:
-        _LoggerBlocker(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}
+        _LoggerBlocker(State<StatefulWidget> *state) : _state(Object::cast<>(state)), _pointer(state) {}
         ref<Future<bool>> write(ref<String> str) override
         {
-            return Future<bool>::value(this->_state.get(), true);
+            return Future<bool>::value(_pointer, true);
         }
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return Future<bool>::value(this->_state.get(), true);
+            return Future<bool>::value(_pointer, true);
         }
 
         void dispose() override {}

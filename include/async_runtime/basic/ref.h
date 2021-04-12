@@ -1,5 +1,5 @@
 /// The mechanism of nullsafety system
-/// Implement base on std::shared_ptr and std::weak_ptr
+/// Implement base on std::shared_ptr and std::weak_ptr (don't confuse by std::ref)
 /// Thread safe and memory safe
 ///
 ///
@@ -13,7 +13,7 @@
 ///
 /// weakref<Object> wr = object; // weak ref that point toward a ref that doesn't lock the resource
 ///
-/// refOfObject->function(); // only ref call directly call member. option and weakref can not. 
+/// refOfObject->function(); // only ref call directly call member. option and weakref can not.
 /// // only way option and weakref call member is to change option and weakref to ref
 ///
 ///
@@ -27,7 +27,6 @@
 /// object = opt.isNotNullElse([]() ->ref<Object> { return Object::create<Object>(); }) // if opt is not null change opt to ref, otherwise create a new Object
 /// object = opt.isNotNullElse(Object::create<Object>); another syntax
 ///
-
 
 #pragma once
 
@@ -69,8 +68,11 @@ namespace ar
 };
 
 template <typename T>
-class option : public std::shared_ptr<T>, public ar::ToRefMixin<T>
+class option : protected std::shared_ptr<T>, public ar::ToRefMixin<T>
 {
+    template <typename R>
+    friend class option;
+
     template <typename R>
     friend class weakref;
 
@@ -85,6 +87,22 @@ class option : public std::shared_ptr<T>, public ar::ToRefMixin<T>
 
     friend class Object;
 
+    template <typename R>
+    friend bool operator==(const option<R> &opt, std::nullptr_t);
+    template <typename R>
+    friend bool operator!=(const option<R> &opt, std::nullptr_t);
+
+    template <typename X, typename Y>
+    friend bool operator==(const option<X> &object0, const option<Y> &object1);
+    template <typename X, typename Y>
+    friend bool operator!=(const option<X> &object0, const option<Y> &object1);
+
+    static const std::hash<std::shared_ptr<T>> &_hash()
+    {
+        static const auto hs = std::hash<std::shared_ptr<T>>();
+        return hs;
+    }
+
 public:
     static option<T> null()
     {
@@ -98,11 +116,12 @@ public:
     option(const ref<R> &other);
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const option<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)) {}
+    option(const option<R> &other) : std::shared_ptr<T>(static_cast<const std::shared_ptr<R>>(other)) {}
 
     bool isNotNull(ref<T> &) const override;
     ref<T> isNotNullElse(std::function<ref<T>()>) const override;
     ref<T> assertNotNull() const override;
+    size_t hashCode() const { return _hash()(static_cast<const std::shared_ptr<T>>(*this)); }
 
     T *operator->() const = delete;
     operator bool() const = delete;
@@ -275,9 +294,14 @@ public:
 /// function implement
 
 template <typename T>
-bool operator==(const option<T> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<T>>(opt) == nullptr; }
+bool operator==(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T>>(opt) == nullptr; }
 template <typename T>
-bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<std::shared_ptr<T>>(opt) != nullptr; }
+bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T>>(opt) != nullptr; }
+
+template <typename T, typename R>
+bool operator==(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T>>(object0) == static_cast<const std::shared_ptr<R>>(object1); }
+template <typename T, typename R>
+bool operator!=(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T>>(object0) != static_cast<const std::shared_ptr<R>>(object1); }
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
@@ -331,11 +355,7 @@ namespace std
     template <typename T>
     struct hash<::option<T>>
     {
-        std::size_t operator()(const ::option<T> &other) const
-        {
-            static const auto hs = hash<std::shared_ptr<T>>();
-            return hs(static_cast<std::shared_ptr<T>>(other));
-        }
+        std::size_t operator()(const ::option<T> &other) const { return other.hashCode(); }
     };
 
     template <typename T>
@@ -343,8 +363,8 @@ namespace std
     {
         std::size_t operator()(const ::ref<T> &other) const
         {
-            static const auto hs = hash<std::shared_ptr<T>>();
-            return hs(static_cast<std::shared_ptr<T>>(other));
+            static const auto hs = hash<::option<T>>();
+            return hs(static_cast<const ::option<T>>(other));
         }
     };
 } // namespace std

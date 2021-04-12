@@ -86,11 +86,11 @@ void RootElement::scheduleRootWidget()
                 ThreadPool::setThreadName("ConsoleThread");
 #endif
                 self->_console();
-                shutdownInfo();
-                self->_condition.notify_all();
+                shutdownInfo();                // _console loop exited
+                self->_condition.notify_all(); // notify main thread to exit
             });
         }
-        this->_condition.wait(lock); // wait for exit
+        this->_condition.wait(lock); // wait for notify to exit
     }
     thread.detach();
     this->detach();
@@ -159,32 +159,33 @@ void RootElement::onCommand(const std::string &in)
     }
     else if (command == "ls")
     {
-        Map<Element *, List<Element *>> map = {{this, List<Element *>::empty()}};
+        Map<ref<Element>, List<ref<Element>>> map = {{self(), List<ref<Element>>::empty()}};
         this->visitDescendant([&map](ref<Element> element) -> bool {
-            option<Element> parent = element->parent.toOption();
-            map[parent.get()]->emplace_back(element.get());
-            map[element.get()] = List<Element *>::empty();
+            ref<Element> parent = element->parent.assertNotNull();
+            map[parent]->emplace_back(element);
+            map[element] = List<ref<Element>>::empty();
             return false;
         });
         ref<Tree> tree = Object::create<Tree>();
-        Function<void(Element *, ref<Tree>)> buildTree;
+        Function<void(ref<Element>, ref<Tree>)> buildTree;
         buildTree =
-            [&](Element *currentElement, ref<Tree> currentTree) {
+            [&](ref<Element> currentElement, ref<Tree> currentTree) {
                 std::stringstream ss;
-                ss << font_wrapper(BOLDBLUE, currentElement->runtimeType()) << " [" << (size_t)currentElement << "] " << std::endl
+                ss << font_wrapper(BOLDBLUE, currentElement->runtimeType()) << " [" << currentElement->hashCode() << "] " << std::endl
                    << "  widget: " << currentElement->widget->runtimeType() << std::endl;
-                if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
-                    ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
+                lateref<StatefulElement> statefulElement;
+                if (currentElement->cast<StatefulElement>().isNotNull(statefulElement))
+                    ss << "  state: " << statefulElement->_state->runtimeType() << " [" << statefulElement->_state->hashCode() << "] " << std::endl;
                 currentTree->info = ss.str();
-                List<Element *> &children = map[currentElement];
-                for (Element *child : children)
+                List<ref<Element>> &children = map[currentElement];
+                for (ref<Element> child : children)
                 {
                     ref<Tree> childTree = Object::create<Tree>();
                     buildTree(child, childTree);
                     currentTree->children->emplace_back(childTree);
                 }
             };
-        buildTree(this, tree);
+        buildTree(self(), tree);
         this->getMainHandler()->post([&] { tree->toStringStream(std::cout); }).get();
     }
     else if (command == "ps")
