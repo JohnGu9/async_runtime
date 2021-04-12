@@ -58,7 +58,6 @@ public:
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();
     virtual void init() {}
-    virtual size_t hashCode() const { return (size_t)this; }
 
     Object() {}
     virtual ~Object() {}

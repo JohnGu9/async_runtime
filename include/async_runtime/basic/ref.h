@@ -116,12 +116,13 @@ public:
     option(const ref<R> &other);
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const option<R> &other) : std::shared_ptr<T>(static_cast<const std::shared_ptr<R>>(other)) {}
+    option(const option<R> &other) : std::shared_ptr<T>(static_cast<const std::shared_ptr<R> &>(other)) {}
 
     bool isNotNull(ref<T> &) const override;
     ref<T> isNotNullElse(std::function<ref<T>()>) const override;
     ref<T> assertNotNull() const override;
-    size_t hashCode() const { return _hash()(static_cast<const std::shared_ptr<T>>(*this)); }
+    size_t hashCode() const { return _hash()(static_cast<const std::shared_ptr<T> &>(*this)); }
+    T *get() const { return std::shared_ptr<T>::get(); }
 
     T *operator->() const = delete;
     operator bool() const = delete;
@@ -223,8 +224,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<T>(other) {}
 
-    bool operator==(std::nullptr_t) const { return static_cast<std::shared_ptr<T>>(*this) == nullptr; }
-    bool operator!=(std::nullptr_t) const { return static_cast<std::shared_ptr<T>>(*this) != nullptr; }
+    bool operator==(std::nullptr_t) const { return static_cast<const std::shared_ptr<T> &>(*this) == nullptr; }
+    bool operator!=(std::nullptr_t) const { return static_cast<const std::shared_ptr<T> &>(*this) != nullptr; }
 
 protected:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -294,23 +295,23 @@ public:
 /// function implement
 
 template <typename T>
-bool operator==(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T>>(opt) == nullptr; }
+bool operator==(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T> &>(opt) == nullptr; }
 template <typename T>
-bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T>>(opt) != nullptr; }
+bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T> &>(opt) != nullptr; }
 
 template <typename T, typename R>
-bool operator==(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T>>(object0) == static_cast<const std::shared_ptr<R>>(object1); }
+bool operator==(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T>>(object0) != static_cast<const std::shared_ptr<R>>(object1); }
+bool operator!=(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) != static_cast<const std::shared_ptr<R> &>(object1); }
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
-option<T>::option(const ref<R> &other) : std::shared_ptr<T>(static_cast<std::shared_ptr<R>>(other)) {}
+option<T>::option(const ref<R> &other) : std::shared_ptr<T>(static_cast<const std::shared_ptr<R> &>(other)) {}
 
 template <typename T>
 bool option<T>::isNotNull(ref<T> &object) const
 {
-    const std::shared_ptr<T> ptr = static_cast<const std::shared_ptr<T>>(*this);
+    const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
     {
         object = ptr;
@@ -325,7 +326,7 @@ bool option<T>::isNotNull(ref<T> &object) const
 template <typename T>
 ref<T> option<T>::isNotNullElse(std::function<ref<T>()> fn) const
 {
-    const std::shared_ptr<T> ptr = static_cast<const std::shared_ptr<T>>(*this);
+    const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
     {
         return ref<T>(ptr);
@@ -339,7 +340,7 @@ ref<T> option<T>::isNotNullElse(std::function<ref<T>()> fn) const
 template <typename T>
 ref<T> option<T>::assertNotNull() const
 {
-    const std::shared_ptr<T> ptr = static_cast<const std::shared_ptr<T>>(*this);
+    const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
     {
         return ref<T>(ptr);
@@ -364,7 +365,7 @@ namespace std
         std::size_t operator()(const ::ref<T> &other) const
         {
             static const auto hs = hash<::option<T>>();
-            return hs(static_cast<const ::option<T>>(other));
+            return hs(static_cast<const ::option<T> &>(other));
         }
     };
 } // namespace std
