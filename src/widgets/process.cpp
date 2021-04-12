@@ -15,9 +15,12 @@ bool Process::updateShouldNotify(ref<InheritedWidget> oldWidget)
 
 void Process::exit()
 {
-    ref<RootElement> root = this->_root.assertNotNull();
-    root->getMainHandler()->post([root] {
-        root->_consoleStop = true;
-        root->_condition.notify_all();
-    });
+    lateref<RootElement> root;
+    if (_root.isNotNull(root))
+    {
+        root->getMainHandler()->post([root] {
+            root->_consoleStop = true;
+            root->_condition.notify_all();
+        });
+    }
 }

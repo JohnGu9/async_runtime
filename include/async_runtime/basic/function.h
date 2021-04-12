@@ -57,7 +57,8 @@ namespace std
     {
         std::size_t operator()(const Function<ReturnType(Args...)> &other) const
         {
-            return hash<std::shared_ptr<std::function<ReturnType(Args...)>>>()(other._fn);
+            static const auto hs = hash<std::shared_ptr<std::function<ReturnType(Args...)>>>();
+            return hs(other._fn);
         }
     };
 } // namespace std

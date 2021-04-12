@@ -1,11 +1,3 @@
-#pragma once
-
-#include <string>
-#include <sstream>
-#include <memory>
-#include "ref.h"
-#include "../object.h"
-
 /// [String] is [Object] now
 /// Do not use [String] directly
 /// Wrap [String] with nullsafety api like [ref] or [option]
@@ -28,6 +20,16 @@
 /// ref<String> withTrueString = string + true; // append any type that support std::to_string
 /// ref<String> withTrueString = string + 1.023;
 ///
+/// // ref<String> and option<String> also work with Map and Set like std::string
+///
+
+#pragma once
+
+#include <string>
+#include <sstream>
+#include <memory>
+#include "ref.h"
+#include "../object.h"
 
 template <>
 class option<String>;
@@ -171,15 +173,26 @@ protected:
     ref(const std::shared_ptr<String> &other) : ar::RefImplement<String>(other) {}
 
 public:
+    ref(const ref<String> &other) : ar::RefImplement<String>(static_cast<const std::shared_ptr<String> &>(other)){};
     ref(const std::string &str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(std::string &&str) : ar::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
     ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(const char str) : ar::RefImplement<String>(std::make_shared<String>(std::to_string(str))) {}
 
-    bool operator==(const ref<String> &other) const { return std::equal((*this)->begin(), (*this)->end(), other->begin()); }
+    bool operator==(const ref<String> &other) const
+    {
+        if (this->get() == other.get())
+            return true;
+        return std::equal((*this)->begin(), (*this)->end(), other->begin());
+    }
     bool operator==(const char *const other) const { return *(*this) == other; }
     bool operator==(const std::string &other) const { return *(*this) == other; }
     bool operator==(std::string &&other) const { return *(*this) == std::move(other); }
+
+    bool operator!=(const ref<String> &other) const { return !operator==(other); }
+    bool operator!=(const char *const other) const { return !operator==(other); }
+    bool operator!=(const std::string &other) const { return !operator==(other); }
+    bool operator!=(std::string &&other) const { return !operator==(std::move(other)); }
 
     ref<String> operator+(const char c) const;
     ref<String> operator+(const char *const str) const;
