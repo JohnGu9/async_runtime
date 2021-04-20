@@ -28,47 +28,75 @@ ref<String> Http::Client::Result::errorString() const
     switch (error)
     {
     case httplib::Success:
+    {
         static finalref<String> success = "Success";
         return success;
+    }
     case httplib::Unknown:
+    {
         static finalref<String> unknown = "Unknown";
         return unknown;
+    }
     case httplib::Connection:
+    {
         static finalref<String> connection = "Connection";
         return connection;
+    }
     case httplib::BindIPAddress:
+    {
         static finalref<String> bindIPAddress = "BindIPAddress";
         return bindIPAddress;
+    }
     case httplib::Read:
+    {
         static finalref<String> read = "Read";
         return read;
+    }
     case httplib::Write:
+    {
         static finalref<String> write = "Write";
         return write;
+    }
     case httplib::ExceedRedirectCount:
+    {
         static finalref<String> exceedRedirectCount = "ExceedRedirectCount";
         return exceedRedirectCount;
+    }
     case httplib::Canceled:
+    {
         static finalref<String> canceled = "Canceled";
         return canceled;
+    }
     case httplib::SSLConnection:
+    {
         static finalref<String> SSLConnection = "SSLConnection";
         return SSLConnection;
+    }
     case httplib::SSLLoadingCerts:
+    {
         static finalref<String> SSLLoadingCerts = "SSLLoadingCerts";
         return SSLLoadingCerts;
+    }
     case httplib::SSLServerVerification:
+    {
         static finalref<String> SSLServerVerification = "SSLServerVerification";
         return SSLServerVerification;
+    }
     case httplib::UnsupportedMultipartBoundaryChars:
+    {
         static finalref<String> unsupportedMultipartBoundaryChars = "UnsupportedMultipartBoundaryChars";
         return unsupportedMultipartBoundaryChars;
+    }
     case httplib::Compression:
+    {
         static finalref<String> compression = "Compression";
         return compression;
+    }
     default:
+    {
         static finalref<String> unknownErrorType = "UnknownErrorType";
         return unknownErrorType;
+    }
     }
 }
 

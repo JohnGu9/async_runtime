@@ -28,6 +28,7 @@
 #include <string>
 #include <sstream>
 #include <memory>
+#include <limits>
 #include "ref.h"
 #include "../object.h"
 
@@ -95,7 +96,7 @@ public:
     virtual size_t find_first_not_of(ref<String> pattern) const;
     virtual size_t find_last_of(ref<String> pattern) const;
     virtual size_t find_last_not_of(ref<String> pattern) const;
-    virtual ref<String> substr(size_t begin = 0, size_t length = SIZE_T_MAX) const;
+    virtual ref<String> substr(size_t begin = 0, size_t length = SIZE_MAX) const;
 };
 
 template <>
@@ -173,7 +174,7 @@ protected:
     ref(const std::shared_ptr<String> &other) : ar::RefImplement<String>(other) {}
 
 public:
-    ref(const ref<String> &other) : ar::RefImplement<String>(static_cast<const std::shared_ptr<String> &>(other)){};
+    ref(const ref<String> &other) : ar::RefImplement<String>(other){};
     ref(const std::string &str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(std::string &&str) : ar::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
     ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
@@ -183,6 +184,8 @@ public:
     {
         if (this->get() == other.get())
             return true;
+        if ((*this)->length() != other->length())
+            return false; 
         return std::equal((*this)->begin(), (*this)->end(), other->begin());
     }
     bool operator==(const char *const other) const { return *(*this) == other; }
