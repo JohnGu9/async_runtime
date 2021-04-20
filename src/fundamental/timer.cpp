@@ -1,6 +1,87 @@
 #include <ctime>
+#include <vector>
+#include <algorithm>
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
+
+struct TimerTask
+{
+    using time_point = std::chrono::system_clock::time_point;
+    time_point timePoint;
+    Function<void()> task;
+};
+
+namespace std
+{
+    template <>
+    struct greater<TimerTask>
+    {
+        bool operator()(const TimerTask &lhs, const TimerTask &rhs) const
+        {
+            return lhs.timePoint > rhs.timePoint;
+        }
+    };
+};
+
+class TimerThread : public Object
+{
+public:
+    using time_point = std::chrono::system_clock::time_point;
+
+    std::mutex _mutex;
+    std::condition_variable _cv;
+    std::vector<TimerTask> _timePoints;
+    Thread _thread;
+
+    TimerThread()
+    {
+        _timePoints.reserve(64);
+        _thread = Thread([this] {
+#ifdef DEBUG
+            ThreadPool::thisThreadName = "TimerThread";
+            ThreadPool::setThreadName(ThreadPool::thisThreadName);
+#endif
+            while (true)
+            {
+                {
+                    std::unique_lock<std::mutex> lock(_mutex);
+                    if (_timePoints.empty())
+                        _cv.wait(lock);
+                    else
+                        _cv.wait_until(lock, _timePoints.front().timePoint);
+                }
+                {
+                    const auto now = std::chrono::system_clock::now();
+                    std::unique_lock<std::mutex> lock(_mutex);
+                    while (_timePoints.front().timePoint <= now)
+                    {
+                        std::pop_heap(_timePoints.begin(), _timePoints.end(), std::greater<TimerTask>());
+                        _timePoints.back().task();
+                        _timePoints.pop_back();
+                        if (_timePoints.empty())
+                            break;
+                    }
+                }
+            }
+        });
+    }
+    ~TimerThread() { _thread.detach(); }
+
+    void post(TimerTask task)
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _timePoints.emplace_back(task);
+        std::push_heap(_timePoints.begin(), _timePoints.end(), std::greater<TimerTask>());
+        lock.unlock();
+        _cv.notify_one();
+    }
+};
+
+static const ref<TimerThread> &sharedTimerThread()
+{
+    static const auto singleton = Object::create<TimerThread>();
+    return singleton;
+}
 
 Timer::Timer(State<StatefulWidget> *state, const _FactoryOnly &)
     : Dispatcher(state), _clear(false) {}
@@ -50,41 +131,32 @@ void Timer::_setTimeout(Duration delay, Function<void()> function)
     using std::chrono::system_clock;
     system_clock::time_point current = system_clock::now();
     ref<Timer> self = self(); // hold a ref of self inside the Function
-    _thread = std::make_shared<Thread>([=] {
-#ifdef DEBUG
-        ThreadPool::setThreadName("TimerThread");
-#endif
-        if (self->_clear)
-            return;
-        std::this_thread::sleep_until(current + delay.toChronoMilliseconds());
-        if (self->_clear)
-            return;
-        self->microTask(function);
-    });
+    sharedTimerThread()->post(TimerTask{
+        current + delay.toChronoMilliseconds(),
+        [self, function] {
+            if (self->_clear)
+                return;
+            self->microTask(function);
+        }});
 }
 
 void Timer::_setInterval(Duration interval, Function<void()> function)
 {
     assert(this->_clear == false);
     using std::chrono::system_clock;
-    system_clock::time_point current = system_clock::now();
+    auto next = std::make_shared<system_clock::time_point>(system_clock::now() + interval.toChronoMilliseconds());
     ref<Timer> self = self(); // hold a ref of self inside the Function
-    _thread = std::make_shared<Thread>([=] {
-        system_clock::time_point nextTime = current;
-#ifdef DEBUG
-        ThreadPool::setThreadName("TimerThread");
-#endif
-        if (self->_clear)
-            return;
-        while (true)
-        {
-            nextTime += interval.toChronoMilliseconds();
-            std::this_thread::sleep_until(nextTime);
+    auto task = std::make_shared<std::function<void()>>();
+    *task = [=] {
+        self->microTask([=] {
             if (self->_clear)
                 return;
-            self->microTask(function);
-        }
-    });
+            function();
+            *next += interval.toChronoMilliseconds();
+            sharedTimerThread()->post(TimerTask{*next, *task});
+        });
+    };
+    sharedTimerThread()->post(TimerTask{*next, *task});
 }
 
 void Timer::cancel()
@@ -95,6 +167,5 @@ void Timer::cancel()
 void Timer::dispose()
 {
     this->cancel();
-    this->_thread->detach(); // timer would not wait thread complete.
     Dispatcher::dispose();
 }

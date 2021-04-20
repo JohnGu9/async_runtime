@@ -29,7 +29,6 @@ protected:
     void dispose() override;
 
     std::atomic_bool _clear;
-    std::shared_ptr<Thread> _thread;
 
     // now Timer can't reuse
     // Please create new Timer for new task
