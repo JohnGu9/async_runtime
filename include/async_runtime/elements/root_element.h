@@ -15,7 +15,7 @@ public:
     void attach() override;
     void detach() override;
     void visitDescendant(Function<bool(ref<Element>)>) override;
-    virtual void scheduleRootWidget();
+    virtual int scheduleRootWidget();
 
     virtual ref<LoggerHandler> getStdoutHandler();
     virtual ref<ThreadPool> getMainHandler();
@@ -33,5 +33,6 @@ protected:
     lateref<Widget> _child;
     lateref<GlobalKey> _coutKey;
     std::atomic_bool _consoleStop;
+    int _exitCode = 0;
     virtual void _console();
 };

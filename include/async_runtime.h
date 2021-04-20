@@ -20,4 +20,4 @@
 #include "async_runtime/fundamental/file.h"
 #include "async_runtime/fundamental/scheduler.h"
 
-void runApp(ref<Widget> widget);
+int runApp(ref<Widget> widget);

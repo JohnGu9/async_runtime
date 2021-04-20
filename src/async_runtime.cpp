@@ -1,7 +1,7 @@
 #include "async_runtime.h"
 #include "async_runtime/elements/root_element.h"
 
-void runApp(ref<Widget> widget)
+int runApp(ref<Widget> widget)
 {
 #ifndef DEBUG
     printf("\033c");
@@ -13,7 +13,8 @@ void runApp(ref<Widget> widget)
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " start");
 
     ref<RootElement> root = Object::create<RootElement>(widget);
-    root->scheduleRootWidget();
+    const auto exitCode = root->scheduleRootWidget();
 
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited");
+    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited with code " << exitCode);
+    return exitCode;
 }

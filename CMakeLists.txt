@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
 # message(STATUS "Compiler Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
+option(ASYNC_RUNTIME_BUILD_SHARED "Build AsyncRuntime Shared Library(only available on unix-like system, not available on win32)" ON)
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-DDEBUG)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -13,13 +14,14 @@ message(STATUS "Async Runtime using CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 find_package(Threads REQUIRED)
 if(CMAKE_USE_WIN32_THREADS_INIT)
-    message(STATUS "Async Runtime using Threads: win32")
+set(THREAD_LIBRARY_NAME "win32")
 elseif(CMAKE_USE_PTHREADS_INIT)
-    message(STATUS "Async Runtime using Threads: pthread")
+set(THREAD_LIBRARY_NAME "pthread")
 elseif(CMAKE_HP_PTHREADS_INIT)
-    message(STATUS "Async Runtime using Threads: HP thread")
+set(THREAD_LIBRARY_NAME "HP thread")
 endif()
-message(STATUS "Async Runtime using Threads libraries: ${CMAKE_THREAD_LIBS_INIT}")
+message(STATUS "Async Runtime using Threads: ${THREAD_LIBRARY_NAME}")
+message(STATUS "Async Runtime using Threads libraries: ${CMAKE_THREAD_LIBS_INIT}") # Depend on system. CMAKE_THREAD_LIBS_INIT maybe empty. 
 
 find_package(OpenSSL REQUIRED)
 message(STATUS "Async Runtime using OpenSSL version: ${OPENSSL_VERSION}")
@@ -47,8 +49,13 @@ if(MSVC) # in msvc, async_runtime not support shared library mode
 add_library(async_runtime 
     ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
 else()
-add_library(async_runtime SHARED 
-    ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+    if(ASYNC_RUNTIME_BUILD_SHARED)
+        add_library(async_runtime SHARED 
+            ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+    else()
+        add_library(async_runtime 
+            ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+    endif()
 endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES})
 

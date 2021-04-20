@@ -13,13 +13,14 @@ bool Process::updateShouldNotify(ref<InheritedWidget> oldWidget)
     return old->_root.toOption() != this->_root.toOption();
 }
 
-void Process::exit()
+void Process::exit(const int exitCode)
 {
     lateref<RootElement> root;
     if (_root.isNotNull(root))
     {
-        root->getMainHandler()->post([root] {
+        root->getMainHandler()->post([root, exitCode] {
             root->_consoleStop = true;
+            root->_exitCode = exitCode;
             root->_condition.notify_all();
         });
     }

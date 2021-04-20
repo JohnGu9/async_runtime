@@ -5,11 +5,6 @@
 #include "async_runtime/widgets/process.h"
 #include "async_runtime/basic/tree.h"
 
-static inline void shutdownInfo()
-{
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
-}
-
 struct _MockWidget : Widget
 {
     _MockWidget() : Widget(nullptr) {}
@@ -17,7 +12,8 @@ struct _MockWidget : Widget
 };
 
 /// Root Element
-RootElement::RootElement(ref<Widget> widget) : SingleChildElement(Object::create<_MockWidget>()), _consoleStop(false)
+RootElement::RootElement(ref<Widget> widget)
+    : SingleChildElement(Object::create<_MockWidget>()), _consoleStop(false)
 {
     this->_coutKey = Object::create<GlobalKey>();
     this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _coutKey), "RootThread");
@@ -73,7 +69,7 @@ Scheduler::Handler RootElement::getMainHandler()
     return Scheduler::of(context);
 }
 
-void RootElement::scheduleRootWidget()
+int RootElement::scheduleRootWidget()
 {
     this->attach();
     Thread thread;
@@ -86,7 +82,7 @@ void RootElement::scheduleRootWidget()
                 ThreadPool::setThreadName("ConsoleThread");
 #endif
                 self->_console();
-                shutdownInfo();
+                info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
                 self->_condition.notify_all();
             });
         }
@@ -94,6 +90,7 @@ void RootElement::scheduleRootWidget()
     }
     thread.detach();
     this->detach();
+    return this->_exitCode;
 }
 
 void RootElement::_console()
@@ -123,7 +120,10 @@ void RootElement::_console()
             ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
             this->getStdoutHandler()->write(ss.str())->sync();
             if (std::getline(std::cin, input) && (input == "y" || input == "yes" || this->_consoleStop))
+            {
+                this->_consoleStop = true;
                 return;
+            }
             this->getStdoutHandler()->writeLine("cancel")->sync();
         }
         else

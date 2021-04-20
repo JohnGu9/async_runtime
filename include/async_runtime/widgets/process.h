@@ -11,7 +11,10 @@ public:
         : InheritedWidget(child, key), _root(root) {}
 
     bool updateShouldNotify(ref<InheritedWidget> oldWidget) override;
-    virtual void exit();
+    virtual void exit(const int exitCode = 0
+                      /* alarm: only affect runApp return value, not exit program directly! */
+                      /* AsyncRuntime don't change program's life-cycle. It's always gentlemanly handling anything. */
+                      );
 
 protected:
     weakref<RootElement> _root;
