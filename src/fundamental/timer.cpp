@@ -1,5 +1,4 @@
 #include <ctime>
-#include <vector>
 #include <algorithm>
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
@@ -30,12 +29,11 @@ public:
 
     std::mutex _mutex;
     std::condition_variable _cv;
-    std::vector<TimerTask> _timePoints;
+    std::deque<TimerTask> _timePoints;
     Thread _thread;
 
     TimerThread()
     {
-        _timePoints.reserve(64);
         _thread = Thread([this] {
 #ifdef DEBUG
             ThreadPool::thisThreadName = "TimerThread";
@@ -43,24 +41,22 @@ public:
 #endif
             while (true)
             {
+                std::unique_lock<std::mutex> lock(_mutex);
+                if (_timePoints.empty())
+                    _cv.wait(lock, [this] { return _hasNewTask; });
+                else
+                    _cv.wait_until(lock, _timePoints.front().timePoint, [this] { return _hasNewTask; });
+                _hasNewTask = false;
+
+                const auto now = std::chrono::system_clock::now();
+                while (_timePoints.front().timePoint <= now)
                 {
-                    std::unique_lock<std::mutex> lock(_mutex);
+                    static const auto greater = std::greater<TimerTask>();
+                    std::pop_heap(_timePoints.begin(), _timePoints.end(), greater);
+                    _timePoints.back().task();
+                    _timePoints.pop_back();
                     if (_timePoints.empty())
-                        _cv.wait(lock);
-                    else
-                        _cv.wait_until(lock, _timePoints.front().timePoint);
-                }
-                {
-                    const auto now = std::chrono::system_clock::now();
-                    std::unique_lock<std::mutex> lock(_mutex);
-                    while (_timePoints.front().timePoint <= now)
-                    {
-                        std::pop_heap(_timePoints.begin(), _timePoints.end(), std::greater<TimerTask>());
-                        _timePoints.back().task();
-                        _timePoints.pop_back();
-                        if (_timePoints.empty())
-                            break;
-                    }
+                        break;
                 }
             }
         });
@@ -69,12 +65,18 @@ public:
 
     void post(TimerTask task)
     {
-        std::unique_lock<std::mutex> lock(_mutex);
-        _timePoints.emplace_back(task);
-        std::push_heap(_timePoints.begin(), _timePoints.end(), std::greater<TimerTask>());
-        lock.unlock();
+        {
+            static const auto greater = std::greater<TimerTask>();
+            std::unique_lock<std::mutex> lock(_mutex);
+            _timePoints.emplace_back(std::move(task));
+            std::push_heap(_timePoints.begin(), _timePoints.end(), greater);
+            _hasNewTask = true;
+        }
         _cv.notify_one();
     }
+
+protected:
+    bool _hasNewTask = false;
 };
 
 static const ref<TimerThread> &sharedTimerThread()
