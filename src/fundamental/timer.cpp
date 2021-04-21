@@ -129,10 +129,11 @@ Timer::~Timer()
 
 void Timer::_setTimeout(Duration delay, Function<void()> function)
 {
-    assert(this->_clear == false);
+    assert(this->_clear == false && "Timer can't be reused");
     using std::chrono::system_clock;
     system_clock::time_point current = system_clock::now();
     ref<Timer> self = self(); // hold a ref of self inside the Function
+    _onCancel = [] {};
     sharedTimerThread()->post(TimerTask{
         current + delay.toChronoMilliseconds(),
         [self, function] {
@@ -144,26 +145,32 @@ void Timer::_setTimeout(Duration delay, Function<void()> function)
 
 void Timer::_setInterval(Duration interval, Function<void()> function)
 {
-    assert(this->_clear == false);
+    assert(this->_clear == false && "Timer can't be reused");
     using std::chrono::system_clock;
     auto next = std::make_shared<system_clock::time_point>(system_clock::now() + interval.toChronoMilliseconds());
     ref<Timer> self = self(); // hold a ref of self inside the Function
     auto task = std::make_shared<std::function<void()>>();
-    *task = [=] {
+    *task = [=] { // container self-ref [task] cause ref loop
         self->microTask([=] {
             if (self->_clear)
                 return;
             function();
             *next += interval.toChronoMilliseconds();
+            std::unique_lock<std::mutex> lock(_mutex);
             sharedTimerThread()->post(TimerTask{*next, *task});
         });
     };
+    _onCancel = [this, task] {
+        std::unique_lock<std::mutex> lock(_mutex);
+        *task = [] {};
+    }; // release self-ref
     sharedTimerThread()->post(TimerTask{*next, *task});
 }
 
 void Timer::cancel()
 {
     this->_clear = true;
+    _onCancel();
 }
 
 void Timer::dispose()

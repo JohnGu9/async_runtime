@@ -28,7 +28,9 @@ public:
 protected:
     void dispose() override;
 
+    std::mutex _mutex;
     std::atomic_bool _clear;
+    Function<void()> _onCancel;
 
     // now Timer can't reuse
     // Please create new Timer for new task
