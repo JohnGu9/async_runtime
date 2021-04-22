@@ -57,6 +57,7 @@ public:
     virtual ref<String> toString();
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();
+    // @mustCallSuper
     virtual void init() {}
 
     Object() {}
@@ -126,7 +127,4 @@ ref<T> Object::covariant()
 
 void print(option<Object> object);
 
-#include "basic/string.h"
-#include "basic/duration.h"
 #include "basic/function.h"
-#include "basic/container.h"

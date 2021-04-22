@@ -4,10 +4,9 @@
 
 class GlobalKey;
 class LoggerHandler;
-class Process;
 class RootElement : public SingleChildElement
 {
-    friend Process;
+    friend class Process;
 
 public:
     RootElement(ref<Widget> child);
@@ -26,6 +25,7 @@ protected:
     void update(ref<Widget> newWidget) override;
     void notify(ref<Widget> newWidget) override;
     void visitAncestor(Function<bool(ref<Element>)>) override;
+    virtual void _exit(int exitCode);
 
     std::mutex _mutex;
     std::condition_variable _condition;

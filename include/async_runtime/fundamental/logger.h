@@ -1,11 +1,3 @@
-#pragma once
-
-#include "../widgets/inherited_widget.h"
-#include "../widgets/stateful_widget.h"
-#include "state_helper.h"
-#include "async.h"
-#include "disposable.h"
-
 /// Create custom logger [MyLoggerHandler] example:
 ///
 /// class MyLoggerHandler : public LoggerHandler
@@ -33,9 +25,17 @@
 ///
 ///     / **** /
 ///
-///     return [YourWidget];
+///     return ${yourWidget};
 /// }
 ///
+
+#pragma once
+
+#include "../widgets/inherited_widget.h"
+#include "../widgets/stateful_widget.h"
+#include "state_helper.h"
+#include "async.h"
+#include "disposable.h"
 
 class LoggerHandler : public virtual Object, public Disposable
 {
@@ -44,8 +44,35 @@ public:
 
     virtual ref<Future<bool>> write(ref<String> str) = 0;
     virtual ref<Future<bool>> writeLine(ref<String> str) = 0;
-
 };
+
+template <typename T>
+const ref<LoggerHandler> &operator<<(const ref<LoggerHandler> &handle, const T &element)
+{
+    handle->write(std::to_string(element));
+    return handle;
+}
+
+template <>
+inline const ref<LoggerHandler> &operator<<(const ref<LoggerHandler> &handle, const ref<String> &element)
+{
+    handle->write(element);
+    return handle;
+}
+
+template <typename T>
+const ref<LoggerHandler> &operator<<(const ref<LoggerHandler> &handle, T &&element)
+{
+    handle->write(std::to_string(std::move(element)));
+    return handle;
+}
+
+template <>
+inline const ref<LoggerHandler> &operator<<(const ref<LoggerHandler> &handle, ref<String> &&element)
+{
+    handle->write(std::move(element));
+    return handle;
+}
 
 class Logger : public InheritedWidget
 {

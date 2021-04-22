@@ -5,8 +5,7 @@
 
 struct TimerTask
 {
-    using time_point = std::chrono::system_clock::time_point;
-    time_point timePoint;
+    std::chrono::system_clock::time_point timePoint;
     Function<void()> task;
 };
 
@@ -24,14 +23,9 @@ namespace std
 
 class TimerThread : public Object
 {
+    static const std::greater<TimerTask> greater;
+
 public:
-    using time_point = std::chrono::system_clock::time_point;
-
-    std::mutex _mutex;
-    std::condition_variable _cv;
-    std::deque<TimerTask> _timePoints;
-    Thread _thread;
-
     TimerThread()
     {
         _thread = Thread([this] {
@@ -43,15 +37,16 @@ public:
             {
                 std::unique_lock<std::mutex> lock(_mutex);
                 if (_timePoints.empty())
-                    _cv.wait(lock, [this] { return _hasNewTask; });
+                    _cv.wait(lock, [this] { return _hasNewTask || _stop; });
                 else
-                    _cv.wait_until(lock, _timePoints.front().timePoint, [this] { return _hasNewTask; });
-                _hasNewTask = false;
+                    _cv.wait_until(lock, _timePoints.front().timePoint, [this] { return _hasNewTask || _stop; });
+                if (_stop)
+                    return;
 
+                _hasNewTask = false;
                 const auto now = std::chrono::system_clock::now();
                 while (_timePoints.front().timePoint <= now)
                 {
-                    static const auto greater = std::greater<TimerTask>();
                     std::pop_heap(_timePoints.begin(), _timePoints.end(), greater);
                     _timePoints.back().task();
                     _timePoints.pop_back();
@@ -61,12 +56,20 @@ public:
             }
         });
     }
-    ~TimerThread() { _thread.detach(); }
 
-    void post(TimerTask task)
+    virtual ~TimerThread()
     {
         {
-            static const auto greater = std::greater<TimerTask>();
+            std::unique_lock<std::mutex> lock(_mutex);
+            _stop = true;
+        }
+        _cv.notify_all();
+        _thread.join();
+    }
+
+    virtual void post(TimerTask task)
+    {
+        {
             std::unique_lock<std::mutex> lock(_mutex);
             _timePoints.emplace_back(std::move(task));
             std::push_heap(_timePoints.begin(), _timePoints.end(), greater);
@@ -76,8 +79,16 @@ public:
     }
 
 protected:
+    std::mutex _mutex;
+    std::condition_variable _cv;
+    std::deque<TimerTask> _timePoints;
+    Thread _thread;
+
+    bool _stop = false;
     bool _hasNewTask = false;
 };
+
+const std::greater<TimerTask> TimerThread::greater = std::greater<TimerTask>();
 
 static const ref<TimerThread> &sharedTimerThread()
 {

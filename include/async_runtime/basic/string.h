@@ -29,6 +29,7 @@
 #include <sstream>
 #include <memory>
 #include <limits>
+#include <deque>
 #include "ref.h"
 #include "../object.h"
 
@@ -68,6 +69,7 @@ public:
     class View;
 
     String() {}
+    String(const char str) : std::string{str} {}
     String(const char *const str) : std::string(str) { assert(str); }
     String(const char *const str, size_t length) : std::string(str, length) { assert(str); }
     String(const std::string &str) : std::string(str) {}
@@ -80,6 +82,9 @@ public:
     virtual bool endsWith(ref<String>) const;
     virtual const std::string &toStdString() const { return *this; }
 
+    template <typename... Args>
+    ref<String> format(Args &&...args);
+
     // inherited interface
     virtual const char *const c_str() const { return std::string::c_str(); }
     virtual size_t length() const { return std::string::length(); }
@@ -91,7 +96,7 @@ public:
     virtual const_reverse_iterator rbegin() const { return std::string::rbegin(); }
     virtual const_reverse_iterator rend() const { return std::string::rend(); }
 
-    virtual size_t find(ref<String> pattern) const;
+    virtual size_t find(ref<String> pattern, size_t start = 0) const;
     virtual size_t find_first_of(ref<String> pattern) const;
     virtual size_t find_first_not_of(ref<String> pattern) const;
     virtual size_t find_last_of(ref<String> pattern) const;
@@ -178,14 +183,14 @@ public:
     ref(const std::string &str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(std::string &&str) : ar::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
     ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
-    ref(const char str) : ar::RefImplement<String>(std::make_shared<String>(std::to_string(str))) {}
+    ref(const char str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
 
     bool operator==(const ref<String> &other) const
     {
         if (this->get() == other.get())
             return true;
         if ((*this)->length() != other->length())
-            return false; 
+            return false;
         return std::equal((*this)->begin(), (*this)->end(), other->begin());
     }
     bool operator==(const char *const other) const { return *(*this) == other; }
@@ -211,6 +216,8 @@ public:
         *ptr += *(*this) + std::to_string(value);
         return ref<String>(ptr);
     }
+
+    const char &operator[](size_t index) { return (*(this->get()))[index]; }
 };
 
 class String::View : public String
@@ -230,9 +237,74 @@ void print(ref<String> str);
 template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
 option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cast<std::shared_ptr<R>>(other)) {}
 
+template <typename... Args>
+ref<String> String::format(Args &&...args)
+{
+    std::stringstream ss;
+    size_t lastIndex = 0;
+    for (const auto &element : {args...})
+    {
+        if (lastIndex >= this->length())
+        {
+#ifdef DEBUG
+            std::stringstream ss;
+            ss << "String::format arguments overflow when handle \"" << *this << "\" with arguments [";
+            for (const auto &element : {args...})
+            {
+                ss << element << ", ";
+            }
+            ss << "]" << std::endl;
+            std::cout << ss.str();
+#endif
+            break;
+        }
+        auto index = this->find('{', lastIndex);
+        if (index == std::string::npos)
+        {
+#ifdef DEBUG
+            std::stringstream ss;
+            ss << "String::format arguments overflow when handle \"" << *this << "\" with arguments [";
+            for (const auto &element : {args...})
+            {
+                ss << element << ", ";
+            }
+            ss << "]" << std::endl;
+            std::cout << ss.str();
+#endif
+            break;
+        }
+        ss << std::string::substr(lastIndex, index - lastIndex) << element;
+        lastIndex = this->find('}', index);
+        if (lastIndex == std::string::npos)
+        {
+#ifdef DEBUG
+            std::stringstream ss;
+            ss << "String::format handle error format(missing \"}\", last \"{\" found at " << index
+               << ") \"" << *this << "\" with arguments [";
+            for (const auto &element : {args...})
+            {
+                ss << element << ", ";
+            }
+            ss << "]" << std::endl;
+            std::cout << ss.str();
+#endif
+            break;
+        }
+        lastIndex++;
+    }
+    if (lastIndex < this->length())
+        ss << std::string::substr(lastIndex, this->length());
+    return ss.str();
+}
+
 namespace std
 {
-    inline std::string to_string(bool b) { return b ? "true" : "false"; }
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+    inline std::string to_string(bool b)
+    {
+        return b ? "true" : "false";
+    }
+#endif
 
     template <>
     struct hash<::ref<String>>

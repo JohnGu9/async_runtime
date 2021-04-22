@@ -105,7 +105,7 @@ ref<String> ref<String>::operator+(ref<Object> object) const
     return ref<String>(ptr);
 }
 
-size_t String::find(ref<String> pattern) const { return std::string::find(*pattern); }
+size_t String::find(ref<String> pattern, size_t start) const { return std::string::find(*pattern, start); }
 
 size_t String::find_first_of(ref<String> pattern) const { return std::string::find_first_of(*pattern); }
 
@@ -177,4 +177,3 @@ ref<String> operator+(const char *const str, const ref<String> &string)
     *ptr = std::string(str) + *string;
     return ref<String>(ptr);
 }
-

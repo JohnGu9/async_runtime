@@ -19,9 +19,11 @@ void Process::exit(const int exitCode)
     if (_root.isNotNull(root))
     {
         root->getMainHandler()->post([root, exitCode] {
-            root->_consoleStop = true;
-            root->_exitCode = exitCode;
-            root->_condition.notify_all();
+            if (root->_consoleStop == false)
+            {
+                root->_consoleStop = true;
+                root->_exit(exitCode);
+            }
         });
     }
 }

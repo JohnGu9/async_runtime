@@ -56,6 +56,12 @@ void RootElement::visitDescendant(Function<bool(ref<Element>)> fn)
 
 void RootElement::visitAncestor(Function<bool(ref<Element>)>) {}
 
+void RootElement::_exit(int exitCode)
+{
+    this->_exitCode = exitCode;
+    return this->_condition.notify_all();
+}
+
 Logger::Handler RootElement::getStdoutHandler()
 {
     ref<State<StatefulWidget>> currentState = this->_coutKey->getCurrentState().assertNotNull();
@@ -83,7 +89,12 @@ int RootElement::scheduleRootWidget()
 #endif
                 self->_console();
                 info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
-                self->_condition.notify_all();
+                if (self->_consoleStop == false) 
+                {
+                    // runApp exit by console command
+                    self->_consoleStop = true;
+                    self->_exit(0);
+                }
             });
         }
         this->_condition.wait(lock); // wait for exit
@@ -112,7 +123,7 @@ void RootElement::_console()
     {
         this->getStdoutHandler()->write(">> ")->sync();
         std::getline(std::cin, input);
-        if (this->_consoleStop)
+        if (this->_consoleStop) // runApp already required to exit, console not more accept command
             return;
         if (input == "q" || input == "quit")
         {
@@ -120,10 +131,7 @@ void RootElement::_console()
             ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
             this->getStdoutHandler()->write(ss.str())->sync();
             if (std::getline(std::cin, input) && (input == "y" || input == "yes" || this->_consoleStop))
-            {
-                this->_consoleStop = true;
                 return;
-            }
             this->getStdoutHandler()->writeLine("cancel")->sync();
         }
         else
