@@ -21,7 +21,6 @@ elseif(CMAKE_HP_PTHREADS_INIT)
 set(THREAD_LIBRARY_NAME "HP thread")
 endif()
 message(STATUS "Async Runtime using Threads: ${THREAD_LIBRARY_NAME}")
-message(STATUS "Async Runtime using Threads libraries: ${CMAKE_THREAD_LIBS_INIT}") # Depend on system. CMAKE_THREAD_LIBS_INIT maybe empty. 
 
 find_package(OpenSSL REQUIRED)
 message(STATUS "Async Runtime using OpenSSL version: ${OPENSSL_VERSION}")
@@ -44,17 +43,15 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/contexts contexts_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/fundamental fundamental_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/elements elements_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/widgets widgets_src)
+set(all_src ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
 
 if(MSVC) # in msvc, async_runtime not support shared library mode
-add_library(async_runtime 
-    ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+add_library(async_runtime ${all_src})
 else()
     if(ASYNC_RUNTIME_BUILD_SHARED)
-        add_library(async_runtime SHARED 
-            ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+        add_library(async_runtime SHARED ${all_src})
     else()
-        add_library(async_runtime 
-            ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+        add_library(async_runtime ${all_src})
     endif()
 endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES})

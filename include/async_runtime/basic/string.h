@@ -176,6 +176,8 @@ protected:
 
     friend class String;
 
+    friend class Object;
+
     friend ref<String> operator+(const char c, const ref<String> &string);
     friend ref<String> operator+(const char *const str, const ref<String> &string);
     friend std::ostream &operator<<(std::ostream &os, const ref<String> &dt);
@@ -273,6 +275,9 @@ void String::_unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &
 template <typename... Args>
 ref<String> String::format(Args &&...args)
 {
+    if (sizeof...(args) == 0)
+        return self();
+
     std::stringstream ss;
     size_t lastIndex = 0;
     _unwrapPack(ss, lastIndex, args...);

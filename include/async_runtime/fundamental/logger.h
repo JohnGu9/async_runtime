@@ -37,6 +37,60 @@
 #include "async.h"
 #include "disposable.h"
 
+#ifndef __FILENAME__
+#ifdef DEBUG
+#define __FILENAME__ __FILE__
+#else
+template <typename T, size_t S>
+inline constexpr size_t get_file_name_offset(const T (&str)[S], size_t i = S - 1)
+{
+    return (str[i] == '/' || str[i] == '\\') ? i + 1 : (i > 0 ? get_file_name_offset(str, i - 1) : 0);
+}
+
+template <typename T>
+inline constexpr size_t get_file_name_offset(T (&str)[1])
+{
+    return 0;
+}
+
+#define __FILENAME__ &__FILE__[get_file_name_offset(__FILE__)]
+#endif
+#endif
+
+#ifdef DEBUG
+#define LogDebug(_format, ...)                                                        \
+    {                                                                                 \
+        std::stringstream ss;                                                         \
+        ss << "[" __FILENAME__ ":" __LINE__ "] [DEBUG] " << _format;                  \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+    }
+#else
+#define LogDebug(_format, ...) \
+    {                          \
+    }
+#endif
+
+#define LogInfo(_format, ...)                                                         \
+    {                                                                                 \
+        std::stringstream ss;                                                         \
+        ss << "[" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " << ##_format;     \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+    }
+
+#define LogWarning(_format, ...)                                                      \
+    {                                                                                 \
+        std::stringstream ss;                                                         \
+        ss << "[" __FILENAME__ ":" __LINE__ "] [WARNING] " << ##_format;              \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+    }
+
+#define LogError(_format, ...)                                                        \
+    {                                                                                 \
+        std::stringstream ss;                                                         \
+        ss << "[" __FILENAME__ ":" __LINE__ "] [ERROR] " << ##_format;                \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+    }
+
 class LoggerHandler : public virtual Object, public Disposable
 {
 public:
