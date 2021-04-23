@@ -58,11 +58,11 @@ inline constexpr size_t get_file_name_offset(T (&str)[1])
 #endif
 
 #ifdef DEBUG
-#define LogDebug(_format, ...)                                                        \
-    {                                                                                 \
-        std::stringstream ss;                                                         \
-        ss << "[" __FILENAME__ ":" __LINE__ "] [DEBUG] " << _format;                  \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+#define LogDebug(_format, ...)                                                      \
+    {                                                                               \
+        std::stringstream ss;                                                       \
+        ss << "[" __FILENAME__ ":" __LINE__ "] [DEBUG] " << _format;                \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
     }
 #else
 #define LogDebug(_format, ...) \
@@ -70,25 +70,25 @@ inline constexpr size_t get_file_name_offset(T (&str)[1])
     }
 #endif
 
-#define LogInfo(_format, ...)                                                         \
-    {                                                                                 \
-        std::stringstream ss;                                                         \
-        ss << "[" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " << ##_format;     \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+#define LogInfo(_format, ...)                                                       \
+    {                                                                               \
+        std::stringstream ss;                                                       \
+        ss << "[" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " << _format;     \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
     }
 
-#define LogWarning(_format, ...)                                                      \
-    {                                                                                 \
-        std::stringstream ss;                                                         \
-        ss << "[" __FILENAME__ ":" __LINE__ "] [WARNING] " << ##_format;              \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+#define LogWarning(_format, ...)                                                    \
+    {                                                                               \
+        std::stringstream ss;                                                       \
+        ss << "[" __FILENAME__ ":" __LINE__ "] [WARNING] " << _format;              \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
     }
 
-#define LogError(_format, ...)                                                        \
-    {                                                                                 \
-        std::stringstream ss;                                                         \
-        ss << "[" __FILENAME__ ":" __LINE__ "] [ERROR] " << ##_format;                \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(##__VA_ARGS__)); \
+#define LogError(_format, ...)                                                      \
+    {                                                                               \
+        std::stringstream ss;                                                       \
+        ss << "[" __FILENAME__ ":" __LINE__ "] [ERROR] " << _format;                \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
     }
 
 class LoggerHandler : public virtual Object, public Disposable
