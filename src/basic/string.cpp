@@ -151,6 +151,11 @@ std::ostream &operator<<(std::ostream &os, const ref<String> &str)
     return os << *str;
 }
 
+std::ostream &operator<<(std::ostream &os, ref<String> &&str)
+{
+    return os << std::move(str->toStdString());
+}
+
 std::istream &operator>>(std::istream &is, ref<String> &str)
 {
     std::shared_ptr<String> ptr = std::make_shared<String>();

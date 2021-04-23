@@ -181,6 +181,7 @@ protected:
     friend ref<String> operator+(const char c, const ref<String> &string);
     friend ref<String> operator+(const char *const str, const ref<String> &string);
     friend std::ostream &operator<<(std::ostream &os, const ref<String> &dt);
+    friend std::ostream &operator<<(std::ostream &os, ref<String> &&dt);
     friend std::istream &operator>>(std::istream &os, ref<String> &str);
     friend ref<String> getline(std::istream &is);
 
