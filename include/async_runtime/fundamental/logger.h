@@ -31,6 +31,11 @@
 
 #pragma once
 
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+
 #include "../widgets/inherited_widget.h"
 #include "../widgets/stateful_widget.h"
 #include "state_helper.h"
@@ -57,12 +62,17 @@ inline constexpr size_t get_file_name_offset(T (&str)[1])
 #endif
 #endif
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma warning(disable : 4996)
+#endif
+
 #ifdef DEBUG
-#define LogDebug(_format, ...)                                                      \
-    {                                                                               \
-        std::stringstream ss;                                                       \
-        ss << "[" __FILENAME__ ":" __LINE__ "] [DEBUG] " << _format;                \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
+#define LogDebug(_format, ...)                                                                                   \
+    {                                                                                                            \
+        std::stringstream ss;                                                                                    \
+        std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());                \
+        ss << std::put_time(localtime(&now), "%F %T") << " [" __FILENAME__ ":" __LINE__ "] [DEBUG] " << _format; \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__));                              \
     }
 #else
 #define LogDebug(_format, ...) \
@@ -70,25 +80,28 @@ inline constexpr size_t get_file_name_offset(T (&str)[1])
     }
 #endif
 
-#define LogInfo(_format, ...)                                                       \
-    {                                                                               \
-        std::stringstream ss;                                                       \
-        ss << "[" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " << _format;     \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
+#define LogInfo(_format, ...)                                                                                               \
+    {                                                                                                                       \
+        std::stringstream ss;                                                                                               \
+        std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());                           \
+        ss << std::put_time(localtime(&now), "%F %T") << " [" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " << _format; \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__));                                         \
     }
 
-#define LogWarning(_format, ...)                                                    \
-    {                                                                               \
-        std::stringstream ss;                                                       \
-        ss << "[" __FILENAME__ ":" __LINE__ "] [WARNING] " << _format;              \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
+#define LogWarning(_format, ...)                                                                                   \
+    {                                                                                                              \
+        std::stringstream ss;                                                                                      \
+        std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());                  \
+        ss << std::put_time(localtime(&now), "%F %T") << " [" __FILENAME__ ":" __LINE__ "] [WARNING] " << _format; \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__));                                \
     }
 
-#define LogError(_format, ...)                                                      \
-    {                                                                               \
-        std::stringstream ss;                                                       \
-        ss << "[" __FILENAME__ ":" __LINE__ "] [ERROR] " << _format;                \
-        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__)); \
+#define LogError(_format, ...)                                                                                   \
+    {                                                                                                            \
+        std::stringstream ss;                                                                                    \
+        std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());                \
+        ss << std::put_time(localtime(&now), "%F %T") << " [" __FILENAME__ ":" __LINE__ "] [ERROR] " << _format; \
+        Logger::of(context)->writeLine(ref<String>(ss.str())->format(__VA_ARGS__));                              \
     }
 
 class LoggerHandler : public virtual Object, public Disposable

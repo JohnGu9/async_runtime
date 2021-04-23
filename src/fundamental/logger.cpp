@@ -28,7 +28,7 @@ public:
         ref<Future<bool>> write(ref<String> str) override
         {
             return async<bool>(this->_state.get(), [str] {
-                std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << str;
+                std::cout << str;
                 return true;
             });
         }
@@ -36,7 +36,7 @@ public:
         ref<Future<bool>> writeLine(ref<String> str) override
         {
             return async<bool>(this->_state.get(), [str] {
-                info_print(str);
+                std::cout << str << std::endl;
                 return true;
             });
         }
