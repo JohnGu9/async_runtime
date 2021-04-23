@@ -26,9 +26,11 @@ bool option<String>::operator==(const option<String> &other) const
     else
     {
         if (static_cast<const std::shared_ptr<String>>(other) == nullptr)
+            return false;
+        else if (this->get() == other.get())
             return true;
         else
-            return this->get() == other.get();
+            return *(this->get()) == *(other.get());
     }
 }
 

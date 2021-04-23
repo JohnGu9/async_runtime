@@ -17,7 +17,7 @@
 /// if (newString == string) { / *** / } // compare two ref<String>
 /// else { / *** / }
 ///
-/// ref<String> withTrueString = string + true; // append any type that support std::to_string
+/// ref<String> withTrueString = string + true; // append any type that support ostream &operator<<(std::ostream &out, T b)
 /// ref<String> withTrueString = string + 1.023;
 ///
 /// // ref<String> and option<String> also work with Map and Set like std::string
@@ -46,6 +46,8 @@ class String : public Object, protected std::string
     template <typename T>
     friend struct std::hash;
 
+    friend class option<String>;
+
     friend ref<String> operator+(const char c, const ref<String> &string);
     friend ref<String> operator+(const char *const str, const ref<String> &string);
     friend std::ostream &operator<<(std::ostream &os, const ref<String> &str);
@@ -62,6 +64,11 @@ class String : public Object, protected std::string
         std::string::operator=(std::move(other));
         return *this;
     }
+
+    template <class First, class... Rest>
+    void _unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest);
+
+    void _unwrapPack(std::stringstream &ss, size_t &lastIndex) {}
 
 public:
     using const_iterator = std::string::const_iterator;
@@ -212,9 +219,13 @@ public:
     template <typename T>
     ref<String> operator+(const T &value) const
     {
-        std::shared_ptr<String> ptr = std::make_shared<String>();
-        *ptr += *(*this) + std::to_string(value);
-        return ref<String>(ptr);
+        std::stringstream ss;
+        ss << *(*this)
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+           << std::boolalpha
+#endif
+           << value;
+        return ss.str();
     }
 
     const char &operator[](size_t index) { return (*(this->get()))[index]; }
@@ -237,61 +248,34 @@ void print(ref<String> str);
 template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
 option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cast<std::shared_ptr<R>>(other)) {}
 
+template <class First, class... Rest>
+void String::_unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest)
+{
+    auto index = this->find("{}", lastIndex);
+    if (lastIndex >= this->length() || index == std::string::npos)
+    {
+#ifdef DEBUG
+        std::stringstream ss;
+        ss << "String::format arguments overflow when handle \"" << *this << "\"" << std::endl;
+        std::cout << ss.str();
+#endif
+        return;
+    }
+    ss << std::string::substr(lastIndex, index - lastIndex)
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+       << std::boolalpha
+#endif
+       << first;
+    lastIndex = index + 2;
+    _unwrapPack(ss, lastIndex, rest...);
+}
+
 template <typename... Args>
 ref<String> String::format(Args &&...args)
 {
     std::stringstream ss;
     size_t lastIndex = 0;
-    for (const auto &element : {args...})
-    {
-        if (lastIndex >= this->length())
-        {
-#ifdef DEBUG
-            std::stringstream ss;
-            ss << "String::format arguments overflow when handle \"" << *this << "\" with arguments [";
-            for (const auto &element : {args...})
-            {
-                ss << element << ", ";
-            }
-            ss << "]" << std::endl;
-            std::cout << ss.str();
-#endif
-            break;
-        }
-        auto index = this->find('{', lastIndex);
-        if (index == std::string::npos)
-        {
-#ifdef DEBUG
-            std::stringstream ss;
-            ss << "String::format arguments overflow when handle \"" << *this << "\" with arguments [";
-            for (const auto &element : {args...})
-            {
-                ss << element << ", ";
-            }
-            ss << "]" << std::endl;
-            std::cout << ss.str();
-#endif
-            break;
-        }
-        ss << std::string::substr(lastIndex, index - lastIndex) << element;
-        lastIndex = this->find('}', index);
-        if (lastIndex == std::string::npos)
-        {
-#ifdef DEBUG
-            std::stringstream ss;
-            ss << "String::format handle error format(missing \"}\", last \"{\" found at " << index
-               << ") \"" << *this << "\" with arguments [";
-            for (const auto &element : {args...})
-            {
-                ss << element << ", ";
-            }
-            ss << "]" << std::endl;
-            std::cout << ss.str();
-#endif
-            break;
-        }
-        lastIndex++;
-    }
+    _unwrapPack(ss, lastIndex, args...);
     if (lastIndex < this->length())
         ss << std::string::substr(lastIndex, this->length());
     return ss.str();
@@ -299,13 +283,6 @@ ref<String> String::format(Args &&...args)
 
 namespace std
 {
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-    inline std::string to_string(bool b)
-    {
-        return b ? "true" : "false";
-    }
-#endif
-
     template <>
     struct hash<::ref<String>>
     {
