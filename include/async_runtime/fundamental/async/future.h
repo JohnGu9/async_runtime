@@ -95,8 +95,8 @@ public:
     static ref<Future<T>> value(ref<ThreadPool> callbackHandler, T &&);
     static ref<Future<T>> value(State<StatefulWidget> *state, T &&);
 
-    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
-    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
+    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _data(), _callbackList({}) {}
+    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _data(), _callbackList({}) {}
 
     Future(ref<ThreadPool> callbackHandler, const T &data)
         : Future<std::nullptr_t>(callbackHandler), _data(data), _callbackList({}) { this->_completed = true; }

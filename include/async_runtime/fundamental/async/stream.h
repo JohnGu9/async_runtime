@@ -91,7 +91,7 @@ public:
 
 protected:
     ref<Completer<void>> _onClose;
-    size_t _sinkCounter;
+    size_t _sinkCounter = 0;
 
     Function<void()> _listener;
     bool _isClosed = false;
