@@ -1,5 +1,6 @@
 #include "async_runtime/object.h"
 #include "async_runtime/basic/io.h"
+#include "async_runtime/basic/string.h"
 
 void print(option<Object> object)
 {

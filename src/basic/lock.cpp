@@ -1,4 +1,5 @@
 #include "async_runtime/object.h"
+#include "async_runtime/basic/lock.h"
 
 Lock::~Lock()
 {
