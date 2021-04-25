@@ -32,6 +32,7 @@
 #include <deque>
 #include "ref.h"
 #include "../object.h"
+#include "container.h"
 
 template <>
 class option<String>;
@@ -51,6 +52,7 @@ class String : public Object, protected std::string
     friend ref<String> operator+(const char c, const ref<String> &string);
     friend ref<String> operator+(const char *const str, const ref<String> &string);
     friend std::ostream &operator<<(std::ostream &os, const ref<String> &str);
+    friend std::ostream &operator<<(std::ostream &os, ref<String> &&str);
     friend std::istream &operator>>(std::istream &is, ref<String> &str);
     friend ref<String> getline(std::istream &is);
 
@@ -90,7 +92,7 @@ public:
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
     String() {}
-    String(const char str) : std::string{str} {}
+    String(const char c) : std::string{c} {}
     String(const char *const str) : std::string(str) { assert(str); }
     String(const char *const str, size_t length) : std::string(str, length) { assert(str); }
     String(const std::string &str) : std::string(str) {}
@@ -102,6 +104,7 @@ public:
     virtual bool startsWith(ref<String>) const;
     virtual bool endsWith(ref<String>) const;
     virtual const std::string &toStdString() const { return *this; }
+    virtual List<ref<String>> split(ref<String> pattern) const;
 
     template <typename... Args>
     ref<String> format(Args &&...args);
@@ -207,7 +210,7 @@ public:
     ref(const std::string &str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(std::string &&str) : ar::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
     ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
-    ref(const char str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
+    ref(const char c) : ar::RefImplement<String>(std::make_shared<String>(c)) {}
 
     bool operator==(const ref<String> &other) const
     {

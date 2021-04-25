@@ -94,6 +94,7 @@ ref<String> Http::Client::Result::errorString() const
     }
     default:
     {
+        assert(false && "The enum doesn't exists. ");
         static finalref<String> unknownErrorType = "UnknownErrorType";
         return unknownErrorType;
     }
