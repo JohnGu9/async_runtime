@@ -7,11 +7,7 @@
 #include "basic/io.h"
 #include "basic/ref.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#ifndef NDEBUG
-#define DEBUG
-#endif
-#endif
+
 
 // native copyable type that don't not need ref
 class Duration;

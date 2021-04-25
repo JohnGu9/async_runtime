@@ -66,14 +66,20 @@ class String : public Object, protected std::string
     }
 
     template <class First, class... Rest>
-    void _unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest);
+    static void _unwrapPackToCstr(const char *const str, std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest);
+    static void _unwrapPackToCstr(const char *const str, std::stringstream &ss, size_t &lastIndex) {}
 
+    template <class First, class... Rest>
+    void _unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest);
     void _unwrapPack(std::stringstream &ss, size_t &lastIndex) {}
 
 public:
     using const_iterator = std::string::const_iterator;
     using const_reverse_iterator = std::string::const_reverse_iterator;
     class View;
+
+    template <typename... Args>
+    static ref<String> formatFromString(const char *const str, Args &&...args);
 
     String() {}
     String(const char str) : std::string{str} {}
@@ -250,6 +256,49 @@ void print(ref<String> str);
 
 template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
 option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cast<std::shared_ptr<R>>(other)) {}
+
+template <class First, class... Rest>
+void String::_unwrapPackToCstr(const char *const str, std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest)
+{
+    size_t index = lastIndex;
+    while (true)
+    {
+        if (str[index] == '\0')
+        {
+#ifdef DEBUG
+            std::stringstream ss;
+            ss << "String::format arguments overflow when handle \"" << str << "\"" << std::endl;
+            std::cout << ss.str();
+#endif
+            return;
+        }
+        if (str[index++] == '{')
+        {
+            if (str[index++] == '}')
+            {
+                ss << std::string(&(str[lastIndex]), index - lastIndex - 2)
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+                   << std::boolalpha
+#endif
+                   << first;
+                lastIndex = index;
+                _unwrapPackToCstr(str, ss, lastIndex, rest...);
+                return;
+            }
+        }
+    }
+}
+
+template <typename... Args>
+ref<String> String::formatFromString(const char *const str, Args &&...args)
+{
+    std::stringstream ss;
+    size_t lastIndex = 0;
+    _unwrapPackToCstr(str, ss, lastIndex, args...);
+    if (str[lastIndex] != '\0')
+        ss << std::string(&(str[lastIndex]));
+    return ss.str();
+}
 
 template <class First, class... Rest>
 void String::_unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest)

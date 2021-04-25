@@ -75,68 +75,61 @@ Scheduler::Handler RootElement::getMainHandler()
     return Scheduler::of(context);
 }
 
-int RootElement::scheduleRootWidget()
-{
-    this->attach();
-    Thread thread;
-    {
-        std::unique_lock<std::mutex> lock(this->_mutex);
-        {
-            auto self = self();
-            thread = Thread([self] {
-#ifdef DEBUG
-                ThreadPool::setThreadName("ConsoleThread");
-#endif
-                self->_console();
-                info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
-                if (self->_consoleStop == false) 
-                {
-                    // runApp exit by console command
-                    self->_consoleStop = true;
-                    self->_exit(0);
-                }
-            });
-        }
-        this->_condition.wait(lock); // wait for exit
-    }
-    thread.detach();
-    this->detach();
-    return this->_exitCode;
-}
-
 void RootElement::_console()
 {
-    {
-        std::stringstream ss;
-        ss << "Enter '"
-           << font_wrapper(BOLDBLUE, 'q')
-           << "' to quit, '"
-           << font_wrapper(BOLDBLUE, "-h")
-           << "' or '"
-           << font_wrapper(BOLDBLUE, "--help")
-           << "' for more information";
-        this->getStdoutHandler()->writeLine(ss.str());
-    }
-
-    std::string input;
-    for (;;)
-    {
-        this->getStdoutHandler()->write(">> ")->sync();
-        std::getline(std::cin, input);
-        if (this->_consoleStop) // runApp already required to exit, console not more accept command
-            return;
-        if (input == "q" || input == "quit")
+    std::unique_lock<std::mutex> lock(this->_mutex);
+    auto self = self();
+    auto thread = Thread([this, self] {
+#ifdef DEBUG
+        ThreadPool::setThreadName("ConsoleThread");
+#endif
         {
             std::stringstream ss;
-            ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
-            this->getStdoutHandler()->write(ss.str())->sync();
-            if (std::getline(std::cin, input) && (input == "y" || input == "yes" || this->_consoleStop))
-                return;
-            this->getStdoutHandler()->writeLine("cancel")->sync();
+            ss << "Enter '"
+               << font_wrapper(BOLDBLUE, 'q')
+               << "' to quit, '"
+               << font_wrapper(BOLDBLUE, "-h")
+               << "' or '"
+               << font_wrapper(BOLDBLUE, "--help")
+               << "' for more information";
+            this->getStdoutHandler()->writeLine(ss.str());
         }
-        else
-            onCommand(input);
-    }
+
+        std::string input;
+        for (;;)
+        {
+            this->getStdoutHandler()->write(">> ")->sync();
+            std::getline(std::cin, input);
+            if (this->_consoleStop) // runApp already required to exit, console not more accept command
+                return;
+            if (input == "q" || input == "quit")
+            {
+                std::stringstream ss;
+                ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
+                this->getStdoutHandler()->write(ss.str())->sync();
+                if (std::getline(std::cin, input) && (input == "y" || input == "yes" || this->_consoleStop))
+                    return;
+                this->getStdoutHandler()->writeLine("cancel")->sync();
+            }
+            else
+                onCommand(input);
+        }
+        info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
+        if (self->_consoleStop == false)
+        {
+            // runApp exit by console command
+            self->_consoleStop = true;
+            self->_exit(0);
+        }
+    });
+    this->_condition.wait(lock); // wait for exit
+    thread.detach();
+}
+
+void RootElement::_noConsole()
+{
+    std::unique_lock<std::mutex> lock(this->_mutex);
+    this->_condition.wait(lock);
 }
 
 void RootElement::onCommand(const std::string &in)

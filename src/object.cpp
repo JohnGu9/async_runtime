@@ -5,7 +5,11 @@
 
 Object::RuntimeType Object::runtimeType()
 {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     return typeid(*this).name();
+#else
+    return typeid(*this).name();
+#endif
 }
 
 ref<String> Object::toString()
