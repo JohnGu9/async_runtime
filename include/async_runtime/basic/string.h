@@ -66,12 +66,17 @@ class String : public Object, protected std::string
     }
 
     template <class First, class... Rest>
-    static void _unwrapPackToCstr(const char *const str, std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest);
-    static void _unwrapPackToCstr(const char *const str, std::stringstream &ss, size_t &lastIndex) {}
+    static void _unwrapPackToCstr(const char *const str, size_t &lastIndex, std::stringstream &ss, const First &first, const Rest &...rest);
+    static void _unwrapPackToCstr(const char *const str, size_t &lastIndex, std::stringstream &ss) {}
+
+    template <typename Iterator, class First, class... Rest>
+    static void _unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std::stringstream &ss, const First &first, const Rest &...rest);
+    template <typename Iterator>
+    static void _unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std::stringstream &ss) {}
 
     template <class First, class... Rest>
-    void _unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest);
-    void _unwrapPack(std::stringstream &ss, size_t &lastIndex) {}
+    void _unwrapPack(size_t &lastIndex, std::stringstream &ss, const First &first, const Rest &...rest);
+    void _unwrapPack(size_t &lastIndex, std::stringstream &ss) {}
 
 public:
     using const_iterator = std::string::const_iterator;
@@ -80,6 +85,9 @@ public:
 
     template <typename... Args>
     static ref<String> formatFromString(const char *const str, Args &&...args);
+
+    template <typename Iterator, typename... Args>
+    static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
     String() {}
     String(const char str) : std::string{str} {}
@@ -258,7 +266,7 @@ template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>
 option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cast<std::shared_ptr<R>>(other)) {}
 
 template <class First, class... Rest>
-void String::_unwrapPackToCstr(const char *const str, std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest)
+void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::stringstream &ss, const First &first, const Rest &...rest)
 {
     size_t index = lastIndex;
     while (true)
@@ -282,7 +290,7 @@ void String::_unwrapPackToCstr(const char *const str, std::stringstream &ss, siz
 #endif
                    << first;
                 lastIndex = index;
-                _unwrapPackToCstr(str, ss, lastIndex, rest...);
+                _unwrapPackToCstr(str, lastIndex, ss, rest...);
                 return;
             }
         }
@@ -294,14 +302,60 @@ ref<String> String::formatFromString(const char *const str, Args &&...args)
 {
     std::stringstream ss;
     size_t lastIndex = 0;
-    _unwrapPackToCstr(str, ss, lastIndex, args...);
+    _unwrapPackToCstr(str, lastIndex, ss, args...);
     if (str[lastIndex] != '\0')
         ss << std::string(&(str[lastIndex]));
     return ss.str();
 }
 
+template <typename Iterator, class First, class... Rest>
+void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std::stringstream &ss, const First &first, const Rest &...rest)
+{
+    Iterator index = lastIndex;
+    while (true)
+    {
+        if (index == end)
+        {
+#ifdef DEBUG
+            std::stringstream ss;
+            ss << "String::format arguments overflow" << std::endl;
+            std::cout << ss.str();
+#endif
+            return;
+        }
+        if (*index == '{')
+        {
+            if (*(++index) == '}')
+            {
+                ss << std::string(lastIndex, --index)
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+                   << std::boolalpha
+#endif
+                   << first;
+                lastIndex = index;
+                ++++lastIndex; // lastIndex = lastIndex + 2;
+                _unwrapPackToIterator(lastIndex, end, ss, rest...);
+                return;
+            }
+        }
+        else
+            ++index;
+    }
+}
+
+template <typename Iterator, typename... Args>
+ref<String> String::formatFromIterator(const Iterator begin, const Iterator end, Args &&...args)
+{
+    std::stringstream ss;
+    Iterator lastIndex = begin;
+    _unwrapPackToIterator(lastIndex, end, ss, args...);
+    if (lastIndex != end)
+        ss << std::string(lastIndex, end);
+    return ss.str();
+}
+
 template <class First, class... Rest>
-void String::_unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &first, const Rest &...rest)
+void String::_unwrapPack(size_t &lastIndex, std::stringstream &ss, const First &first, const Rest &...rest)
 {
     auto index = this->find("{}", lastIndex);
     if (lastIndex >= this->length() || index == std::string::npos)
@@ -319,7 +373,7 @@ void String::_unwrapPack(std::stringstream &ss, size_t &lastIndex, const First &
 #endif
        << first;
     lastIndex = index + 2;
-    _unwrapPack(ss, lastIndex, rest...);
+    _unwrapPack(lastIndex, ss, rest...);
 }
 
 template <typename... Args>
@@ -330,7 +384,7 @@ ref<String> String::format(Args &&...args)
 
     std::stringstream ss;
     size_t lastIndex = 0;
-    _unwrapPack(ss, lastIndex, args...);
+    _unwrapPack(lastIndex, ss, args...);
     if (lastIndex < this->length())
         ss << std::string::substr(lastIndex, this->length());
     return ss.str();

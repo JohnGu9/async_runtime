@@ -28,6 +28,14 @@
 ///     return ${yourWidget};
 /// }
 ///
+///
+/// Use Logger macros [LogDebug, LogInfo, LogWarning, LogError]
+/// macro support two format [printf style] [istream style]
+/// [printf style]: LogDebug("Omg {}! {}.", "args", 26); // the "{}" will be filled with arguments
+/// [istream style]: LogDebug("Omg "<< "args" << "! " << 26 << ". ");
+///
+/// both output same stuff
+///
 
 #pragma once
 
@@ -67,6 +75,13 @@ namespace ar
 
 #define __STDC_WANT_LIB_EXT1__ 1
 
+#ifndef ASYNC_RUNTIME_TIMESTAMP_FORMAT
+// AsyncRuntime use std::put_time to output timestamp
+// define ASYNC_RUNTIME_TIMESTAMP_FORMAT to custom your timestamp format
+// https://en.cppreference.com/w/cpp/io/manip/put_time
+#define ASYNC_RUNTIME_TIMESTAMP_FORMAT "%F %T"
+#endif
+
 #ifdef DEBUG
 #define LogDebug(_format, ...)                                                                        \
     {                                                                                                 \
@@ -74,7 +89,7 @@ namespace ar
         struct tm buf;                                                                                \
         time_t t = time(nullptr);                                                                     \
         localtime_s(&buf, &t);                                                                        \
-        ss << std::put_time(&buf, "%F %T") << " [" << __FILENAME__ << ":" << __LINE__ << "] [DEBUG] " \
+        ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [DEBUG] " \
            << _format << std::endl;                                                                   \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                       \
     }
@@ -90,7 +105,7 @@ namespace ar
         struct tm buf;                                                                               \
         time_t t = time(nullptr);                                                                    \
         localtime_s(&buf, &t);                                                                       \
-        ss << std::put_time(&buf, "%F %T") << " [" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " \
+        ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " \
            << _format << std::endl;                                                                  \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                      \
     }
@@ -101,7 +116,7 @@ namespace ar
         struct tm buf;                                                                                  \
         time_t t = time(nullptr);                                                                       \
         localtime_s(&buf, &t);                                                                          \
-        ss << std::put_time(&buf, "%F %T") << " [" << __FILENAME__ << ":" << __LINE__ << "] [WARNING] " \
+        ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [WARNING] " \
            << _format << std::endl;                                                                     \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                         \
     }
@@ -112,7 +127,7 @@ namespace ar
         struct tm buf;                                                                                \
         time_t t = time(nullptr);                                                                     \
         localtime_s(&buf, &t);                                                                        \
-        ss << std::put_time(&buf, "%F %T") << " [" << __FILENAME__ << ":" << __LINE__ << "] [ERROR] " \
+        ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [ERROR] " \
            << _format << std::endl;                                                                   \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                       \
     }
