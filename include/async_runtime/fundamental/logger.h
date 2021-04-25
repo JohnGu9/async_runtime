@@ -82,13 +82,19 @@ namespace ar
 #define ASYNC_RUNTIME_TIMESTAMP_FORMAT "%F %T"
 #endif
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define ASYNC_RUNTIME_BUILD_TIMEBUF(t, buf) localtime_s(&buf, &t)
+#else
+#define ASYNC_RUNTIME_BUILD_TIMEBUF(t, buf) localtime_r(&t, &buf)
+#endif
+
 #ifdef DEBUG
 #define LogDebug(_format, ...)                                                                                               \
     {                                                                                                                        \
         std::stringstream ss;                                                                                                \
         struct tm buf;                                                                                                       \
         time_t t = time(nullptr);                                                                                            \
-        localtime_r(&t, &buf);                                                                                              \
+        ASYNC_RUNTIME_BUILD_TIMEBUF(t, buf);                                                                                 \
         ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [DEBUG] " \
            << _format << std::endl;                                                                                          \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                                              \
@@ -104,7 +110,7 @@ namespace ar
         std::stringstream ss;                                                                                               \
         struct tm buf;                                                                                                      \
         time_t t = time(nullptr);                                                                                           \
-        localtime_r(&t, &buf);                                                                                              \
+        ASYNC_RUNTIME_BUILD_TIMEBUF(t, buf);                                                                                 \
         ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [INFO] " \
            << _format << std::endl;                                                                                         \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                                             \
@@ -115,7 +121,7 @@ namespace ar
         std::stringstream ss;                                                                                                  \
         struct tm buf;                                                                                                         \
         time_t t = time(nullptr);                                                                                              \
-        localtime_r(&t, &buf);                                                                                              \
+        ASYNC_RUNTIME_BUILD_TIMEBUF(t, buf);                                                                                 \
         ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [WARNING] " \
            << _format << std::endl;                                                                                            \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                                                \
@@ -126,7 +132,7 @@ namespace ar
         std::stringstream ss;                                                                                                \
         struct tm buf;                                                                                                       \
         time_t t = time(nullptr);                                                                                            \
-        localtime_r(&t, &buf);                                                                                              \
+        ASYNC_RUNTIME_BUILD_TIMEBUF(t, buf);                                                                                 \
         ss << std::put_time(&buf, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [ERROR] " \
            << _format << std::endl;                                                                                          \
         Logger::of(context)->write(ref<String>(ss.str())->format(__VA_ARGS__));                                              \
