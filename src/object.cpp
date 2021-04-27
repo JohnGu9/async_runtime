@@ -5,7 +5,7 @@
 
 Object::RuntimeType Object::runtimeType()
 {
-    return typeid(*this).name();
+    return typeid(*this).hash_code();
 }
 
 ref<String> Object::toString()
@@ -17,6 +17,6 @@ ref<String> Object::toString()
 
 void Object::toStringStream(std::ostream &os)
 {
-    os << "class<" << this->runtimeType()
+    os << "class<" << typeid(*this).name()
        << ">[" << (size_t)this << ']';
 }

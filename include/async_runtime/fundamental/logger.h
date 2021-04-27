@@ -55,7 +55,7 @@
 #ifdef DEBUG
 #define __FILENAME__ __FILE__
 #else
-namespace ar
+namespace _async_runtime
 {
     template <typename T, size_t S>
     inline constexpr size_t get_file_name_offset(const T (&str)[S], size_t i = S - 1)
@@ -69,7 +69,7 @@ namespace ar
         return 0;
     }
 };
-#define __FILENAME__ &__FILE__[ar::get_file_name_offset(__FILE__)]
+#define __FILENAME__ &__FILE__[_async_runtime::get_file_name_offset(__FILE__)]
 #endif
 #endif
 

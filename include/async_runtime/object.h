@@ -32,7 +32,7 @@ class Object : public std::enable_shared_from_this<Object>
     ref<Object> shared_from_this() { return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this()); }
 
 public:
-    using RuntimeType = ref<String>;
+    using RuntimeType = size_t;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);

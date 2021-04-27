@@ -192,7 +192,7 @@ ref<Widget> Logger::block(ref<Widget> child, option<Key> key)
 
 class _StdoutLoggerInheritedWidget : public InheritedWidget
 {
-    friend StdoutLogger;
+    friend class StdoutLogger;
     Logger::Handler _handler;
 
 public:

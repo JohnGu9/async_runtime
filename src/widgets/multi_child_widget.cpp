@@ -13,6 +13,6 @@ ref<Element> MultiChildWidget::createElement()
 
 ref<MultiChildWidget> MultiChildWidget::setChildren(List<ref<Widget>> children)
 {
-    this->_children = std::forward<List<ref<Widget>>>(children);
+    this->_children = children;
     return self();
 }

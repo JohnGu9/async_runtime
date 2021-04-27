@@ -76,7 +76,7 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 
 #ifdef DEBUG
         const std::string debugThreadName = ThreadPool::thisThreadName->toStdString();
-        const std::string debugThreadPoolRuntimeType = this->runtimeType()->toStdString();
+        const std::string debugThreadPoolRuntimeType = this->toString()->toStdString();
         setThreadName(ThreadPool::thisThreadName);
 #endif
 

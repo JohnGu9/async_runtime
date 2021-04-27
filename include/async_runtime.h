@@ -23,7 +23,7 @@
 
 
 #include "async_runtime/elements/root_element.h"
-int runApp(ref<Widget> widget)
+inline int runApp(ref<Widget> widget)
 {
 #ifndef DEBUG
     printf("\033c");

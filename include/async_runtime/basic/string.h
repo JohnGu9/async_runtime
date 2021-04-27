@@ -41,13 +41,10 @@ class ref<String>;
 
 class String : public Object, protected std::string
 {
-    template <typename T>
-    friend class ref;
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
     template <typename T>
     friend struct std::hash;
-
-    friend class option<String>;
 
     friend ref<String> operator+(const char c, const ref<String> &string);
     friend ref<String> operator+(const char *const str, const ref<String> &string);
@@ -129,21 +126,9 @@ public:
 };
 
 template <>
-class option<String> : protected std::shared_ptr<String>, public ar::ToRefMixin<String>
+class option<String> : public _async_runtime::OptionImplement<String>
 {
-    template <typename R>
-    friend class weakref;
-
-    template <typename R>
-    friend class ar::RefImplement;
-
-    template <typename R>
-    friend class ref;
-
-    template <typename R>
-    friend class lateref;
-
-    friend class Object;
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
     static option<String> null()
@@ -153,48 +138,30 @@ public:
     }
 
     option() {}
-    option(std::nullptr_t) : std::shared_ptr<String>(nullptr) {}
-    option(const char *const str) : std::shared_ptr<String>(std::make_shared<String>(str)) {}
-    option(const std::string &str) : std::shared_ptr<String>(std::make_shared<String>(str)) {}
-    option(std::string &&str) : std::shared_ptr<String>(std::make_shared<String>(std::move(str))) {}
+    option(std::nullptr_t) : _async_runtime::OptionImplement<String>(nullptr) {}
+    option(const char *const str) : _async_runtime::OptionImplement<String>(std::make_shared<String>(str)) {}
+    option(const std::string &str) : _async_runtime::OptionImplement<String>(std::make_shared<String>(str)) {}
+    option(std::string &&str) : _async_runtime::OptionImplement<String>(std::make_shared<String>(std::move(str))) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
     option(const ref<R> &other);
 
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    option(const option<R> &other) : std::shared_ptr<String>(std::static_pointer_cast<String>(other)) {}
+    option(const option<R> &other) : std::shared_ptr<String>(other) {}
 
-    bool isNotNull(ref<String> &) const override;
-    ref<String> isNotNullElse(std::function<ref<String>()>) const override;
-    ref<String> assertNotNull() const override;
     bool operator==(const option<String> &other) const;
     bool operator!=(const option<String> &other) const;
 
-    String *operator->() const = delete;
-    operator bool() const = delete;
-
 protected:
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) : std::shared_ptr<String>(std::static_pointer_cast<String>(other)){};
+    option(const std::shared_ptr<R> &other) : _async_runtime::OptionImplement<String>(other){};
 };
 
 template <>
-class ref<String> : public ar::RefImplement<String>
+class ref<String> : public _async_runtime::RefImplement<String>
 {
-protected:
-    template <typename R>
-    friend class option;
-
-    template <typename R>
-    friend class weakref;
-
-    template <typename R>
-    friend class Future;
-
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
     friend class String;
-
-    friend class Object;
-
     friend ref<String> operator+(const char c, const ref<String> &string);
     friend ref<String> operator+(const char *const str, const ref<String> &string);
     friend std::ostream &operator<<(std::ostream &os, const ref<String> &dt);
@@ -202,15 +169,21 @@ protected:
     friend std::istream &operator>>(std::istream &os, ref<String> &str);
     friend ref<String> getline(std::istream &is);
 
+    bool isNotNull(ref<String> &object) const override { return option<String>::isNotNull(object); }
+    ref<String> isNotNullElse(std::function<ref<String>()> fn) const override { return option<String>::isNotNullElse(fn); }
+    ref<String> assertNotNull() const override { return option<String>::assertNotNull(); }
+
+protected:
     ref() {}
-    ref(const std::shared_ptr<String> &other) : ar::RefImplement<String>(other) {}
+    ref(const std::shared_ptr<String> &other) : _async_runtime::RefImplement<String>(other) {}
 
 public:
-    ref(const ref<String> &other) : ar::RefImplement<String>(other){};
-    ref(const std::string &str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
-    ref(std::string &&str) : ar::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
-    ref(const char *const str) : ar::RefImplement<String>(std::make_shared<String>(str)) {}
-    ref(const char c) : ar::RefImplement<String>(std::make_shared<String>(c)) {}
+    ref(const ref<String> &other) : _async_runtime::RefImplement<String>(other){};
+
+    ref(const std::string &str) : _async_runtime::RefImplement<String>(std::make_shared<String>(str)) {}
+    ref(std::string &&str) : _async_runtime::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
+    ref(const char *const str) : _async_runtime::RefImplement<String>(std::make_shared<String>(str)) {}
+    ref(const char c) : _async_runtime::RefImplement<String>(std::make_shared<String>(c)) {}
 
     bool operator==(const ref<String> &other) const
     {
@@ -266,7 +239,7 @@ ref<String> getline(std::istream &os);
 void print(ref<String> str);
 
 template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
-option<String>::option(const ref<R> &other) : std::shared_ptr<String>(static_cast<std::shared_ptr<R>>(other)) {}
+option<String>::option(const ref<R> &other) : _async_runtime::OptionImplement<String>(other) {}
 
 template <class First, class... Rest>
 void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::stringstream &ss, const First &first, const Rest &...rest)

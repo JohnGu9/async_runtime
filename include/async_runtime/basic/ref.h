@@ -1,5 +1,5 @@
 /// The mechanism of nullsafety system
-/// Implement base on std::shared_ptr and std::weak_ptr (don't confuse by std::ref)
+/// Implement base on std::shared_ptr and std::weak_ptr (don't be confused by std::ref)
 /// Thread safe and memory safe
 ///
 ///
@@ -28,13 +28,56 @@
 /// object = opt.isNotNullElse(Object::create<Object>); another syntax
 ///
 
+// inherits layout:
+//
+// std::shared_ptr
+//      ^
+//      |
+// _async_runtime::OptionImplement
+//      ^
+//      |
+// option
+//      ^
+//      |
+// _async_runtime::RefImplent
+//      ^
+//      |
+// ref
+//      ^
+//      |
+// lateref
+
+// std::weak_ptr
+//      ^
+//      |
+// weakref
+
 #pragma once
 
 #include <memory>
 #include <functional>
 #include <exception>
 #include <assert.h>
+
 #define finalref const ref
+#define _ASYNC_RUNTIME_FRIEND_FAMILY              \
+    template <typename R>                         \
+    friend class _async_runtime::OptionImplement; \
+    template <typename R>                         \
+    friend class option;                          \
+    template <typename R>                         \
+    friend class _async_runtime::RefImplement;    \
+    template <typename R>                         \
+    friend class ref;                             \
+    template <typename R>                         \
+    friend class lateref;                         \
+    template <typename R>                         \
+    friend class weakref;                         \
+    friend class Object;                          \
+    template <typename R>                         \
+    friend class Future;                          \
+    template <typename R>                         \
+    friend class Stream;
 
 // nullable object
 template <typename T>
@@ -50,9 +93,12 @@ template <typename T>
 class weakref;
 
 // the namespace not for public usage
-// ar just for async runtime internal usage
-namespace ar
+// _async_runtime just for async runtime internal usage
+namespace _async_runtime
 {
+    template <typename T>
+    class OptionImplement;
+
     template <typename T>
     class RefImplement;
 
@@ -68,24 +114,39 @@ namespace ar
 };
 
 template <typename T>
-class option : protected std::shared_ptr<T>, public ar::ToRefMixin<T>
+class _async_runtime::OptionImplement : protected std::shared_ptr<T>, public _async_runtime::ToRefMixin<T>
 {
-    template <typename R>
-    friend class option;
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
-    template <typename R>
-    friend class weakref;
+public:
+    OptionImplement() {}
+    OptionImplement(std::nullptr_t) : std::shared_ptr<T>(nullptr) {}
 
-    template <typename R>
-    friend class ar::RefImplement;
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    OptionImplement(const OptionImplement<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)){};
 
-    template <typename R>
-    friend class ref;
+    bool isNotNull(ref<T> &) const override;
+    ref<T> isNotNullElse(std::function<ref<T>()>) const override;
+    ref<T> assertNotNull() const override;
+    size_t hashCode() const
+    {
+        static const auto hs = std::hash<std::shared_ptr<T>>();
+        return hs(static_cast<const std::shared_ptr<T> &>(*this));
+    }
+    T *get() const { return std::shared_ptr<T>::get(); }
 
-    template <typename R>
-    friend class lateref;
+    T *operator->() const = delete;
+    operator bool() const = delete;
 
-    friend class Object;
+protected:
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    OptionImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)){};
+};
+
+template <typename T>
+class option : public _async_runtime::OptionImplement<T>
+{
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
     template <typename R>
     friend bool operator==(const option<R> &opt, std::nullptr_t);
@@ -97,12 +158,6 @@ class option : protected std::shared_ptr<T>, public ar::ToRefMixin<T>
     template <typename X, typename Y>
     friend bool operator!=(const option<X> &object0, const option<Y> &object1);
 
-    static const std::hash<std::shared_ptr<T>> &_hash()
-    {
-        static const auto hs = std::hash<std::shared_ptr<T>>();
-        return hs;
-    }
-
 public:
     static option<T> null()
     {
@@ -110,38 +165,23 @@ public:
         return instance;
     }
     option() {}
-    option(std::nullptr_t) : std::shared_ptr<T>(nullptr) {}
+    option(std::nullptr_t) : _async_runtime::OptionImplement<T>(nullptr) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const ref<R> &other);
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const option<R> &other) : std::shared_ptr<T>(static_cast<const std::shared_ptr<R> &>(other)) {}
-
-    bool isNotNull(ref<T> &) const override;
-    ref<T> isNotNullElse(std::function<ref<T>()>) const override;
-    ref<T> assertNotNull() const override;
-    size_t hashCode() const { return _hash()(static_cast<const std::shared_ptr<T> &>(*this)); }
-    T *get() const { return std::shared_ptr<T>::get(); }
-
-    T *operator->() const = delete;
-    operator bool() const = delete;
+    option(const option<R> &other) : _async_runtime::OptionImplement<T>(other) {}
 
 protected:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)){};
+    option(const std::shared_ptr<R> &other) : _async_runtime::OptionImplement<T>(other){};
 };
 
 template <typename T>
-class ar::RefImplement : public option<T>
+class _async_runtime::RefImplement : public option<T>
 {
-    template <typename R>
-    friend class option;
-
-    template <typename R>
-    friend class weakref;
-
-    friend class Object;
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
     RefImplement(std::nullptr_t) = delete;
@@ -173,50 +213,33 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(const std::shared_ptr<R> &other) : option<T>(other) {}
 
+private:
     bool isNotNull(ref<T> &object) const override { return option<T>::isNotNull(object); }
     ref<T> isNotNullElse(std::function<ref<T>()> fn) const override { return option<T>::isNotNullElse(fn); }
     ref<T> assertNotNull() const override { return option<T>::assertNotNull(); }
 };
 
 template <typename T>
-class ref : public ar::RefImplement<T>
+class ref : public _async_runtime::RefImplement<T>
 {
-    template <typename R>
-    friend class option;
-
-    template <typename R>
-    friend class weakref;
-
-    friend class Object;
-
-    template <typename R>
-    friend class Future;
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : ar::RefImplement<T>(other) {}
+    ref(const ref<R> &other) : _async_runtime::RefImplement<T>(other) {}
 
 protected:
     ref() {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    ref(const option<R> &other) : ar::RefImplement<T>(other) {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    ref(const std::shared_ptr<R> &other) : ar::RefImplement<T>(other) {}
+    ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<T>(other) {}
 };
 
 // non-nullable object
 template <typename T>
 class lateref : public ref<T>
 {
-    template <typename R>
-    friend class option;
-
-    template <typename R>
-    friend class weakref;
-
-    friend class Object;
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
     lateref() : ref<T>() {}
@@ -236,7 +259,7 @@ protected:
 };
 
 template <typename T>
-class weakref : public std::weak_ptr<T>, public ar::ToRefMixin<T>
+class weakref : public std::weak_ptr<T>, public _async_runtime::ToRefMixin<T>
 {
 public:
     weakref() {}
@@ -250,26 +273,18 @@ public:
     {
         const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
         if (ptr != nullptr)
-        {
             return ref<T>(ptr);
-        }
         else
-        {
             throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
-        }
     }
 
     ref<T> isNotNullElse(std::function<ref<T>()> fn) const override
     {
         const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
         if (ptr != nullptr)
-        {
             return ref<T>(ptr);
-        }
         else
-        {
             return fn();
-        }
     }
 
     bool isNotNull(ref<T> &object) const override
@@ -281,9 +296,7 @@ public:
             return true;
         }
         else
-        {
             return false;
-        }
     }
 
     option<T> toOption() const
@@ -306,10 +319,11 @@ bool operator!=(const option<T> &object0, const option<R> &object1) { return sta
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
-option<T>::option(const ref<R> &other) : std::shared_ptr<T>(static_cast<const std::shared_ptr<R> &>(other)) {}
+option<T>::option(const ref<R> &other)
+    : _async_runtime::OptionImplement<T>(other) {}
 
 template <typename T>
-bool option<T>::isNotNull(ref<T> &object) const
+bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
@@ -318,37 +332,27 @@ bool option<T>::isNotNull(ref<T> &object) const
         return true;
     }
     else
-    {
         return false;
-    }
 }
 
 template <typename T>
-ref<T> option<T>::isNotNullElse(std::function<ref<T>()> fn) const
+ref<T> _async_runtime::OptionImplement<T>::isNotNullElse(std::function<ref<T>()> fn) const
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
-    {
         return ref<T>(ptr);
-    }
     else
-    {
         return fn();
-    }
 }
 
 template <typename T>
-ref<T> option<T>::assertNotNull() const
+ref<T> _async_runtime::OptionImplement<T>::assertNotNull() const
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
-    {
         return ref<T>(ptr);
-    }
     else
-    {
         throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
-    }
 }
 
 namespace std

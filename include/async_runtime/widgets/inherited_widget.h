@@ -17,19 +17,20 @@ protected:
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
 inline option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
-    auto iter = this->_inheritances->find(typeid(T).name());
+    auto iter = this->_inheritances->find(typeid(T).hash_code());
     if (iter == this->_inheritances.end())
     {
 #ifdef DEBUG
         lateref<Element> element;
         if (option<Element>(this->cast<Element>()).isNotNull(element))
         {
-            ref<String> str = element->widget->runtimeType();
-            element->visitAncestor([&str](ref<Element> element) {
-                str = str + " > " + element->widget->runtimeType();
+            std::stringstream ss;
+            ss << element->widget->toString();
+            element->visitAncestor([&ss](ref<Element> element) {
+                ss << " > " << element->widget->toString();
                 return false;
             });
-            debug_print("Can't find InheritedWidget [" << typeid(T).name() << "] from context: " << str);
+            debug_print("Can't find InheritedWidget [" << typeid(T).name() << "] from context: " << ss.rdbuf());
         }
 #endif
         return nullptr;

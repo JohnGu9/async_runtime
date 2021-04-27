@@ -1,38 +1,8 @@
 #include "async_runtime/basic/string.h"
 
-bool option<String>::isNotNull(ref<String> &object) const
-{
-    const std::shared_ptr<String> ptr = static_cast<const std::shared_ptr<String>>(*this);
-    if (ptr != nullptr)
-    {
-        object = ptr;
-        return true;
-    }
-    else
-        return false;
-}
-
 bool option<String>::operator!=(const option<String> &other) const
 {
     return this->operator==(other);
-}
-
-ref<String> option<String>::isNotNullElse(std::function<ref<String>()> fn) const
-{
-    const std::shared_ptr<String> ptr = static_cast<const std::shared_ptr<String>>(*this);
-    if (ptr != nullptr)
-        return ref<String>(ptr);
-    else
-        return fn();
-}
-
-ref<String> option<String>::assertNotNull() const
-{
-    const std::shared_ptr<String> ptr = static_cast<const std::shared_ptr<String>>(*this);
-    if (ptr != nullptr)
-        return ref<String>(ptr);
-    else
-        throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
 }
 
 bool option<String>::operator==(const option<String> &other) const
