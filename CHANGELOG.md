@@ -1,4 +1,4 @@
-# AsyncRuntime [0.2.3-nullsafety]
+# AsyncRuntime [0.2.4-nullsafety]
 
 ## Break Change
 - [ref](include/async_runtime/basic/ref.h) only refer non-null [Object](include/async_runtime/object.h)
@@ -8,7 +8,10 @@
 <br/>
 
 - [String](include/async_runtime/basic/string.h) become [Object](include/async_runtime/object.h)
-- [ref\<String>](include/async_runtime/basic/string.h) and [option\<String>](include/async_runtime/basic/string.h) replace origin [String]()
+- [Set](include/async_runtime/basic/container/set.h) become [Object](include/async_runtime/object.h)
+- [List](include/async_runtime/basic/container/list.h) become [Object](include/async_runtime/object.h)
+- [Map](include/async_runtime/basic/container/map.h) become [Object](include/async_runtime/object.h)
+
 
 <br/>
 
@@ -21,4 +24,5 @@
 <br/>
 
 ## Known Bug
-- [Map<Key, Value>](include/async_runtime/basic/container/map.h) can't use [ref](include/async_runtime/basic/ref.h) for [Value]() type when you use Map::operator[] to assign new pair. Use [lateref](include/async_runtime/basic/ref.h) to bypass this bug. 
+- [Map<Key, Value>](include/async_runtime/basic/container/map.h) can't use [ref](include/async_runtime/basic/ref.h) for [Value]() type when you use Map::operator[] to assign new pair. Use [lateref](include/async_runtime/basic/ref.h) to bypass this bug. For example, ref<Map\<int, ref\<String>>> is not allow, but ref<Map\<int, lateref\<String>>> is ok. 
+- [container](include/async_runtime/basic/container.h) must call [Object::create](include/async_runtime/object.h) to init a empty container rather than "{}". If use "{}" will cause empty reference (For example: "ref<Set\<int>> set = {}; " will cause empty refer error). It's C++ syntax limit. Using "{}" will call default empty constructor ([ref<Set\<int>>::ref()]()) rather than std::initializer_list constructor ([ref<Set\<int>>::ref(std::initializer_list<T>&& list)]()). 

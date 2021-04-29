@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <vector>
 
+// native copyable type that don't not need ref
 class Duration
 {
 public:

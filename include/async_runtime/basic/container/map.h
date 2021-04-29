@@ -114,7 +114,7 @@ public:
     using const_iterator = typename Map<Key, Value>::const_iterator;
     using value_type = typename Map<Key, Value>::value_type;
 
-    lateref() : ref<Map<Key, Value>>() {}
+    explicit lateref() : ref<Map<Key, Value>>() {}
 
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<Map<Key, Value>>(other) {}

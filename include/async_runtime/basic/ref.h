@@ -242,7 +242,7 @@ class lateref : public ref<T>
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
-    lateref() : ref<T>() {}
+    explicit lateref() : ref<T>() {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<T>(other) {}

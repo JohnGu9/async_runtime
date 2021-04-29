@@ -108,7 +108,7 @@ public:
     using iterator = typename Set<T>::iterator;
     using const_iterator = typename Set<T>::const_iterator;
 
-    lateref() : ref<Set<T>>() {}
+    explicit lateref() : ref<Set<T>>() {}
 
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<Set<T>>(other) {}

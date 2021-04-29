@@ -8,8 +8,6 @@
 #include "basic/ref.h"
 
 // native copyable type that don't not need ref
-class Duration;
-// native copyable type that don't not need ref
 template <typename T = std::nullptr_t>
 class Function;
 

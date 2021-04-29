@@ -111,7 +111,7 @@ public:
     using iterator = typename List<T>::iterator;
     using const_iterator = typename List<T>::const_iterator;
 
-    lateref() : ref<List<T>>() {}
+    explicit lateref() : ref<List<T>>() {}
 
     template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<List<T>>(other) {}
