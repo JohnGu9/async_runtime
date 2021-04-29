@@ -15,7 +15,7 @@ void Element::attach()
 
 void Element::detach()
 {
-    this->_inheritances = nullptr; // release map reference
+    Object::detach(this->_inheritances); // release map reference
     lateref<Key> key;
     if (this->widget->key.isNotNull(key))
         key->dispose();

@@ -196,7 +196,7 @@ public:
 
     T *operator->() const
     {
-        assert(std::shared_ptr<T>::get() && "NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
+        assert(std::shared_ptr<T>::get() && "lateref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
         return std::shared_ptr<T>::operator->();
     }
 
@@ -247,13 +247,7 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<T>(other) {}
 
-    bool operator==(std::nullptr_t) const { return static_cast<const std::shared_ptr<T> &>(*this) == nullptr; }
-    bool operator!=(std::nullptr_t) const { return static_cast<const std::shared_ptr<T> &>(*this) != nullptr; }
-
 protected:
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    lateref(const option<R> &other) : ref<T>(other) {}
-
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const std::shared_ptr<R> &other) : ref<T>(other) {}
 };

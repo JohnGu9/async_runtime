@@ -7,7 +7,7 @@ InheritedElement::InheritedElement(ref<InheritedWidget> widget) : SingleChildEle
 void InheritedElement::attach()
 {
     Element::attach();
-    this->_inheritances = this->_inheritances.copy();
+    this->_inheritances = this->_inheritances->copy();
     this->_inheritances[this->_inheritWidget->runtimeType()] = this->_inheritWidget;
     ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
     this->attachElement(widget->createElement());

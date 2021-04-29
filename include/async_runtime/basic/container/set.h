@@ -3,84 +3,131 @@
 #include <initializer_list>
 #include <memory>
 #include <unordered_set>
+#include "../container.h"
 
 template <typename T>
-class Set : public std::shared_ptr<std::unordered_set<T>>, public Lock::WithLockMixin
+class Set : public std::unordered_set<T>, public Iterable<T>
 {
-    explicit Set(std::nullptr_t) : std::shared_ptr<std::unordered_set<T>>(std::make_shared<std::unordered_set<T>>()) {}
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
     using iterator = typename std::unordered_set<T>::iterator;
     using const_iterator = typename std::unordered_set<T>::const_iterator;
 
-    static Set<T> empty() { return Set<T>(nullptr); }
-    explicit Set() {}
-    Set(const Set<T> &other)
-        : std::shared_ptr<std::unordered_set<T>>(std::make_shared<std::unordered_set<T>>(*other)), Lock::WithLockMixin(other) { assert(*this); }
-    Set(std::initializer_list<T> &&ls)
-        : std::shared_ptr<std::unordered_set<T>>(std::make_shared<std::unordered_set<T>>(std::forward<std::initializer_list<T>>(ls))) { assert(*this); }
+    Set() {}
+    Set(const Set<T> &other) : std::unordered_set<T>(other) {}
 
-    Set<T> &operator=(std::initializer_list<T> &&ls)
-    {
-        std::shared_ptr<std::unordered_set<T>>::operator=(
-            std::make_shared<std::unordered_set<T>>(std::forward<std::initializer_list<T>>(ls)));
-        assert(*this);
-        return *this;
-    }
+    Set(std::initializer_list<T> &&list) : std::unordered_set<T>(std::move(list)) {}
+    Set(const std::initializer_list<T> &list) : std::unordered_set<T>(list) {}
+    template <typename R>
+    Set(const std::initializer_list<R> &list) : std::unordered_set<T>(list.begin(), list.end()) {}
 
-    Set<T> &operator=(const Set<T> &other)
-    {
-        std::shared_ptr<std::unordered_set<T>>::operator=(static_cast<const std::shared_ptr<std::unordered_set<T>> &>(other));
-        Lock::WithLockMixin::operator=(other);
-        return *this;
-    }
+    ref<Set<T>> copy() const;
 
-    Set<T> &operator=(std::nullptr_t t)
+    bool any(Function<bool(const T &)> fn) const override
     {
-        std::shared_ptr<std::unordered_set<T>>::operator=(t);
-        return *this;
-    }
-
-    iterator begin()
-    {
-        assert(*this);
-        return (*this)->begin();
-    }
-    const_iterator begin() const
-    {
-        assert(*this);
-        return (*this)->begin();
-    }
-
-    iterator end()
-    {
-        assert(*this);
-        return (*this)->end();
-    }
-    const_iterator end() const
-    {
-        assert(*this);
-        return (*this)->end();
-    }
-
-    Set<T> copy() const
-    {
-        return Set<T>(*this);
-    }
-
-    bool any(Function<bool(const T &)> fn)
-    {
-        for (auto &iter : **this)
+        for (const auto &iter : *this)
             if (fn(iter))
                 return true;
         return false;
     }
 
-    bool every(Function<bool(const T &)> fn)
+    bool every(Function<bool(const T &)> fn) const override
     {
-        for (auto &iter : **this)
+        for (const auto &iter : *this)
             if (not fn(iter))
                 return false;
         return true;
     }
+};
+
+template <typename T>
+class ref<Set<T>> : public _async_runtime::RefImplement<Set<T>>
+{
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
+
+public:
+    using iterator = typename Set<T>::iterator;
+    using const_iterator = typename Set<T>::const_iterator;
+
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    ref(const ref<R> &other) : _async_runtime::RefImplement<Set<T>>(other) {}
+
+    ref(const std::initializer_list<T> &list)
+        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(list)) {}
+
+    ref(std::initializer_list<T> &&list)
+        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(std::move(list))) {}
+
+    template <typename R>
+    ref(const std::initializer_list<R> &list)
+        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(list)) {}
+
+    template <typename R>
+    ref(std::initializer_list<R> &&list)
+        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(list)) {}
+
+    iterator begin()
+    {
+        return (*this)->begin();
+    }
+    const_iterator begin() const
+    {
+        return (*this)->begin();
+    }
+
+    iterator end()
+    {
+        return (*this)->end();
+    }
+
+    const_iterator end() const
+    {
+        return (*this)->end();
+    }
+
+protected:
+    ref() {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<Set<T>>(other) {}
+};
+
+template <typename T>
+ref<Set<T>> Set<T>::copy() const
+{
+    return Object::create<Set<T>>(*this);
+}
+
+template <typename T>
+class lateref<Set<T>> : public ref<Set<T>>
+{
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
+
+public:
+    using iterator = typename Set<T>::iterator;
+    using const_iterator = typename Set<T>::const_iterator;
+
+    lateref() : ref<Set<T>>() {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    lateref(const ref<R> &other) : ref<Set<T>>(other) {}
+
+    lateref(const std::initializer_list<T> &list)
+        : ref<Set<T>>(list) {}
+
+    lateref(std::initializer_list<T> &&list)
+        : ref<Set<T>>(std::move(list)) {}
+
+    template <typename R>
+    lateref(const std::initializer_list<R> &list)
+        : ref<Set<T>>(list) {}
+
+    template <typename R>
+    lateref(std::initializer_list<R> &&list)
+        : ref<Set<T>>(std::move(list)) {}
+
+protected:
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    lateref(const std::shared_ptr<R> &other) : ref<Set<T>>(other) {}
 };

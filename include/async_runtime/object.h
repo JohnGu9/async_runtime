@@ -7,22 +7,11 @@
 #include "basic/io.h"
 #include "basic/ref.h"
 
-
-
 // native copyable type that don't not need ref
 class Duration;
 // native copyable type that don't not need ref
 template <typename T = std::nullptr_t>
 class Function;
-// native copyable type that don't not need ref
-template <typename Key, typename Value>
-class Map;
-// native copyable type that don't not need ref
-template <typename T>
-class Set;
-// native copyable type that don't not need ref
-template <typename T>
-class List;
 
 #define self() Object::cast<>(this)
 

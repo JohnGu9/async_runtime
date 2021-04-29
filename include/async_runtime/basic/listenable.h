@@ -15,6 +15,6 @@ public:
 protected:
     Listenable();
 
-    Set<Function<void(ref<Listenable>)>> _listeners;
+    ref<Set<Function<void(ref<Listenable>)>>> _listeners;
     bool _isDisposed;
 };

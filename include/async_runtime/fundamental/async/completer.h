@@ -76,7 +76,7 @@ protected:
         this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
             fn();
-        this->_future->_callbackList = nullptr;
+        this->_future->_callbackList->clear();
     }
 
     ref<Future<void>> _future;
@@ -138,7 +138,7 @@ protected:
         this->_future->_completed = true;
         for (auto &fn : this->_future->_callbackList)
             fn(this->_future->_data);
-        this->_future->_callbackList = nullptr;
+        this->_future->_callbackList->clear();
     }
 
     ref<Future<T>> _future;

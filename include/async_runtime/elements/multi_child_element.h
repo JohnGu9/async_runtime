@@ -17,5 +17,5 @@ public:
 
 protected:
     ref<MultiChildWidget> _multiChildWidget;
-    List<ref<Element> > _childrenElements;
+    ref<List<ref<Element>>> _childrenElements;
 };

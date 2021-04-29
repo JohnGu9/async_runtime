@@ -101,7 +101,7 @@ public:
     virtual bool startsWith(ref<String>) const;
     virtual bool endsWith(ref<String>) const;
     virtual const std::string &toStdString() const { return *this; }
-    virtual List<ref<String>> split(ref<String> pattern) const;
+    virtual ref<List<ref<String>>> split(ref<String> pattern) const;
 
     template <typename... Args>
     ref<String> format(Args &&...args);

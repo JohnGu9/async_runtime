@@ -1,13 +1,14 @@
 #pragma once
 
 #include "../object.h"
+#include "container.h"
 
 class Tree : public Object
 {
 public:
-    Tree() : children({}) {}
+    Tree() : children(Object::create<List<ref<Tree>>>()) {}
     weakref<Tree> parent;
-    List<ref<Tree>> children;
+    ref<List<ref<Tree>>> children;
     option<String> info;
 
     virtual void ps(std::ostream &ss)

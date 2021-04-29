@@ -26,7 +26,7 @@ void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement d
 void RootElement::attach()
 {
     this->_child = Object::create<Process>(this->_child, self());
-    this->_inheritances = {};
+    this->_inheritances = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
     this->attachElement(this->_child->createElement());
 }
 
@@ -160,11 +160,11 @@ void RootElement::onCommand(const std::string &in)
     }
     else if (command == "ls")
     {
-        Map<Element *, List<Element *>> map = {{this, List<Element *>::empty()}};
+        ref<Map<Element *, lateref<List<Element *>>>> map = {{this, Object::create<List<Element *>>()}};
         this->visitDescendant([&map](ref<Element> element) -> bool {
             option<Element> parent = element->parent.toOption();
             map[parent.get()]->emplace_back(element.get());
-            map[element.get()] = List<Element *>::empty();
+            map[element.get()] = Object::create<List<Element *>>();
             return false;
         });
         ref<Tree> tree = Object::create<Tree>();
@@ -177,7 +177,7 @@ void RootElement::onCommand(const std::string &in)
                 if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
                     ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
                 currentTree->info = ss.str();
-                List<Element *> &children = map[currentElement];
+                ref<List<Element *>> &children = map[currentElement];
                 for (Element *child : children)
                 {
                     ref<Tree> childTree = Object::create<Tree>();

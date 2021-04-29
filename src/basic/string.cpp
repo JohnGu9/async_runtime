@@ -95,9 +95,9 @@ bool String::endsWith(ref<String> suffix) const
     return std::equal(suffix->rbegin(), suffix->rend(), this->rbegin());
 }
 
-List<ref<String>> String::split(ref<String> pattern) const
+ref<List<ref<String>>> String::split(ref<String> pattern) const
 {
-    auto list = List<ref<String>>::empty();
+    ref<List<ref<String>>> list = Object::create<List<ref<String>>>();
     size_t lastIndex = 0;
     while (true)
     {

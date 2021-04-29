@@ -1,7 +1,7 @@
 #include "async_runtime/basic/listenable.h"
 #include <assert.h>
 
-Listenable::Listenable() : _listeners({}), _isDisposed(false) {}
+Listenable::Listenable() : _listeners(Object::create<Set<Function<void(ref<Listenable>)>>>()), _isDisposed(false) {}
 
 void Listenable::addListener(Function<void(ref<Listenable>)> fn)
 {
@@ -20,5 +20,5 @@ void Listenable::removeListener(Function<void(ref<Listenable>)> fn)
 void Listenable::dispose()
 {
     this->_isDisposed = true;
-    this->_listeners = nullptr;
+    Object::detach(this->_listeners);
 }

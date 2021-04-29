@@ -4,90 +4,136 @@
 #include <memory>
 #include <unordered_map>
 
+#include "../container.h"
+
 template <typename Key, typename Value>
-class Map : public std::shared_ptr<std::unordered_map<Key, Value>>, public Lock::WithLockMixin
+class Map : public std::unordered_map<Key, Value>, public Iterable<typename std::unordered_map<Key, Value>::value_type>
 {
-    explicit Map(std::nullptr_t) : std::shared_ptr<std::unordered_map<Key, Value>>(std::make_shared<std::unordered_map<Key, Value>>()) {}
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
     using iterator = typename std::unordered_map<Key, Value>::iterator;
     using const_iterator = typename std::unordered_map<Key, Value>::const_iterator;
     using value_type = typename std::unordered_map<Key, Value>::value_type;
 
-    static Map<Key, Value> empty() { return Map<Key, Value>(nullptr); }
-    explicit Map() {}
-    Map(const Map<Key, Value> &other)
-        : std::shared_ptr<std::unordered_map<Key, Value>>(std::make_shared<std::unordered_map<Key, Value>>(*other)), Lock::WithLockMixin(other) { assert(*this); }
-    Map(std::initializer_list<value_type> &&ls)
-        : std::shared_ptr<std::unordered_map<Key, Value>>(std::make_shared<std::unordered_map<Key, Value>>(std::forward<std::initializer_list<value_type>>(ls))) { assert(*this); }
+    Map() {}
+    Map(const Map<Key, Value> &other) : std::unordered_map<Key, Value>(other) {}
 
-    Map<Key, Value> &operator=(std::initializer_list<value_type> &&ls)
-    {
-        std::shared_ptr<std::unordered_map<Key, Value>>::operator=(
-            std::make_shared<std::unordered_map<Key, Value>>(std::forward<std::initializer_list<value_type>>(ls)));
-        assert(*this);
-        return *this;
-    }
+    Map(std::initializer_list<value_type> &&list) : std::unordered_map<Key, Value>(std::move(list)) {}
+    Map(const std::initializer_list<value_type> &list) : std::unordered_map<Key, Value>(list) {}
+    template <typename R>
+    Map(const std::initializer_list<R> &list) : std::unordered_map<Key, Value>(list.begin(), list.end()) {}
 
-    Map<Key, Value> &operator=(const Map<Key, Value> &other)
-    {
-        std::shared_ptr<std::unordered_map<Key, Value>>::operator=(
-            static_cast<const std::shared_ptr<std::unordered_map<Key, Value>> &>(other));
-        Lock::WithLockMixin::operator=(other);
-        return *this;
-    }
+    ref<Map<Key, Value>> copy() const;
 
-    Map<Key, Value> &operator=(std::nullptr_t t)
+    bool any(Function<bool(const value_type &)> fn) const override
     {
-        std::shared_ptr<std::unordered_map<Key, Value>>::operator=(t);
-        return *this;
-    }
-
-    Value &operator[](const Key &key) { return (*this)->operator[](key); }
-    Value &operator[](const Key &key) const { return (*this)->operator[](key); }
-    Value &operator[](Key &&key) { return (*this)->operator[](std::forward<Key>(key)); }
-    Value &operator[](Key &&key) const { return (*this)->operator[](std::forward<Key>(key)); }
-
-    iterator begin()
-    {
-        assert(*this);
-        return (*this)->begin();
-    }
-    const_iterator begin() const
-    {
-        assert(*this);
-        return (*this)->begin();
-    }
-
-    iterator end()
-    {
-        assert(*this);
-        return (*this)->end();
-    }
-    const_iterator end() const
-    {
-        assert(*this);
-        return (*this)->end();
-    }
-
-    Map<Key, Value> copy() const
-    {
-        return Map<Key, Value>(*this);
-    }
-
-    bool any(Function<bool(const value_type &)> fn)
-    {
-        for (auto &iter : **this)
+        for (const auto &iter : *this)
             if (fn(iter))
                 return true;
         return false;
     }
 
-    bool every(Function<bool(const value_type &)> fn)
+    bool every(Function<bool(const value_type &)> fn) const override
     {
-        for (auto &iter : **this)
-            if (not fn(iter))
+        for (const auto &iter : *this)
+            if (!fn(iter))
                 return false;
         return true;
     }
+};
+
+template <typename Key, typename Value>
+class ref<Map<Key, Value>> : public _async_runtime::RefImplement<Map<Key, Value>>
+{
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
+
+public:
+    using iterator = typename Map<Key, Value>::iterator;
+    using const_iterator = typename Map<Key, Value>::const_iterator;
+    using value_type = typename Map<Key, Value>::value_type;
+
+    template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
+    ref(const ref<R> &other) : _async_runtime::RefImplement<Map<Key, Value>>(other) {}
+
+    ref(const std::initializer_list<value_type> &list)
+        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(list)) {}
+
+    ref(std::initializer_list<value_type> &&list)
+        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(std::move(list))) {}
+
+    template <typename R>
+    ref(const std::initializer_list<R> &list)
+        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(list)) {}
+
+    template <typename R>
+    ref(std::initializer_list<R> &&list)
+        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(list)) {}
+
+    template <typename... Args>
+    Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
+
+    iterator begin()
+    {
+        return (*this)->begin();
+    }
+    const_iterator begin() const
+    {
+        return (*this)->begin();
+    }
+
+    iterator end()
+    {
+        return (*this)->end();
+    }
+    const_iterator end() const
+    {
+        return (*this)->end();
+    }
+
+protected:
+    ref() {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
+    ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<Map<Key, Value>>(other) {}
+};
+
+template <typename Key, typename Value>
+ref<Map<Key, Value>> Map<Key, Value>::copy() const
+{
+    return Object::create<Map<Key, Value>>(*this);
+}
+
+template <typename Key, typename Value>
+class lateref<Map<Key, Value>> : public ref<Map<Key, Value>>
+{
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
+
+public:
+    using iterator = typename Map<Key, Value>::iterator;
+    using const_iterator = typename Map<Key, Value>::const_iterator;
+    using value_type = typename Map<Key, Value>::value_type;
+
+    lateref() : ref<Map<Key, Value>>() {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
+    lateref(const ref<R> &other) : ref<Map<Key, Value>>(other) {}
+
+    lateref(const std::initializer_list<value_type> &list)
+        : ref<Map<Key, Value>>(list) {}
+
+    lateref(std::initializer_list<value_type> &&list)
+        : ref<Map<Key, Value>>(std::move(list)) {}
+
+    template <typename R>
+    lateref(const std::initializer_list<R> &list)
+        : ref<Map<Key, Value>>(list) {}
+
+    template <typename R>
+    lateref(std::initializer_list<R> &&list)
+        : ref<Map<Key, Value>>(std::move(list)) {}
+
+protected:
+    template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
+    lateref(const std::shared_ptr<R> &other) : ref<Map<Key, Value>>(other) {}
 };

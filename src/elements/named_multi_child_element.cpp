@@ -2,12 +2,12 @@
 #include "async_runtime/widgets/named_multi_child_widget.h"
 
 NamedMultiChildElement::NamedMultiChildElement(ref<NamedMultiChildWidget> widget)
-    : Element(widget), _namedMultiChildWidget(widget), _childrenElements({}) {}
+    : Element(widget), _namedMultiChildWidget(widget), _childrenElements(Object::create<Map<ref<String>, lateref<Element>>>()) {}
 
 void NamedMultiChildElement::attach()
 {
     Element::attach();
-    Map<ref<String>, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    ref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto &iter : children)
     {
         ref<Widget> &widget = iter.second;
@@ -22,13 +22,13 @@ void NamedMultiChildElement::detach()
 {
     for (auto &iter : this->_childrenElements)
         iter.second->detach();
-    this->_childrenElements = nullptr;
+    Object::detach(this->_childrenElements);
     Element::detach();
 }
 
 void NamedMultiChildElement::build()
 {
-    Map<ref<String>, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    ref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
@@ -86,7 +86,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     Element::notify(newWidget);
     this->_namedMultiChildWidget = newWidget->covariant<NamedMultiChildWidget>();
 
-    Map<ref<String>, lateref<Widget>> &children = this->_namedMultiChildWidget->_children;
+    ref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())

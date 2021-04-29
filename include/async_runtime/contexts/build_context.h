@@ -21,5 +21,5 @@ public:
     option<T> dependOnInheritedWidgetOfExactType();
 
 protected:
-    Map<Object::RuntimeType, lateref<Inheritance>> _inheritances;
+    lateref<Map<Object::RuntimeType, lateref<Inheritance>>> _inheritances;
 };

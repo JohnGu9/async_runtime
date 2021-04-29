@@ -13,7 +13,7 @@
 
 static ref<String> emptyString = "";
 
-Set<ref<String>> ThreadPool::_namePool = Set<ref<String>>::empty();
+ref<Set<ref<String>>> ThreadPool::_namePool = Object::create<Set<ref<String>>>();
 
 thread_local ref<String> ThreadPool::thisThreadName = "MainThread";
 
@@ -47,7 +47,7 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString)
 
     {
         assert(this->_name->isNotEmpty());
-        option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+        option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
     }
@@ -58,7 +58,7 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString)
 
 ThreadPool::~ThreadPool(){
 #ifdef DEBUG
-    {option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+    {option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
 assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
 }
 {
@@ -142,7 +142,7 @@ void ThreadPool::dispose()
 
 void ThreadPool::unregisterName()
 {
-    option<Lock::UniqueLock> lock = ThreadPool::_namePool.lock->uniqueLock();
+    option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
     ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
 }
 
@@ -242,7 +242,7 @@ void Future<std::nullptr_t>::sync(Duration timeout)
 //
 ////////////////////////////
 
-ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<ref<Future<>>> set)
+ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, ref<Set<ref<Future<>>>> set)
 {
     if (set->empty())
         return Future<void>::value(state);
@@ -252,7 +252,7 @@ ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, Set<ref<Futur
     return completer->future;
 }
 
-ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, Set<ref<Future<>>> set)
+ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, ref<Set<ref<Future<>>>> set)
 {
     size_t size = set->size();
     if (size == 0)

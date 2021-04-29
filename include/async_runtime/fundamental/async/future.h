@@ -49,8 +49,8 @@ class Future<void> : public Future<std::nullptr_t>
     friend ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
 
 public:
-    static ref<Future<void>> race(State<StatefulWidget> *state, Set<ref<Future<>>> set);
-    static ref<Future<void>> wait(State<StatefulWidget> *state, Set<ref<Future<>>> set);
+    static ref<Future<void>> race(State<StatefulWidget> *state, ref<Set<ref<Future<>>>> set);
+    static ref<Future<void>> wait(State<StatefulWidget> *state, ref<Set<ref<Future<>>>> set);
 
     static ref<Future<void>> value(ref<ThreadPool> callbackHandler);
     static ref<Future<void>> value(State<StatefulWidget> *state);
@@ -58,8 +58,8 @@ public:
     static ref<Future<void>> delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout = nullptr);
     static ref<Future<void>> delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout = nullptr);
 
-    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList({}) {}
-    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList({}) {}
+    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList(Object::create<List<Function<void()>>>()) {}
+    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _callbackList(Object::create<List<Function<void()>>>()) {}
 
     template <typename ReturnType = void>
     ref<Future<ReturnType>> than(Function<ReturnType()>);
@@ -68,7 +68,7 @@ public:
     virtual ref<Future<void>> timeout(Duration, Function<void()> onTimeout = nullptr);
 
 protected:
-    List<Function<void()>> _callbackList;
+    ref<List<Function<void()>>> _callbackList;
 };
 
 template <typename T>
@@ -95,13 +95,13 @@ public:
     static ref<Future<T>> value(ref<ThreadPool> callbackHandler, T &&);
     static ref<Future<T>> value(State<StatefulWidget> *state, T &&);
 
-    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _data(), _callbackList({}) {}
-    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _data(), _callbackList({}) {}
+    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _data(), _callbackList(Object::create<List<Function<void(const T &)>>>()) {}
+    Future(State<StatefulWidget> *state) : Future<std::nullptr_t>(state), _data(), _callbackList(Object::create<List<Function<void(const T &)>>>()) {}
 
     Future(ref<ThreadPool> callbackHandler, const T &data)
-        : Future<std::nullptr_t>(callbackHandler), _data(data), _callbackList({}) { this->_completed = true; }
+        : Future<std::nullptr_t>(callbackHandler), _data(data), _callbackList(Object::create<List<Function<void(const T &)>>>()) { this->_completed = true; }
     Future(State<StatefulWidget> *state, const T &data)
-        : Future<std::nullptr_t>(state), _data(data), _callbackList({}) { this->_completed = true; }
+        : Future<std::nullptr_t>(state), _data(data), _callbackList(Object::create<List<Function<void(const T &)>>>()) { this->_completed = true; }
 
     template <typename ReturnType = void, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
     ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);
@@ -113,5 +113,5 @@ public:
 
 protected:
     T _data;
-    List<Function<void(const T &)>> _callbackList;
+    ref<List<Function<void(const T &)>>> _callbackList;
 };

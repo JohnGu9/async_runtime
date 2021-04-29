@@ -110,11 +110,11 @@ public:
     Stream(ref<ThreadPool> callbackHandler)
         : Stream<std::nullptr_t>(callbackHandler),
           _onClose(Object::create<Completer<void>>(callbackHandler)),
-          _cache({}) {}
+          _cache(Object::create<List<T>>()) {}
     Stream(State<StatefulWidget> *state)
         : Stream<std::nullptr_t>(state),
           _onClose(Object::create<Completer<void>>(state)),
-          _cache({}) {}
+          _cache(Object::create<List<T>>()) {}
     virtual ~Stream()
     {
         if (!this->_isClosed)
@@ -129,7 +129,7 @@ public:
             if (self->_listener)
                 self->_listener(std::move(value));
             else
-                self->_cache->emplace_back(value);
+                self->_cache.assertNotNull()->emplace_back(value);
         });
         return self;
     }
@@ -142,19 +142,19 @@ public:
             if (self->_listener)
                 self->_listener(std::move(value));
             else
-                self->_cache->emplace_back(std::move(value));
+                self->_cache.assertNotNull()->emplace_back(std::move(value));
         });
         return self;
     }
 
     virtual ref<StreamSubscription<T>> listen(Function<void(T)> fn)
     {
-        ref<Stream<T>> self = self();
         assert(!static_cast<bool>(this->_listener) && "Single listener stream can't have more than one listener");
+        ref<Stream<T>> self = self();
         this->_callbackHandler->post([self, fn] {
             assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
             self->_listener = fn;
-            for (auto &cache : self->_cache)
+            for (auto &cache : self->_cache.assertNotNull())
                 self->_listener(std::move(cache));
             self->_cache = nullptr;
             if (self->_isClosed)
@@ -176,6 +176,7 @@ public:
 
     void close() override
     {
+        assert(!this->_isClosed);
         ref<Stream<T>> self = self();
         this->_callbackHandler->post([self] {
             assert(!self->_isClosed);
@@ -187,7 +188,7 @@ public:
 
 protected:
     ref<Completer<void>> _onClose;
-    List<T> _cache;
+    option<List<T>> _cache;
 
     Function<void(T)> _listener;
     bool _isClosed = false;
