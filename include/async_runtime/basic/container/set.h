@@ -35,7 +35,7 @@ public:
     bool every(Function<bool(const T &)> fn) const override
     {
         for (const auto &iter : *this)
-            if (not fn(iter))
+            if (!fn(iter))
                 return false;
         return true;
     }
