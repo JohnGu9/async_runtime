@@ -2,7 +2,7 @@
 
 bool option<String>::operator!=(const option<String> &other) const
 {
-    return this->operator==(other);
+    return !this->operator==(other);
 }
 
 bool option<String>::operator==(const option<String> &other) const

@@ -114,6 +114,4 @@ ref<T> Object::covariant()
         throw std::runtime_error(std::string("Invail type covariant from [") + typeid(*this).name() + "] to [" + typeid(T).name() + "]");
 }
 
-void print(option<Object> object);
-
 #include "basic/function.h"

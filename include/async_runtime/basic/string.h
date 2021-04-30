@@ -236,7 +236,6 @@ ref<String> operator+(const char *const str, const ref<String> &string);
 std::ostream &operator<<(std::ostream &os, const ref<String> &str);
 std::istream &operator>>(std::istream &is, ref<String> &str);
 ref<String> getline(std::istream &os);
-void print(ref<String> str);
 
 template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
 option<String>::option(const ref<R> &other) : _async_runtime::OptionImplement<String>(other) {}

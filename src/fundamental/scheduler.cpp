@@ -72,6 +72,16 @@ class _SchedulerState : public State<Scheduler>
         this->_handler = Object::create<ThreadPool>(1, this->getWidget()->name);
     }
 
+    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    {
+        auto old = oldWidget->covariant<Scheduler>();
+        if (old->name != this->getWidget()->name)
+        {
+            this->_handler->dispose();
+            this->_handler = Object::create<ThreadPool>(1, this->getWidget()->name);
+        }
+    }
+
     void dispose() override
     {
         this->_handler->dispose();
