@@ -1,7 +1,12 @@
 #pragma once
 
-#include "../basic/notification.h"
 #include "stateless_widget.h"
+
+class Notification : public virtual Object
+{
+public:
+    virtual void dispatch(ref<BuildContext> context);
+};
 
 class NotificationListener : public StatelessWidget
 {

@@ -7,6 +7,9 @@ ref<Process> Process::of(ref<BuildContext> context)
     return context->dependOnInheritedWidgetOfExactType<Process>().assertNotNull();
 }
 
+Process::Process(ref<Widget> child, ref<RootElement> root, option<Key> key)
+    : InheritedWidget(child, key), command(root->_command), _root(root) {}
+
 bool Process::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {
     ref<Process> old = oldWidget->covariant<Process>();

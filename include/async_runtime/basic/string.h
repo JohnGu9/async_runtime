@@ -35,8 +35,6 @@
 #include "container.h"
 
 template <>
-class option<String>;
-template <>
 class ref<String>;
 
 class String : public Object, protected std::string
@@ -126,38 +124,6 @@ public:
 };
 
 template <>
-class option<String> : public _async_runtime::OptionImplement<String>
-{
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
-
-public:
-    static option<String> null()
-    {
-        static const option<String> instance = nullptr;
-        return instance;
-    }
-
-    option() {}
-    option(std::nullptr_t) : _async_runtime::OptionImplement<String>(nullptr) {}
-    option(const char *const str) : _async_runtime::OptionImplement<String>(std::make_shared<String>(str)) {}
-    option(const std::string &str) : _async_runtime::OptionImplement<String>(std::make_shared<String>(str)) {}
-    option(std::string &&str) : _async_runtime::OptionImplement<String>(std::make_shared<String>(std::move(str))) {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    option(const ref<R> &other);
-
-    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    option(const option<R> &other) : std::shared_ptr<String>(other) {}
-
-    bool operator==(const option<String> &other) const;
-    bool operator!=(const option<String> &other) const;
-
-protected:
-    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) : _async_runtime::OptionImplement<String>(other){};
-};
-
-template <>
 class ref<String> : public _async_runtime::RefImplement<String>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
@@ -236,9 +202,6 @@ ref<String> operator+(const char *const str, const ref<String> &string);
 std::ostream &operator<<(std::ostream &os, const ref<String> &str);
 std::istream &operator>>(std::istream &is, ref<String> &str);
 ref<String> getline(std::istream &os);
-
-template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type *>
-option<String>::option(const ref<R> &other) : _async_runtime::OptionImplement<String>(other) {}
 
 template <class First, class... Rest>
 void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::stringstream &ss, const First &first, const Rest &...rest)
@@ -364,6 +327,11 @@ ref<String> String::format(Args &&...args)
         ss << std::string::substr(lastIndex, this->length());
     return ss.str();
 }
+
+template <>
+bool operator==(const option<String> &object0, const option<String> &object1);
+template <>
+bool operator!=(const option<String> &object0, const option<String> &object1);
 
 namespace std
 {

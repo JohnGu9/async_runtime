@@ -6,10 +6,11 @@
 class StatefulBuilder : public StatefulWidget
 {
 public:
+    using SetStateCallback = Function<void(Function<void()>)>;
     StatefulBuilder(
-        Function<ref<Widget>(ref<BuildContext> context, Function<void(Function<void()>)> setState)> builder,
+        Function<ref<Widget>(ref<BuildContext> context, SetStateCallback setState)> builder,
         option<Key> key = nullptr);
 
-    Function<ref<Widget>(ref<BuildContext>, Function<void(Function<void()>)>)> builder;
+    Function<ref<Widget>(ref<BuildContext>, SetStateCallback)> builder;
     ref<State<StatefulWidget>> createState() override;
 };

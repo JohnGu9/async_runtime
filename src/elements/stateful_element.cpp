@@ -28,9 +28,11 @@ ref<String> StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::V
 
 /// Stateful Element
 StatefulElement::StatefulElement(ref<StatefulWidget> widget)
-    : SingleChildElement(widget), _statefulWidget(widget), _lifeCycle(StatefulElement::_LifeCycle::uninitialized)
+    : SingleChildElement(widget),
+      _statefulWidget(widget),
+      _state(_statefulWidget->createState()),
+      _lifeCycle(StatefulElement::_LifeCycle::uninitialized)
 {
-    _state = _statefulWidget->createState();
 }
 
 void StatefulElement::attach()
@@ -57,7 +59,6 @@ void StatefulElement::detach()
     this->_state->_mounted = false;
     Object::detach(this->_state->_context);
     Object::detach(this->_state->_element);
-    Object::detach(this->_state);
     Element::detach();
 }
 

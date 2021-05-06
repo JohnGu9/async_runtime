@@ -28,29 +28,29 @@
 /// object = opt.isNotNullElse(Object::create<Object>); another syntax
 ///
 
-// inherits layout:
-//
-// std::shared_ptr
-//      ^
-//      |
-// _async_runtime::OptionImplement
-//      ^
-//      |
-// option
-//      ^
-//      |
-// _async_runtime::RefImplent
-//      ^
-//      |
-// ref
-//      ^
-//      |
-// lateref
+/// inherits layout:
+///
+/// std::shared_ptr
+///      ^
+///      |
+/// _async_runtime::OptionImplement
+///      ^
+///      |
+/// option
+///      ^
+///      |
+/// _async_runtime::RefImplent
+///      ^
+///      |
+/// ref
+///      ^
+///      |
+/// lateref
 
-// std::weak_ptr
-//      ^
-//      |
-// weakref
+/// std::weak_ptr
+///      ^
+///      |
+/// weakref
 
 #pragma once
 
@@ -123,7 +123,7 @@ public:
     OptionImplement(std::nullptr_t) : std::shared_ptr<T>(nullptr) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    OptionImplement(const OptionImplement<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)){};
+    OptionImplement(const OptionImplement<R> &other) : std::shared_ptr<T>(other){};
 
     bool isNotNull(ref<T> &) const override;
     ref<T> isNotNullElse(std::function<ref<T>()>) const override;
@@ -140,7 +140,7 @@ public:
 
 protected:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    OptionImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(std::static_pointer_cast<T>(other)){};
+    OptionImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(other){};
 };
 
 template <typename T>
@@ -166,12 +166,17 @@ public:
     }
     option() {}
     option(std::nullptr_t) : _async_runtime::OptionImplement<T>(nullptr) {}
-
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const ref<R> &other);
-
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const option<R> &other) : _async_runtime::OptionImplement<T>(other) {}
+
+    /// ref quick init also available for option (just forward argument to ref)
+    /// so that option no need to specialize template
+    /// but for nullsafety, option quick init need at least one argument (zero arguments will cause null ref init)
+    /// this api should only used inside nullsafety system, not for public usage
+    template <typename First, typename... Args>
+    option(const First &first, Args &&...args);
 
 protected:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -309,12 +314,16 @@ bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<const
 template <typename T, typename R>
 bool operator==(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) != static_cast<const std::shared_ptr<R> &>(object1); }
+bool operator!=(const option<T> &object0, const option<R> &object1) { return !(object0 == object1); }
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 option<T>::option(const ref<R> &other)
     : _async_runtime::OptionImplement<T>(other) {}
+
+template <typename T>
+template <typename First, typename... Args>
+option<T>::option(const First &first, Args &&...args) : _async_runtime::OptionImplement<T>(ref<T>(first, std::forward<Args>(args)...)) {}
 
 template <typename T>
 bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const

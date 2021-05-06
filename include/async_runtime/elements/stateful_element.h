@@ -1,6 +1,7 @@
 #pragma once
 
 #include "single_child_element.h"
+#include "../basic/observable.h"
 
 class StatefulWidget;
 class StatefulElement : public SingleChildElement
@@ -11,8 +12,8 @@ class StatefulElement : public SingleChildElement
 public:
     StatefulElement(ref<StatefulWidget> widget);
 
-    lateref<StatefulWidget> _statefulWidget;
-    lateref<State<StatefulWidget> > _state;
+    ref<StatefulWidget> _statefulWidget;
+    ref<State<StatefulWidget>> _state;
 
 protected:
     class _LifeCycle

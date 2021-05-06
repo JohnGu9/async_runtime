@@ -1,28 +1,24 @@
 #include "async_runtime/basic/string.h"
 
-bool option<String>::operator!=(const option<String> &other) const
+template <>
+bool operator==(const option<String> &lhs, const option<String> &rhs)
 {
-    return !this->operator==(other);
-}
-
-bool option<String>::operator==(const option<String> &other) const
-{
-    if (static_cast<const std::shared_ptr<String>>(*this) == nullptr)
+    lateref<String> lh;
+    if (lhs.isNotNull(lh))
     {
-        if (static_cast<const std::shared_ptr<String>>(other) == nullptr)
-            return true;
-        else
-            return false;
+        lateref<String> rh;
+        if (rhs.isNotNull(rh))
+            return lh == rh;
+        return false;
     }
     else
-    {
-        if (static_cast<const std::shared_ptr<String>>(other) == nullptr)
-            return false;
-        else if (this->get() == other.get())
-            return true;
-        else
-            return *(this->get()) == *(other.get());
-    }
+        return rhs == nullptr;
+}
+
+template <>
+bool operator!=(const option<String> &lhs, const option<String> &rhs)
+{
+    return !(lhs == rhs);
 }
 
 ref<String> ref<String>::operator+(const char c) const
@@ -145,7 +141,7 @@ std::istream &operator>>(std::istream &is, ref<String> &str)
 ref<String> getline(std::istream &is)
 {
     std::shared_ptr<String> ptr = std::make_shared<String>();
-    getline(is, *ptr);
+    std::getline(is, *ptr);
     return ref<String>(ptr);
 }
 

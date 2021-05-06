@@ -5,15 +5,15 @@
 #include "async_runtime/widgets/process.h"
 #include "async_runtime/basic/tree.h"
 
-struct _MockWidget : Widget
+struct RootWidget : Widget
 {
-    _MockWidget() : Widget(nullptr) {}
+    RootWidget() : Widget(nullptr) {}
     ref<Element> createElement() override { return Object::create<RootElement>(self()); }
 };
 
 /// Root Element
 RootElement::RootElement(ref<Widget> widget)
-    : SingleChildElement(Object::create<_MockWidget>()), _consoleStop(false)
+    : SingleChildElement(Object::create<RootWidget>()), _consoleStop(false)
 {
     this->_coutKey = Object::create<GlobalKey>();
     this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _coutKey), "RootThread");
@@ -25,6 +25,7 @@ void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement d
 
 void RootElement::attach()
 {
+    this->_command = Object::create<Command>();
     this->_child = Object::create<Process>(this->_child, self());
     this->_inheritances = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
     this->attachElement(this->_child->createElement());
@@ -46,6 +47,7 @@ void RootElement::detach()
 {
     this->detachElement();
     Element::detach();
+    this->_command->dispose();
 }
 
 void RootElement::visitDescendant(Function<bool(ref<Element>)> fn)
@@ -83,23 +85,18 @@ void RootElement::_console()
 #ifdef DEBUG
         ThreadPool::setThreadName("ConsoleThread");
 #endif
-        {
-            std::stringstream ss;
-            ss << "Enter '"
-               << font_wrapper(BOLDBLUE, 'q')
-               << "' to quit, '"
-               << font_wrapper(BOLDBLUE, "-h")
-               << "' or '"
-               << font_wrapper(BOLDBLUE, "--help")
-               << "' for more information";
-            this->getStdoutHandler()->writeLine(ss.str());
-        }
+        info_print("Enter '"
+                   << font_wrapper(BOLDBLUE, 'q')
+                   << "' to quit, '"
+                   << font_wrapper(BOLDBLUE, "-h")
+                   << "' or '"
+                   << font_wrapper(BOLDBLUE, "--help")
+                   << "' for more information");
 
-        std::string input;
-        for (;;)
+        while (true)
         {
             this->getStdoutHandler()->write(">> ")->sync();
-            std::getline(std::cin, input);
+            ref<String> input = getline(std::cin);
             if (this->_consoleStop) // runApp already required to exit, console not more accept command
                 return;
             if (input == "q" || input == "quit")
@@ -107,17 +104,18 @@ void RootElement::_console()
                 std::stringstream ss;
                 ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
                 this->getStdoutHandler()->write(ss.str())->sync();
+                std::string input;
                 if (std::getline(std::cin, input) && (input == "y" || input == "yes" || this->_consoleStop))
-                    return;
+                    break;
                 this->getStdoutHandler()->writeLine("cancel")->sync();
             }
             else
                 onCommand(input);
         }
-        info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
         if (self->_consoleStop == false)
         {
             // runApp exit by console command
+            info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
             self->_consoleStop = true;
             self->_exit(0);
         }
@@ -132,7 +130,7 @@ void RootElement::_noConsole()
     this->_condition.wait(lock);
 }
 
-void RootElement::onCommand(const std::string &in)
+void RootElement::onCommand(const ref<String> &in)
 {
     Logger::Handler handler = this->getStdoutHandler();
     if (in == "-h" || in == "--help")
@@ -143,17 +141,16 @@ void RootElement::onCommand(const std::string &in)
         ss << help_format(BOLDWHITE << "command", "arguments" << RESET) << std::endl;
         ss << help_format("-------", "---------") << std::endl;
         ss << help_format("ls\t", "()") << std::endl;
-        ss << help_format("ps\t", "()") << std::endl;
-        ss << help_format("pwd\t", "()") << std::endl;
         ss << help_format("reassembly", "()") << std::endl;
+        ss << help_format("clear\t", "()") << std::endl;
         handler->write(ss.str());
         return;
     }
-    else if (in.empty())
+    else if (in->isEmpty())
         return;
 
-    std::string::size_type commandLength = in.find(" ");
-    std::string command = in.substr(0, commandLength == std::string::npos ? in.size() : commandLength);
+    std::string::size_type commandLength = in->find(" ");
+    auto command = in->substr(0, commandLength == std::string::npos ? in->size() : commandLength);
     if (command == "clear")
     {
         printf("\033c");
@@ -172,10 +169,10 @@ void RootElement::onCommand(const std::string &in)
         buildTree =
             [&](Element *currentElement, ref<Tree> currentTree) {
                 std::stringstream ss;
-                ss << font_wrapper(BOLDBLUE, currentElement->runtimeType()) << " [" << (size_t)currentElement << "] " << std::endl
-                   << "  widget: " << currentElement->widget->runtimeType() << std::endl;
+                ss << font_wrapper(BOLDBLUE, currentElement->toString()) << std::endl
+                   << "  widget: " << currentElement->widget->toString() << std::endl;
                 if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
-                    ss << "  state: " << statefulElement->_state->runtimeType() << " [" << (size_t)statefulElement->_state.get() << "] " << std::endl;
+                    ss << "  state: " << statefulElement->_state->toString() << std::endl;
                 currentTree->info = ss.str();
                 ref<List<Element *>> &children = map[currentElement];
                 for (Element *child : children)
@@ -188,9 +185,6 @@ void RootElement::onCommand(const std::string &in)
         buildTree(this, tree);
         this->getMainHandler()->post([&] { tree->toStringStream(std::cout); }).get();
     }
-    else if (command == "ps")
-    {
-    }
     else if (command == "reassembly")
     {
         this->detach();
@@ -198,7 +192,16 @@ void RootElement::onCommand(const std::string &in)
     }
     else
     {
-        error_print("No such method");
-        info_print("'-h' or '--help' for more information");
+        ref<List<ref<String>>> arguments = in->split(" ");
+        if ((arguments[0] == "command" || arguments[0] == "cmd") && arguments->size() > 1)
+        {
+            arguments->pop_front();
+            this->_command->setValue(arguments);
+        }
+        else
+        {
+            error_print("No such method");
+            info_print("'-h' or '--help' for more information");
+        }
     }
 }

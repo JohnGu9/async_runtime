@@ -3,12 +3,12 @@
 #include "inherited_widget.h"
 
 class RootElement;
+class Command;
 class Process : public InheritedWidget
 {
 public:
     static ref<Process> of(ref<BuildContext> context);
-    Process(ref<Widget> child, ref<RootElement> root, option<Key> key = nullptr)
-        : InheritedWidget(child, key), _root(root) {}
+    Process(ref<Widget> child, ref<RootElement> root, option<Key> key = nullptr);
 
     bool updateShouldNotify(ref<InheritedWidget> oldWidget) override;
 
@@ -26,6 +26,7 @@ public:
     /// Alarm: only affect runApp return value, not exit program directly!
     /// AsyncRuntime don't change program's life-cycle. It's always gentlemanly handling anything.
     virtual void exit(const int exitCode = 0);
+    finalref<Command> &command;
 
 protected:
     weakref<RootElement> _root;
