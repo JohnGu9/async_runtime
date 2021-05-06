@@ -1,11 +1,5 @@
 #pragma once
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#ifndef NDEBUG
-#define DEBUG
-#endif
-#endif
-
 #include <iostream>
 
 #define RESET "\033[0m"

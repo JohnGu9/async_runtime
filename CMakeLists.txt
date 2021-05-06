@@ -3,8 +3,14 @@ cmake_minimum_required(VERSION 3.10)
 # message(STATUS "Compiler Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
 option(ASYNC_RUNTIME_BUILD_SHARED "Build AsyncRuntime Shared Library(only available on unix-like system, not available on win32)" ON)
 
+if(MSVC) 
+set(DEFINITIONS_INDICATOR /D)
+else()
+set(DEFINITIONS_INDICATOR -D)
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_definitions(-DDEBUG)
+    add_definitions(${DEFINITIONS_INDICATOR}DEBUG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 set(CMAKE_CXX_STANDARD 11)
@@ -22,10 +28,16 @@ set(THREAD_LIBRARY_NAME "HP thread")
 endif()
 message(STATUS "Async Runtime using Threads: ${THREAD_LIBRARY_NAME}")
 
-find_package(OpenSSL REQUIRED)
-message(STATUS "Async Runtime using OpenSSL version: ${OPENSSL_VERSION}")
-message(STATUS "Async Runtime using OpenSSL include: ${OPENSSL_INCLUDE_DIR}")
-message(STATUS "Async Runtime using OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+find_package(OpenSSL)
+if(OPENSSL_FOUND)
+    message(STATUS "Async Runtime using OpenSSL version: ${OPENSSL_VERSION}")
+    message(STATUS "Async Runtime using OpenSSL include: ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "Async Runtime using OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+    add_definitions(${DEFINITIONS_INDICATOR}CPPHTTPLIB_OPENSSL_SUPPORT)
+else()
+    set(OPENSSL_INCLUDE_DIR)
+    set(OPENSSL_LIBRARIES)
+endif()
 
 set(INCLUDE_DIR 
     ${CMAKE_CURRENT_SOURCE_DIR}/include 
@@ -55,5 +67,3 @@ else()
     endif()
 endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES})
-
-
