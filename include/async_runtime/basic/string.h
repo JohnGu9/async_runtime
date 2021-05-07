@@ -211,7 +211,7 @@ void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::st
     {
         if (str[index] == '\0')
         {
-#ifdef DEBUG
+#ifndef NDEBUG
             std::stringstream ss;
             ss << "String::format arguments overflow when handle \"" << str << "\"" << std::endl;
             std::cout << ss.str();
@@ -254,7 +254,7 @@ void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std
     {
         if (index == end)
         {
-#ifdef DEBUG
+#ifndef NDEBUG
             std::stringstream ss;
             ss << "String::format arguments overflow" << std::endl;
             std::cout << ss.str();
@@ -298,7 +298,7 @@ void String::_unwrapPack(size_t &lastIndex, std::stringstream &ss, const First &
     auto index = this->find("{}", lastIndex);
     if (lastIndex >= this->length() || index == std::string::npos)
     {
-#ifdef DEBUG
+#ifndef NDEBUG
         std::stringstream ss;
         ss << "String::format arguments overflow when handle \"" << *this << "\"" << std::endl;
         std::cout << ss.str();

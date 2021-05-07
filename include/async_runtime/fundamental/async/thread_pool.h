@@ -78,7 +78,7 @@ auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result
         std::unique_lock<std::mutex> lock(_queueMutex);
         if (_stop && !ThreadPool::thisThreadName->startsWith(this->name))
         {
-            assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
+            debug_print("Async task post after threadpool stopped. ");
             (*task)();
             return res;
         }

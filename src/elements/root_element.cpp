@@ -82,7 +82,7 @@ void RootElement::_console()
     std::unique_lock<std::mutex> lock(this->_mutex);
     auto self = self();
     auto thread = Thread([this, self] {
-#ifdef DEBUG
+#ifndef NDEBUG
         ThreadPool::setThreadName("ConsoleThread");
 #endif
         info_print("Enter '"

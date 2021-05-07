@@ -57,7 +57,7 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString)
 }
 
 ThreadPool::~ThreadPool(){
-#ifdef DEBUG
+#ifndef NDEBUG
     {option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
 assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
 }
@@ -74,7 +74,7 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
         ThreadPool::thisThreadName = this->childrenThreadName(threadId);
         assert(ThreadPool::thisThreadName->isNotEmpty());
 
-#ifdef DEBUG
+#ifndef NDEBUG
         const std::string debugThreadName = ThreadPool::thisThreadName->toStdString();
         const std::string debugThreadPoolRuntimeType = this->toString()->toStdString();
         setThreadName(ThreadPool::thisThreadName);

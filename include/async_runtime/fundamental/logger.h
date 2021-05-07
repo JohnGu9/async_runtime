@@ -52,7 +52,7 @@
 #include "disposable.h"
 
 #ifndef __FILENAME__
-#ifdef DEBUG
+#ifndef NDEBUG
 #define __FILENAME__ __FILE__
 #else
 namespace _async_runtime
@@ -94,7 +94,7 @@ namespace _async_runtime
 #define ASYNC_RUNTIME_OSTREAM_REDIRECT
 #endif
 
-#ifdef DEBUG
+#ifndef NDEBUG
 #define LogDebug(_format, ...)                                                                                                                                                       \
     {                                                                                                                                                                                \
         std::stringstream __ss__;                                                                                                                                                        \

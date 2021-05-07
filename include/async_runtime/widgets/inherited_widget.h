@@ -20,7 +20,7 @@ inline option<T> BuildContext::dependOnInheritedWidgetOfExactType()
     auto iter = this->_inheritances->find(typeid(T).hash_code());
     if (iter == this->_inheritances.end())
     {
-#ifdef DEBUG
+#ifndef NDEBUG
         lateref<Element> element;
         if (option<Element>(this->cast<Element>()).isNotNull(element))
         {

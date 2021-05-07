@@ -21,17 +21,17 @@
 #include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/fundamental/http.h"
 
-
 #include "async_runtime/elements/root_element.h"
 inline int runApp(ref<Widget> widget)
 {
-#ifndef DEBUG
-    printf("\033c");
-    info_print("Debug mode off");
-#else
+#ifndef NDEBUG
     info_print("Debug mode on");
     info_print("Root widget is " << widget->toString());
+#else
+    printf("\033c");
+    info_print("Debug mode off");
 #endif
+
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " start");
 
     ref<RootElement> root = Object::create<RootElement>(widget);

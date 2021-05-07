@@ -29,7 +29,7 @@ public:
     TimerThread()
     {
         _thread = Thread([this] {
-#ifdef DEBUG
+#ifndef NDEBUG
             ThreadPool::thisThreadName = "TimerThread";
             ThreadPool::setThreadName(ThreadPool::thisThreadName);
 #endif
