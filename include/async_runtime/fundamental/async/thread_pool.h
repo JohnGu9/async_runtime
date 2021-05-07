@@ -12,15 +12,15 @@
 #include "../../basic/string.h"
 #include "thread.h"
 
-///
-/// ThreadPool must call dispose before drop the object
-///
-/// AutoReleaseThreadPool don't must dispose before drop so that convince as static object in program
-/// And it will automatically finish all task before object drop after you call dispose and release all the ref of it
-/// Really it will hold ref of itself and release the ref until dispose and finish all task
-/// AutoReleaseThreadPool generation must come from AutoReleaseThreadPool::factory
-///
-
+/**
+ * @brief 
+ * ThreadPool Object provide thread pool that handle task in other thread. 
+ * ThreadPool must call dispose before drop the object. 
+ * 
+ * @example
+ * 
+ * 
+ */
 class ThreadPool : public Object, public Disposable
 {
     static ref<Set<ref<String>>> _namePool;
@@ -112,6 +112,17 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
     return res;
 }
 
+/**
+ * @brief 
+ * AutoReleaseThreadPool don't must dispose before drop so that convince as static object in program
+ * And it will automatically finish all task before object drop after you call dispose and release all the ref of it
+ * Really it will hold ref of itself and release the ref until dispose and finish all task
+ * AutoReleaseThreadPool generation must come from AutoReleaseThreadPool::factory
+ * 
+ * @example
+ * 
+ * 
+ */
 class AutoReleaseThreadPool : public ThreadPool
 {
     struct _FactoryOnly

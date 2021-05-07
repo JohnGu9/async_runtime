@@ -4,7 +4,18 @@
 #include <type_traits>
 #include <memory>
 
-template <typename T>
+/**
+ * @brief 
+ * Function<> class that do not need async_runtime nullsafety system
+ * 
+ * @tparam T 
+ * the function format
+ * 
+ * @example
+ * Function<void()> fn = []() -> void {};
+ * 
+ */
+template <typename T = std::nullptr_t>
 class Function;
 
 template <>

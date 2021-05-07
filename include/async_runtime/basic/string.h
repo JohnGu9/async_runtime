@@ -1,28 +1,3 @@
-/// [String] is [Object] now
-/// Do not use [String] directly
-/// Wrap [String] with nullsafety api like [ref] or [option]
-/// Use ref<String> or option<String>
-/// And it will behave like a nullsafety object and with some extra feature
-///
-///
-/// example:
-///
-/// ref<String> string = "This is a non-null String object"; // directly init ref<String> from const char* const
-///
-/// option<String> nullableString = "This is a nullable String object, but now it isn't null with value \"this string\""; // directly init option<String> from const char* const
-/// option<String> nullString = nullptr; // this is a null String object
-///
-/// ref<String> newString = string + nullableString.assertNotNull(); // append two ref<String> to a new ref<String>
-///
-/// if (newString == string) { / *** / } // compare two ref<String>
-/// else { / *** / }
-///
-/// ref<String> withTrueString = string + true; // append any type that support ostream &operator<<(std::ostream &out, T b)
-/// ref<String> withTrueString = string + 1.023;
-///
-/// // ref<String> and option<String> also work with Map and Set like std::string
-///
-
 #pragma once
 
 #include <string>
@@ -37,6 +12,26 @@
 template <>
 class ref<String>;
 
+/**
+ * @brief 
+ * String is Object. 
+ * Nest it into ref<String> or option<String>. 
+ * ref<String> and option<String> also work with Map and Set like std::string. 
+ * 
+ * @example
+ * ref<String> string = "This is a non-null String object"; // directly init ref<String> from const char* const
+ * option<String> nullableString = "This is a nullable String object, but now it isn't null with value \"this string\""; // directly init option<String> from const char* const
+ * option<String> nullString = nullptr; // this is a null String object
+ * 
+ * ref<String> newString = string + nullableString.assertNotNull(); // append two ref<String> to a new ref<String>
+ * 
+ * if (newString == string) { / *** / } // compare two ref<String>
+ * if (newString == "This is a non-null String object") { / *** / } // compare with const char* const
+ * 
+ * ref<String> withTrueString = string + true; // append any type that support ostream &operator<<(std::ostream &out, T b)
+ * ref<String> withTrueString = string + 1.023;
+ * 
+ */
 class String : public Object, protected std::string
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;

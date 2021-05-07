@@ -6,14 +6,21 @@
 #include <assert.h>
 #include "basic/io.h"
 #include "basic/ref.h"
-
-// native copyable type that don't not need ref
-template <typename T = std::nullptr_t>
-class Function;
+#include "basic/function.h"
 
 #define self() Object::cast<>(this)
 
 class String;
+/**
+ * @brief 
+ * Object the element of nullsafety system
+ * Only Object can take advantage of nullsafety system
+ * 
+ * @example
+ * class YourClass : public Object{};
+ * ref<YourClass> yourClass = Object::create<YourClass>();
+ * 
+ */
 class Object : public std::enable_shared_from_this<Object>
 {
     ref<Object> shared_from_this() { return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this()); }
@@ -113,5 +120,3 @@ ref<T> Object::covariant()
     else
         throw std::runtime_error(std::string("Invail type covariant from [") + typeid(*this).name() + "] to [" + typeid(T).name() + "]");
 }
-
-#include "basic/function.h"

@@ -1,15 +1,33 @@
+/**
+ * @brief 
+ * Provide a read-write lock that fully compatable with C++11
+ * (only after C++14 that std provide read/write lock)
+ * by default, do not include the file.
+ * the file with come with container.h
+ * 
+ */
+
 #pragma once
-
-// Do not include this header directly
-// Please try to include object.h rather than this
-
 #include <condition_variable>
 #include "../object.h"
 
-// C++11 does not include read/write lock
-// read/write lock only available after C++14
-// So implement C++11 compatible version here
-
+/**
+ * @brief 
+ * Lock provide read-write lock feature
+ * 
+ * @example
+ * auto lock = Object::create<Lock>();
+ * {
+ *      auto readLock = lock->sharedLock();
+ *      // do some jobs
+ * }
+ * 
+ * {
+ *      auto writeLock = lock->uniqueLock();
+ *      // do some jobs
+ * }
+ * 
+ */
 class Lock : public Object
 {
 public:
