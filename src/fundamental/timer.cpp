@@ -36,21 +36,21 @@ public:
             while (true)
             {
                 std::unique_lock<std::mutex> lock(_mutex);
-                if (_timePoints.empty())
-                    _cv.wait(lock, [this] { return _hasNewTask || _stop; });
+                if (_tasks.empty())
+                    _cv.wait(lock, [this] { return _hasNewTask; });
                 else
-                    _cv.wait_until(lock, _timePoints.front().timePoint, [this] { return _hasNewTask || _stop; });
+                    _cv.wait_until(lock, _tasks.front().timePoint, [this] { return _hasNewTask; });
                 if (_stop)
                     return;
 
                 _hasNewTask = false;
                 const auto now = std::chrono::system_clock::now();
-                while (_timePoints.front().timePoint <= now)
+                while (_tasks.front().timePoint <= now)
                 {
-                    std::pop_heap(_timePoints.begin(), _timePoints.end(), greater);
-                    _timePoints.back().task();
-                    _timePoints.pop_back();
-                    if (_timePoints.empty())
+                    std::pop_heap(_tasks.begin(), _tasks.end(), greater);
+                    _tasks.back().task();
+                    _tasks.pop_back();
+                    if (_tasks.empty())
                         break;
                 }
             }
@@ -61,7 +61,8 @@ public:
     {
         {
             std::unique_lock<std::mutex> lock(_mutex);
-            _stop = true;
+            _hasNewTask = true; // wake up the thread
+            _stop = true; // mask the flag that let thread exit
         }
         _cv.notify_all();
         _thread.join();
@@ -71,8 +72,8 @@ public:
     {
         {
             std::unique_lock<std::mutex> lock(_mutex);
-            _timePoints.emplace_back(std::move(task));
-            std::push_heap(_timePoints.begin(), _timePoints.end(), greater);
+            _tasks.emplace_back(std::move(task));
+            std::push_heap(_tasks.begin(), _tasks.end(), greater);
             _hasNewTask = true;
         }
         _cv.notify_one();
@@ -81,7 +82,7 @@ public:
 protected:
     std::mutex _mutex;
     std::condition_variable _cv;
-    std::deque<TimerTask> _timePoints;
+    std::deque<TimerTask> _tasks;
     Thread _thread;
 
     bool _stop = false;

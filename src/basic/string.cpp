@@ -21,6 +21,15 @@ bool operator!=(const option<String> &lhs, const option<String> &rhs)
     return !(lhs == rhs);
 }
 
+bool ref<String>::operator==(const ref<String> &other) const
+{
+    if (this->get() == other.get())
+        return true;
+    if ((*this)->length() != other->length())
+        return false;
+    return std::equal((*this)->begin(), (*this)->end(), other->begin());
+}
+
 ref<String> ref<String>::operator+(const char c) const
 {
     auto res = *(*this) + c;

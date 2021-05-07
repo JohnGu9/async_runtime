@@ -130,10 +130,6 @@ class ref<String> : public _async_runtime::RefImplement<String>
     friend std::istream &operator>>(std::istream &os, ref<String> &str);
     friend ref<String> getline(std::istream &is);
 
-    bool isNotNull(ref<String> &object) const override { return option<String>::isNotNull(object); }
-    ref<String> isNotNullElse(std::function<ref<String>()> fn) const override { return option<String>::isNotNullElse(fn); }
-    ref<String> assertNotNull() const override { return option<String>::assertNotNull(); }
-
 protected:
     ref() {}
     ref(const std::shared_ptr<String> &other) : _async_runtime::RefImplement<String>(other) {}
@@ -146,14 +142,7 @@ public:
     ref(const char *const str) : _async_runtime::RefImplement<String>(std::make_shared<String>(str)) {}
     ref(const char c) : _async_runtime::RefImplement<String>(std::make_shared<String>(c)) {}
 
-    bool operator==(const ref<String> &other) const
-    {
-        if (this->get() == other.get())
-            return true;
-        if ((*this)->length() != other->length())
-            return false;
-        return std::equal((*this)->begin(), (*this)->end(), other->begin());
-    }
+    bool operator==(const ref<String> &other) const;
     bool operator==(const char *const other) const { return *(*this) == other; }
     bool operator==(const std::string &other) const { return *(*this) == other; }
     bool operator==(std::string &&other) const { return *(*this) == std::move(other); }
