@@ -31,6 +31,9 @@ public:
 
 protected:
     T _value;
+
+public:
+    const T &value = _value;
 };
 
 template <typename T>

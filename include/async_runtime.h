@@ -20,33 +20,14 @@
 #include "async_runtime/fundamental/file.h"
 #include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/fundamental/http.h"
-#include "async_runtime/elements/root_element.h"
 
-inline int runApp(ref<Widget> widget)
-{
-#ifndef NDEBUG
-    info_print("Debug mode on");
-    info_print("Root widget is " << widget->toString());
+#ifdef ASYNC_RUNTIME_DISABLE_CONSOLE
+#define __WITH_CONSOLE false
 #else
-    printf("\033c");
-    info_print("Debug mode off");
+#define __WITH_CONSOLE true
 #endif
 
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " start");
-
-    ref<RootElement> root = Object::create<RootElement>(widget);
-    root->attach();
-#ifndef ASYNC_RUNTIME_DISABLE_CONSOLE
-    root->_console();
-#else
-    root->_noConsole();
-#endif
-    root->detach();
-    const auto &exitCode = root->exitCode;
-
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited with code " << exitCode);
-    return exitCode;
-}
+int runApp(ref<Widget> widget, bool withConsole = __WITH_CONSOLE);
 
 #ifndef __FILENAME__
 #ifndef NDEBUG

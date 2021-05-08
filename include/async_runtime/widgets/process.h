@@ -1,9 +1,45 @@
 #pragma once
 
 #include "inherited_widget.h"
+#include "../basic/value_notifier.h"
 
 class RootElement;
-class Command;
+
+class Command : public ValueNotifier<ref<List<ref<String>>>>
+{
+    using super = ValueNotifier<ref<List<ref<String>>>>;
+
+public:
+    Command() : ValueNotifier<ref<List<ref<String>>>>(Object::create<List<ref<String>>>()),
+                _commandListeners(Object::create<Set<Function<void(ref<List<ref<String>>>)>>>())
+    {
+        addListener([this] {
+            for (const auto &listener : _commandListeners)
+                listener(_value);
+        });
+    }
+
+    void setValue(const ref<List<ref<String>>> &value) override
+    {
+        this->_value = value;
+        notifyListeners();
+    }
+
+    void setValue(ref<List<ref<String>>> &&value) override
+    {
+        this->_value = value;
+        notifyListeners();
+    }
+
+    void addListener(Function<void(ref<List<ref<String>>>)> fn) { _commandListeners->insert(fn); }
+    void removeListener(Function<void(ref<List<ref<String>>>)> fn) { _commandListeners->erase(_commandListeners->find(fn)); }
+
+protected:
+    ref<Set<Function<void(ref<List<ref<String>>>)>>> _commandListeners;
+    void addListener(Function<void()> fn) override { super::addListener(fn); }
+    void removeListener(Function<void()> fn) override { super::removeListener(fn); }
+};
+
 class Process : public InheritedWidget
 {
 public:

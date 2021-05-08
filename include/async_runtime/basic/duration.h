@@ -8,7 +8,7 @@
 #pragma once
 
 #if __APPLE__
-// applec math include bug
+// apple <cmath> include bug
 #include <cstdlib>
 #else
 #include <cmath>

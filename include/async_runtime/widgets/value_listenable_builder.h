@@ -35,9 +35,7 @@ public:
     using super = State<ValueListenableBuilder<T>>;
     lateref<ValueListenable<T>> _valueListenable;
 
-    Function<void(ref<Listenable>)> _listener =
-        [this](option<Listenable> listenable) { this->setState([this] {}); };
-
+    Function<void()> _listener = [this] { this->setState([this] {}); };
 
     void initState() override
     {

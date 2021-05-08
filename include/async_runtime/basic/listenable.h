@@ -8,13 +8,13 @@
 class Listenable : public Object
 {
 public:
-    virtual void addListener(Function<void(ref<Listenable>)> fn);
-    virtual void removeListener(Function<void(ref<Listenable>)> fn);
+    virtual void addListener(Function<void()> fn);
+    virtual void removeListener(Function<void()> fn);
     virtual void dispose();
 
 protected:
     Listenable();
 
-    ref<Set<Function<void(ref<Listenable>)>>> _listeners;
+    ref<Set<Function<void()>>> _listeners;
     bool _isDisposed;
 };

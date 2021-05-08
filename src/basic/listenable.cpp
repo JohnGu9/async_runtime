@@ -1,19 +1,19 @@
 #include "async_runtime/basic/listenable.h"
 #include <assert.h>
 
-Listenable::Listenable() : _listeners(Object::create<Set<Function<void(ref<Listenable>)>>>()), _isDisposed(false) {}
+Listenable::Listenable() : _listeners(Object::create<Set<Function<void()>>>()), _isDisposed(false) {}
 
-void Listenable::addListener(Function<void(ref<Listenable>)> fn)
+void Listenable::addListener(Function<void()> fn)
 {
     assert(!this->_isDisposed);
     this->_listeners->insert(fn);
 }
 
-void Listenable::removeListener(Function<void(ref<Listenable>)> fn)
+void Listenable::removeListener(Function<void()> fn)
 {
-    using iterator = Set<Function<void(ref<Listenable>)>>::iterator;
+    using iterator = Set<Function<void()>>::iterator;
     const iterator it = this->_listeners->find(fn);
-    if (it != this->_listeners.end())
+    if (it != this->_listeners->end())
         this->_listeners->erase(it);
 }
 
