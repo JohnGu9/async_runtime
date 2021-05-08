@@ -26,10 +26,7 @@ if(OPENSSL_FOUND)
     message(STATUS "Async Runtime using OpenSSL version: ${OPENSSL_VERSION}")
     message(STATUS "Async Runtime using OpenSSL include: ${OPENSSL_INCLUDE_DIR}")
     message(STATUS "Async Runtime using OpenSSL libraries: ${OPENSSL_LIBRARIES}")
-    add_compile_options(-DCPPHTTPLIB_OPENSSL_SUPPORT)
-else()
-    set(OPENSSL_INCLUDE_DIR)
-    set(OPENSSL_LIBRARIES)
+    # add_compile_options(-DCPPHTTPLIB_OPENSSL_SUPPORT)
 endif()
 
 set(INCLUDE_DIR 

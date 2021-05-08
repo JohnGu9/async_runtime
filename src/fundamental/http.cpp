@@ -27,67 +27,67 @@ ref<String> Http::Client::Result::errorString() const
 {
     switch (error)
     {
-    case httplib::Success:
+    case httplib::Error::Success:
     {
         static finalref<String> success = "Success";
         return success;
     }
-    case httplib::Unknown:
+    case httplib::Error::Unknown:
     {
         static finalref<String> unknown = "Unknown";
         return unknown;
     }
-    case httplib::Connection:
+    case httplib::Error::Connection:
     {
         static finalref<String> connection = "Connection";
         return connection;
     }
-    case httplib::BindIPAddress:
+    case httplib::Error::BindIPAddress:
     {
         static finalref<String> bindIPAddress = "BindIPAddress";
         return bindIPAddress;
     }
-    case httplib::Read:
+    case httplib::Error::Read:
     {
         static finalref<String> read = "Read";
         return read;
     }
-    case httplib::Write:
+    case httplib::Error::Write:
     {
         static finalref<String> write = "Write";
         return write;
     }
-    case httplib::ExceedRedirectCount:
+    case httplib::Error::ExceedRedirectCount:
     {
         static finalref<String> exceedRedirectCount = "ExceedRedirectCount";
         return exceedRedirectCount;
     }
-    case httplib::Canceled:
+    case httplib::Error::Canceled:
     {
         static finalref<String> canceled = "Canceled";
         return canceled;
     }
-    case httplib::SSLConnection:
+    case httplib::Error::SSLConnection:
     {
         static finalref<String> SSLConnection = "SSLConnection";
         return SSLConnection;
     }
-    case httplib::SSLLoadingCerts:
+    case httplib::Error::SSLLoadingCerts:
     {
         static finalref<String> SSLLoadingCerts = "SSLLoadingCerts";
         return SSLLoadingCerts;
     }
-    case httplib::SSLServerVerification:
+    case httplib::Error::SSLServerVerification:
     {
         static finalref<String> SSLServerVerification = "SSLServerVerification";
         return SSLServerVerification;
     }
-    case httplib::UnsupportedMultipartBoundaryChars:
+    case httplib::Error::UnsupportedMultipartBoundaryChars:
     {
         static finalref<String> unsupportedMultipartBoundaryChars = "UnsupportedMultipartBoundaryChars";
         return unsupportedMultipartBoundaryChars;
     }
-    case httplib::Compression:
+    case httplib::Error::Compression:
     {
         static finalref<String> compression = "Compression";
         return compression;

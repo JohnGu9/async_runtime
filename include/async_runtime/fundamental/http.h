@@ -38,7 +38,7 @@ public:
     };
 
     Client(State<StatefulWidget> *state, ref<String> address, int port = 80)
-        : Dispatcher(state), _client(address->c_str(), port) {}
+        : Dispatcher(state), _client(address->toStdString(), port) {}
 
     void dispose() override;
 
