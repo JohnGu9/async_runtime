@@ -24,9 +24,6 @@ class State<StatefulWidget> : public Object
     template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
     friend class State;
 
-public:
-    State() : _mounted(false) {}
-
     // @mustCallSuper
     virtual void initState() {}
     // @mustCallSuper
@@ -38,12 +35,11 @@ public:
 
     virtual ref<Widget> build(ref<BuildContext> context) = 0;
 
-private:
-    bool _mounted;
+    bool _mounted = false;
     lateref<StatefulElement> _element;
     lateref<BuildContext> _context;
 
-#ifdef _WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 public:
 #else
 protected:
@@ -59,12 +55,9 @@ class State : public State<StatefulWidget>
 {
     using super = State<StatefulWidget>;
     lateref<T> _widget;
-#ifdef _WIN32
-public:
-#else
+
 protected:
-#endif
-    const ref<T> &widget = _widget;
+    // @mustCallSuper
     void initState() override
     {
         super::initState();
@@ -72,16 +65,25 @@ protected:
     }
 
     // @mustCallSuper
-    virtual void didWidgetUpdated(ref<T> oldWIdget) {}
+    virtual void didWidgetUpdated(ref<T> oldWidget) {}
 
+    // @mustCallSuper
+    void didDependenceChanged() override { super::didDependenceChanged(); }
+
+    // @mustCallSuper
     void dispose() override
     {
         Object::detach(_widget);
         super::dispose();
     }
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+public:
+#endif
+    const ref<T> &widget = _widget;
+
 private:
-    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<StatefulWidget> oldWidget) final
     {
         super::didWidgetUpdated(oldWidget);
         _widget = _element->_statefulWidget->covariant<T>();

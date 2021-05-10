@@ -47,7 +47,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/elements elements_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/widgets widgets_src)
 set(all_src ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
 
-if(MSVC) # in msvc, async_runtime not support shared library mode
+if(WIN32) # in Windows, async_runtime not support shared library mode
 add_library(async_runtime ${all_src})
 else()
     if(ASYNC_RUNTIME_BUILD_SHARED)
