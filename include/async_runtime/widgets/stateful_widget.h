@@ -71,6 +71,7 @@ protected:
         _widget = _element->_statefulWidget->covariant<T>();
     }
 
+    // @mustCallSuper
     virtual void didWidgetUpdated(ref<T> oldWIdget) {}
 
     void dispose() override
@@ -84,6 +85,6 @@ private:
     {
         super::didWidgetUpdated(oldWidget);
         _widget = _element->_statefulWidget->covariant<T>();
-        State<T>::didWidgetUpdated(oldWidget->covariant<T>());
+        this->didWidgetUpdated(oldWidget->covariant<T>());
     }
 };
