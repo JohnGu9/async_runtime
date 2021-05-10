@@ -5,14 +5,7 @@
 template <>
 class Completer<std::nullptr_t> : public Object, StateHelper
 {
-    template <typename R>
-    friend class Future;
-
-    template <typename R>
-    friend class Stream;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
     Completer(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _isCompleted(false), _isCancelled(false) {}
@@ -31,14 +24,7 @@ public:
 template <>
 class Completer<void> : public Completer<std::nullptr_t>
 {
-    template <typename R>
-    friend class Future;
-
-    template <typename R>
-    friend class Stream;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
     template <typename R>
     friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
@@ -88,14 +74,7 @@ public:
 template <typename T>
 class Completer : public Completer<std::nullptr_t>
 {
-    template <typename R>
-    friend class Future;
-
-    template <typename R>
-    friend class Stream;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
     template <typename R>
     friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);

@@ -13,10 +13,27 @@ template <typename T = std::nullptr_t>
 class Stream;
 // @ thread safe
 template <typename T = std::nullptr_t>
+class StreamController;
+// @ thread safe
+template <typename T = std::nullptr_t>
 class StreamSubscription;
 // @ thread safe
 template <typename T = std::nullptr_t>
 class AsyncSnapshot;
+
+#define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \
+    template <typename R>                  \
+    friend class Completer;                \
+    template <typename R>                  \
+    friend class Future;                   \
+    template <typename R>                  \
+    friend class Stream;                   \
+    template <typename R>                  \
+    friend class StreamController;         \
+    template <typename R>                  \
+    friend class StreamSubscription;       \
+    template <typename R>                  \
+    friend class AsyncSnapshot;
 
 #include "async/thread.h"
 #include "async/thread_pool.h"
@@ -30,6 +47,7 @@ class AsyncSnapshot;
 #include "async/completer.h"
 #include "async/stream_subscription.h"
 #include "async/stream.h"
+#include "async/stream_controller.h"
 #include "async/async_snapshot.h"
 #include "async/async.h"
 

@@ -5,11 +5,7 @@
 template <>
 class Stream<std::nullptr_t> : public Object, StateHelper
 {
-    template <typename R>
-    friend class StreamSubscription;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
     Stream(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
@@ -18,17 +14,13 @@ protected:
     ref<ThreadPool> _callbackHandler;
 
 public:
-    virtual void close() = 0;
+    virtual ref<Future<void>> asFuture() = 0;
 };
 
 template <>
 class Stream<void> : public Stream<std::nullptr_t>
 {
-    template <typename R>
-    friend class StreamSubscription;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 public:
     Stream(ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
@@ -39,24 +31,11 @@ public:
             this->_onClose->completeSync();
     }
 
-    virtual ref<Stream<void>> sink()
-    {
-        ref<Stream<void>> self = self();
-        this->_callbackHandler->post([self] {
-            assert(!self->_isClosed);
-            if (self->_listener)
-                self->_listener();
-            else
-                self->_sinkCounter++;
-        });
-        return self;
-    }
-
     virtual ref<StreamSubscription<void>> listen(Function<void()> fn)
     {
         ref<Stream<void>> self = self();
         this->_callbackHandler->post([self, fn] {
-            assert(!static_cast<bool>(self->_listener) && "Single listener stream can't have more than one listener");
+            assert(self->_listener == nullptr && "Single listener stream can't have more than one listener");
             self->_listener = fn;
             for (size_t c = 0; c < self->_sinkCounter; c++)
                 self->_listener();
@@ -73,20 +52,9 @@ public:
         return self();
     }
 
-    virtual ref<Future<void>> asFuture()
+    ref<Future<void>> asFuture() override
     {
         return this->_onClose->future;
-    }
-
-    void close() override
-    {
-        ref<Stream<void>> self = self();
-        this->_callbackHandler->post([self] {
-            assert(!self->_isClosed);
-            if (self->_sinkCounter == 0)
-                self->_onClose->completeSync();
-            self->_isClosed = true;
-        });
     }
 
 protected:
@@ -100,11 +68,7 @@ protected:
 template <typename T>
 class Stream : public Stream<std::nullptr_t>
 {
-    template <typename R>
-    friend class StreamSubscription;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 public:
     Stream(ref<ThreadPool> callbackHandler)
@@ -119,32 +83,6 @@ public:
     {
         if (!this->_isClosed)
             this->_onClose->completeSync();
-    }
-
-    virtual ref<Stream<T>> sink(const T &value)
-    {
-        ref<Stream<T>> self = self();
-        this->_callbackHandler->post([self, value] {
-            assert(!self->_isClosed);
-            if (self->_listener)
-                self->_listener(std::move(value));
-            else
-                self->_cache.assertNotNull()->emplace_back(value);
-        });
-        return self;
-    }
-
-    virtual ref<Stream<T>> sink(T &&value)
-    {
-        ref<Stream<T>> self = self();
-        this->_callbackHandler->post([self, value] {
-            assert(!self->_isClosed);
-            if (self->_listener)
-                self->_listener(std::move(value));
-            else
-                self->_cache.assertNotNull()->emplace_back(std::move(value));
-        });
-        return self;
     }
 
     virtual ref<StreamSubscription<T>> listen(Function<void(T)> fn)
@@ -169,21 +107,9 @@ public:
         return self();
     }
 
-    virtual ref<Future<void>> asFuture()
+    ref<Future<void>> asFuture() override
     {
         return this->_onClose->future;
-    }
-
-    void close() override
-    {
-        assert(!this->_isClosed);
-        ref<Stream<T>> self = self();
-        this->_callbackHandler->post([self] {
-            assert(!self->_isClosed);
-            self->_isClosed = true;
-            if (self->_cache == nullptr)
-                self->_onClose->completeSync();
-        });
     }
 
 protected:

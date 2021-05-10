@@ -5,14 +5,7 @@
 template <>
 class Future<std::nullptr_t> : public virtual Object, protected StateHelper
 {
-    template <typename R>
-    friend class Completer;
-
-    template <typename R>
-    friend class Stream;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
     Future(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
@@ -33,14 +26,7 @@ public:
 template <>
 class Future<void> : public Future<std::nullptr_t>
 {
-    template <typename R>
-    friend class Completer;
-
-    template <typename R>
-    friend class Stream;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
     template <typename R>
     friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
@@ -74,14 +60,7 @@ protected:
 template <typename T>
 class Future : public Future<std::nullptr_t>
 {
-    template <typename R>
-    friend class Completer;
-
-    template <typename R>
-    friend class Stream;
-
-    template <typename R>
-    friend class AsyncSnapshot;
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
     template <typename R>
     friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
