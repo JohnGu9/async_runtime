@@ -57,10 +57,33 @@ protected:
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
 class State : public State<StatefulWidget>
 {
+    using super = State<StatefulWidget>;
+    lateref<T> _widget;
+#ifdef _WIN32
 public:
+#else
 protected:
-    virtual ref<const T> getWidget()
+#endif
+    const ref<T> &widget = _widget;
+    void initState() override
     {
-        return _element->_statefulWidget->covariant<T>();
+        super::initState();
+        _widget = _element->_statefulWidget->covariant<T>();
+    }
+
+    virtual void didWidgetUpdated(ref<T> oldWIdget) {}
+
+    void dispose() override
+    {
+        Object::detach(_widget);
+        super::dispose();
+    }
+
+private:
+    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    {
+        super::didWidgetUpdated(oldWidget);
+        _widget = _element->_statefulWidget->covariant<T>();
+        State<T>::didWidgetUpdated(oldWidget->covariant<T>());
     }
 };

@@ -28,37 +28,36 @@ public:
     void initState() override
     {
         super::initState();
-        ref<Future<T>> future = this->getWidget()->future;
+        ref<Future<T>> future = this->widget->future;
         if (!AsyncSnapshot<>::getCompletedFromFuture(future))
         {
             ref<FutureBuilder<T>::_State> self = self();
             future->than([self, future] {
-                if (self->getWidget()->future == future)
+                if (self->widget->future == future)
                     self->setState([] {});
             });
         }
     }
 
-    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<FutureBuilder<T>> oldWidget) override
     {
-        ref<FutureBuilder<T>> old = oldWidget->covariant<FutureBuilder<T>>();
-        ref<Future<T>> future = this->getWidget()->future;
-        if (old->future != future && !AsyncSnapshot<>::getCompletedFromFuture(future))
+        super::didWidgetUpdated(oldWidget);
+        ref<Future<T>> future = this->widget->future;
+        if (oldWidget->future != future && !AsyncSnapshot<>::getCompletedFromFuture(future))
         {
             ref<FutureBuilder<T>::_State> self = self();
             future->than([self, future] {
-                if (self->getWidget()->future == future)
+                if (self->widget->future == future)
                     self->setState([] {});
             });
         }
-        super::didWidgetUpdated(oldWidget);
     }
 
     ref<Widget> build(ref<BuildContext> context) override
     {
-        return this->getWidget()->builder(
+        return this->widget->builder(
             context,
-            Object::create<AsyncSnapshot<T>>(this->getWidget()->future));
+            Object::create<AsyncSnapshot<T>>(this->widget->future));
     }
 };
 

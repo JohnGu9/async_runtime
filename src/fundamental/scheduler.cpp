@@ -69,16 +69,16 @@ class _SchedulerState : public State<Scheduler>
     void initState() override
     {
         super::initState();
-        this->_handler = Object::create<ThreadPool>(1, this->getWidget()->name);
+        this->_handler = Object::create<ThreadPool>(1, this->widget->name);
     }
 
-    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<Scheduler> oldWidget) override
     {
-        auto old = oldWidget->covariant<Scheduler>();
-        if (old->name != this->getWidget()->name)
+        super::didWidgetUpdated(oldWidget);
+        if (oldWidget->name != this->widget->name)
         {
             this->_handler->dispose();
-            this->_handler = Object::create<ThreadPool>(1, this->getWidget()->name);
+            this->_handler = Object::create<ThreadPool>(1, this->widget->name);
         }
     }
 
@@ -90,7 +90,7 @@ class _SchedulerState : public State<Scheduler>
 
     ref<Widget> build(ref<BuildContext>) override
     {
-        return Object::create<SchedulerProxy>(this->getWidget()->child, this->_handler);
+        return Object::create<SchedulerProxy>(this->widget->child, this->_handler);
     }
 };
 

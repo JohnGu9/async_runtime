@@ -9,7 +9,7 @@ class _StatefulBuilderState : public State<StatefulBuilder>
 public:
     ref<Widget> build(ref<BuildContext> context) override
     {
-        return this->getWidget()->builder(context, [this](Function<void()> fn) { this->setState(fn); });
+        return this->widget->builder(context, [this](Function<void()> fn) { this->setState(fn); });
     }
 };
 

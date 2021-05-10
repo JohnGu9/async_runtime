@@ -41,20 +41,20 @@ public:
     {
         super::initState();
         ref<ValueListenableBuilder<T>::_State> self = self();
-        this->_valueListenable = this->getWidget()->valueListenable;
+        this->_valueListenable = this->widget->valueListenable;
         this->_valueListenable->addListener(_listener);
     }
 
-    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<ValueListenableBuilder<T>> oldWidget) override
     {
-        ref<ValueListenable<T>> newListenable = this->getWidget()->valueListenable;
+        super::didWidgetUpdated(oldWidget);
+        ref<ValueListenable<T>> newListenable = this->widget->valueListenable;
         if (newListenable != _valueListenable)
         {
             this->_valueListenable->removeListener(this->_listener);
             this->_valueListenable = newListenable;
             this->_valueListenable->addListener(this->_listener);
         }
-        super::didWidgetUpdated(oldWidget);
     }
 
     void dispose() override
@@ -65,10 +65,10 @@ public:
 
     ref<Widget> build(ref<BuildContext> context) override
     {
-        return this->getWidget()->builder(
+        return this->widget->builder(
             context,
             this->_valueListenable->getValue(),
-            this->getWidget()->child);
+            this->widget->child);
     }
 };
 

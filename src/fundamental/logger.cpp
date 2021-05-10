@@ -110,8 +110,9 @@ public:
 
     void initState() override
     {
+        super::initState();
         lateref<String> path;
-        if (this->getWidget()->path.isNotNull(path))
+        if (this->widget->path.isNotNull(path))
         {
             if (path->isEmpty())
                 this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
@@ -122,14 +123,15 @@ public:
             this->_handler = Object::create<_LoggerBlocker>(this);
     }
 
-    void didWidgetUpdated(ref<StatefulWidget> oldWidget) override
+    void didWidgetUpdated(ref<_Logger> oldWidget) override
     {
-        if (oldWidget->covariant<_Logger>()->path != this->getWidget()->path)
+        super::didWidgetUpdated(oldWidget);
+        if (oldWidget->path != this->widget->path)
         {
             this->_handler->dispose();
 
             lateref<String> path;
-            if (this->getWidget()->path.isNotNull(path))
+            if (this->widget->path.isNotNull(path))
             {
                 if (path->isEmpty())
                     this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
@@ -139,8 +141,6 @@ public:
             else
                 this->_handler = Object::create<_LoggerBlocker>(this);
         }
-
-        super::didWidgetUpdated(oldWidget);
     }
 
     void dispose() override
@@ -151,7 +151,7 @@ public:
 
     ref<Widget> build(ref<BuildContext>) override
     {
-        return Object::create<Logger>(this->getWidget()->child, _handler);
+        return Object::create<Logger>(this->widget->child, _handler);
     }
 };
 
@@ -220,7 +220,7 @@ void StdoutLoggerState::dispose()
 ref<Widget> StdoutLoggerState::build(ref<BuildContext>)
 {
     return Object::create<_StdoutLoggerInheritedWidget>(
-        this->getWidget()->child,
+        this->widget->child,
         this->_handler);
 }
 
