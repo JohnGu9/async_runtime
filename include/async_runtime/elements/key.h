@@ -1,7 +1,7 @@
 #pragma once
 
-#include <list>
 #include "element.h"
+#include "../widgets/state.h"
 
 class Widget;
 

@@ -9,7 +9,6 @@ class Stream<std::nullptr_t> : public Object, StateHelper
 
 protected:
     Stream(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler) {}
-    Stream(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
 
     ref<ThreadPool> _callbackHandler;
 
@@ -24,7 +23,6 @@ class Stream<void> : public Stream<std::nullptr_t>
 
 public:
     Stream(ref<ThreadPool> callbackHandler) : Stream<std::nullptr_t>(callbackHandler), _onClose(Object::create<Completer<void>>(callbackHandler)) {}
-    Stream(State<StatefulWidget> *state) : Stream<std::nullptr_t>(state), _onClose(Object::create<Completer<void>>(state)) {}
     virtual ~Stream()
     {
         if (!this->_isClosed)
@@ -74,10 +72,6 @@ public:
     Stream(ref<ThreadPool> callbackHandler)
         : Stream<std::nullptr_t>(callbackHandler),
           _onClose(Object::create<Completer<void>>(callbackHandler)),
-          _cache(Object::create<List<T>>()) {}
-    Stream(State<StatefulWidget> *state)
-        : Stream<std::nullptr_t>(state),
-          _onClose(Object::create<Completer<void>>(state)),
           _cache(Object::create<List<T>>()) {}
     virtual ~Stream()
     {

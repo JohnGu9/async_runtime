@@ -7,7 +7,7 @@ template <typename T = std::nullptr_t>
 class AsyncStreamController;
 
 template <>
-class StreamController<std::nullptr_t> : public Object
+class StreamController<std::nullptr_t> : public Object, protected StateHelper
 {
 public:
     virtual void close() = 0;
@@ -20,7 +20,7 @@ class StreamController<void> : public StreamController<std::nullptr_t>
 
 public:
     StreamController(ref<ThreadPool> handler) : _stream(Object::create<Stream<void>>(handler)) {}
-    StreamController(State<StatefulWidget> *state) : _stream(Object::create<Stream<void>>(state)) {}
+    StreamController(ref<State<StatefulWidget>> state) : _stream(Object::create<Stream<void>>(getHandlerfromState(state))) {}
 
     const ref<Stream<void>> &stream = _stream;
 
@@ -49,7 +49,7 @@ class StreamController : public StreamController<std::nullptr_t>
 
 public:
     StreamController(ref<ThreadPool> handler) : _stream(Object::create<Stream<T>>(handler)) {}
-    StreamController(State<StatefulWidget> *state) : _stream(Object::create<Stream<T>>(state)) {}
+    StreamController(ref<State<StatefulWidget>> state) : _stream(Object::create<Stream<T>>(StateHelper::getHandlerfromState(state))) {}
 
     const ref<Stream<T>> &stream = _stream;
 
@@ -81,15 +81,15 @@ public:
 };
 
 template <>
-class AsyncStreamController<void> : public StreamController<void>, protected StateHelper
+class AsyncStreamController<void> : public StreamController<void>
 {
     ref<ThreadPool> _handler;
 
 public:
     AsyncStreamController(ref<ThreadPool> handler)
         : StreamController<void>(handler), _handler(handler) {}
-    AsyncStreamController(State<StatefulWidget> *state)
-        : StreamController<void>(state), _handler(getHandlerfromState(state)) {}
+    AsyncStreamController(ref<State<StatefulWidget>> state)
+        : StreamController<void>(state), _handler(StateHelper::getHandlerfromState(state)) {}
 
     void sink() override
     {
@@ -105,15 +105,15 @@ public:
 };
 
 template <typename T>
-class AsyncStreamController : public StreamController<T>, protected StateHelper
+class AsyncStreamController : public StreamController<T>
 {
     ref<ThreadPool> _handler;
 
 public:
     AsyncStreamController(ref<ThreadPool> handler)
         : StreamController<T>(handler), _handler(handler) {}
-    AsyncStreamController(State<StatefulWidget> *state)
-        : StreamController<T>(state), _handler(getHandlerfromState(state)) {}
+    AsyncStreamController(ref<State<StatefulWidget>> state)
+        : StreamController<T>(state), _handler(StateHelper::getHandlerfromState(state)) {}
 
     void sink(const T &value) override
     {

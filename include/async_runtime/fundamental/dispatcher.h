@@ -9,7 +9,7 @@ class Dispatcher : public virtual Object, public StateHelper, public Disposable
 {
 public:
     Dispatcher(ref<ThreadPool> handler);
-    Dispatcher(State<StatefulWidget> *state);
+    Dispatcher(ref<State<StatefulWidget>> state);
     void dispose() override;
 
 protected:
@@ -24,7 +24,7 @@ class AsyncDispatcher : public Dispatcher
 public:
     using RunOnMainThread = Function<void(Function<void()> job)>;
     AsyncDispatcher(ref<ThreadPool> handler, option<ThreadPool>, size_t threads);
-    AsyncDispatcher(State<StatefulWidget> *state, option<ThreadPool>, size_t threads);
+    AsyncDispatcher(ref<State<StatefulWidget>> state, option<ThreadPool>, size_t threads);
     virtual ~AsyncDispatcher();
     void dispose() override;
 

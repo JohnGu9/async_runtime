@@ -1,11 +1,10 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/dispatcher.h"
 #include "async_runtime/fundamental/scheduler.h"
-#include "async_runtime/widgets/stateful_widget.h"
 
 Dispatcher::Dispatcher(ref<ThreadPool> handler) : _callbackHandler(handler) {}
 
-Dispatcher::Dispatcher(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)) {}
+Dispatcher::Dispatcher(ref<State<StatefulWidget>> state) : _callbackHandler(getHandlerfromState(state)) {}
 
 void Dispatcher::dispose() {}
 
@@ -20,7 +19,7 @@ AsyncDispatcher::AsyncDispatcher(ref<ThreadPool> handler, option<ThreadPool> thr
     _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
 }
 
-AsyncDispatcher::AsyncDispatcher(State<StatefulWidget> *state, option<ThreadPool> threadPool, size_t threads = 1)
+AsyncDispatcher::AsyncDispatcher(ref<State<StatefulWidget>> state, option<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(state),
       _ownThreadPool(threadPool != nullptr ? option<ThreadPool>::null() : Object::create<ThreadPool>(threads))
 {

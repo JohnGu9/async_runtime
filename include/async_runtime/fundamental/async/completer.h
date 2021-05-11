@@ -3,13 +3,13 @@
 #include "../async.h"
 
 template <>
-class Completer<std::nullptr_t> : public Object, StateHelper
+class Completer<std::nullptr_t> : public Object, protected StateHelper
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
     Completer(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _isCompleted(false), _isCancelled(false) {}
-    Completer(State<StatefulWidget> *state) : _callbackHandler(getHandlerfromState(state)), _isCompleted(false), _isCancelled(false) {}
+    Completer(ref<State<StatefulWidget>> state) : _callbackHandler(getHandlerfromState(state)), _isCompleted(false), _isCancelled(false) {}
 
     ref<ThreadPool> _callbackHandler;
     std::atomic_bool _isCompleted;
@@ -30,11 +30,11 @@ class Completer<void> : public Completer<std::nullptr_t>
     friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
 
     template <typename R>
-    friend ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
+    friend ref<Future<R>> async(ref<State<StatefulWidget>> state, Function<R()> fn);
 
 public:
     Completer(ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<void>>(callbackHandler)) {}
-    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<void>>(state)) {}
+    Completer(ref<State<StatefulWidget>> state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<void>>(getHandlerfromState(state))) {}
 
     virtual void complete()
     {
@@ -80,11 +80,11 @@ class Completer : public Completer<std::nullptr_t>
     friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
 
     template <typename R>
-    friend ref<Future<R>> async(State<StatefulWidget> *state, Function<R()> fn);
+    friend ref<Future<R>> async(ref<State<StatefulWidget>> state, Function<R()> fn);
 
 public:
     Completer(ref<ThreadPool> callbackHandler) : Completer<std::nullptr_t>(callbackHandler), _future(Object::create<Future<T>>(callbackHandler)) {}
-    Completer(State<StatefulWidget> *state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<T>>(state)) {}
+    Completer(ref<State<StatefulWidget>> state) : Completer<std::nullptr_t>(state), _future(Object::create<Future<T>>(StateHelper::getHandlerfromState(state))) {}
 
     virtual void complete(const T &value)
     {

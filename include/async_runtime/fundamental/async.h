@@ -40,7 +40,7 @@ class AsyncSnapshot;
 
 #include "../basic/function.h"
 #include "../basic/duration.h"
-#include "../widgets/state.h"
+#include "../widgets/stateful_widget.h"
 #include "state_helper.h"
 
 #include "async/future.h"
@@ -101,9 +101,9 @@ ref<Future<T>> Future<T>::value(ref<ThreadPool> callbackHandler, const T &value)
 }
 
 template <typename T>
-ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, const T &value)
+ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>>state, const T &value)
 {
-    return Object::create<Future<T>>(state, value);
+    return Object::create<Future<T>>(StateHelper::getHandlerfromState(state), value);
 }
 
 template <typename T>
@@ -113,9 +113,9 @@ ref<Future<T>> Future<T>::value(ref<ThreadPool> callbackHandler, T &&value)
 }
 
 template <typename T>
-ref<Future<T>> Future<T>::value(State<StatefulWidget> *state, T &&value)
+ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>>state, T &&value)
 {
-    return Object::create<Future<T>>(state, value);
+    return Object::create<Future<T>>(StateHelper::getHandlerfromState(state), value);
 }
 
 template <typename T>

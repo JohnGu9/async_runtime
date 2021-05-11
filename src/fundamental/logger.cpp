@@ -23,11 +23,11 @@ public:
         ref<State<StatefulWidget>> _state;
 
     public:
-        _StdoutLoggerHandler(State<StatefulWidget> *state) : _state(Object::cast<>(state)) { assert(state); }
+        _StdoutLoggerHandler(ref<State<StatefulWidget>> state) : _state(state) {}
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return async<bool>(this->_state.get(), [str] {
+            return async<bool>(this->_state, [str] {
                 std::cout << str;
                 return true;
             });
@@ -35,7 +35,7 @@ public:
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return async<bool>(this->_state.get(), [str] {
+            return async<bool>(this->_state, [str] {
                 std::cout << str << std::endl;
                 return true;
             });
@@ -49,7 +49,7 @@ public:
         ref<File> _file;
 
     public:
-        _FileLoggerHandler(State<StatefulWidget> *state, ref<String> path)
+        _FileLoggerHandler(ref<State<StatefulWidget>> state, ref<String> path)
             : _file(File::fromPath(state, path)) { _file->clear(); }
 
         ref<Future<bool>> write(ref<String> str) override
@@ -92,14 +92,14 @@ public:
         ref<State<StatefulWidget>> _state;
 
     public:
-        _LoggerBlocker(State<StatefulWidget> *state) : _state(Object::cast<>(state)) {}
+        _LoggerBlocker(ref<State<StatefulWidget>> state) : _state(state) {}
         ref<Future<bool>> write(ref<String> str) override
         {
-            return Future<bool>::value(this->_state.get(), true);
+            return Future<bool>::value(this->_state, true);
         }
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return Future<bool>::value(this->_state.get(), true);
+            return Future<bool>::value(this->_state, true);
         }
 
         void dispose() override {}
@@ -115,12 +115,12 @@ public:
         if (this->widget->path.isNotNull(path))
         {
             if (path->isEmpty())
-                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
+                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(context));
             else
-                this->_handler = Object::create<_FileLoggerHandler>(this, path);
+                this->_handler = Object::create<_FileLoggerHandler>(self(), path);
         }
         else
-            this->_handler = Object::create<_LoggerBlocker>(this);
+            this->_handler = Object::create<_LoggerBlocker>(self());
     }
 
     void didWidgetUpdated(ref<_Logger> oldWidget) override
@@ -134,12 +134,12 @@ public:
             if (this->widget->path.isNotNull(path))
             {
                 if (path->isEmpty())
-                    this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(this->context));
+                    this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(context));
                 else
-                    this->_handler = Object::create<_FileLoggerHandler>(this, path);
+                    this->_handler = Object::create<_FileLoggerHandler>(self(), path);
             }
             else
-                this->_handler = Object::create<_LoggerBlocker>(this);
+                this->_handler = Object::create<_LoggerBlocker>(self());
         }
     }
 
@@ -208,7 +208,7 @@ public:
 void StdoutLoggerState::initState()
 {
     super::initState();
-    this->_handler = Object::create<_LoggerState::_StdoutLoggerHandler>(this);
+    this->_handler = Object::create<_LoggerState::_StdoutLoggerHandler>(self());
 }
 
 void StdoutLoggerState::dispose()

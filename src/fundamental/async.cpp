@@ -242,7 +242,7 @@ void Future<std::nullptr_t>::sync(Duration timeout)
 //
 ////////////////////////////
 
-ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, ref<Set<ref<Future<>>>> set)
+ref<Future<void>> Future<void>::race(ref<State<StatefulWidget>> state, ref<Set<ref<Future<>>>> set)
 {
     if (set->empty())
         return Future<void>::value(state);
@@ -252,7 +252,7 @@ ref<Future<void>> Future<void>::race(State<StatefulWidget> *state, ref<Set<ref<F
     return completer->future;
 }
 
-ref<Future<void>> Future<void>::wait(State<StatefulWidget> *state, ref<Set<ref<Future<>>>> set)
+ref<Future<void>> Future<void>::wait(ref<State<StatefulWidget>> state, ref<Set<ref<Future<>>>> set)
 {
     size_t size = set->size();
     if (size == 0)
@@ -280,7 +280,7 @@ ref<Future<void>> Future<void>::value(ref<ThreadPool> callbackHandler)
     return completer->future;
 }
 
-ref<Future<void>> Future<void>::value(State<StatefulWidget> *state)
+ref<Future<void>> Future<void>::value(ref<State<StatefulWidget>> state)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(state);
     completer->complete();
@@ -299,7 +299,7 @@ ref<Future<void>> Future<void>::delay(ref<ThreadPool> callbackHandler, Duration 
     return completer->future;
 }
 
-ref<Future<void>> Future<void>::delay(State<StatefulWidget> *state, Duration duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::delay(ref<State<StatefulWidget>> state, Duration duration, Function<void()> onTimeout)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(state);
     ref<Timer> timer = Timer::delay(state, duration, [completer, onTimeout] {

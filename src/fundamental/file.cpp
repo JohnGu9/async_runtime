@@ -2,9 +2,8 @@
 #include <fstream>
 #include "async_runtime/fundamental/file.h"
 #include "async_runtime/fundamental/async.h"
-#include "async_runtime/widgets/stateful_widget.h"
 
-static finalref<Lock::InvalidLock> invalidLock = Object::create<Lock::InvalidLock>();
+static finalref<Lock> invalidLock = Object::create<Lock::InvalidLock>();
 
 ref<ThreadPool> File::sharedThreadPool()
 {
@@ -12,16 +11,16 @@ ref<ThreadPool> File::sharedThreadPool()
     return sharedThreadPool;
 }
 
-File::File(State<StatefulWidget> *state, ref<String> path, size_t threads)
+File::File(ref<State<StatefulWidget>> state, ref<String> path, size_t threads)
     : AsyncDispatcher(state, threads == 0 ? sharedThreadPool() : option<ThreadPool>::null(), threads),
-      _path(path), _state(Object::cast<>(state)),
+      _path(path), _state(state),
       _lock(threads > 1 ? Object::create<Lock>() /* if multithread read/write, need an actually lock */
                         : invalidLock /* if only one thread, don't need actually lock */)
 
 {
 }
 
-ref<File> File::fromPath(State<StatefulWidget> *state, ref<String> path, size_t threads)
+ref<File> File::fromPath(ref<State<StatefulWidget>> state, ref<String> path, size_t threads)
 {
     return Object::create<File>(state, path, threads);
 }
@@ -34,7 +33,7 @@ File::~File()
 ref<Future<bool>> File::exists()
 {
     ref<File> self = self();
-    ref<Completer<bool>> completer = Object::create<Completer<bool>>(_state.get());
+    ref<Completer<bool>> completer = Object::create<Completer<bool>>(_state);
     this->post([=] { completer->complete(existsSync()); });
     return completer->future;
 }
@@ -42,7 +41,7 @@ ref<Future<bool>> File::exists()
 ref<Future<int>> File::remove()
 {
     ref<File> self = self();
-    ref<Completer<int>> completer = Object::create<Completer<int>>(_state.get());
+    ref<Completer<int>> completer = Object::create<Completer<int>>(_state);
     this->post([=] { completer->complete(removeSync()); });
     return completer->future;
 }
@@ -50,7 +49,7 @@ ref<Future<int>> File::remove()
 ref<Future<long long>> File::size()
 {
     ref<File> self = self();
-    ref<Completer<long long>> completer = Object::create<Completer<long long>>(_state.get());
+    ref<Completer<long long>> completer = Object::create<Completer<long long>>(_state);
     this->post([=] { completer->complete(sizeSync()); });
     return completer->future;
 }
@@ -83,7 +82,7 @@ long long File::sizeSync()
 ref<Future<void>> File::append(ref<String> str)
 {
     ref<File> self = self();
-    ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
+    ref<Completer<void>> completer = Object::create<Completer<void>>(_state);
     this->post([=] {
         {
             option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
@@ -99,7 +98,7 @@ ref<Future<void>> File::append(ref<String> str)
 ref<Future<void>> File::overwrite(ref<String> str)
 {
     ref<File> self = self();
-    ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
+    ref<Completer<void>> completer = Object::create<Completer<void>>(_state);
     this->post([=] {
         {
             option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
@@ -115,7 +114,7 @@ ref<Future<void>> File::overwrite(ref<String> str)
 ref<Future<void>> File::clear()
 {
     ref<File> self = self();
-    ref<Completer<void>> completer = Object::create<Completer<void>>(_state.get());
+    ref<Completer<void>> completer = Object::create<Completer<void>>(_state);
     this->post([=] {
         {
             option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
@@ -130,7 +129,7 @@ ref<Future<void>> File::clear()
 ref<Future<ref<String>>> File::read()
 {
     ref<File> self = self();
-    ref<Completer<ref<String>>> completer = Object::create<Completer<ref<String>>>(_state.get());
+    ref<Completer<ref<String>>> completer = Object::create<Completer<ref<String>>>(_state);
     this->post([=] {
         std::string str;
         {
@@ -150,7 +149,7 @@ ref<Future<ref<String>>> File::read()
 ref<Stream<ref<String>>> File::readAsStream(size_t segmentationLength)
 {
     ref<File> self = self();
-    ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_state.get());
+    ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_state);
     this->post([=] {
         {
             option<Lock::SharedLock> readLock = _lock->sharedLock();
@@ -175,7 +174,7 @@ ref<Stream<ref<String>>> File::readAsStream(size_t segmentationLength)
 ref<Stream<ref<String>>> File::readWordAsStream()
 {
     ref<File> self = self();
-    ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_state.get());
+    ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_state);
     this->post([=] {
         std::string str;
         {
@@ -193,7 +192,7 @@ ref<Stream<ref<String>>> File::readWordAsStream()
 ref<Stream<ref<String>>> File::readLineAsStream()
 {
     ref<File> self = self();
-    ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_state.get());
+    ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_state);
     this->post([=] {
         {
             option<Lock::SharedLock> readLock = _lock->sharedLock();

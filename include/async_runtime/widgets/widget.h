@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../elements/element.h"
-#include "../elements/key.h"
+#include "../object.h"
+
+class Element;
+class Key;
 
 class Widget : public virtual Object
 {
@@ -18,4 +20,3 @@ protected:
 public:
     const option<Key> &key = _key;
 };
-

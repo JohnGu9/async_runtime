@@ -2,8 +2,8 @@
 
 #include "single_child_element.h"
 #include "../basic/observable.h"
+#include "../widgets/state.h"
 
-class StatefulWidget;
 class StatefulElement : public SingleChildElement
 {
     template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>

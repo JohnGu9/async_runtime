@@ -37,7 +37,7 @@ public:
         ref<String> errorString() const;
     };
 
-    Client(State<StatefulWidget> *state, ref<String> address, int port = 80)
+    Client(ref<State<StatefulWidget>> state, ref<String> address, int port = 80)
         : Dispatcher(state), _client(address->toStdString(), port) {}
 
     void dispose() override;
@@ -64,7 +64,7 @@ class Http::Server : public Dispatcher
 public:
     using Handler = httplib::Server::Handler;
 
-    Server(State<StatefulWidget> *state);
+    Server(ref<State<StatefulWidget>> state);
     virtual ~Server() { assert(!_server.is_running() && "Http::Server was dropped before dispose. "); }
 
     virtual Server *listen(ref<String> address, int port);

@@ -122,12 +122,6 @@ class _async_runtime::OptionImplement : protected std::shared_ptr<T>, public _as
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
-    OptionImplement() {}
-    OptionImplement(std::nullptr_t) : std::shared_ptr<T>(nullptr) {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    OptionImplement(const OptionImplement<R> &other) : std::shared_ptr<T>(other){};
-
     bool isNotNull(ref<T> &) const override;
     ref<T> isNotNullElse(std::function<ref<T>()>) const override;
     ref<T> assertNotNull() const override;
@@ -142,6 +136,8 @@ public:
     operator bool() const = delete;
 
 protected:
+    OptionImplement() {}
+    OptionImplement(std::nullptr_t) : std::shared_ptr<T>(nullptr) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     OptionImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(other){};
 };
@@ -173,6 +169,8 @@ public:
     option(const ref<R> &other);
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const option<R> &other) : _async_runtime::OptionImplement<T>(other) {}
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    option(const std::shared_ptr<R> &other) : _async_runtime::OptionImplement<T>(other){};
 
     /// ref quick init also available for option (just forward argument to ref)
     /// so that option no need to specialize template
@@ -180,10 +178,6 @@ public:
     /// this api should only used inside nullsafety system, not for public usage
     template <typename First, typename... Args>
     option(const First &first, Args &&...args);
-
-protected:
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) : _async_runtime::OptionImplement<T>(other){};
 };
 
 template <typename T>
@@ -192,13 +186,9 @@ class _async_runtime::RefImplement : public option<T>
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
-    RefImplement(std::nullptr_t) = delete;
-
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement(const RefImplement<R> &other) : option<T>(other) {}
-
     T &operator*() const
     {
+        assert(std::shared_ptr<T>::get() && "lateref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
         return std::shared_ptr<T>::operator*();
     }
 
@@ -214,9 +204,7 @@ public:
 
 protected:
     RefImplement() {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement(const option<R> &other) : option<T>(other) {}
+    RefImplement(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(const std::shared_ptr<R> &other) : option<T>(other) {}

@@ -11,8 +11,8 @@ class File : public AsyncDispatcher
     static ref<ThreadPool> sharedThreadPool();
 
 public:
-    static ref<File> fromPath(State<StatefulWidget> *state, ref<String> path, size_t threads = 0);
-    File(State<StatefulWidget> *state, ref<String> path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
+    static ref<File> fromPath(ref<State<StatefulWidget>> state, ref<String> path, size_t threads = 0);
+    File(ref<State<StatefulWidget>> state, ref<String> path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
     virtual ~File();
 
     virtual ref<Future<bool>> exists();

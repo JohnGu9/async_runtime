@@ -62,7 +62,7 @@ public:
         {
             std::unique_lock<std::mutex> lock(_mutex);
             _hasNewTask = true; // wake up the thread
-            _stop = true; // mask the flag that let thread exit
+            _stop = true;       // mask the flag that let thread exit
         }
         _cv.notify_all();
         _thread.join();
@@ -97,13 +97,13 @@ static const ref<TimerThread> &sharedTimerThread()
     return singleton;
 }
 
-Timer::Timer(State<StatefulWidget> *state, const _FactoryOnly &)
+Timer::Timer(ref<State<StatefulWidget>> state, const _FactoryOnly &)
     : Dispatcher(state), _clear(false) {}
 
 Timer::Timer(ref<ThreadPool> callbackHandler, const _FactoryOnly &)
     : Dispatcher(callbackHandler), _clear(false) {}
 
-ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Function<void()> fn)
+ref<Timer> Timer::delay(ref<State<StatefulWidget>> state, Duration duration, Function<void()> fn)
 {
     static const _FactoryOnly lock = _FactoryOnly();
     ref<Timer> timer = Object::create<Timer>(state, lock);
@@ -111,7 +111,7 @@ ref<Timer> Timer::delay(State<StatefulWidget> *state, Duration duration, Functio
     return timer;
 }
 
-ref<Timer> Timer::periodic(State<StatefulWidget> *state, Duration interval, Function<void()> fn)
+ref<Timer> Timer::periodic(ref<State<StatefulWidget>> state, Duration interval, Function<void()> fn)
 {
     static const _FactoryOnly lock = _FactoryOnly();
     ref<Timer> timer = Object::create<Timer>(state, lock);

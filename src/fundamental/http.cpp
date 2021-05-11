@@ -176,7 +176,7 @@ public:
     void shutdown() override { Object::detach(_threadPool); }
 };
 
-Http::Server::Server(State<StatefulWidget> *state) : Dispatcher(state)
+Http::Server::Server(ref<State<StatefulWidget>> state) : Dispatcher(state)
 {
     _server.new_task_queue = [this] { return new _ThreadPoolTaskQueue(this->_callbackHandler); };
 }

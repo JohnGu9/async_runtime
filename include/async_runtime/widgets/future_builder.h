@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stateful_widget.h"
+#include "../fundamental/async.h"
 
 template <typename T>
 class FutureBuilder : public StatefulWidget

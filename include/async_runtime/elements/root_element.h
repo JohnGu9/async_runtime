@@ -1,11 +1,14 @@
 #pragma once
 
+#include <atomic>
+#include "key.h"
 #include "single_child_element.h"
 #include "../basic/value_notifier.h"
 
 class GlobalKey;
 class LoggerHandler;
 class Command;
+class ThreadPool;
 class RootElement : public SingleChildElement
 {
     friend class Process;
