@@ -14,6 +14,10 @@ protected:
     ref<Widget> _child;
 };
 
+#ifndef NDEBUG
+#include "../elements/element.h"
+#endif
+
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
 inline option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
