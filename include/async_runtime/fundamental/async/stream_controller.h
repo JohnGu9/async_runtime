@@ -64,7 +64,7 @@ public:
 
     virtual void sink(T &&value)
     {
-        assert(!self->_isClosed);
+        assert(!_stream->_isClosed);
         if (_stream->_listener)
             _stream->_listener(std::move(value));
         else
@@ -73,7 +73,7 @@ public:
 
     void close() override
     {
-        assert(!self->_isClosed);
+        assert(!_stream->_isClosed);
         _stream->_isClosed = true;
         if (_stream->_cache == nullptr)
             _stream->_onClose->completeSync();
