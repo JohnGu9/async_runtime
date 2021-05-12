@@ -17,7 +17,12 @@ ref<String> Object::toString()
 
 void Object::toStringStream(std::ostream &os)
 {
-    os << "class<" << typeid(*this).name()
+    os << "class<"
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+       << &(typeid(*this).name()[6]) // from "class MyClass" to "MyClass"
+#else
+       << typeid(*this).name()
+#endif
        << ">[" << (size_t)this << ']';
 }
 

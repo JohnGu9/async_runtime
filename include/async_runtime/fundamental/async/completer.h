@@ -39,16 +39,16 @@ public:
     virtual void complete()
     {
         ref<Completer<void>> self = self();
-        this->_callbackHandler->post([self] { self->completeSync(); });
+        this->_callbackHandler->post([this, self] { this->completeSync(); });
     }
 
     void cancel() override
     {
         ref<Completer<void>> self = self();
-        this->_callbackHandler->post([self] {
-            if (self->_isCompleted)
+        this->_callbackHandler->post([this, self] {
+            if (this->_isCompleted)
                 return false; // already completed
-            self->_isCancelled = true;
+            this->_isCancelled = true;
             return true; // cancel successfully
         });
     }
@@ -89,21 +89,21 @@ public:
     virtual void complete(const T &value)
     {
         ref<Completer<T>> self = self();
-        this->_callbackHandler->post([self, value] { self->completeSync(value); });
+        this->_callbackHandler->post([this, self, value] { this->completeSync((value)); });
     }
 
     virtual void complete(T &&value)
     {
         ref<Completer<T>> self = self();
-        this->_callbackHandler->post([self](const T &value) { self->completeSync(value); }, std::move(value));
+        this->_callbackHandler->post([this, self, value] { this->completeSync(value); });
     }
 
     void cancel() override
     {
         ref<Completer<T>> self = self();
-        this->_callbackHandler->post([self] {
-            if (!self->_isCompleted)
-                self->_isCancelled = true;
+        this->_callbackHandler->post([this, self] {
+            if (!this->_isCompleted)
+                this->_isCancelled = true;
         });
     }
 

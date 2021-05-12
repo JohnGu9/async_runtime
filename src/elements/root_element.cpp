@@ -112,12 +112,12 @@ void RootElement::_console()
             else
                 onCommand(input);
         }
-        if (self->_consoleStop == false)
+        if (this->_consoleStop == false)
         {
             // runApp exit by console command
             info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
-            self->_consoleStop = true;
-            self->_exit(0);
+            this->_consoleStop = true;
+            this->_exit(0);
         }
     });
     this->_condition.wait(lock); // wait for exit

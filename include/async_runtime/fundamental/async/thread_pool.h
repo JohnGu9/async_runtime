@@ -16,6 +16,8 @@
  * @brief 
  * ThreadPool Object provide thread pool that handle task in other thread. 
  * ThreadPool must call dispose before drop the object. 
+ * After dispose, ThreadPool will flush all added task and no longer accept new task. 
+ * If try to add new task to a disposed ThreadPool, it will get a never-return std::future (In Debug mode also print info on console)
  * 
  * @example
  * 
@@ -76,10 +78,9 @@ auto ThreadPool::post(F &&f, Args &&...args) -> std::future<typename std::result
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop && !ThreadPool::thisThreadName->startsWith(this->name))
+        if (_stop)
         {
-            debug_print("Async task post after threadpool stopped. ");
-            (*task)();
+            debug_print("Async task post after ThreadPool disposed. The task will be dropped and future will never return. ");
             return res;
         }
         _tasks.emplace([task] { (*task)(); });
@@ -100,10 +101,9 @@ auto ThreadPool::microTask(F &&f, Args &&...args) -> std::future<typename std::r
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop && !(ThreadPool::thisThreadName)->startsWith(this->name))
+        if (_stop)
         {
-            assert(std::cout << "Async task post after threadpool stopped. " << std::endl);
-            (*task)();
+            debug_print("Async task post after ThreadPool disposed. The task will be dropped and future will never return. ");
             return res;
         }
         _microTasks.emplace([task] { (*task)(); });

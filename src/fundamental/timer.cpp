@@ -148,10 +148,10 @@ void Timer::_setTimeout(Duration delay, Function<void()> function)
     _onCancel = [] {};
     sharedTimerThread()->post(TimerTask{
         current + delay.toChronoMilliseconds(),
-        [self, function] {
-            if (self->_clear)
+        [this, self, function] {
+            if (this->_clear)
                 return;
-            self->microTask(function);
+            this->microTask(function);
         }});
 }
 
@@ -163,7 +163,7 @@ void Timer::_setInterval(Duration interval, Function<void()> function)
     ref<Timer> self = self(); // hold a ref of self inside the Function
     auto task = std::make_shared<std::function<void()>>();
     *task = [=] { // container self-ref [task] cause ref loop
-        self->microTask([=] {
+        this->microTask([=] {
             if (self->_clear)
                 return;
             function();

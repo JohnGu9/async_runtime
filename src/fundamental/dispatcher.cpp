@@ -33,7 +33,7 @@ std::future<void> AsyncDispatcher::post(Function<void(RunOnMainThread runner)> f
     ref<AsyncDispatcher> self = self();
     return this->_threadPool->post(
         fn.toStdFunction(),
-        [self](Function<void()> job) { self->run(job); });
+        [=](Function<void()> job) { self->run(job); });
 }
 
 AsyncDispatcher::~AsyncDispatcher()

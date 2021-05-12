@@ -17,7 +17,7 @@ public:
     void unsubscribe() override
     {
         ref<StreamSubscription<T>> self = self();
-        _stream->_callbackHandler->post([self] {
+        _stream->_callbackHandler->post([=] {
             self->_stream->_listener = nullptr;
         });
     }

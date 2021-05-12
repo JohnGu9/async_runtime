@@ -209,7 +209,7 @@ void AutoReleaseThreadPool::close()
 std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
     ref<AutoReleaseThreadPool> self = self();
-    return [self, threadId] { self->ThreadPool::workerBuilder(threadId)(); };
+    return [=] { self->ThreadPool::workerBuilder(threadId)(); };
 }
 
 ////////////////////////////
@@ -313,9 +313,9 @@ ref<Future<void>> Future<void>::delay(ref<State<StatefulWidget>> state, Duration
 ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
 {
     ref<Future<void>> self = self();
-    this->_callbackHandler->post([self, fn] {
-        if (self->_completed == false)
-            self->_callbackList->emplace_back(fn);
+    this->_callbackHandler->post([=] {
+        if (this->_completed == false)
+            this->_callbackList->emplace_back(fn);
         else
             fn();
     });

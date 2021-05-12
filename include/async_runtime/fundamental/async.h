@@ -62,9 +62,9 @@ inline ref<Future<void>> Future<void>::than(Function<void()> fn)
 {
     ref<Future<void>> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
-    this->_callbackHandler->post([self, completer, fn] {
-        if (self->_completed == false)
-            self->_callbackList->emplace_back([completer, fn] { fn(); completer->completeSync(); });
+    this->_callbackHandler->post([this, self, completer, fn] {
+        if (this->_completed == false)
+            this->_callbackList->emplace_back([completer, fn] { fn(); completer->completeSync(); });
         else
         {
             fn();
@@ -79,9 +79,9 @@ ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
 {
     ref<Future<void>> self = self();
     ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
-    this->_callbackHandler->post([self, completer, fn] {
-        if (self->_completed == false)
-            self->_callbackList->emplace_back([completer, fn] { completer->completeSync(fn()); });
+    this->_callbackHandler->post([this, self, completer, fn] {
+        if (this->_completed == false)
+            this->_callbackList->emplace_back([completer, fn] { completer->completeSync(fn()); });
         else
             completer->completeSync(fn());
     });
@@ -101,7 +101,7 @@ ref<Future<T>> Future<T>::value(ref<ThreadPool> callbackHandler, const T &value)
 }
 
 template <typename T>
-ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>>state, const T &value)
+ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>> state, const T &value)
 {
     return Object::create<Future<T>>(StateHelper::getHandlerfromState(state), value);
 }
@@ -113,7 +113,7 @@ ref<Future<T>> Future<T>::value(ref<ThreadPool> callbackHandler, T &&value)
 }
 
 template <typename T>
-ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>>state, T &&value)
+ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>> state, T &&value)
 {
     return Object::create<Future<T>>(StateHelper::getHandlerfromState(state), value);
 }
@@ -124,12 +124,12 @@ ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     ref<Future<T>> self = self();
-    this->_callbackHandler->post([self, completer, fn] {
-        if (self->_completed == false)
-            self->_callbackList->emplace_back([completer, fn](const T &value) { fn(value); completer->completeSync(); });
+    this->_callbackHandler->post([this, self, completer, fn] {
+        if (this->_completed == false)
+            this->_callbackList->emplace_back([completer, fn](const T &value) { fn(value); completer->completeSync(); });
         else
         {
-            fn(self->_data);
+            fn(this->_data);
             completer->completeSync();
         }
     });
@@ -142,11 +142,11 @@ ref<Future<ReturnType>> Future<T>::than(Function<ReturnType(const T &)> fn)
 {
     ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
     ref<Future<T>> self = self();
-    this->_callbackHandler->post([self, completer, fn] {
-        if (self->_completed == false)
-            self->_callbackList->emplace_back([completer, fn](const T &value) { completer->completeSync(fn(value)); });
+    this->_callbackHandler->post([this, self, completer, fn] {
+        if (this->_completed == false)
+            this->_callbackList->emplace_back([completer, fn](const T &value) { completer->completeSync(fn(value)); });
         else
-            completer->completeSync(fn(self->_data));
+            completer->completeSync(fn(this->_data));
     });
     return completer->future;
 }
@@ -155,9 +155,9 @@ template <typename T>
 ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
 {
     ref<Future<T>> self = self();
-    this->_callbackHandler->post([self, fn] {
-        if (self->_completed == false)
-            self->_callbackList->emplace_back([fn](const T &) { fn(); });
+    this->_callbackHandler->post([this, self, fn] {
+        if (this->_completed == false)
+            this->_callbackList->emplace_back([fn](const T &) { fn(); });
         else
             fn();
     });

@@ -59,7 +59,7 @@ public:
         if (_stream->_listener)
             _stream->_listener(value);
         else
-            _stream->_cache.assertNotNull()->emplace_back(value);
+            _stream->_cache->emplace_back(value);
     }
 
     virtual void sink(T &&value)
@@ -68,14 +68,14 @@ public:
         if (_stream->_listener)
             _stream->_listener(std::move(value));
         else
-            _stream->_cache.assertNotNull()->emplace_back(std::move(value));
+            _stream->_cache->emplace_back(std::move(value));
     }
 
     void close() override
     {
         assert(!_stream->_isClosed);
         _stream->_isClosed = true;
-        if (_stream->_cache == nullptr)
+        if (_stream->_cache->empty())
             _stream->_onClose->completeSync();
     }
 };

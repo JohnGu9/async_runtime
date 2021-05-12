@@ -16,7 +16,6 @@ File::File(ref<State<StatefulWidget>> state, ref<String> path, size_t threads)
       _path(path), _state(state),
       _lock(threads > 1 ? Object::create<Lock>() /* if multithread read/write, need an actually lock */
                         : invalidLock /* if only one thread, don't need actually lock */)
-
 {
 }
 
