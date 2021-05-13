@@ -41,7 +41,10 @@ public:
             });
         }
 
-        void dispose() override {}
+        void dispose() override
+        {
+            Object::detach(_state);
+        }
     };
 
     class _FileLoggerHandler : public LoggerHandler
@@ -102,7 +105,10 @@ public:
             return Future<bool>::value(this->_state, true);
         }
 
-        void dispose() override {}
+        void dispose() override
+        {
+            Object::detach(_state);
+        }
     };
 
     using super = State<_Logger>;

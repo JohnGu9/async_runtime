@@ -3,15 +3,15 @@
 #include <atomic>
 #include "key.h"
 #include "single_child_element.h"
-#include "../basic/value_notifier.h"
+#include "../fundamental/async.h"
 
 class GlobalKey;
 class LoggerHandler;
-class Command;
 class ThreadPool;
 class RootElement : public SingleChildElement
 {
     friend class Process;
+    friend class _RootFundamentalState;
 
 public:
     RootElement(ref<Widget> child);
@@ -36,8 +36,8 @@ protected:
     std::mutex _mutex;
     std::condition_variable _condition;
 
-    lateref<Command> _command;
-    lateref<Widget> _child;
+    lateref<AsyncStreamController<ref<String>>> _command;
+    ref<Widget> _child;
     lateref<GlobalKey> _coutKey;
     std::atomic_bool _consoleStop;
     int _exitCode = 0;

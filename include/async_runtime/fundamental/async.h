@@ -38,7 +38,6 @@ class AsyncSnapshot;
 #include "async/thread.h"
 #include "async/thread_pool.h"
 
-#include "../basic/function.h"
 #include "../basic/duration.h"
 #include "../widgets/stateful_widget.h"
 #include "state_helper.h"

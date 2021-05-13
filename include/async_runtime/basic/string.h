@@ -111,10 +111,10 @@ public:
     virtual const_reverse_iterator rend() const { return std::string::rend(); }
 
     virtual size_t find(ref<String> pattern, size_t start = 0) const;
-    virtual size_t find_first_of(ref<String> pattern) const;
-    virtual size_t find_first_not_of(ref<String> pattern) const;
-    virtual size_t find_last_of(ref<String> pattern) const;
-    virtual size_t find_last_not_of(ref<String> pattern) const;
+    virtual size_t find_first_of(ref<String> pattern, size_t start = 0) const;
+    virtual size_t find_first_not_of(ref<String> pattern, size_t start = 0) const;
+    virtual size_t find_last_of(ref<String> pattern, size_t start = 0) const;
+    virtual size_t find_last_not_of(ref<String> pattern, size_t start = 0) const;
     virtual ref<String> substr(size_t begin = 0, size_t length = SIZE_MAX) const;
 };
 

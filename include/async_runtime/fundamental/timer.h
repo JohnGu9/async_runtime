@@ -3,7 +3,6 @@
 #include <atomic>
 #include "async.h"
 #include "dispatcher.h"
-#include "../basic/function.h"
 #include "../basic/duration.h"
 
 class Timer : public Dispatcher

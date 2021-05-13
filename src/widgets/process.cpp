@@ -8,7 +8,7 @@ ref<Process> Process::of(ref<BuildContext> context)
 }
 
 Process::Process(ref<Widget> child, ref<RootElement> root, option<Key> key)
-    : InheritedWidget(child, key), command(root->_command), _root(root) {}
+    : InheritedWidget(child, key), command(root->_command->stream), _root(root) {}
 
 bool Process::updateShouldNotify(ref<InheritedWidget> oldWidget)
 {

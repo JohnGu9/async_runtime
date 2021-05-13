@@ -115,7 +115,7 @@ void MultiChildElement::detach()
 {
     for (size_t i = 0; i < this->_childrenElements->size(); i++)
         this->_childrenElements[i]->detach();
-    Object::detach(this->_childrenElements);
+    this->_childrenElements->clear();
     Element::detach();
 }
 

@@ -76,7 +76,8 @@ ref<T> Object::create(_Args &&...__args)
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 void Object::detach(ref<T> &object)
 {
-    static_cast<std::shared_ptr<T>>(object) = nullptr;
+    option<T>& obj = object;
+    obj = nullptr;
 }
 
 template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>

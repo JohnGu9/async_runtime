@@ -208,6 +208,7 @@ ref<Stream<ref<String>>> File::readLineAsStream()
 
 void File::dispose()
 {
-    this->_isDisposed = true;
+    _isDisposed = true;
+    Object::detach(_state);
     Dispatcher::dispose();
 }

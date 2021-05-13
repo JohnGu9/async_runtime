@@ -138,4 +138,5 @@ void NamedMultiChildElement::visitDescendant(Function<bool(ref<Element>)> fn)
         if (fn(iter.second) == false)
             iter.second->visitDescendant(fn);
     }
+    this->_childrenElements->clear();
 }

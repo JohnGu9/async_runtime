@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../basic/function.h"
 #include "../contexts/build_context.h"
 
 class Widget;

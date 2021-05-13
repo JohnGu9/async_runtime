@@ -48,7 +48,7 @@ public:
             if (this->_isClosed)
                 this->_onClose->completeSync();
         });
-        return Object::create<StreamSubscription<void>>(self);
+        return Object::create<StreamSubscription<void>>([=] { self->_listener = nullptr; });
     }
 
     virtual ref<Stream<void>> onClose(Function<void()> fn)
@@ -84,7 +84,7 @@ public:
             if (this->_isClosed)
                 this->_onClose->completeSync();
         });
-        return Object::create<StreamSubscription<T>>(self);
+        return Object::create<StreamSubscription<T>>([=] { self->_listener = nullptr; });
     }
 
     virtual ref<Stream<T>> onClose(Function<void()> fn)

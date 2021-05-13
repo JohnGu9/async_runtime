@@ -13,18 +13,12 @@ template <typename T>
 class StreamSubscription : public StreamSubscription<std::nullptr_t>
 {
 public:
-    StreamSubscription(ref<Stream<T>> stream) : _stream(stream) {}
+    StreamSubscription(Function<void()> unsubscribe) : _unsubscribe(unsubscribe) {}
     void unsubscribe() override
     {
-        ref<StreamSubscription<T>> self = self();
-        _stream->_callbackHandler->post([=] {
-            self->_stream->_listener = nullptr;
-        });
+        assert(_unsubscribe != nullptr && "StreamSubscription already unsubscribe. Don't call twice. ");
+        _unsubscribe();
+        _unsubscribe = nullptr;
     }
-
-protected:
-    ref<Stream<T>> _stream;
-
-public:
-    const ref<Stream<T>> &stream = _stream;
+    Function<void()> _unsubscribe;
 };

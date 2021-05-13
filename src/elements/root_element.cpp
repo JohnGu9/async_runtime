@@ -3,6 +3,7 @@
 #include "async_runtime/elements/root_element.h"
 #include "async_runtime/elements/key.h"
 #include "async_runtime/widgets/process.h"
+#include "async_runtime/widgets/stateful_widget.h"
 #include "async_runtime/basic/tree.h"
 
 struct RootWidget : Widget
@@ -11,13 +12,52 @@ struct RootWidget : Widget
     ref<Element> createElement() override { return Object::create<RootElement>(self()); }
 };
 
+class RootFundamental : public StatefulWidget
+{
+    ref<State<StatefulWidget>> createState() override;
+
+public:
+    RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
+        : StatefulWidget(key), child(child), rootElement(rootElement) {}
+
+    ref<Widget> child;
+    RootElement *rootElement;
+};
+
+class _RootFundamentalState : public State<RootFundamental>
+{
+    using super = State<RootFundamental>;
+
+    void initState() override
+    {
+        super::initState();
+        widget->rootElement->_coutKey = Object::create<GlobalKey>();
+        widget->rootElement->_command = Object::create<AsyncStreamController<ref<String>>>(self());
+    }
+
+    void dispose() override
+    {
+        widget->rootElement->_command->close();
+        super::dispose();
+    }
+
+    ref<Widget> build(ref<BuildContext>) override
+    {
+        return Object::create<Process>(
+            Object::create<StdoutLogger>(widget->child, widget->rootElement->_coutKey), // StdoutLogger
+            Object::cast<>(widget->rootElement));                                       // Process
+    }
+};
+
+inline ref<State<StatefulWidget>> RootFundamental::createState()
+{
+    return Object::create<_RootFundamentalState>();
+}
+
 /// Root Element
 RootElement::RootElement(ref<Widget> widget)
-    : SingleChildElement(Object::create<RootWidget>()), _consoleStop(false)
-{
-    this->_coutKey = Object::create<GlobalKey>();
-    this->_child = Object::create<Scheduler>(Object::create<StdoutLogger>(widget, _coutKey), "RootThread");
-}
+    : SingleChildElement(Object::create<RootWidget>()),
+      _child(Object::create<Scheduler>(Object::create<RootFundamental>(widget, this))), _consoleStop(false) {}
 
 void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
 
@@ -25,8 +65,6 @@ void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement d
 
 void RootElement::attach()
 {
-    this->_command = Object::create<Command>();
-    this->_child = Object::create<Process>(this->_child, self());
     this->_inheritances = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
     this->attachElement(this->_child->createElement());
 }
@@ -47,7 +85,6 @@ void RootElement::detach()
 {
     this->detachElement();
     Element::detach();
-    this->_command->dispose();
 }
 
 void RootElement::visitDescendant(Function<bool(ref<Element>)> fn)
@@ -192,16 +229,17 @@ void RootElement::onCommand(const ref<String> &in)
     }
     else
     {
-        ref<List<ref<String>>> arguments = in->split(" ");
-        if ((arguments[0] == "command" || arguments[0] == "cmd") && arguments->size() > 1)
+        if ((command == "command" || command == "cmd") && in->length() > commandLength)
         {
-            arguments->pop_front();
-            this->_command->setValue(arguments);
+            auto begin = in->find_first_not_of(" ", commandLength);
+            if (begin != std::string::npos)
+            {
+                auto cmd = in->substr(begin);
+                this->_command->sinkSync(cmd);
+                return;
+            }
         }
-        else
-        {
-            error_print("No such method");
-            info_print("'-h' or '--help' for more information");
-        }
+        error_print("No such method");
+        info_print("'-h' or '--help' for more information");
     }
 }

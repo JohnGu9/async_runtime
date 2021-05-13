@@ -68,13 +68,13 @@ ref<String> ref<String>::operator+(ref<Object> object) const
 
 size_t String::find(ref<String> pattern, size_t start) const { return std::string::find(*pattern, start); }
 
-size_t String::find_first_of(ref<String> pattern) const { return std::string::find_first_of(*pattern); }
+size_t String::find_first_of(ref<String> pattern, size_t start) const { return std::string::find_first_of(*pattern, start); }
 
-size_t String::find_first_not_of(ref<String> pattern) const { return std::string::find_first_not_of(*pattern); }
+size_t String::find_first_not_of(ref<String> pattern, size_t start) const { return std::string::find_first_not_of(*pattern, start); }
 
-size_t String::find_last_of(ref<String> pattern) const { return std::string::find_last_of(*pattern); }
+size_t String::find_last_of(ref<String> pattern, size_t start) const { return std::string::find_last_of(*pattern, start); }
 
-size_t String::find_last_not_of(ref<String> pattern) const { return std::string::find_last_not_of(*pattern); }
+size_t String::find_last_not_of(ref<String> pattern, size_t start) const { return std::string::find_last_not_of(*pattern, start); }
 
 bool String::isEmpty() const
 {
@@ -126,7 +126,7 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
 
 ref<String> String::substr(size_t begin, size_t length) const
 {
-    return std::make_shared<String>(&this->operator[](begin), length);
+    return std::make_shared<String>(std::string::substr(begin, length));
 }
 
 std::ostream &operator<<(std::ostream &os, const ref<String> &str)
