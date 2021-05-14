@@ -222,8 +222,6 @@ public:
     bool operator==(std::nullptr_t) const = delete;
     bool operator!=(std::nullptr_t) const = delete;
     operator bool() const = delete;
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    operator option<R>() const { return option<T>(*this); }
 
 protected:
     RefImplement() {}
