@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 # message(STATUS "Compiler Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
 option(ASYNC_RUNTIME_BUILD_SHARED "Build AsyncRuntime Shared Library(only available on unix-like system, not available on win32)" ON)
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 message(STATUS "Async Runtime using CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
@@ -57,3 +54,6 @@ else()
     endif()
 endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES})
+target_compile_options(async_runtime PRIVATE
+     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall>
+     $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4100 /wd4458>)

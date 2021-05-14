@@ -134,10 +134,8 @@ public:
     AutoReleaseThreadPool(_FactoryOnly, size_t threads = 1, option<String> name = nullptr);
     virtual ~AutoReleaseThreadPool();
     void dispose() override;
-    virtual void close();
 
 protected:
     std::function<void()> workerBuilder(size_t) override;
-
     bool _join = false;
 };

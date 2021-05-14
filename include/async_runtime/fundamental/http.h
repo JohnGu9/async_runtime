@@ -23,6 +23,7 @@ namespace Http
 class Http::Client : public Dispatcher
 {
     static ref<ThreadPool> sharedThreadPool();
+    using super = Dispatcher;
 
 public:
     class Result : public Object

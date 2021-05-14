@@ -129,14 +129,12 @@ public:
 
     virtual void sinkSync(const T &value)
     {
-        ref<AsyncStreamController<T>> self = self();
-        this->_handler->post([this, self, &value] { this->StreamController<T>::sink(value); }).get();
+        this->_handler->post([this, &value] { this->StreamController<T>::sink(value); }).get();
     }
 
     virtual void sinkSync(T &&value)
     {
-        ref<AsyncStreamController<T>> self = self();
-        this->_handler->post([this, self, &value] { this->StreamController<T>::sink(std::move(value)); }).get();
+        this->_handler->post([this, &value] { this->StreamController<T>::sink(std::move(value)); }).get();
     }
 
     void close() override

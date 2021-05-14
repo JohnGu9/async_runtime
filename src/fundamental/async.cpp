@@ -55,18 +55,23 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString)
     for (size_t i = 0; i < threads; ++i)
         _workers.emplace_back(ThreadPool::workerBuilder(i));
 }
-
-ThreadPool::~ThreadPool(){
 #ifndef NDEBUG
-    {option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
-assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
-}
+ThreadPool::~ThreadPool()
 {
-    std::unique_lock<std::mutex> lock(_queueMutex);
-    assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+    {
+        option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
+        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
+    }
+    {
+        std::unique_lock<std::mutex> lock(_queueMutex);
+        assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+    }
+}
+#else
+ThreadPool::~ThreadPool()
+{
 }
 #endif
-}
 
 std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
@@ -193,16 +198,7 @@ void AutoReleaseThreadPool::dispose()
     _condition.notify_all();
     for (std::thread &worker : _workers)
         worker.join();
-    unregisterName();
-}
-
-void AutoReleaseThreadPool::close()
-{
-    {
-        std::unique_lock<std::mutex> lock(_queueMutex);
-        _stop = true;
-    }
-    _condition.notify_all();
+    _workers.clear();
     unregisterName();
 }
 

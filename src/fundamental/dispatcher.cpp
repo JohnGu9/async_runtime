@@ -1,27 +1,32 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/dispatcher.h"
-#include "async_runtime/fundamental/scheduler.h"
 
 Dispatcher::Dispatcher(ref<ThreadPool> handler) : _callbackHandler(handler) {}
 
 Dispatcher::Dispatcher(ref<State<StatefulWidget>> state) : _callbackHandler(getHandlerfromState(state)) {}
 
-void Dispatcher::dispose() {}
+void Dispatcher::dispose() { Object::detach(_callbackHandler); }
 
 std::future<void> Dispatcher::run(Function<void()> fn) { return this->_callbackHandler->post(fn.toStdFunction()); }
 
 std::future<void> Dispatcher::microTask(Function<void()> fn) { return this->_callbackHandler->microTask(fn.toStdFunction()); }
 
+static option<ThreadPool> _getThreadPool(option<ThreadPool> threadPool, size_t threads)
+{
+    if (threadPool == nullptr)
+        return Object::create<ThreadPool>(threads);
+    else
+        return nullptr;
+}
+
 AsyncDispatcher::AsyncDispatcher(ref<ThreadPool> handler, option<ThreadPool> threadPool, size_t threads = 1)
-    : Dispatcher(handler),
-      _ownThreadPool(threadPool != nullptr ? option<ThreadPool>::null() : Object::create<ThreadPool>(threads))
+    : Dispatcher(handler), _ownThreadPool(_getThreadPool(threadPool, 1))
 {
     _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
 }
 
 AsyncDispatcher::AsyncDispatcher(ref<State<StatefulWidget>> state, option<ThreadPool> threadPool, size_t threads = 1)
-    : Dispatcher(state),
-      _ownThreadPool(threadPool != nullptr ? option<ThreadPool>::null() : Object::create<ThreadPool>(threads))
+    : Dispatcher(state), _ownThreadPool(_getThreadPool(threadPool, 1))
 {
     _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
 }

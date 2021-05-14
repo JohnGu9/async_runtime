@@ -14,9 +14,11 @@ void Element::attach()
         key->setElement(self());
 }
 
+
 void Element::detach()
 {
-    Object::detach(this->_inheritances); // release map reference
+    static finalref<Map<Object::RuntimeType, lateref<Inheritance>>> _empty = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
+    this->_inheritances = _empty; // release map reference
     lateref<Key> key;
     if (this->widget->key.isNotNull(key))
         key->dispose();

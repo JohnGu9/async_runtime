@@ -8,8 +8,6 @@
 
 class File : public AsyncDispatcher
 {
-    static ref<ThreadPool> sharedThreadPool();
-
 public:
     static ref<File> fromPath(ref<State<StatefulWidget>> state, ref<String> path, size_t threads = 0);
     File(ref<State<StatefulWidget>> state, ref<String> path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
@@ -38,10 +36,9 @@ public:
 
 protected:
     ref<String> _path;
-    std::atomic_bool _isDisposed;
-
-    ref<State<StatefulWidget>> _state;
     ref<Lock> _lock;
+
+    std::atomic_bool _isDisposed;
 
 public:
     const ref<String> &path = _path;

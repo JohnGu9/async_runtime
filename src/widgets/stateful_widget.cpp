@@ -1,6 +1,6 @@
 #include "async_runtime/elements/stateful_element.h"
 #include "async_runtime/widgets/stateful_widget.h"
-#include "async_runtime/fundamental/scheduler.h"
+#include "async_runtime/widgets/scheduler.h"
 
 void State<StatefulWidget>::setState(Function<void()> fn)
 {

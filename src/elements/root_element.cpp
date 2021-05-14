@@ -1,10 +1,10 @@
+#include "async_runtime/basic/tree.h"
 #include "async_runtime/fundamental/logger.h"
-#include "async_runtime/fundamental/scheduler.h"
 #include "async_runtime/elements/root_element.h"
 #include "async_runtime/elements/key.h"
-#include "async_runtime/widgets/process.h"
 #include "async_runtime/widgets/stateful_widget.h"
-#include "async_runtime/basic/tree.h"
+#include "async_runtime/widgets/process.h"
+#include "async_runtime/widgets/scheduler.h"
 
 struct RootWidget : Widget
 {
@@ -141,8 +141,8 @@ void RootElement::_console()
                 std::stringstream ss;
                 ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
                 this->getStdoutHandler()->write(ss.str())->sync();
-                std::string input;
-                if (std::getline(std::cin, input) && (input == "y" || input == "yes" || this->_consoleStop))
+                std::string confrim;
+                if (std::getline(std::cin, confrim) && (confrim == "y" || confrim == "yes" || this->_consoleStop))
                     break;
                 this->getStdoutHandler()->writeLine("cancel")->sync();
             }

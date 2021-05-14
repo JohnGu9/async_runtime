@@ -14,6 +14,9 @@
  *       ^
  *       |
  *  option
+ * 
+ * 
+ * std::shared_ptr
  *       ^
  *       |
  *  _async_runtime::RefImplent
@@ -23,6 +26,7 @@
  *       ^
  *       |
  *  lateref
+ * 
  * 
  *  std::weak_ptr
  *       ^
@@ -130,9 +134,10 @@ public:
         static const auto hs = std::hash<std::shared_ptr<T>>();
         return hs(static_cast<const std::shared_ptr<T> &>(*this));
     }
-    T *get() const { return std::shared_ptr<T>::get(); }
 
+    T *get() const { return std::shared_ptr<T>::get(); }
     T *operator->() const = delete;
+    T &operator*() const = delete;
     operator bool() const = delete;
 
 protected:
@@ -158,11 +163,6 @@ class option : public _async_runtime::OptionImplement<T>
     friend bool operator!=(const option<X> &object0, const option<Y> &object1);
 
 public:
-    static option<T> null()
-    {
-        static const option<T> instance = nullptr;
-        return instance;
-    }
     option() {}
     option(std::nullptr_t) : _async_runtime::OptionImplement<T>(nullptr) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -181,11 +181,17 @@ public:
 };
 
 template <typename T>
-class _async_runtime::RefImplement : public option<T>
+class _async_runtime::RefImplement : protected std::shared_ptr<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
+    size_t hashCode() const
+    {
+        static const auto hs = std::hash<std::shared_ptr<T>>();
+        return hs(static_cast<const std::shared_ptr<T> &>(*this));
+    }
+
     T &operator*() const
     {
         assert(std::shared_ptr<T>::get() && "lateref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
@@ -198,27 +204,33 @@ public:
         return std::shared_ptr<T>::operator->();
     }
 
+    T *get() const
+    {
+        assert(std::shared_ptr<T>::get() && "lateref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
+        return std::shared_ptr<T>::get();
+    }
+
     std::shared_ptr<T> &operator=(std::nullptr_t) = delete;
     bool operator==(std::nullptr_t) const = delete;
     bool operator!=(std::nullptr_t) const = delete;
+    operator bool() const = delete;
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    operator option<R>() const { return option<T>(*this); }
 
 protected:
     RefImplement() {}
     RefImplement(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement(const std::shared_ptr<R> &other) : option<T>(other) {}
-
-private:
-    bool isNotNull(ref<T> &object) const override { return option<T>::isNotNull(object); }
-    ref<T> isNotNullElse(std::function<ref<T>()> fn) const override { return option<T>::isNotNullElse(fn); }
-    ref<T> assertNotNull() const override { return option<T>::assertNotNull(); }
+    RefImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(other) {}
 };
 
 template <typename T>
 class ref : public _async_runtime::RefImplement<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    template <typename X, typename Y>
+    friend bool operator==(const ref<X> &object0, const ref<Y> &object1);
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -242,10 +254,6 @@ public:
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<T>(other) {}
-
-protected:
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    lateref(const std::shared_ptr<R> &other) : ref<T>(other) {}
 };
 
 template <typename T>
@@ -256,6 +264,8 @@ public:
     weakref(std::nullptr_t) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     weakref(const option<R> &other) : std::weak_ptr<T>(other) {}
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    weakref(const ref<R> &other) : std::weak_ptr<T>(other) {}
 
     std::weak_ptr<T> lock() const = delete;
 
@@ -306,6 +316,11 @@ template <typename T, typename R>
 bool operator==(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T, typename R>
 bool operator!=(const option<T> &object0, const option<R> &object1) { return !(object0 == object1); }
+
+template <typename T, typename R>
+bool operator==(const ref<T> &object0, const ref<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
+template <typename T, typename R>
+bool operator!=(const ref<T> &object0, const ref<R> &object1) { return !(object0 == object1); }
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>

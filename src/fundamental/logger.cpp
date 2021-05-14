@@ -2,6 +2,7 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/logger.h"
 #include "async_runtime/fundamental/file.h"
+#include "async_runtime/widgets/leaf_widget.h"
 
 class _Logger : public StatefulWidget
 {
@@ -14,6 +15,12 @@ public:
     ref<Widget> child;
     option<String> path;
 };
+
+class _InvalidState : public State<StatefulWidget>
+{
+    ref<Widget> build(ref<BuildContext>) override { return LeafWidget::factory(); }
+};
+static finalref<State<StatefulWidget>> _validState = Object::create<_InvalidState>();
 
 class _LoggerState : public State<_Logger>
 {
@@ -43,7 +50,7 @@ public:
 
         void dispose() override
         {
-            Object::detach(_state);
+            _state = _validState;
         }
     };
 
@@ -107,7 +114,7 @@ public:
 
         void dispose() override
         {
-            Object::detach(_state);
+            _state = _validState;
         }
     };
 

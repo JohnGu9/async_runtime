@@ -10,7 +10,6 @@ public:
     static ref<MultiChildWidget> fromChildren(ref<List<ref<Widget>>> children, option<Key> key = nullptr);
     MultiChildWidget(ref<List<ref<Widget>>> children, option<Key> key = nullptr)
         : Widget(key), _children(children) {}
-    MultiChildWidget(option<Key> key = nullptr) : Widget(key), _children(Object::create<List<ref<Widget>>>()) {}
 
     virtual ref<MultiChildWidget> setChildren(ref<List<ref<Widget>>>);
 

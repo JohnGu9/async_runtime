@@ -9,6 +9,7 @@ ref<ThreadPool> Http::Client::sharedThreadPool()
 void Http::Client::dispose()
 {
     _client.stop();
+    super::dispose();
 }
 
 struct _Result
@@ -168,12 +169,12 @@ ref<Future<Res>> Http::Client::options(ref<String> pattern)
 
 class _ThreadPoolTaskQueue : public httplib::TaskQueue
 {
-    ref<ThreadPool> _threadPool;
+    option<ThreadPool> _threadPool;
 
 public:
     _ThreadPoolTaskQueue(ref<ThreadPool> threadPool) : _threadPool(threadPool) {}
-    void enqueue(std::function<void()> fn) override { _threadPool->post(fn); }
-    void shutdown() override { Object::detach(_threadPool); }
+    void enqueue(std::function<void()> fn) override { _threadPool.get()->post(fn); }
+    void shutdown() override { _threadPool = nullptr; }
 };
 
 Http::Server::Server(ref<State<StatefulWidget>> state) : Dispatcher(state)

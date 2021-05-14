@@ -129,8 +129,4 @@ public:
     template <typename R>
     lateref(std::initializer_list<R> &&list)
         : ref<List<T>>(std::move(list)) {}
-
-protected:
-    template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
-    lateref(const std::shared_ptr<R> &other) : ref<List<T>>(other) {}
 };

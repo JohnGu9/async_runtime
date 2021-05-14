@@ -22,7 +22,7 @@ void NamedMultiChildElement::detach()
 {
     for (auto &iter : this->_childrenElements)
         iter.second->detach();
-    Object::detach(this->_childrenElements);
+    this->_childrenElements->clear();
     Element::detach();
 }
 

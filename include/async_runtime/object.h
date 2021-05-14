@@ -36,8 +36,11 @@ public:
 
     template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
+    
     template <typename T0, typename T1>
     static bool identical(const option<T0> &, const option<T1> &);
+    template <typename T0, typename T1>
+    static bool identical(const ref<T0> &, const ref<T1> &);
 
     // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -76,7 +79,7 @@ ref<T> Object::create(_Args &&...__args)
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 void Object::detach(ref<T> &object)
 {
-    option<T>& obj = object;
+    std::shared_ptr<T> &obj = object;
     obj = nullptr;
 }
 
@@ -90,9 +93,15 @@ ref<T> Object::create(_Args &&...__args)
 }
 
 template <typename T0, typename T1>
-bool Object::identical(const option<T0> &object0, const option<T1> &object1)
+bool Object::identical(const option<T0> &lhs, const option<T1> &rhs)
 {
-    return (size_t)(object0.get()) == (size_t)(object1.get());
+    return (size_t)(lhs.get()) == (size_t)(rhs.get());
+}
+
+template <typename T0, typename T1>
+bool Object::identical(const ref<T0> &lhs, const ref<T1> &rhs)
+{
+    return (size_t)(lhs.get()) == (size_t)(rhs.get());
 }
 
 template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>

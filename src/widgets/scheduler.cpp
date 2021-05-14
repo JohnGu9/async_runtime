@@ -1,6 +1,6 @@
 #include "async_runtime/elements/key.h"
 #include "async_runtime/elements/inherited_element.h"
-#include "async_runtime/fundamental/scheduler.h"
+#include "async_runtime/widgets/scheduler.h"
 
 class SchedulerElement : public InheritedElement
 {

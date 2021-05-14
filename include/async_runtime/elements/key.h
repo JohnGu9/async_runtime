@@ -48,7 +48,15 @@ class GlobalKey : public Key
 public:
     inline virtual bool equal(option<Key> other)
     {
-        return Object::identical(self(), other);
+        lateref<Key> key;
+        if (other.isNotNull(key))
+        {
+            return Object::identical(self(), key);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     virtual option<BuildContext> getCurrentContext();
