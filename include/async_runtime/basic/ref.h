@@ -172,10 +172,18 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const std::shared_ptr<R> &other) : _async_runtime::OptionImplement<T>(other){};
 
-    /// ref quick init also available for option (just forward argument to ref)
-    /// so that option no need to specialize template
-    /// but for nullsafety, option quick init need at least one argument (zero arguments will cause null ref init)
-    /// this api should only used inside nullsafety system, not for public usage
+    /**
+     * @brief Construct a new option object
+     * ref quick init also available for option (just forward argument to ref)
+     * so that option no need to specialize template
+     * but for nullsafety, option quick init need at least one argument (zero arguments will cause null ref init)
+     * this api should only used inside nullsafety system, not for public usage
+     *  
+     * @tparam First 
+     * @tparam Args 
+     * @param first 
+     * @param args 
+     */
     template <typename First, typename... Args>
     option(const First &first, Args &&...args);
 };
@@ -304,8 +312,6 @@ public:
         return option<T>(std::weak_ptr<T>::lock());
     }
 };
-
-/// function implement
 
 template <typename T>
 bool operator==(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T> &>(opt) == nullptr; }

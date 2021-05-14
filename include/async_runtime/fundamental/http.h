@@ -55,8 +55,12 @@ protected:
     httplib::Client _client;
 
 public:
-    /// Directly access httplib::Client
-    /// Be careful callback go outside async runtime thread
+
+    /**
+     * @brief 
+     * Directly access httplib::Client
+     * Be careful callback go outside async runtime thread
+     */
     httplib::Client &httplibClient = _client;
 };
 
@@ -87,7 +91,12 @@ protected:
     Thread _listenThread;
 
 public:
-    /// Directly access httplib::Server
-    /// Be careful callback go outside async runtime thread
+
+
+    /**
+     * @brief 
+     * Directly access httplib::Server
+     * Be careful callback go outside async runtime thread
+     */
     httplib::Server &httplibServer = _server;
 };

@@ -7,9 +7,9 @@ Dispatcher::Dispatcher(ref<State<StatefulWidget>> state) : _callbackHandler(getH
 
 void Dispatcher::dispose() { Object::detach(_callbackHandler); }
 
-std::future<void> Dispatcher::run(Function<void()> fn) { return this->_callbackHandler->post(fn.toStdFunction()); }
+std::future<void> Dispatcher::postToMainThread(Function<void()> fn) { return this->_callbackHandler->post(fn.toStdFunction()); }
 
-std::future<void> Dispatcher::microTask(Function<void()> fn) { return this->_callbackHandler->microTask(fn.toStdFunction()); }
+std::future<void> Dispatcher::microTaskToMainThread(Function<void()> fn) { return this->_callbackHandler->microTask(fn.toStdFunction()); }
 
 static option<ThreadPool> _getThreadPool(option<ThreadPool> threadPool, size_t threads)
 {
@@ -38,7 +38,7 @@ std::future<void> AsyncDispatcher::post(Function<void(RunOnMainThread runner)> f
     ref<AsyncDispatcher> self = self();
     return this->_threadPool->post(
         fn.toStdFunction(),
-        [=](Function<void()> job) { self->run(job); });
+        [=](Function<void()> job) { self->postToMainThread(job); });
 }
 
 AsyncDispatcher::~AsyncDispatcher()

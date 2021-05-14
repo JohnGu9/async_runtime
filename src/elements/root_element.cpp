@@ -54,7 +54,11 @@ inline ref<State<StatefulWidget>> RootFundamental::createState()
     return Object::create<_RootFundamentalState>();
 }
 
-/// Root Element
+/**
+ * @brief Construct a new Root Element:: Root Element object
+ * 
+ * @param widget 
+ */
 RootElement::RootElement(ref<Widget> widget)
     : SingleChildElement(Object::create<RootWidget>()),
       _child(Object::create<Scheduler>(Object::create<RootFundamental>(widget, this))), _consoleStop(false) {}

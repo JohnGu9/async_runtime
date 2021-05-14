@@ -13,8 +13,8 @@ public:
     void dispose() override;
 
 protected:
-    virtual std::future<void> run(Function<void()>);
-    virtual std::future<void> microTask(Function<void()>);
+    virtual std::future<void> postToMainThread(Function<void()>);
+    virtual std::future<void> microTaskToMainThread(Function<void()>);
 
     ref<ThreadPool> _callbackHandler; // main thread for callback
 };

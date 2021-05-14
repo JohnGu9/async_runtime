@@ -50,11 +50,10 @@ class AsyncSnapshot;
 #include "async/async_snapshot.h"
 #include "async/async.h"
 
-////////////////////////////
-//
-// Future<void> implement
-//
-////////////////////////////
+/**
+ * @brief Future<void> implement
+ * 
+ */
 
 template <>
 inline ref<Future<void>> Future<void>::than(Function<void()> fn)
@@ -87,11 +86,10 @@ ref<Future<ReturnType>> Future<void>::than(Function<ReturnType()> fn)
     return completer->future;
 }
 
-////////////////////////////
-//
-// Future<T> implement
-//
-////////////////////////////
+/**
+ * @brief Future<T> implement
+ * 
+ */
 
 template <typename T>
 ref<Future<T>> Future<T>::value(ref<ThreadPool> callbackHandler, const T &value)
@@ -179,9 +177,3 @@ ref<Future<T>> Future<T>::timeout(Duration duration, Function<T()> onTimeout)
     });
     return completer->future;
 }
-
-////////////////////////////
-//
-// Completer implement
-//
-////////////////////////////

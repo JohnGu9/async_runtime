@@ -1,7 +1,6 @@
 #include "async_runtime/elements/lead_element.h"
 #include "async_runtime/widgets/leaf_widget.h"
 
-/// Leaf Element
 LeafElement::LeafElement(ref<LeafWidget> widget) : Element(widget) {}
 
 void LeafElement::build() {}

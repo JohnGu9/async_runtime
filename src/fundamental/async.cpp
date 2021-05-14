@@ -5,11 +5,10 @@
 #include <processthreadsapi.h>
 #endif
 
-////////////////////////////
-//
-// ThreadPool implement
-//
-////////////////////////////
+/**
+ * @brief ThreadPool implement
+ * 
+ */
 
 static ref<String> emptyString = "";
 
@@ -125,7 +124,11 @@ bool ThreadPool::isActive()
     return !this->_stop;
 }
 
-// the destructor joins all threads
+/**
+ * @brief ThreadPool destructor 
+ * joins all threads
+ * 
+ */
 void ThreadPool::dispose()
 {
     {
@@ -151,11 +154,10 @@ void ThreadPool::unregisterName()
     ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
 }
 
-////////////////////////////
-//
-// AutoReleaseThreadPool implement
-//
-////////////////////////////
+/**
+ * @brief AutoReleaseThreadPool implement
+ * 
+ */
 
 ref<AutoReleaseThreadPool> AutoReleaseThreadPool::factory(size_t threads, option<String> name)
 {
@@ -208,11 +210,10 @@ std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
     return [=] { self->ThreadPool::workerBuilder(threadId)(); };
 }
 
-////////////////////////////
-//
-// Future<std::nullptr_t> implement
-//
-////////////////////////////
+/**
+ * @brief Future<std::nullptr_t> implement
+ * 
+ */
 
 void Future<std::nullptr_t>::sync()
 {
@@ -232,11 +233,10 @@ void Future<std::nullptr_t>::sync(Duration timeout)
     condition.wait(lock);
 }
 
-////////////////////////////
-//
-// Future<void> implement
-//
-////////////////////////////
+/**
+ * @brief Future<void> implement
+ * 
+ */
 
 ref<Future<void>> Future<void>::race(ref<State<StatefulWidget>> state, ref<Set<ref<Future<>>>> set)
 {
@@ -338,11 +338,10 @@ ref<Future<void>> Future<void>::timeout(Duration duration, Function<void()> onTi
     return completer->future;
 }
 
-////////////////////////////
-//
-// AsyncSnapshot implement
-//
-////////////////////////////
+/**
+ * @brief AsyncSnapshot implement
+ * 
+ */
 
 const List<AsyncSnapshot<>::ConnectionState::Value>
     AsyncSnapshot<>::ConnectionState::values = {

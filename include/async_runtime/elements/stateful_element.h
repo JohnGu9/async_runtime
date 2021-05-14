@@ -1,7 +1,6 @@
 #pragma once
 
 #include "single_child_element.h"
-#include "../basic/observable.h"
 #include "../widgets/state.h"
 
 class StatefulElement : public SingleChildElement

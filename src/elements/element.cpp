@@ -2,7 +2,6 @@
 #include "async_runtime/elements/key.h"
 #include "async_runtime/widgets/widget.h"
 
-/// Element
 Element::Element(ref<Widget> widget) : BuildContext(widget) {}
 
 void Element::attach()
@@ -14,14 +13,13 @@ void Element::attach()
         key->setElement(self());
 }
 
-
 void Element::detach()
 {
-    static finalref<Map<Object::RuntimeType, lateref<Inheritance>>> _empty = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
-    this->_inheritances = _empty; // release map reference
     lateref<Key> key;
     if (this->widget->key.isNotNull(key))
         key->dispose();
+    static finalref<Map<Object::RuntimeType, lateref<Inheritance>>> _empty = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
+    this->_inheritances = _empty; // release map reference
 }
 
 void Element::update(ref<Widget> newWidget)

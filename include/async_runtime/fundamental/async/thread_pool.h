@@ -9,7 +9,6 @@
 
 #include "../async.h"
 #include "../disposable.h"
-#include "../../basic/string.h"
 #include "thread.h"
 
 /**

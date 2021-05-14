@@ -26,7 +26,6 @@ ref<String> StatefulElement::_LifeCycle::toString(StatefulElement::_LifeCycle::V
     }
 }
 
-/// Stateful Element
 StatefulElement::StatefulElement(ref<StatefulWidget> widget)
     : SingleChildElement(widget),
       _statefulWidget(widget),

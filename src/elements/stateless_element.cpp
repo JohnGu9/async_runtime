@@ -1,7 +1,6 @@
 #include "async_runtime/elements/stateless_element.h"
 #include "async_runtime/widgets/stateless_widget.h"
 
-/// Stateless Element
 StatelessElement::StatelessElement(ref<StatelessWidget> widget) : SingleChildElement(widget), _statelessWidget(widget) {}
 
 void StatelessElement::attach()

@@ -1,9 +1,13 @@
-/// Duration work for time duration in async runtime
-/// Mostly for Timer
-///
-/// Duration is not Object that not a part of nullsafety system
-/// Do not use ref<Duration> or option <Duration>
-///
+/**
+ * @file duration.h
+ * @brief 
+ * Duration work for time duration in async runtime
+ * Mostly for Timer
+ * 
+ * Duration is not Object that not a part of nullsafety system
+ * Do not use ref<Duration> or option <Duration>
+ * 
+ */
 
 #pragma once
 
