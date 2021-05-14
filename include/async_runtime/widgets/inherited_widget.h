@@ -11,7 +11,7 @@ public:
     ref<Element> createElement() override;
 
 protected:
-    ref<Widget> _child;
+    finalref<Widget> _child;
 };
 
 #ifndef NDEBUG

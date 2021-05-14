@@ -67,6 +67,7 @@
 #include <assert.h>
 
 #define finalref const ref
+#define finaloption const option
 #define _ASYNC_RUNTIME_FRIEND_FAMILY                \
     template <typename R>                           \
     friend class ::_async_runtime::OptionImplement; \

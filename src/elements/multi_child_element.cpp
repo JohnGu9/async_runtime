@@ -8,7 +8,7 @@ MultiChildElement::MultiChildElement(ref<MultiChildWidget> widget)
 void MultiChildElement::attach()
 {
     Element::attach();
-    ref<List<ref<Widget>>> &children = this->_multiChildWidget->_children;
+    finalref<List<ref<Widget>>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children->size(); i++)
     {
         ref<Widget> &widget = children[i];
@@ -21,7 +21,7 @@ void MultiChildElement::attach()
 
 void MultiChildElement::build()
 {
-    ref<List<ref<Widget>>> &children = this->_multiChildWidget->_children;
+    finalref<List<ref<Widget>>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children->size(); i++)
     {
         ref<Widget> &widget = children[i];
@@ -29,7 +29,7 @@ void MultiChildElement::build()
         {
             ref<Widget> &oldWidget = _childrenElements[i]->widget;
             if (Object::identical(widget, oldWidget))
-                return;
+                continue;
             else if (widget->canUpdate(oldWidget))
                 this->_childrenElements[i]->update(widget);
             else
@@ -72,7 +72,7 @@ void MultiChildElement::notify(ref<Widget> newWidget)
     Element::notify(newWidget);
     this->_multiChildWidget = newWidget->covariant<MultiChildWidget>();
 
-    ref<List<ref<Widget>>> &children = this->_multiChildWidget->_children;
+    finalref<List<ref<Widget>>> &children = this->_multiChildWidget->_children;
     for (size_t i = 0; i < children->size(); i++)
     {
         ref<Widget> &widget = children[i];

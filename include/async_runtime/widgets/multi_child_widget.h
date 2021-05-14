@@ -11,9 +11,7 @@ public:
     MultiChildWidget(ref<List<ref<Widget>>> children, option<Key> key = nullptr)
         : Widget(key), _children(children) {}
 
-    virtual ref<MultiChildWidget> setChildren(ref<List<ref<Widget>>>);
-
 protected:
-    ref<List<ref<Widget>>> _children;
+    finalref<List<ref<Widget>>> _children;
     ref<Element> createElement() override;
 };

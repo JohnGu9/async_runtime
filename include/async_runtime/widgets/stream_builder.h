@@ -13,7 +13,7 @@ public:
         : StatefulWidget(key),
           stream(stream), builder(builder) {}
 
-    ref<Stream<T>> stream;
+    finalref<Stream<T>> stream;
     Builder builder;
     ref<State<StatefulWidget>> createState() override;
 };

@@ -11,8 +11,8 @@ public:
     static Handler of(ref<BuildContext> context);
 
     Scheduler(ref<Widget> child, option<String> name = nullptr, option<Key> key = nullptr);
-    ref<Widget> child;
-    option<String> name;
+    finalref<Widget> child;
+    finaloption<String> name;
     ref<State<StatefulWidget>> createState() override;
 };
 

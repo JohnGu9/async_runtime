@@ -58,13 +58,12 @@ public:
         : AsyncSnapshot<std::nullptr_t>(ConnectionState::none),
           _hasData(false) {}
     AsyncSnapshot(T &&data)
-        : _data(data), data(_data),
-          AsyncSnapshot<std::nullptr_t>(ConnectionState::active),
+        : AsyncSnapshot<std::nullptr_t>(ConnectionState::active),
+          _data(data), data(_data),
           _hasData(true) {}
     AsyncSnapshot(ref<Future<T>> future)
-        : data(future->_data),
-          AsyncSnapshot<std::nullptr_t>(future->_completed ? ConnectionState::done : ConnectionState::active),
-          _hasData(future->_completed) {}
+        : AsyncSnapshot<std::nullptr_t>(future->_completed ? ConnectionState::done : ConnectionState::active),
+          _hasData(future->_completed), data(future->_data) {}
 
 protected:
     option<Future<T>> _future;

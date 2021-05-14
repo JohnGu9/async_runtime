@@ -11,7 +11,7 @@ public:
                   Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)> builder)
         : future(future), builder(builder) {}
 
-    ref<Future<T>> future;
+    finalref<Future<T>> future;
     Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)> builder;
 
     ref<State<>> createState() override;

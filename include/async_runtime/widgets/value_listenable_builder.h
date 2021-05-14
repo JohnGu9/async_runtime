@@ -15,13 +15,13 @@ public:
                                builder,
                            option<Widget> child = nullptr,
                            option<Key> key = nullptr)
-        : builder(builder), child(child), valueListenable(valueListenable), StatefulWidget(key)
+        : StatefulWidget(key), builder(builder), child(child), valueListenable(valueListenable)
     {
     }
 
     Function<ref<Widget>(ref<BuildContext>, T, option<Widget>)> builder;
-    option<Widget> child;
-    ref<ValueListenable<T>> valueListenable;
+    finaloption<Widget> child;
+    finalref<ValueListenable<T>> valueListenable;
     ref<State<StatefulWidget>> createState() override;
 
 protected:

@@ -7,10 +7,10 @@ NamedMultiChildElement::NamedMultiChildElement(ref<NamedMultiChildWidget> widget
 void NamedMultiChildElement::attach()
 {
     Element::attach();
-    ref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
+    finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto &iter : children)
     {
-        ref<Widget> &widget = iter.second;
+        finalref<Widget> &widget = iter.second;
         ref<Element> element = widget->createElement();
         this->_childrenElements[iter.first] = element;
         element->parent = self();
@@ -28,7 +28,7 @@ void NamedMultiChildElement::detach()
 
 void NamedMultiChildElement::build()
 {
-    ref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
+    finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
@@ -45,7 +45,7 @@ void NamedMultiChildElement::build()
     for (auto &iter : children)
     {
         const ref<String> &key = iter.first;
-        ref<Widget> &widget = iter.second;
+        finalref<Widget> &widget = iter.second;
         auto elementIterator = this->_childrenElements->find(key);
 
         if (elementIterator == this->_childrenElements->end())
@@ -86,7 +86,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     Element::notify(newWidget);
     this->_namedMultiChildWidget = newWidget->covariant<NamedMultiChildWidget>();
 
-    ref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
+    finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
         if (children->find(iter->first) == children->end())
@@ -103,7 +103,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     for (auto &iter : children)
     {
         const ref<String> &key = iter.first;
-        ref<Widget> &widget = iter.second;
+        finalref<Widget> &widget = iter.second;
         auto elementIterator = this->_childrenElements->find(key);
 
         if (elementIterator == this->_childrenElements->end())

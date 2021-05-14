@@ -11,8 +11,3 @@ ref<Element> MultiChildWidget::createElement()
     return Object::create<MultiChildElement>(self());
 }
 
-ref<MultiChildWidget> MultiChildWidget::setChildren(ref<List<ref<Widget>>> children)
-{
-    this->_children = children;
-    return self();
-}

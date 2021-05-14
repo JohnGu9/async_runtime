@@ -17,6 +17,6 @@ public:
     ref<Element> createElement() override;
 
 protected:
-    ref<Widget> _child;
+    finalref<Widget> _child;
     Function<bool(ref<Notification> notification)> _onNotification;
 };

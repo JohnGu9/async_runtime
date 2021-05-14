@@ -12,6 +12,6 @@ public:
         : Widget(key), _children(children) {}
 
 protected:
-    ref<Map<ref<String>, lateref<Widget>>> _children;
+    finalref<Map<ref<String>, lateref<Widget>>> _children;
     ref<Element> createElement() override;
 };
