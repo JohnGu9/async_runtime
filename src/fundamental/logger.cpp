@@ -18,9 +18,14 @@ public:
 
 class _InvalidState : public State<StatefulWidget>
 {
-    ref<Widget> build(ref<BuildContext>) override { return LeafWidget::factory(); }
+    ref<Widget> build(ref<BuildContext>) final { throw std::runtime_error("AsyncRuntime Internal Error"); }
 };
-static finalref<State<StatefulWidget>> _validState = Object::create<_InvalidState>();
+
+static inline ref<State<StatefulWidget>> _invalidState()
+{
+    static finalref<State<StatefulWidget>> singleton = Object::create<_InvalidState>();
+    return singleton;
+}
 
 class _LoggerState : public State<_Logger>
 {
@@ -50,7 +55,7 @@ public:
 
         void dispose() override
         {
-            _state = _validState;
+            _state = _invalidState();
         }
     };
 
@@ -114,7 +119,7 @@ public:
 
         void dispose() override
         {
-            _state = _validState;
+            _state = _invalidState();
         }
     };
 

@@ -15,18 +15,18 @@ void Notification::dispatch(ref<BuildContext> context)
     });
 }
 
-NotificationListener::NotificationListener(
+NotificationListener<Notification>::NotificationListener(
     ref<Widget> child,
     Function<bool(ref<Notification> notification)> onNotification,
     option<Key> key)
     : StatelessWidget(key), _child(child), _onNotification(onNotification) {}
 
-ref<Widget> NotificationListener::build(ref<BuildContext> context)
+ref<Widget> NotificationListener<Notification>::build(ref<BuildContext> context)
 {
     return this->_child;
 }
 
-ref<Element> NotificationListener::createElement()
+ref<Element> NotificationListener<Notification>::createElement()
 {
     return Object::create<NotificationListenerElement>(self());
 }

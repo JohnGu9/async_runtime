@@ -1,13 +1,13 @@
 #pragma once
 
 #include "stateless_element.h"
+#include "../widgets/notification_listener.h"
 
-class NotificationListener;
 class NotificationListenerElement : public StatelessElement
 {
 public:
-    NotificationListenerElement(ref<NotificationListener> child);
-    ref<NotificationListener> _notificationListenerWidget;
+    NotificationListenerElement(ref<NotificationListener<Notification>> child);
+    ref<NotificationListener<Notification>> _notificationListenerWidget;
 
     void detach() override;
     void update(ref<Widget> newWidget) override;

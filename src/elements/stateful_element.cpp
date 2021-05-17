@@ -1,6 +1,20 @@
 #include "async_runtime/widgets/stateful_widget.h"
 #include "async_runtime/elements/stateful_element.h"
 
+class _InvalidWidget : public StatefulWidget
+{
+public:
+    _InvalidWidget() : StatefulWidget(nullptr) {}
+    ref<State<StatefulWidget>> createState() final;
+};
+
+class _InvalidState : public State<_InvalidWidget>
+{
+    ref<Widget> build(ref<BuildContext>) final { throw std::runtime_error("AsyncRuntime Internal Error"); }
+};
+
+inline ref<State<StatefulWidget>> _InvalidWidget::createState() { return Object::create<_InvalidState>(); }
+
 const List<StatefulElement::_LifeCycle::Value>
     StatefulElement::_LifeCycle::values = {
         StatefulElement::_LifeCycle::uninitialized,
@@ -56,8 +70,11 @@ void StatefulElement::detach()
     this->detachElement();
     this->_state->dispose();
     this->_state->_mounted = false;
-    Object::detach(this->_state->_context);
-    Object::detach(this->_state->_element);
+
+    // release ref avoid ref each other
+    static finalref<StatefulElement> _invalidElement = Object::create<StatefulElement>(Object::create<_InvalidWidget>());
+    this->_state->_context = _invalidElement;
+    this->_state->_element = _invalidElement;
     Element::detach();
 }
 
