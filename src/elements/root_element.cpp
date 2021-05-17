@@ -206,7 +206,7 @@ void RootElement::onCommand(const ref<String> &in)
             return false;
         });
         ref<Tree> tree = Object::create<Tree>();
-        Function<void(Element *, ref<Tree>)> buildTree;
+        lateref<Fn<void(Element *, ref<Tree>)>> buildTree;
         buildTree =
             [&](Element *currentElement, ref<Tree> currentTree) {
                 std::stringstream ss;

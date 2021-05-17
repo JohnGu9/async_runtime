@@ -284,23 +284,25 @@ ref<Future<void>> Future<void>::value(ref<State<StatefulWidget>> state)
 }
 
 #include "async_runtime/fundamental/timer.h"
-ref<Future<void>> Future<void>::delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::delay(ref<ThreadPool> callbackHandler, Duration duration, option<Fn<void()>> onTimeout)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
     ref<Timer> timer = Timer::delay(callbackHandler, duration, [completer, onTimeout] {
-        if (onTimeout != nullptr)
-            onTimeout();
+        lateref<Fn<void()>> _onTimeout;
+        if (onTimeout.isNotNull(_onTimeout))
+            _onTimeout();
         completer->complete();
     });
     return completer->future;
 }
 
-ref<Future<void>> Future<void>::delay(ref<State<StatefulWidget>> state, Duration duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::delay(ref<State<StatefulWidget>> state, Duration duration, option<Fn<void()>> onTimeout)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(state);
     ref<Timer> timer = Timer::delay(state, duration, [completer, onTimeout] {
-        if (onTimeout != nullptr)
-            onTimeout();
+        lateref<Fn<void()>> _onTimeout;
+        if (onTimeout.isNotNull(_onTimeout))
+            _onTimeout();
         completer->complete();
     });
     return completer->future;
@@ -318,7 +320,7 @@ ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
     return self;
 }
 
-ref<Future<void>> Future<void>::timeout(Duration duration, Function<void()> onTimeout)
+ref<Future<void>> Future<void>::timeout(Duration duration, option<Fn<void()>> onTimeout)
 {
     ref<Future<void>> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
@@ -326,8 +328,9 @@ ref<Future<void>> Future<void>::timeout(Duration duration, Function<void()> onTi
         ->than([=] {
             if (completer->_isCompleted == false)
             {
-                if (onTimeout != nullptr)
-                    onTimeout();
+                lateref<Fn<void()>> _onTimeout;
+                if (onTimeout.isNotNull(_onTimeout))
+                    _onTimeout();
                 completer->completeSync();
             }
         });

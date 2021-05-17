@@ -18,9 +18,9 @@ void Dispatcher::dispose()
     _callbackHandler = invalidThreadPool;
 }
 
-std::future<void> Dispatcher::postToMainThread(Function<void()> fn) { return this->_callbackHandler->post(fn.toStdFunction()); }
+std::future<void> Dispatcher::postToMainThread(Function<void()> fn) { return this->_callbackHandler->post(fn->toStdFunction()); }
 
-std::future<void> Dispatcher::microTaskToMainThread(Function<void()> fn) { return this->_callbackHandler->microTask(fn.toStdFunction()); }
+std::future<void> Dispatcher::microTaskToMainThread(Function<void()> fn) { return this->_callbackHandler->microTask(fn->toStdFunction()); }
 
 static option<ThreadPool> _getThreadPool(option<ThreadPool> threadPool, size_t threads)
 {
@@ -42,13 +42,13 @@ AsyncDispatcher::AsyncDispatcher(ref<State<StatefulWidget>> state, option<Thread
     _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
 }
 
-std::future<void> AsyncDispatcher::post(Function<void()> fn) { return this->_threadPool->post(fn.toStdFunction()); }
+std::future<void> AsyncDispatcher::post(Function<void()> fn) { return this->_threadPool->post(fn->toStdFunction()); }
 
 std::future<void> AsyncDispatcher::post(Function<void(RunOnMainThread runner)> fn)
 {
     ref<AsyncDispatcher> self = self();
     return this->_threadPool->post(
-        fn.toStdFunction(),
+        fn->toStdFunction(),
         [=](Function<void()> job) { self->postToMainThread(job); });
 }
 

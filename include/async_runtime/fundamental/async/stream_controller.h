@@ -27,8 +27,9 @@ public:
     virtual void sink()
     {
         assert(!_stream->_isClosed);
-        if (_stream->_listener)
-            _stream->_listener();
+        lateref<Fn<void()>> listener;
+        if (_stream->_listener.isNotNull(listener))
+            listener();
         else
             _stream->_sinkCounter++;
     }
@@ -56,8 +57,9 @@ public:
     virtual void sink(const T &value)
     {
         assert(!_stream->_isClosed);
-        if (_stream->_listener)
-            _stream->_listener(value);
+        lateref<Fn<void(T)>> listener;
+        if (_stream->_listener.isNotNull(listener))
+            listener(value);
         else
             _stream->_cache->emplace_back(value);
     }
@@ -65,8 +67,9 @@ public:
     virtual void sink(T &&value)
     {
         assert(!_stream->_isClosed);
-        if (_stream->_listener)
-            _stream->_listener(std::move(value));
+        lateref<Fn<void(T)>> listener;
+        if (_stream->_listener.isNotNull(listener))
+            listener(std::move(value));
         else
             _stream->_cache->emplace_back(std::move(value));
     }

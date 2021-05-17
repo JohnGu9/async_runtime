@@ -12,4 +12,5 @@ protected:
     void attachElement(ref<Element>);
     void reattachElement(ref<Element>);
     void detachElement();
+    class InvalidWidget;
 };

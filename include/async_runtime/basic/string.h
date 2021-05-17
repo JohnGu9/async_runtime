@@ -17,6 +17,7 @@ class ref<String>;
  * String is Object. 
  * Nest it into ref<String> or option<String>. 
  * ref<String> and option<String> also work with Map and Set like std::string. 
+ * String is immutable, the c str is fixed since they were born. 
  * 
  * @example
  * ref<String> string = "This is a non-null String object"; // directly init ref<String> from const char* const
@@ -130,6 +131,9 @@ class ref<String> : public _async_runtime::RefImplement<String>
     friend std::istream &operator>>(std::istream &os, ref<String> &str);
     friend ref<String> getline(std::istream &is);
 
+    using const_iterator = String::const_iterator;
+    using const_reverse_iterator = String::const_reverse_iterator;
+
 protected:
     ref() {}
     ref(const std::shared_ptr<String> &other) : _async_runtime::RefImplement<String>(other) {}
@@ -171,7 +175,17 @@ public:
         return ss.str();
     }
 
-    const char &operator[](size_t index) { return (*(this->get()))[index]; }
+    const char &operator[](size_t index) const { return (*(this->get()))[index]; }
+
+    const_iterator begin() const
+    {
+        return (*this)->begin();
+    }
+
+    const_iterator end() const
+    {
+        return (*this)->end();
+    }
 };
 
 class String::View : public String
@@ -298,8 +312,8 @@ void String::_unwrapPack(size_t &lastIndex, std::stringstream &ss, const First &
     _unwrapPack(lastIndex, ss, rest...);
 }
 
-template<>
-inline ref<String> String::format() 
+template <>
+inline ref<String> String::format()
 {
     return self();
 }

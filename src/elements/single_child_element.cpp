@@ -2,10 +2,14 @@
 #include "async_runtime/widgets/widget.h"
 #include "async_runtime/widgets/stateless_widget.h"
 
-class _InvalidWidget : public StatelessWidget
+class SingleChildElement::InvalidWidget : public StatelessWidget
 {
 public:
-    ref<Widget> build(ref<BuildContext>) final { throw std::runtime_error("AsyncRuntime Internal Error"); }
+    ref<Widget> build(ref<BuildContext>) final
+    {
+        assert(false);
+        throw std::runtime_error("AsyncRuntime Internal Error");
+    }
     ref<Element> createElement() final { return StatelessWidget::createElement(); }
 };
 
@@ -30,6 +34,6 @@ void SingleChildElement::detachElement()
 {
     this->_childElement->detach();
 
-    static finalref<Element> _invalidElement = Object::create<_InvalidWidget>()->createElement();
+    static finalref<Element> _invalidElement = Object::create<SingleChildElement::InvalidWidget>()->createElement();
     this->_childElement = _invalidElement;
 }

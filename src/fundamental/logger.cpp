@@ -16,19 +16,19 @@ public:
     option<String> path;
 };
 
-class _InvalidState : public State<StatefulWidget>
-{
-    ref<Widget> build(ref<BuildContext>) final { throw std::runtime_error("AsyncRuntime Internal Error"); }
-};
-
-static inline ref<State<StatefulWidget>> _invalidState()
-{
-    static finalref<State<StatefulWidget>> singleton = Object::create<_InvalidState>();
-    return singleton;
-}
-
 class _LoggerState : public State<_Logger>
 {
+    class _InvalidState : public State<StatefulWidget>
+    {
+        ref<Widget> build(ref<BuildContext>) final { throw std::runtime_error("AsyncRuntime Internal Error"); }
+    };
+
+    static ref<State<StatefulWidget>> _invalidState()
+    {
+        static finalref<State<StatefulWidget>> singleton = Object::create<_InvalidState>();
+        return singleton;
+    }
+
 public:
     class _StdoutLoggerHandler : public LoggerHandler
     {

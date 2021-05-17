@@ -40,7 +40,7 @@ ref<Future<bool>> File::exists()
 {
     ref<File> self = self();
     ref<Completer<bool>> completer = Object::create<Completer<bool>>(_callbackHandler);
-    this->post([=] { completer->complete(existsSync()); });
+    this->post([this, self, completer] { completer->complete(existsSync()); });
     return completer->future;
 }
 
@@ -48,7 +48,7 @@ ref<Future<int>> File::remove()
 {
     ref<File> self = self();
     ref<Completer<int>> completer = Object::create<Completer<int>>(_callbackHandler);
-    this->post([=] { completer->complete(removeSync()); });
+    this->post([this, self, completer] { completer->complete(removeSync()); });
     return completer->future;
 }
 
@@ -56,7 +56,7 @@ ref<Future<long long>> File::size()
 {
     ref<File> self = self();
     ref<Completer<long long>> completer = Object::create<Completer<long long>>(_callbackHandler);
-    this->post([=] { completer->complete(sizeSync()); });
+    this->post([this, self, completer] { completer->complete(sizeSync()); });
     return completer->future;
 }
 
@@ -89,7 +89,7 @@ ref<Future<void>> File::append(ref<String> str)
 {
     ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_callbackHandler);
-    this->post([=] {
+    this->post([this, self, completer, str] {
         {
             option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
             std::ofstream file(_path->toStdString(), std::ios::app);
@@ -105,7 +105,7 @@ ref<Future<void>> File::overwrite(ref<String> str)
 {
     ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_callbackHandler);
-    this->post([=] {
+    this->post([this, self, completer, str] {
         {
             option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
             std::ofstream file(_path->toStdString(), std::ofstream::trunc);
@@ -121,7 +121,7 @@ ref<Future<void>> File::clear()
 {
     ref<File> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(_callbackHandler);
-    this->post([=] {
+    this->post([this, self, completer] {
         {
             option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
             std::ofstream file(_path->toStdString(), std::ofstream::trunc);
@@ -136,7 +136,7 @@ ref<Future<ref<String>>> File::read()
 {
     ref<File> self = self();
     ref<Completer<ref<String>>> completer = Object::create<Completer<ref<String>>>(_callbackHandler);
-    this->post([=] {
+    this->post([this, self, completer] {
         std::string str;
         {
             option<Lock::SharedLock> readLock = _lock->sharedLock();
@@ -156,7 +156,7 @@ ref<Stream<ref<String>>> File::readAsStream(size_t segmentationLength)
 {
     ref<File> self = self();
     ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_callbackHandler);
-    this->post([=] {
+    this->post([this, self, controller, segmentationLength] {
         {
             option<Lock::SharedLock> readLock = _lock->sharedLock();
             std::ifstream file(_path->toStdString(), std::ios::in | std::ios::ate);
@@ -181,7 +181,7 @@ ref<Stream<ref<String>>> File::readWordAsStream()
 {
     ref<File> self = self();
     ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_callbackHandler);
-    this->post([=] {
+    this->post([this, self, controller] {
         std::string str;
         {
             option<Lock::SharedLock> readLock = _lock->sharedLock();
@@ -199,7 +199,7 @@ ref<Stream<ref<String>>> File::readLineAsStream()
 {
     ref<File> self = self();
     ref<AsyncStreamController<ref<String>>> controller = Object::create<AsyncStreamController<ref<String>>>(_callbackHandler);
-    this->post([=] {
+    this->post([this, self, controller] {
         {
             option<Lock::SharedLock> readLock = _lock->sharedLock();
             std::ifstream file(_path->toStdString());

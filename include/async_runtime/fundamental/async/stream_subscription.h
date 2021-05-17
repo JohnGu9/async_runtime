@@ -16,9 +16,8 @@ public:
     StreamSubscription(Function<void()> unsubscribe) : _unsubscribe(unsubscribe) {}
     void unsubscribe() override
     {
-        assert(_unsubscribe != nullptr && "StreamSubscription already unsubscribe. Don't call twice. ");
         _unsubscribe();
-        _unsubscribe = nullptr;
+        _unsubscribe = [] {};
     }
     Function<void()> _unsubscribe;
 };

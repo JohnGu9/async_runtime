@@ -8,20 +8,15 @@ class ValueListenableBuilder : public StatefulWidget
 {
 public:
     ValueListenableBuilder(ref<ValueListenable<T>> valueListenable,
-                           Function<ref<Widget>(
-                               ref<BuildContext> context,
-                               T value,
-                               option<Widget> child)>
-                               builder,
+                           Function<ref<Widget>(ref<BuildContext> context, T value, option<Widget> child)> builder,
                            option<Widget> child = nullptr,
                            option<Key> key = nullptr)
-        : StatefulWidget(key), builder(builder), child(child), valueListenable(valueListenable)
+        : StatefulWidget(key), valueListenable(valueListenable), builder(builder), child(child)
     {
     }
-
+    finalref<ValueListenable<T>> valueListenable;
     Function<ref<Widget>(ref<BuildContext>, T, option<Widget>)> builder;
     finaloption<Widget> child;
-    finalref<ValueListenable<T>> valueListenable;
     ref<State<StatefulWidget>> createState() override;
 
 protected:
@@ -35,7 +30,7 @@ public:
     using super = State<ValueListenableBuilder<T>>;
     lateref<ValueListenable<T>> _valueListenable;
 
-    Function<void()> _listener = [this] { this->setState([this] {}); };
+    Function<void()> _listener = [this] { this->setState([] {}); };
 
     void initState() override
     {

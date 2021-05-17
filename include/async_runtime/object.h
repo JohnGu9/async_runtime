@@ -6,7 +6,6 @@
 
 #include "basic/io.h"
 #include "basic/ref.h"
-#include "basic/function.h"
 
 #define self() Object::cast<>(this)
 
@@ -133,4 +132,5 @@ ref<T> Object::covariant()
         throw std::runtime_error(std::string("Invail type covariant from [") + typeid(*this).name() + "] to [" + typeid(T).name() + "]");
 }
 
+#include "basic/function.h"
 #include "basic/string.h"

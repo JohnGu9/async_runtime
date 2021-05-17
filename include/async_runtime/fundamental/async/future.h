@@ -41,8 +41,8 @@ public:
     static ref<Future<void>> value(ref<ThreadPool> callbackHandler);
     static ref<Future<void>> value(ref<State<StatefulWidget>> state);
 
-    static ref<Future<void>> delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> onTimeout = nullptr);
-    static ref<Future<void>> delay(ref<State<StatefulWidget>> state, Duration duration, Function<void()> onTimeout = nullptr);
+    static ref<Future<void>> delay(ref<ThreadPool> callbackHandler, Duration duration, option<Fn<void()>> onTimeout = nullptr);
+    static ref<Future<void>> delay(ref<State<StatefulWidget>> state, Duration duration, option<Fn<void()>> onTimeout = nullptr);
 
     Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList(Object::create<List<Function<void()>>>()) {}
 
@@ -50,7 +50,7 @@ public:
     ref<Future<ReturnType>> than(Function<ReturnType()>);
     ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
-    virtual ref<Future<void>> timeout(Duration, Function<void()> onTimeout = nullptr);
+    virtual ref<Future<void>> timeout(Duration, option<Fn<void()>> onTimeout = nullptr);
 
 protected:
     ref<List<Function<void()>>> _callbackList;

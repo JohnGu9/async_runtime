@@ -3,10 +3,10 @@
 #include <functional>
 #include <type_traits>
 #include <memory>
-
+#include "../object.h"
 /**
  * @brief 
- * Function<> class that do not need async_runtime nullsafety system
+ * 
  * 
  * @tparam T 
  * the function format
@@ -16,60 +16,66 @@
  * 
  */
 template <typename T = std::nullptr_t>
-class Function;
+class Fn;
 
 template <>
-class Function<std::nullptr_t>
+class Fn<std::nullptr_t> : public Object
 {
-public:
-    virtual operator bool() { return false; }
 };
 
 template <typename ReturnType, class... Args>
-class Function<ReturnType(Args...)> : public Function<std::nullptr_t>
+class Fn<ReturnType(Args...)> : public Fn<std::nullptr_t>, protected std::function<ReturnType(Args...)>
 {
     static_assert(std::is_constructible<std::function<ReturnType(Args...)>, ReturnType(Args...)>::value, "Can't construct object in function");
 
-    template <typename T>
-    friend struct std::hash;
-
 public:
-    Function() {}
-    Function(std::nullptr_t) {}
-    Function(const Function &other) : _fn(other._fn) {}
+    Fn(std::nullptr_t) = delete;
     template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
-    Function(Lambda lambda) : _fn(std::make_shared<std::function<ReturnType(Args...)>>(lambda)) {}
-    virtual ~Function() {}
+    Fn(Lambda lambda) : std::function<ReturnType(Args...)>(lambda) {}
 
-    Function &operator=(std::nullptr_t)
-    {
-        this->_fn = nullptr;
-        return *this;
-    }
-
-    ReturnType operator()(Args... args) const { return _fn->operator()(std::forward<Args>(args)...); }
-
-    bool operator==(const Function &other) const { return _fn == other._fn; }
-    bool operator!=(const Function &other) const { return _fn != other._fn; }
-    bool operator==(std::nullptr_t) const { return _fn == nullptr; }
-    bool operator!=(std::nullptr_t) const { return _fn != nullptr; }
-    operator bool() override { return _fn != nullptr; }
-
-    const std::function<ReturnType(Args...)> &toStdFunction() const { return *(this->_fn); }
-
-protected:
-    std::shared_ptr<std::function<ReturnType(Args...)>> _fn;
+    ReturnType operator()(Args... args) const { return std::function<ReturnType(Args...)>::operator()(std::forward<Args>(args)...); }
+    const std::function<ReturnType(Args...)>& toStdFunction()const{return *this;}
 };
 
-namespace std
+template <typename ReturnType, class... Args>
+class ref<Fn<ReturnType(Args...)>> : public _async_runtime::RefImplement<Fn<ReturnType(Args...)>>
 {
-    template <typename ReturnType, class... Args>
-    struct hash<Function<ReturnType(Args...)>>
-    {
-        std::size_t operator()(const Function<ReturnType(Args...)> &other) const
-        {
-            static const auto hs = hash<std::shared_ptr<std::function<ReturnType(Args...)>>>();
-            return hs(other._fn);
-        }
-    };
-} // namespace std
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
+    template <typename X, typename Y>
+    friend bool operator==(const ref<X> &object0, const ref<Y> &object1);
+
+public:
+    ref(std::nullptr_t) = delete;
+
+    template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
+    ref(const ref<R> &other) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(other) {}
+
+    template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
+    ref(Lambda lambda) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(std::make_shared<Fn<ReturnType(Args...)>>(lambda)) {}
+
+    ReturnType operator()(Args... args) const { return (*this)->operator()(std::forward<Args>(args)...); }
+
+protected:
+    ref() {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
+    ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(other) {}
+};
+
+template <typename T>
+using Function = ref<Fn<T>>;
+
+template <typename ReturnType, class... Args>
+class lateref<Fn<ReturnType(Args...)>> : public ref<Fn<ReturnType(Args...)>>
+{
+public:
+    explicit lateref() {}
+
+    lateref(std::nullptr_t) = delete;
+
+    template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
+    lateref(const ref<R> &other) : ref<Fn<ReturnType(Args...)>>(other) {}
+
+    template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
+    lateref(Lambda lambda) : ref<Fn<ReturnType(Args...)>>(std::make_shared<Fn<ReturnType(Args...)>>(lambda)) {}
+};

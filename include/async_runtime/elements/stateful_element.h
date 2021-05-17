@@ -8,6 +8,8 @@ class StatefulElement : public SingleChildElement
     template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
     friend class State;
 
+    class InvalidWidget;
+
 public:
     StatefulElement(ref<StatefulWidget> widget);
 

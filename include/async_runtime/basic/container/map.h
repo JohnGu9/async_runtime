@@ -77,6 +77,7 @@ public:
     {
         return (*this)->begin();
     }
+
     const_iterator begin() const
     {
         return (*this)->begin();

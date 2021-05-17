@@ -43,7 +43,7 @@ public:
             assert(this->_listener == nullptr && "Single listener stream can't have more than one listener");
             this->_listener = fn;
             for (size_t c = 0; c < this->_sinkCounter; c++)
-                this->_listener();
+                fn();
             this->_sinkCounter = 0;
             if (this->_isClosed)
                 this->_onClose->completeSync();
@@ -59,7 +59,7 @@ public:
 
 protected:
     size_t _sinkCounter = 0;
-    Function<void()> _listener;
+    option<Fn<void()>> _listener;
 };
 
 template <typename T>
@@ -79,7 +79,7 @@ public:
             assert(this->_listener == nullptr && "Single listener stream can't have more than one listener");
             this->_listener = fn;
             for (auto &cache : this->_cache)
-                this->_listener(std::move(cache));
+                fn(std::move(cache));
             this->_cache->clear();
             if (this->_isClosed)
                 this->_onClose->completeSync();
@@ -95,5 +95,5 @@ public:
 
 protected:
     ref<List<T>> _cache;
-    Function<void(T)> _listener;
+    option<Fn<void(T)>> _listener;
 };
