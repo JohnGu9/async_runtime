@@ -196,9 +196,9 @@ void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::st
         if (str[index] == '\0')
         {
 #ifndef NDEBUG
-            std::stringstream ss;
-            ss << "String::format arguments overflow when handle \"" << str << "\"" << std::endl;
-            std::cout << ss.str();
+            std::stringstream debugInfo;
+            debugInfo << "String::format arguments overflow when handle \"" << str << "\"" << std::endl;
+            std::cout << debugInfo.str();
 #endif
             return;
         }
@@ -239,9 +239,9 @@ void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std
         if (index == end)
         {
 #ifndef NDEBUG
-            std::stringstream ss;
-            ss << "String::format arguments overflow" << std::endl;
-            std::cout << ss.str();
+            std::stringstream debugInfo;
+            debugInfo << "String::format arguments overflow" << std::endl;
+            std::cout << debugInfo.str();
 #endif
             return;
         }
@@ -283,9 +283,9 @@ void String::_unwrapPack(size_t &lastIndex, std::stringstream &ss, const First &
     if (lastIndex >= this->length() || index == std::string::npos)
     {
 #ifndef NDEBUG
-        std::stringstream ss;
-        ss << "String::format arguments overflow when handle \"" << *this << "\"" << std::endl;
-        std::cout << ss.str();
+        std::stringstream debugInfo;
+        debugInfo << "String::format arguments overflow when handle \"" << *this << "\"" << std::endl;
+        std::cout << debugInfo.str();
 #endif
         return;
     }
@@ -298,12 +298,15 @@ void String::_unwrapPack(size_t &lastIndex, std::stringstream &ss, const First &
     _unwrapPack(lastIndex, ss, rest...);
 }
 
+template<>
+inline ref<String> String::format() 
+{
+    return self();
+}
+
 template <typename... Args>
 ref<String> String::format(Args &&...args)
 {
-    if (sizeof...(args) == 0)
-        return self();
-
     std::stringstream ss;
     size_t lastIndex = 0;
     _unwrapPack(lastIndex, ss, args...);
