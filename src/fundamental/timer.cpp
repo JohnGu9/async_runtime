@@ -21,7 +21,7 @@ namespace std
     };
 };
 
-class TimerThread : public Object
+class Timer::TimerThread : public Object
 {
     static const std::greater<TimerTask> greater;
 
@@ -89,11 +89,11 @@ protected:
     bool _hasNewTask = false;
 };
 
-const std::greater<TimerTask> TimerThread::greater = std::greater<TimerTask>();
+const std::greater<TimerTask> Timer::TimerThread::greater = std::greater<TimerTask>();
 
-static const ref<TimerThread> &sharedTimerThread()
+static const ref<Timer::TimerThread> &sharedTimerThread()
 {
-    static const auto singleton = Object::create<TimerThread>();
+    static const auto singleton = Object::create<Timer::TimerThread>();
     return singleton;
 }
 

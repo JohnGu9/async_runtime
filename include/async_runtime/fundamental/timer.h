@@ -13,6 +13,8 @@ class Timer : public Dispatcher
     };
 
 public:
+    class TimerThread;
+
     static ref<Timer> delay(ref<State<StatefulWidget>> state, Duration duration, Function<void()> fn);
     static ref<Timer> periodic(ref<State<StatefulWidget>> state, Duration interval, Function<void()> fn);
     static ref<Timer> delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> fn);

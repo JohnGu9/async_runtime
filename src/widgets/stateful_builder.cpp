@@ -4,7 +4,7 @@ StatefulBuilder::StatefulBuilder(
     Function<ref<Widget>(ref<BuildContext> /*context*/, Function<void(Function<void()>)> /*setState*/)> builder,
     option<Key> key) : StatefulWidget(key), builder(builder) {}
 
-class _StatefulBuilderState : public State<StatefulBuilder>
+class StatefulBuilder::_State : public State<StatefulBuilder>
 {
 public:
     ref<Widget> build(ref<BuildContext> context) override
@@ -15,5 +15,5 @@ public:
 
 ref<State<StatefulWidget>> StatefulBuilder::createState()
 {
-    return Object::create<_StatefulBuilderState>();
+    return Object::create<StatefulBuilder::_State>();
 }

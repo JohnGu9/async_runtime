@@ -6,6 +6,7 @@
 
 class Scheduler : public StatefulWidget
 {
+    class _State;
 public:
     using Handler = ref<ThreadPool>;
     static Handler of(ref<BuildContext> context);
@@ -18,6 +19,7 @@ public:
 
 class SchedulerProxy : public InheritedWidget
 {
+    class SchedulerElement;
     friend class Scheduler;
     friend class SchedulerElement;
     using Handler = Scheduler::Handler;

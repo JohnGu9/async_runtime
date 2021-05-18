@@ -6,25 +6,14 @@
 #include "async_runtime/widgets/process.h"
 #include "async_runtime/widgets/scheduler.h"
 
-struct RootWidget : Widget
+class RootElement::RootWidget : public Widget
 {
+public:
     RootWidget() : Widget(nullptr) {}
     ref<Element> createElement() override { return Object::create<RootElement>(self()); }
 };
 
-class RootFundamental : public StatefulWidget
-{
-    ref<State<StatefulWidget>> createState() override;
-
-public:
-    RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
-        : StatefulWidget(key), child(child), rootElement(rootElement) {}
-
-    ref<Widget> child;
-    RootElement *rootElement;
-};
-
-class _RootFundamentalState : public State<RootFundamental>
+class RootElement::RootFundamental::_State : public State<RootFundamental>
 {
     using super = State<RootFundamental>;
 
@@ -49,9 +38,9 @@ class _RootFundamentalState : public State<RootFundamental>
     }
 };
 
-inline ref<State<StatefulWidget>> RootFundamental::createState()
+ref<State<StatefulWidget>> RootElement::RootFundamental::createState()
 {
-    return Object::create<_RootFundamentalState>();
+    return Object::create<_State>();
 }
 
 /**

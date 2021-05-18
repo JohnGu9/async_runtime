@@ -10,8 +10,23 @@ class LoggerHandler;
 class ThreadPool;
 class RootElement : public SingleChildElement
 {
+    class RootWidget;
+    class RootFundamental : public StatefulWidget
+    {
+        ref<State<StatefulWidget>> createState() override;
+
+    public:
+        class _State;
+
+        RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
+            : StatefulWidget(key), child(child), rootElement(rootElement) {}
+
+        ref<Widget> child;
+        RootElement *rootElement;
+    };
+
     friend class Process;
-    friend class _RootFundamentalState;
+    friend class RootFundamental::_State;
 
 public:
     RootElement(ref<Widget> child);

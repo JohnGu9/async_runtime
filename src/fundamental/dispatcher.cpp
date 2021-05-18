@@ -1,21 +1,13 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/dispatcher.h"
 
-class _InvalidThreadPool : public ThreadPool
-{
-public:
-    _InvalidThreadPool() : ThreadPool(0) {}
-    virtual ~_InvalidThreadPool() { dispose(); }
-};
-
 Dispatcher::Dispatcher(ref<ThreadPool> handler) : _callbackHandler(handler) {}
 
 Dispatcher::Dispatcher(ref<State<StatefulWidget>> state) : _callbackHandler(getHandlerfromState(state)) {}
 
 void Dispatcher::dispose()
 {
-    static ref<ThreadPool> invalidThreadPool = Object::create<_InvalidThreadPool>();
-    _callbackHandler = invalidThreadPool;
+    Object::detach(_callbackHandler);
 }
 
 std::future<void> Dispatcher::postToMainThread(Function<void()> fn) { return this->_callbackHandler->post(fn->toStdFunction()); }

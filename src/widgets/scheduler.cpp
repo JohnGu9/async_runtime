@@ -2,7 +2,7 @@
 #include "async_runtime/elements/inherited_element.h"
 #include "async_runtime/widgets/scheduler.h"
 
-class SchedulerElement : public InheritedElement
+class SchedulerProxy::SchedulerElement : public InheritedElement
 {
 public:
     SchedulerElement(ref<SchedulerProxy> widget) : InheritedElement(widget) {}
@@ -62,7 +62,7 @@ protected:
     }
 };
 
-class _SchedulerState : public State<Scheduler>
+class Scheduler::_State : public State<Scheduler>
 {
     using super = State<Scheduler>;
     lateref<ThreadPool> _handler;
@@ -100,7 +100,7 @@ Scheduler::Scheduler(ref<Widget> child, option<String> name, option<Key> key)
 
 ref<State<StatefulWidget>> Scheduler::createState()
 {
-    return Object::create<_SchedulerState>();
+    return Object::create<Scheduler::_State>();
 }
 
 Scheduler::Handler Scheduler::of(ref<BuildContext> context)

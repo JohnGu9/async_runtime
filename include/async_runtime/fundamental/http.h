@@ -39,7 +39,7 @@ public:
     };
 
     Client(ref<State<StatefulWidget>> state, ref<String> address, int port = 80)
-        : Dispatcher(state), _client(address->toStdString(), port) {}
+        : Dispatcher(state), _address(address), _port(port) {}
 
     void dispose() override;
 
@@ -52,20 +52,14 @@ public:
     virtual ref<Future<ref<Result>>> options(ref<String> pattern);
 
 protected:
-    httplib::Client _client;
-
-public:
-
-    /**
-     * @brief 
-     * Directly access httplib::Client
-     * Be careful callback go outside async runtime thread
-     */
-    httplib::Client &httplibClient = _client;
+    ref<String> _address;
+    int _port;
 };
 
 class Http::Server : public Dispatcher
 {
+    class TaskQueue;
+
 public:
     using Handler = httplib::Server::Handler;
 
@@ -91,8 +85,6 @@ protected:
     Thread _listenThread;
 
 public:
-
-
     /**
      * @brief 
      * Directly access httplib::Server

@@ -8,7 +8,6 @@ ref<ThreadPool> Http::Client::sharedThreadPool()
 
 void Http::Client::dispose()
 {
-    _client.stop();
     super::dispose();
 }
 
@@ -108,6 +107,7 @@ ref<Future<Res>> Http::Client::get(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
+        httplib::Client _client(_address->c_str(), _port);
         completer->complete(Object::create<Result>(_client.Get(pattern->c_str())));
     });
     return completer->future;
@@ -117,6 +117,7 @@ ref<Future<Res>> Http::Client::head(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
+        httplib::Client _client(_address->c_str(), _port);
         completer->complete(Object::create<Result>(_client.Head(pattern->c_str())));
     });
     return completer->future;
@@ -126,6 +127,7 @@ ref<Future<Res>> Http::Client::post(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
+        httplib::Client _client(_address->c_str(), _port);
         completer->complete(Object::create<Result>(_client.Post(pattern->c_str())));
     });
     return completer->future;
@@ -135,6 +137,7 @@ ref<Future<Res>> Http::Client::put(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
+        httplib::Client _client(_address->c_str(), _port);
         completer->complete(Object::create<Result>(_client.Put(pattern->c_str())));
     });
     return completer->future;
@@ -144,6 +147,7 @@ ref<Future<Res>> Http::Client::patch(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
+        httplib::Client _client(_address->c_str(), _port);
         completer->complete(Object::create<Result>(_client.Patch(pattern->c_str())));
     });
     return completer->future;
@@ -153,6 +157,7 @@ ref<Future<Res>> Http::Client::del(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
+        httplib::Client _client(_address->c_str(), _port);
         completer->complete(Object::create<Result>(_client.Delete(pattern->c_str())));
     });
     return completer->future;
@@ -162,24 +167,25 @@ ref<Future<Res>> Http::Client::options(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
+        httplib::Client _client(_address->c_str(), _port);
         completer->complete(Object::create<Result>(_client.Options(pattern->c_str())));
     });
     return completer->future;
 }
 
-class _ThreadPoolTaskQueue : public httplib::TaskQueue
+class Http::Server::TaskQueue : public httplib::TaskQueue
 {
     option<ThreadPool> _threadPool;
 
 public:
-    _ThreadPoolTaskQueue(ref<ThreadPool> threadPool) : _threadPool(threadPool) {}
+    TaskQueue(ref<ThreadPool> threadPool) : _threadPool(threadPool) {}
     void enqueue(std::function<void()> fn) override { _threadPool.get()->post(fn); }
     void shutdown() override { _threadPool = nullptr; }
 };
 
 Http::Server::Server(ref<State<StatefulWidget>> state) : Dispatcher(state)
 {
-    _server.new_task_queue = [this] { return new _ThreadPoolTaskQueue(this->_callbackHandler); };
+    _server.new_task_queue = [this] { return new Http::Server::TaskQueue(this->_callbackHandler); };
 }
 
 Http::Server *Http::Server::listen(ref<String> address, int port)

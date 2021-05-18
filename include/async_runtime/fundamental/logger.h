@@ -36,7 +36,6 @@
  * 
  */
 
-
 #pragma once
 
 #include <iostream>
@@ -90,6 +89,9 @@ inline const ref<LoggerHandler> &operator<<(const ref<LoggerHandler> &handle, re
 
 class Logger : public InheritedWidget
 {
+    class _Logger;
+    friend class StdoutLoggerState;
+
 public:
     using Handler = ref<LoggerHandler>;
     static Handler of(ref<BuildContext> context);

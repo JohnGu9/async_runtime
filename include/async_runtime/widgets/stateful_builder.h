@@ -4,6 +4,7 @@
 
 class StatefulBuilder : public StatefulWidget
 {
+    class _State;
 public:
     using SetStateCallback = Function<void(Function<void()>)>;
     StatefulBuilder(

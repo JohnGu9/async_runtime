@@ -4,11 +4,11 @@
 #include "async_runtime/fundamental/file.h"
 #include "async_runtime/widgets/leaf_widget.h"
 
-class _Logger : public StatefulWidget
+class Logger::_Logger : public StatefulWidget
 {
-    friend class _LoggerState;
-
 public:
+    class _State;
+
     _Logger(ref<Widget> child, option<String> path, option<Key> key)
         : StatefulWidget(key), child(child), path(path) {}
     ref<State<StatefulWidget>> createState() override;
@@ -16,7 +16,7 @@ public:
     option<String> path;
 };
 
-class _LoggerState : public State<_Logger>
+class Logger::_Logger::_State : public State<Logger::_Logger>
 {
     class _InvalidState : public State<StatefulWidget>
     {
@@ -123,7 +123,7 @@ public:
         }
     };
 
-    using super = State<_Logger>;
+    using super = State<Logger::_Logger>;
     lateref<LoggerHandler> _handler;
 
     void initState() override
@@ -173,9 +173,9 @@ public:
     }
 };
 
-ref<State<StatefulWidget>> _Logger::createState()
+ref<State<StatefulWidget>> Logger::_Logger::createState()
 {
-    return Object::create<_LoggerState>();
+    return Object::create<_State>();
 }
 
 Logger::Handler Logger::of(ref<BuildContext> context)
@@ -226,7 +226,7 @@ public:
 void StdoutLoggerState::initState()
 {
     super::initState();
-    this->_handler = Object::create<_LoggerState::_StdoutLoggerHandler>(self());
+    this->_handler = Object::create<Logger::_Logger::_State::_StdoutLoggerHandler>(self());
 }
 
 void StdoutLoggerState::dispose()
