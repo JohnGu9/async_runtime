@@ -3,83 +3,20 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
 
-struct TimerTask
-{
-    std::chrono::system_clock::time_point timePoint;
-    Function<void()> task;
-};
-
-namespace std
-{
-    template <>
-    struct greater<TimerTask>
-    {
-        bool operator()(const TimerTask &lhs, const TimerTask &rhs) const
-        {
-            return lhs.timePoint > rhs.timePoint;
-        }
-    };
-};
-
 class Timer::TimerThread : public Object
 {
-    static const std::greater<TimerTask> greater;
-
 public:
-    TimerThread()
+    struct TimerTask
     {
-        _thread = Thread([this] {
-#ifndef NDEBUG
-            ThreadPool::thisThreadName = "TimerThread";
-            ThreadPool::setThreadName(ThreadPool::thisThreadName);
-#endif
-            while (true)
-            {
-                std::unique_lock<std::mutex> lock(_mutex);
-                if (_tasks.empty())
-                    _cv.wait(lock, [this] { return _hasNewTask; });
-                else
-                    _cv.wait_until(lock, _tasks.front().timePoint, [this] { return _hasNewTask; });
-                if (_stop)
-                    return;
-
-                _hasNewTask = false;
-                const auto now = std::chrono::system_clock::now();
-                while (_tasks.front().timePoint <= now)
-                {
-                    std::pop_heap(_tasks.begin(), _tasks.end(), greater);
-                    _tasks.back().task();
-                    _tasks.pop_back();
-                    if (_tasks.empty())
-                        break;
-                }
-            }
-        });
-    }
-
-    virtual ~TimerThread()
-    {
-        {
-            std::unique_lock<std::mutex> lock(_mutex);
-            _hasNewTask = true; // wake up the thread
-            _stop = true;       // mask the flag that let thread exit
-        }
-        _cv.notify_all();
-        _thread.join();
-    }
-
-    virtual void post(TimerTask task)
-    {
-        {
-            std::unique_lock<std::mutex> lock(_mutex);
-            _tasks.emplace_back(std::move(task));
-            std::push_heap(_tasks.begin(), _tasks.end(), greater);
-            _hasNewTask = true;
-        }
-        _cv.notify_one();
-    }
+        std::chrono::system_clock::time_point timePoint;
+        Function<void()> task;
+    };
+    TimerThread();
+    virtual ~TimerThread();
+    virtual void post(TimerTask task);
 
 protected:
+    static const std::greater<TimerTask> greater;
     std::mutex _mutex;
     std::condition_variable _cv;
     std::deque<TimerTask> _tasks;
@@ -89,7 +26,72 @@ protected:
     bool _hasNewTask = false;
 };
 
-const std::greater<TimerTask> Timer::TimerThread::greater = std::greater<TimerTask>();
+namespace std
+{
+    template <>
+    struct greater<Timer::TimerThread::TimerTask>
+    {
+        bool operator()(const Timer::TimerThread::TimerTask &lhs, const Timer::TimerThread::TimerTask &rhs) const
+        {
+            return lhs.timePoint > rhs.timePoint;
+        }
+    };
+};
+
+const std::greater<Timer::TimerThread::TimerTask> Timer::TimerThread::greater = std::greater<Timer::TimerThread::TimerTask>();
+
+Timer::TimerThread::TimerThread::TimerThread()
+{
+    _thread = Thread([this] {
+#ifndef NDEBUG
+        ThreadPool::thisThreadName = "TimerThread";
+        ThreadPool::setThreadName(ThreadPool::thisThreadName);
+#endif
+        while (true)
+        {
+            std::unique_lock<std::mutex> lock(_mutex);
+            if (_tasks.empty())
+                _cv.wait(lock, [this] { return _hasNewTask; });
+            else
+                _cv.wait_until(lock, _tasks.front().timePoint, [this] { return _hasNewTask; });
+            if (_stop)
+                return;
+
+            _hasNewTask = false;
+            const auto now = std::chrono::system_clock::now();
+            while (_tasks.front().timePoint <= now)
+            {
+                std::pop_heap(_tasks.begin(), _tasks.end(), greater);
+                _tasks.back().task();
+                _tasks.pop_back();
+                if (_tasks.empty())
+                    break;
+            }
+        }
+    });
+}
+
+Timer::TimerThread::TimerThread::~TimerThread()
+{
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _hasNewTask = true; // wake up the thread
+        _stop = true;       // mask the flag that let thread exit
+    }
+    _cv.notify_all();
+    _thread.join();
+}
+
+void Timer::TimerThread::TimerThread::post(TimerTask task)
+{
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _tasks.emplace_back(std::move(task));
+        std::push_heap(_tasks.begin(), _tasks.end(), greater);
+        _hasNewTask = true;
+    }
+    _cv.notify_one();
+}
 
 static const ref<Timer::TimerThread> &sharedTimerThread()
 {
@@ -146,7 +148,7 @@ void Timer::_setTimeout(Duration delay, Function<void()> function)
     system_clock::time_point current = system_clock::now();
     ref<Timer> self = self(); // hold a ref of self inside the Function
     _onCancel = [] {};
-    sharedTimerThread()->post(TimerTask{
+    sharedTimerThread()->post(Timer::TimerThread::TimerTask{
         current + delay.toChronoMilliseconds(),
         [this, self, function] {
             if (this->_clear)
@@ -169,14 +171,14 @@ void Timer::_setInterval(Duration interval, Function<void()> function)
             function();
             *next += interval.toChronoMilliseconds();
             std::unique_lock<std::mutex> lock(_mutex);
-            sharedTimerThread()->post(TimerTask{*next, *task});
+            sharedTimerThread()->post(Timer::TimerThread::TimerTask{*next, *task});
         });
     };
     _onCancel = [this, task] {
         std::unique_lock<std::mutex> lock(_mutex);
         *task = [] {};
     }; // release self-ref
-    sharedTimerThread()->post(TimerTask{*next, *task});
+    sharedTimerThread()->post(Timer::TimerThread::TimerTask{*next, *task});
 }
 
 void Timer::cancel()

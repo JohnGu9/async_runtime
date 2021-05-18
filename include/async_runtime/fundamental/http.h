@@ -22,7 +22,6 @@ namespace Http
 
 class Http::Client : public Dispatcher
 {
-    static ref<ThreadPool> sharedThreadPool();
     using super = Dispatcher;
 
 public:
@@ -39,7 +38,7 @@ public:
     };
 
     Client(ref<State<StatefulWidget>> state, ref<String> address, int port = 80)
-        : Dispatcher(state), _address(address), _port(port) {}
+        : Dispatcher(state), _client(new httplib::Client(address->c_str(), port)), httplibClient(*_client) {}
 
     void dispose() override;
 
@@ -52,8 +51,15 @@ public:
     virtual ref<Future<ref<Result>>> options(ref<String> pattern);
 
 protected:
-    ref<String> _address;
-    int _port;
+    std::unique_ptr<httplib::Client> _client;
+
+public:
+    /**
+     * @brief 
+     * Directly access httplib::Client
+     * Be careful callback go outside async runtime thread
+     */
+    httplib::Client &httplibClient;
 };
 
 class Http::Server : public Dispatcher

@@ -1,6 +1,6 @@
 #include "async_runtime/fundamental/http.h"
 
-ref<ThreadPool> Http::Client::sharedThreadPool()
+static ref<ThreadPool> sharedThreadPool()
 {
     static finalref<ThreadPool> singleton = AutoReleaseThreadPool::factory(1, "HttpClientSharedThreadPool");
     return singleton;
@@ -8,6 +8,7 @@ ref<ThreadPool> Http::Client::sharedThreadPool()
 
 void Http::Client::dispose()
 {
+    sharedThreadPool()->post([=] { _client = nullptr; }).get(); // close httplib::Client on the same thread
     super::dispose();
 }
 
@@ -107,8 +108,7 @@ ref<Future<Res>> Http::Client::get(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
-        httplib::Client _client(_address->c_str(), _port);
-        completer->complete(Object::create<Result>(_client.Get(pattern->c_str())));
+        completer->complete(Object::create<Result>(_client->Get(pattern->c_str())));
     });
     return completer->future;
 }
@@ -117,8 +117,7 @@ ref<Future<Res>> Http::Client::head(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
-        httplib::Client _client(_address->c_str(), _port);
-        completer->complete(Object::create<Result>(_client.Head(pattern->c_str())));
+        completer->complete(Object::create<Result>(_client->Head(pattern->c_str())));
     });
     return completer->future;
 }
@@ -127,8 +126,7 @@ ref<Future<Res>> Http::Client::post(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
-        httplib::Client _client(_address->c_str(), _port);
-        completer->complete(Object::create<Result>(_client.Post(pattern->c_str())));
+        completer->complete(Object::create<Result>(_client->Post(pattern->c_str())));
     });
     return completer->future;
 }
@@ -137,8 +135,7 @@ ref<Future<Res>> Http::Client::put(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
-        httplib::Client _client(_address->c_str(), _port);
-        completer->complete(Object::create<Result>(_client.Put(pattern->c_str())));
+        completer->complete(Object::create<Result>(_client->Put(pattern->c_str())));
     });
     return completer->future;
 }
@@ -147,8 +144,7 @@ ref<Future<Res>> Http::Client::patch(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
-        httplib::Client _client(_address->c_str(), _port);
-        completer->complete(Object::create<Result>(_client.Patch(pattern->c_str())));
+        completer->complete(Object::create<Result>(_client->Patch(pattern->c_str())));
     });
     return completer->future;
 }
@@ -157,8 +153,7 @@ ref<Future<Res>> Http::Client::del(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
-        httplib::Client _client(_address->c_str(), _port);
-        completer->complete(Object::create<Result>(_client.Delete(pattern->c_str())));
+        completer->complete(Object::create<Result>(_client->Delete(pattern->c_str())));
     });
     return completer->future;
 }
@@ -167,8 +162,7 @@ ref<Future<Res>> Http::Client::options(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
     sharedThreadPool()->post([=] {
-        httplib::Client _client(_address->c_str(), _port);
-        completer->complete(Object::create<Result>(_client.Options(pattern->c_str())));
+        completer->complete(Object::create<Result>(_client->Options(pattern->c_str())));
     });
     return completer->future;
 }
