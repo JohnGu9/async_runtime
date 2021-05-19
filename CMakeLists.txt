@@ -56,4 +56,4 @@ endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES})
 target_compile_options(async_runtime PRIVATE
      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall>
-     $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4100 /wd4458>)
+     $<$<CXX_COMPILER_ID:MSVC>:/wd4100 /wd4458>)

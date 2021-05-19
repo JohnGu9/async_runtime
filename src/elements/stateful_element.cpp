@@ -84,7 +84,7 @@ void StatefulElement::build()
     this->_lifeCycle = StatefulElement::_LifeCycle::building;
     assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
-    ref<Widget> oldWidget = this->_childElement->widget;
+    ref<Widget> oldWidget = this->_childElement->getWidget();
     if (Object::identical(widget, oldWidget))
         return;
     else if (widget->canUpdate(oldWidget))
@@ -117,7 +117,7 @@ void StatefulElement::notify(ref<Widget> newWidget)
     }
     this->_state->didDependenceChanged();
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
-    ref<Widget> oldWidget = this->_childElement->widget;
+    ref<Widget> oldWidget = this->_childElement->getWidget();
     if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
         this->_childElement->notify(widget);
     else

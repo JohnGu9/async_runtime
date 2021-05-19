@@ -7,7 +7,7 @@
 #include "../container.h"
 
 template <typename Key, typename Value>
-class Map : public std::unordered_map<Key, Value>, public Iterable<typename std::unordered_map<Key, Value>::value_type>
+class Map : public std::unordered_map<Key, Value>, public Iterable<typename std::unordered_map<Key, Value>::value_type>, public Removable<Key>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -39,6 +39,21 @@ public:
         for (const auto &iter : *this)
             if (!fn(iter))
                 return false;
+        return true;
+    }
+
+    void forEach(Function<void(const value_type &)> fn) const override
+    {
+        for (const auto &iter : *this)
+            fn(iter);
+    }
+
+    bool remove(Key v) override
+    {
+        auto iter = find(v);
+        if (iter == end())
+            return false;
+        erase(iter);
         return true;
     }
 };

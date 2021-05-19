@@ -18,4 +18,6 @@ public:
 
     virtual void visitDescendant(Function<bool(ref<Element>)>) = 0;
     virtual void visitAncestor(Function<bool(ref<Element>)>);
+
+    virtual const ref<Widget> &getWidget() const { return widget; }
 };

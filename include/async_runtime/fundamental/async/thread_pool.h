@@ -25,6 +25,7 @@
 class ThreadPool : public Object, public Disposable
 {
     static ref<Set<ref<String>>> _namePool;
+    static ref<Lock> _lock;
 
 public:
     static thread_local ref<String> thisThreadName;

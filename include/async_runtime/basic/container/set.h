@@ -6,7 +6,7 @@
 #include "../container.h"
 
 template <typename T>
-class Set : public std::unordered_set<T>, public Iterable<T>
+class Set : public std::unordered_set<T>, public Iterable<T>, public Removable<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -37,6 +37,21 @@ public:
         for (const auto &iter : *this)
             if (!fn(iter))
                 return false;
+        return true;
+    }
+
+    void forEach(Function<void(const T &)> fn) const override
+    {
+        for (const auto &iter : *this)
+            fn(iter);
+    }
+
+    bool remove(T v) override
+    {
+        auto iter = find(v);
+        if (iter == end())
+            return false;
+        erase(iter);
         return true;
     }
 };

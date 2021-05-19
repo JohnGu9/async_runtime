@@ -57,15 +57,16 @@ void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement s
 void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement dependence would never change. "); }
 
 void RootElement::attach()
-{
-    this->_inheritances = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
+{    
+    static finalref<Map<Object::RuntimeType, lateref<Inheritance>>> empty = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
+    this->_inheritances = empty;
     this->attachElement(this->_child->createElement());
 }
 
 void RootElement::build()
 {
     ref<Widget> widget = this->_child;
-    ref<Widget> lastWidget = this->_childElement->widget;
+    ref<Widget> lastWidget = this->_childElement->getWidget();
     if (Object::identical(widget, lastWidget))
         return;
     else if (widget->canUpdate(lastWidget))
@@ -200,7 +201,7 @@ void RootElement::onCommand(const ref<String> &in)
             [&](Element *currentElement, ref<Tree> currentTree) {
                 std::stringstream ss;
                 ss << font_wrapper(BOLDBLUE, currentElement->toString()) << std::endl
-                   << "  widget: " << currentElement->widget->toString() << std::endl;
+                   << "  widget: " << currentElement->getWidget()->toString() << std::endl;
                 if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
                     ss << "  state: " << statefulElement->_state->toString() << std::endl;
                 currentTree->info = ss.str();

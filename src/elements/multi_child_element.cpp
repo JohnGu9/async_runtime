@@ -27,7 +27,7 @@ void MultiChildElement::build()
         ref<Widget> &widget = children[i];
         if (i < this->_childrenElements->size()) // update widget
         {
-            ref<Widget> &oldWidget = _childrenElements[i]->widget;
+            finalref<Widget> &oldWidget = _childrenElements[i]->getWidget();
             if (Object::identical(widget, oldWidget))
                 continue;
             else if (widget->canUpdate(oldWidget))
@@ -79,7 +79,7 @@ void MultiChildElement::notify(ref<Widget> newWidget)
         if (i < this->_childrenElements->size()) // update widget
         {
             ref<Element> &element = this->_childrenElements[i];
-            ref<Widget> &oldWidget = _childrenElements[i]->widget;
+            finalref<Widget> &oldWidget = _childrenElements[i]->getWidget();
             if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
                 element->notify(widget);
             else

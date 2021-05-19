@@ -33,18 +33,18 @@ int runApp(ref<Widget> widget, bool withConsole = __WITH_CONSOLE);
 #ifndef NDEBUG
 #define __FILENAME__ __FILE__
 #else
-/**
- * @brief 
- * reserve file name only that without full path
- * 
- * @example
- * /usr/local/async_runtime_test/async_runtime/src/object.cpp
- * ->
- * object.cpp
- * 
- */
 namespace _async_runtime
 {
+    /**
+     * @brief 
+     * reserve file name only that without full path
+     * 
+     * @example
+     * /usr/local/async_runtime_test/async_runtime/src/object.cpp
+     * ->
+     * object.cpp
+     * 
+     */
     template <typename T, size_t S>
     inline constexpr size_t get_file_name_offset(const T (&str)[S], size_t i = S - 1)
     {

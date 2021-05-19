@@ -16,7 +16,7 @@ protected:
 public:
     virtual ref<Future<std::nullptr_t>> than(Function<void()>) = 0;
 
-    // not recommend to use these two functions
+    // not recommend to use [Future::sync]
     // async function should always be async
     // try to sync may cause deadlock
     virtual void sync();

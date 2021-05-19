@@ -9,7 +9,14 @@ public:
 
     void attach() override
     {
-        this->getHandler()->post([this] { this->InheritedElement::attach(); }).get();
+        this->getHandler()->post([this] {
+                              Element::attach();
+                              this->_inheritances = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>(); // Scheduler will block the context access between diff Scheduler
+                              this->_inheritances[this->_inheritWidget->runtimeType()] = this->_inheritWidget;
+                              ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
+                              this->attachElement(widget->createElement());
+                          })
+            .get();
     }
 
     void detach() override

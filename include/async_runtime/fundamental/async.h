@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../object.h"
+#include "../basic/lock.h"
 
 // @ thread safe
 template <typename T = std::nullptr_t>

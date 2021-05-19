@@ -7,7 +7,7 @@
 #include "../container.h"
 
 template <typename T>
-class List : public std::deque<T>, public Iterable<T>
+class List : public std::deque<T>, public Iterable<T>, public Removable<size_t>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -38,6 +38,20 @@ public:
         for (const auto &iter : *this)
             if (!fn(iter))
                 return false;
+        return true;
+    }
+
+    void forEach(Function<void(const T &)> fn) const override
+    {
+        for (const auto &iter : *this)
+            fn(iter);
+    }
+
+    bool remove(size_t index) override
+    {
+        assert(index < size());
+        auto iter = begin() + index;
+        erase(iter);
         return true;
     }
 };

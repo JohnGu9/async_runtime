@@ -12,6 +12,7 @@
 
 static ref<String> emptyString = "";
 
+ref<Lock> ThreadPool::_lock = Object::create<Lock>();
 ref<Set<ref<String>>> ThreadPool::_namePool = Object::create<Set<ref<String>>>();
 
 thread_local ref<String> ThreadPool::thisThreadName = "MainThread";
@@ -46,7 +47,7 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString)
 
     {
         assert(this->_name->isNotEmpty());
-        option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
+        option<Lock::UniqueLock> lk = _lock->uniqueLock();
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
     }
@@ -58,7 +59,7 @@ ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(emptyString)
 ThreadPool::~ThreadPool()
 {
     {
-        option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
+        option<Lock::UniqueLock> lock = _lock->uniqueLock();
         assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
     }
     {
@@ -150,8 +151,8 @@ void ThreadPool::dispose()
 
 void ThreadPool::unregisterName()
 {
-    option<Lock::UniqueLock> lock = ThreadPool::_namePool->lock->uniqueLock();
-    ThreadPool::_namePool->erase(ThreadPool::_namePool->find(this->_name));
+    option<Lock::UniqueLock> lock = _lock->uniqueLock();
+    ThreadPool::_namePool->remove(this->_name);
 }
 
 /**
@@ -220,7 +221,12 @@ void Future<std::nullptr_t>::sync()
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than([&] { condition.notify_all(); });
+    this->than([&] {
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+        }
+        condition.notify_all();
+    });
     condition.wait(lock);
 }
 
@@ -229,7 +235,12 @@ void Future<std::nullptr_t>::sync(Duration timeout)
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than([&] { condition.notify_all(); });
+    this->than([&] {
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+        }
+        condition.notify_all();
+    });
     condition.wait(lock);
 }
 

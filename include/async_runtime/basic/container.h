@@ -1,21 +1,21 @@
 #pragma once
 
 #include "../object.h"
-#include "lock.h"
 
 template <typename T>
 class Iterable : public Object
 {
 public:
-    Iterable() : _lock(Object::create<Lock>()) {}
     virtual bool any(Function<bool(const T &)> fn) const = 0;
     virtual bool every(Function<bool(const T &)> fn) const = 0;
+    virtual void forEach(Function<void(const T &)>) const = 0;
+};
 
-protected:
-    ref<Lock> _lock;
-
+template <typename T>
+class Removable
+{
 public:
-    const ref<Lock> &lock = _lock;
+    virtual bool remove(T) = 0;
 };
 
 #include "container/list.h"

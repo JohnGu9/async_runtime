@@ -19,7 +19,7 @@ void StatelessElement::detach()
 void StatelessElement::build()
 {
     ref<Widget> widget = this->_statelessWidget->build(Object::cast<BuildContext>(this));
-    ref<Widget> oldWidget = this->_childElement->widget;
+    ref<Widget> oldWidget = this->_childElement->getWidget();
     if (Object::identical(widget, oldWidget))
         return;
     else if (widget->canUpdate(oldWidget))
@@ -39,7 +39,7 @@ void StatelessElement::notify(ref<Widget> newWidget)
     Element::notify(newWidget);
     this->_statelessWidget = newWidget->covariant<StatelessWidget>();
     ref<Widget> widget = this->_statelessWidget->build(Object::cast<BuildContext>(this));
-    ref<Widget> oldWidget = this->_childElement->widget;
+    ref<Widget> oldWidget = this->_childElement->getWidget();
     if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
         this->_childElement->notify(widget);
     else

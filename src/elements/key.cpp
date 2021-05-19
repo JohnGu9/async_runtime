@@ -19,7 +19,7 @@ option<const Widget> Key::getCurrentWidget()
 {
     lateref<Element> element;
     if (this->_element.isNotNull(element))
-        return element->widget;
+        return element->getWidget();
     return nullptr;
 }
 
