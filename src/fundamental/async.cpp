@@ -241,7 +241,7 @@ void Future<std::nullptr_t>::sync(Duration timeout)
         }
         condition.notify_all();
     });
-    condition.wait(lock);
+    condition.wait_for(lock, timeout.toChronoMilliseconds());
 }
 
 /**
@@ -255,7 +255,10 @@ ref<Future<void>> Future<void>::race(ref<State<StatefulWidget>> state, ref<Set<r
         return Future<void>::value(state);
     ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
     for (auto &future : set)
-        future->than([completer] { completer->complete(); });
+        future->than([completer] {
+            if (completer->isCompleted == false)
+                completer->complete();
+        });
     return completer->future;
 }
 

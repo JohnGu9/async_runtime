@@ -113,8 +113,8 @@ protected:
         assert(this->_isCompleted == false);
         if (this->_isCancelled)
             return;
-        this->_future->_data = std::move(value);
         this->_future->_completed = true;
+        this->_future->_data = std::move(value);
         for (auto &fn : this->_future->_callbackList)
             fn(this->_future->_data);
         this->_future->_callbackList->clear();
