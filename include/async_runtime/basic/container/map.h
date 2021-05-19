@@ -50,10 +50,10 @@ public:
 
     bool remove(Key v) override
     {
-        auto iter = find(v);
-        if (iter == end())
+        auto iter = this->find(v);
+        if (iter == this->end())
             return false;
-        erase(iter);
+        this->erase(iter);
         return true;
     }
 };

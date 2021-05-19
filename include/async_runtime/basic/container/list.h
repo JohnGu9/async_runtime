@@ -49,9 +49,9 @@ public:
 
     bool remove(size_t index) override
     {
-        assert(index < size());
-        auto iter = begin() + index;
-        erase(iter);
+        assert(index < this->size());
+        auto iter = this->begin() + index;
+        this->erase(iter);
         return true;
     }
 };
