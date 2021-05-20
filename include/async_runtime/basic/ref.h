@@ -240,6 +240,8 @@ class ref : public _async_runtime::RefImplement<T>
     friend bool operator==(const ref<X> &object0, const ref<Y> &object1);
 
 public:
+    ref(std::nullptr_t) = delete;
+
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : _async_runtime::RefImplement<T>(other) {}
 
@@ -258,6 +260,8 @@ class lateref : public ref<T>
 
 public:
     explicit lateref() : ref<T>() {}
+
+    lateref(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<T>(other) {}

@@ -11,10 +11,7 @@ void Listenable::addListener(Function<void()> fn)
 
 void Listenable::removeListener(Function<void()> fn)
 {
-    using iterator = Set<Function<void()>>::iterator;
-    const iterator it = this->_listeners->find(fn);
-    if (it != this->_listeners->end())
-        this->_listeners->erase(it);
+    this->_listeners->remove(fn);
 }
 
 void Listenable::dispose()

@@ -18,6 +18,13 @@ public:
     virtual bool remove(T) = 0;
 };
 
+template <typename T>
+class Containable
+{
+public:
+    virtual bool contain(T) = 0;
+};
+
 #include "container/list.h"
 #include "container/set.h"
 #include "container/map.h"

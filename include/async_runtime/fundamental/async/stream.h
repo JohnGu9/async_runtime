@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class Stream<std::nullptr_t> : public Object, StateHelper
+class Stream<std::nullptr_t> : public Object
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
@@ -96,4 +96,9 @@ public:
 protected:
     ref<List<T>> _cache;
     option<Fn<void(T)>> _listener;
+};
+
+template <typename T>
+class BroadcastStream : public Stream<T>
+{
 };

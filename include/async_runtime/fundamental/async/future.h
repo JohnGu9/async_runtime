@@ -3,13 +3,12 @@
 #include "../async.h"
 
 template <>
-class Future<std::nullptr_t> : public virtual Object, protected StateHelper
+class Future<std::nullptr_t> : public Object, protected StateHelper
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
     Future(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
-    Future(ref<State<StatefulWidget>> state) : _callbackHandler(getHandlerfromState(state)), _completed(false) {}
     ref<ThreadPool> _callbackHandler;
     std::atomic_bool _completed;
 

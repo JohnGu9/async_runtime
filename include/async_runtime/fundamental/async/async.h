@@ -2,11 +2,6 @@
 
 #include "../async.h"
 
-template <typename T>
-ref<Future<T>> async(ref<ThreadPool> callbackHandler, Function<T()> fn);
-template <typename T>
-ref<Future<T>> async(ref<State<StatefulWidget>> state, Function<T()> fn);
-
 template <>
 inline ref<Future<void>> async(ref<ThreadPool> callbackHandler, Function<void()> fn)
 {

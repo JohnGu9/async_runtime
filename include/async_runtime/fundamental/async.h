@@ -2,6 +2,27 @@
 
 #include "../object.h"
 #include "../basic/lock.h"
+#include "../basic/duration.h"
+#include "../widgets/stateful_widget.h"
+
+#include "async/thread.h"
+#include "async/thread_pool.h"
+
+#include "state_helper.h"
+
+#define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \
+    template <typename R>                  \
+    friend class Completer;                \
+    template <typename R>                  \
+    friend class Future;                   \
+    template <typename R>                  \
+    friend class Stream;                   \
+    template <typename R>                  \
+    friend class StreamController;         \
+    template <typename R>                  \
+    friend class StreamSubscription;       \
+    template <typename R>                  \
+    friend class AsyncSnapshot;
 
 // @ thread safe
 template <typename T = std::nullptr_t>
@@ -22,26 +43,10 @@ class StreamSubscription;
 template <typename T = std::nullptr_t>
 class AsyncSnapshot;
 
-#define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \
-    template <typename R>                  \
-    friend class Completer;                \
-    template <typename R>                  \
-    friend class Future;                   \
-    template <typename R>                  \
-    friend class Stream;                   \
-    template <typename R>                  \
-    friend class StreamController;         \
-    template <typename R>                  \
-    friend class StreamSubscription;       \
-    template <typename R>                  \
-    friend class AsyncSnapshot;
-
-#include "async/thread.h"
-#include "async/thread_pool.h"
-
-#include "../basic/duration.h"
-#include "../widgets/stateful_widget.h"
-#include "state_helper.h"
+template <typename T>
+ref<Future<T>> async(ref<ThreadPool> callbackHandler, Function<T()> fn);
+template <typename T>
+ref<Future<T>> async(ref<State<StatefulWidget>> state, Function<T()> fn);
 
 #include "async/future.h"
 #include "async/completer.h"

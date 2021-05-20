@@ -2,7 +2,7 @@
 
 A simple framework similar with Flutter but without build GUI. Just for backend software. 
 
-## 0.2.4-nullsafety
+## 0.2.5-nullsafety
 
 Welcome to nullsafety world! Now framework provide nullsafety feature. [ref](include/async_runtime/basic/ref.h) for non-null object and [option](include/async_runtime/basic/ref.h) for nullable object. 
 

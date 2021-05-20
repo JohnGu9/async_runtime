@@ -1,4 +1,4 @@
-# AsyncRuntime [0.2.4-nullsafety]
+# AsyncRuntime [0.2.5-nullsafety]
 
 ## Break Change
 - [ref](include/async_runtime/basic/ref.h) only refer non-null [Object](include/async_runtime/object.h)
@@ -7,6 +7,7 @@
 
 <br/>
 
+- [Fn](include/async_runtime/basic/string.h) become [Object](include/async_runtime/object.h)
 - [String](include/async_runtime/basic/string.h) become [Object](include/async_runtime/object.h)
 - [Set](include/async_runtime/basic/container/set.h) become [Object](include/async_runtime/object.h)
 - [List](include/async_runtime/basic/container/list.h) become [Object](include/async_runtime/object.h)

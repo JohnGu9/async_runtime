@@ -38,11 +38,7 @@ class State<StatefulWidget> : public Object
     lateref<StatefulElement> _element;
     lateref<BuildContext> _context;
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-public:
-#else
 protected:
-#endif
     // @immutable
     void setState(Function<void()> fn);
     const bool &mounted = _mounted;
