@@ -1,4 +1,4 @@
-# AsyncRuntime [0.2.5-nullsafety]
+# AsyncRuntime [0.2.6-nullsafety]
 
 ## Break Change
 - [ref](include/async_runtime/basic/ref.h) only refer non-null [Object](include/async_runtime/object.h)
@@ -13,6 +13,9 @@
 - [List](include/async_runtime/basic/container/list.h) become [Object](include/async_runtime/object.h)
 - [Map](include/async_runtime/basic/container/map.h) become [Object](include/async_runtime/object.h)
 
+<br/>
+
+- [Future::than](include/async_runtime/fundamental/async/future.h) now api accept return both sync data and async data by build [FutureOr](include/async_runtime/fundamental/async/future.h). It will help programmers make less callback hall codes. 
 
 <br/>
 

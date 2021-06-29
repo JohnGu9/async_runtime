@@ -16,12 +16,12 @@ public:
 
     /**
      * @brief 
-     * function is async so that can not exit runApp immediately
-     * you can wrap your widget with a mock [Process] by pass a mock [RootElement] to catch the exit action
+     * Function is async so that can not exit runApp immediately. 
+     * You can wrap your widget with a mock [Process] by pass a mock [RootElement] to catch the exit action. 
      * 
      * example:
      * class MockRootElement : public RootElement {
-     *      void _exit() override { / my code /}
+     *      void _exit() override { / my code / }
      * };
      * 
      * // Process do not lock the ref<RootElement> resource, you need to catch the resource by your own

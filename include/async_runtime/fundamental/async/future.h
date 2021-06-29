@@ -2,6 +2,9 @@
 
 #include "../async.h"
 
+template <typename T>
+class FutureOr;
+
 template <>
 class Future<std::nullptr_t> : public Object, protected StateHelper
 {
@@ -45,8 +48,8 @@ public:
 
     Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList(Object::create<List<Function<void()>>>()) {}
 
-    template <typename ReturnType = void>
-    ref<Future<ReturnType>> than(Function<ReturnType()>);
+    template <typename ReturnType>
+    ref<Future<ReturnType>> than(Function<FutureOr<ReturnType>()>);
     ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
     virtual ref<Future<void>> timeout(Duration, option<Fn<void()>> onTimeout = nullptr);
@@ -72,15 +75,18 @@ public:
     static ref<Future<T>> value(ref<ThreadPool> callbackHandler, T &&);
     static ref<Future<T>> value(ref<State<StatefulWidget>> state, T &&);
 
-    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _data(), _callbackList(Object::create<List<Function<void(const T &)>>>()) {}
+    Future(ref<ThreadPool> callbackHandler)
+        : Future<std::nullptr_t>(callbackHandler), _data(),
+          _callbackList(Object::create<List<Function<void(const T &)>>>()) {}
 
     Future(ref<ThreadPool> callbackHandler, const T &data)
-        : Future<std::nullptr_t>(callbackHandler), _data(data), _callbackList(Object::create<List<Function<void(const T &)>>>()) { this->_completed = true; }
+        : Future<std::nullptr_t>(callbackHandler), _data(data),
+          _callbackList(Object::create<List<Function<void(const T &)>>>()) { this->_completed = true; }
 
-    template <typename ReturnType = void, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
-    ref<Future<ReturnType>> than(Function<ReturnType(const T &)>);
-    template <typename ReturnType = void, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
-    ref<Future<ReturnType>> than(Function<ReturnType(const T &)> fn);
+    template <typename ReturnType, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
+    ref<Future<ReturnType>> than(Function<FutureOr<ReturnType>(const T &)>);
+    template <typename ReturnType, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
+    ref<Future<ReturnType>> than(Function<FutureOr<ReturnType>(const T &)>);
     ref<Future<std::nullptr_t>> than(Function<void()>) override;
 
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
@@ -88,4 +94,33 @@ public:
 protected:
     T _data;
     ref<List<Function<void(const T &)>>> _callbackList;
+};
+
+template <typename T>
+class FutureOr
+{
+    template <typename R>
+    friend class Future;
+
+public:
+    FutureOr(T directlyReturn) : _value(directlyReturn) {}
+    FutureOr(ref<Future<T>> asyncReturn) : _future(asyncReturn) {}
+
+protected:
+    T _value;
+    option<Future<T>> _future;
+};
+
+template <>
+class FutureOr<void>
+{
+    template <typename R>
+    friend class Future;
+
+public:
+    FutureOr() {}
+    FutureOr(ref<Future<void>> asyncReturn) : _future(asyncReturn) {}
+
+protected:
+    option<Future<void>> _future;
 };

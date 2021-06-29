@@ -83,6 +83,7 @@ public:
     }
 };
 
+// @ thread safe
 template <>
 class AsyncStreamController<void> : public StreamController<void>
 {

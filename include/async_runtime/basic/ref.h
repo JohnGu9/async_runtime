@@ -85,7 +85,9 @@
     template <typename R>                           \
     friend class Future;                            \
     template <typename R>                           \
-    friend class Stream;
+    friend class Stream;                            \
+    template <typename R>                           \
+    friend class FutureOr;
 
 // nullable object
 template <typename T>

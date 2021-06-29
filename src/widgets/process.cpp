@@ -21,12 +21,7 @@ void Process::exit(const int exitCode)
     lateref<RootElement> root;
     if (_root.isNotNull(root))
     {
-        root->getMainHandler()->post([root, exitCode] {
-            if (root->_consoleStop == false)
-            {
-                root->_consoleStop = true;
-                root->_exit(exitCode);
-            }
-        });
+        root->_consoleStop = true;
+        root->_exit(exitCode);
     }
 }
