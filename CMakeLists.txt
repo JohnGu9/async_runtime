@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 # message(STATUS "Compiler Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
 option(ASYNC_RUNTIME_BUILD_SHARED "Build AsyncRuntime Shared Library(only available on unix-like system, not available on win32)" ON)
 
-set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 message(STATUS "Async Runtime using CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Async Runtime using CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
