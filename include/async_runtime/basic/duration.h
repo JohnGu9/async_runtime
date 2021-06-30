@@ -26,48 +26,55 @@
 #include <unordered_map>
 #include <vector>
 
-// native copyable type that don't not need ref
+/**
+ * @brief Duration for a peroid of time in Async Runtime
+ * 
+ * @alarm native copyable type that don't not need ref
+ * @alarm only support minimum unit milliseconds
+ */
 class Duration
 {
+    using DataType = signed long long;
+
 public:
-    static const int64_t microsecondsPerMillisecond = 1000;
-    static const int64_t millisecondsPerSecond = 1000;
-    static const int64_t secondsPerMinute = 60;
-    static const int64_t minutesPerHour = 60;
-    static const int64_t hoursPerDay = 24;
+    static const DataType microsecondsPerMillisecond = 1000;
+    static const DataType millisecondsPerSecond = 1000;
+    static const DataType secondsPerMinute = 60;
+    static const DataType minutesPerHour = 60;
+    static const DataType hoursPerDay = 24;
 
-    static const int64_t microsecondsPerSecond =
+    static const DataType microsecondsPerSecond =
         microsecondsPerMillisecond * millisecondsPerSecond;
-    static const int64_t microsecondsPerMinute =
+    static const DataType microsecondsPerMinute =
         microsecondsPerSecond * secondsPerMinute;
-    static const int64_t microsecondsPerHour = microsecondsPerMinute * minutesPerHour;
-    static const int64_t microsecondsPerDay = microsecondsPerHour * hoursPerDay;
+    static const DataType microsecondsPerHour = microsecondsPerMinute * minutesPerHour;
+    static const DataType microsecondsPerDay = microsecondsPerHour * hoursPerDay;
 
-    static const int64_t millisecondsPerMinute =
+    static const DataType millisecondsPerMinute =
         millisecondsPerSecond * secondsPerMinute;
-    static const int64_t millisecondsPerHour = millisecondsPerMinute * minutesPerHour;
-    static const int64_t millisecondsPerDay = millisecondsPerHour * hoursPerDay;
+    static const DataType millisecondsPerHour = millisecondsPerMinute * minutesPerHour;
+    static const DataType millisecondsPerDay = millisecondsPerHour * hoursPerDay;
 
-    static const int64_t secondsPerHour = secondsPerMinute * minutesPerHour;
-    static const int64_t secondsPerDay = secondsPerHour * hoursPerDay;
+    static const DataType secondsPerHour = secondsPerMinute * minutesPerHour;
+    static const DataType secondsPerDay = secondsPerHour * hoursPerDay;
 
-    static const int64_t minutesPerDay = minutesPerHour * hoursPerDay;
+    static const DataType minutesPerDay = minutesPerHour * hoursPerDay;
 
     static Duration fromDetail(
-        int days = 0,
-        int hours = 0,
-        int minutes = 0,
-        int seconds = 0,
-        int milliseconds = 0,
-        int microseconds = 0);
+        signed long long days = 0,
+        signed long long hours = 0,
+        signed long long minutes = 0,
+        signed long long seconds = 0,
+        signed long long milliseconds = 0,
+        signed long long microseconds = 0 /* Duration only support milliseconds, microseconds mean nothing */);
 
-    static Duration fromMilliseconds(int milliseconds);
-    static Duration fromSeconds(int seconds);
-    static Duration fromMinutes(int minutes);
-    static Duration fromHours(int hours);
-    static Duration fromDays(int days);
+    static Duration fromMilliseconds(signed long long milliseconds);
+    static Duration fromSeconds(signed long long seconds);
+    static Duration fromMinutes(signed long long minutes);
+    static Duration fromHours(signed long long hours);
+    static Duration fromDays(signed long long days);
 
-    Duration(int64_t milliseconds);
+    Duration(signed long long milliseconds);
 
     Duration operator+(Duration &&other) const
     {
@@ -90,7 +97,7 @@ public:
    * Note that when [factor] is a double, and the duration is greater than
    * 53 bits, precision is lost because of double-precision arithmetic.
    */
-    Duration operator*(int64_t factor) const
+    Duration operator*(DataType factor) const
     {
         return Duration(_duration * factor);
     }
@@ -144,5 +151,5 @@ public:
     std::chrono::milliseconds toChronoMilliseconds() const;
 
 protected:
-    int64_t _duration;
+    DataType _duration;
 };

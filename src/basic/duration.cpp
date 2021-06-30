@@ -1,12 +1,12 @@
 #include "async_runtime/basic/duration.h"
 
 Duration Duration::fromDetail(
-    int days,
-    int hours,
-    int minutes,
-    int seconds,
-    int milliseconds,
-    int microseconds)
+    DataType days,
+    DataType hours,
+    DataType minutes,
+    DataType seconds,
+    DataType milliseconds,
+    DataType microseconds)
 {
     return Duration(millisecondsPerDay * days +
                     millisecondsPerHour * hours +
@@ -15,34 +15,34 @@ Duration Duration::fromDetail(
                     milliseconds);
 }
 
-Duration Duration::fromMilliseconds(int milliseconds)
+Duration Duration::fromMilliseconds(DataType milliseconds)
 {
     return Duration(milliseconds);
 }
 
-Duration Duration::fromSeconds(int seconds)
+Duration Duration::fromSeconds(DataType seconds)
 {
     return Duration(millisecondsPerSecond * seconds);
 }
 
-Duration Duration::fromMinutes(int minutes)
+Duration Duration::fromMinutes(DataType minutes)
 {
     return Duration(millisecondsPerMinute * minutes);
 }
 
-Duration Duration::fromHours(int hours)
+Duration Duration::fromHours(DataType hours)
 {
     return Duration(millisecondsPerHour * hours);
 }
 
-Duration Duration::fromDays(int days)
+Duration Duration::fromDays(DataType days)
 {
     return Duration(millisecondsPerDay * days);
 }
 
-Duration::Duration(int64_t milliseconds) : _duration(microsecondsPerMillisecond * milliseconds) {}
+Duration::Duration(DataType milliseconds) : _duration(microsecondsPerMillisecond * milliseconds) {}
 
-static inline int64_t _abs(int64_t x) { return x >= 0 ? x : -x; }
+static inline signed long long _abs(signed long long x) { return x >= 0 ? x : -x; }
 
 Duration Duration::abs() const
 {
