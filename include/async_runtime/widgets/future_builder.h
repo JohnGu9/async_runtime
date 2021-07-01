@@ -33,10 +33,11 @@ public:
         if (!AsyncSnapshot<>::getCompletedFromFuture(future))
         {
             ref<FutureBuilder<T>::_State> self = self();
-            future->than([=] {
-                if (this->widget->future == future)
-                    this->setState([] {});
-            });
+            future->than([this, self, future]
+                         {
+                             if (this->widget->future == future)
+                                 this->setState([] {});
+                         });
         }
     }
 
@@ -47,10 +48,11 @@ public:
         if (oldWidget->future != future && !AsyncSnapshot<>::getCompletedFromFuture(future))
         {
             ref<FutureBuilder<T>::_State> self = self();
-            future->than([=] {
-                if (this->widget->future == future)
-                    this->setState([] {});
-            });
+            future->than([this, self, future]
+                         {
+                             if (this->widget->future == future)
+                                 this->setState([] {});
+                         });
         }
     }
 

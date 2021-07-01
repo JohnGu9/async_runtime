@@ -39,16 +39,18 @@ public:
     virtual ref<StreamSubscription<void>> listen(Function<void()> fn)
     {
         ref<Stream<void>> self = self();
-        this->_callbackHandler->post([this, self, fn] {
-            assert(this->_listener == nullptr && "Single listener stream can't have more than one listener");
-            this->_listener = fn;
-            for (size_t c = 0; c < this->_sinkCounter; c++)
-                fn();
-            this->_sinkCounter = 0;
-            if (this->_isClosed)
-                this->_onClose->completeSync();
-        });
-        return Object::create<StreamSubscription<void>>([=] { self->_listener = nullptr; });
+        this->_callbackHandler->post([this, self, fn]
+                                     {
+                                         assert(this->_listener == nullptr && "Single listener stream can't have more than one listener");
+                                         this->_listener = fn;
+                                         for (size_t c = 0; c < this->_sinkCounter; c++)
+                                             fn();
+                                         this->_sinkCounter = 0;
+                                         if (this->_isClosed)
+                                             this->_onClose->completeSync();
+                                     });
+        return Object::create<StreamSubscription<void>>([this, self]
+                                                        { this->_listener = nullptr; });
     }
 
     virtual ref<Stream<void>> onClose(Function<void()> fn)
@@ -75,16 +77,18 @@ public:
     virtual ref<StreamSubscription<T>> listen(Function<void(T)> fn)
     {
         ref<Stream<T>> self = self();
-        this->_callbackHandler->post([this, self, fn] {
-            assert(this->_listener == nullptr && "Single listener stream can't have more than one listener");
-            this->_listener = fn;
-            for (auto &cache : this->_cache)
-                fn(std::move(cache));
-            this->_cache->clear();
-            if (this->_isClosed)
-                this->_onClose->completeSync();
-        });
-        return Object::create<StreamSubscription<T>>([=] { self->_listener = nullptr; });
+        this->_callbackHandler->post([this, self, fn]
+                                     {
+                                         assert(this->_listener == nullptr && "Single listener stream can't have more than one listener");
+                                         this->_listener = fn;
+                                         for (auto &cache : this->_cache)
+                                             fn(std::move(cache));
+                                         this->_cache->clear();
+                                         if (this->_isClosed)
+                                             this->_onClose->completeSync();
+                                     });
+        return Object::create<StreamSubscription<T>>([this, self]
+                                                     { this->_listener = nullptr; });
     }
 
     virtual ref<Stream<T>> onClose(Function<void()> fn)
