@@ -75,7 +75,8 @@ ThreadPool::~ThreadPool()
 
 std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
-    return [this, threadId] {
+    return [this, threadId]
+    {
         ThreadPool::thisThreadName = this->childrenThreadName(threadId);
         assert(ThreadPool::thisThreadName->isNotEmpty());
 
@@ -90,9 +91,8 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
             std::function<void()> task;
             {
                 std::unique_lock<std::mutex> lock(this->_queueMutex);
-                this->_condition.wait(lock, [this] {
-                    return this->_stop || !this->_microTasks.empty() || !this->_tasks.empty();
-                });
+                this->_condition.wait(lock, [this]
+                                      { return this->_stop || !this->_microTasks.empty() || !this->_tasks.empty(); });
 
                 if (this->_stop && this->_microTasks.empty() && this->_tasks.empty())
                     return;
@@ -208,7 +208,8 @@ void AutoReleaseThreadPool::dispose()
 std::function<void()> AutoReleaseThreadPool::workerBuilder(size_t threadId)
 {
     ref<AutoReleaseThreadPool> self = self();
-    return [=] { self->ThreadPool::workerBuilder(threadId)(); };
+    return [this, self, threadId]
+    { this->ThreadPool::workerBuilder(threadId)(); };
 }
 
 /**
@@ -221,12 +222,13 @@ void Future<std::nullptr_t>::sync()
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than([&] {
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-        }
-        condition.notify_all();
-    });
+    this->than([&]
+               {
+                   {
+                       std::unique_lock<std::mutex> lock(mutex);
+                   }
+                   condition.notify_all();
+               });
     condition.wait(lock);
 }
 
@@ -235,12 +237,13 @@ void Future<std::nullptr_t>::sync(Duration timeout)
     std::mutex mutex;
     std::condition_variable condition;
     std::unique_lock<std::mutex> lock(mutex);
-    this->than([&] {
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-        }
-        condition.notify_all();
-    });
+    this->than([&]
+               {
+                   {
+                       std::unique_lock<std::mutex> lock(mutex);
+                   }
+                   condition.notify_all();
+               });
     condition.wait_for(lock, timeout.toChronoMilliseconds());
 }
 
@@ -255,10 +258,11 @@ ref<Future<void>> Future<void>::race(ref<State<StatefulWidget>> state, ref<Set<r
         return Future<void>::value(state);
     ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
     for (auto &future : set)
-        future->than([completer] {
-            if (completer->isCompleted == false)
-                completer->complete();
-        });
+        future->than([completer]
+                     {
+                         if (completer->isCompleted == false)
+                             completer->complete();
+                     });
     return completer->future;
 }
 
@@ -270,16 +274,18 @@ ref<Future<void>> Future<void>::wait(ref<State<StatefulWidget>> state, ref<Set<r
     ref<Completer<void>> completer = Object::create<Completer<void>>(getHandlerfromState(state));
     size_t *count = new size_t(0);
     for (auto &future : set)
-        future->than([completer, count, size] {
-            completer->_callbackHandler->post([completer, count, size] {
-                (*count)++;
-                if (*count == size)
-                {
-                    completer->completeSync();
-                    delete count;
-                }
-            });
-        });
+        future->than([completer, count, size]
+                     {
+                         completer->_callbackHandler->post([completer, count, size]
+                                                           {
+                                                               (*count)++;
+                                                               if (*count == size)
+                                                               {
+                                                                   completer->completeSync();
+                                                                   delete count;
+                                                               }
+                                                           });
+                     });
     return completer->future;
 }
 
@@ -301,36 +307,39 @@ ref<Future<void>> Future<void>::value(ref<State<StatefulWidget>> state)
 ref<Future<void>> Future<void>::delay(ref<ThreadPool> callbackHandler, Duration duration, option<Fn<void()>> onTimeout)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(callbackHandler);
-    ref<Timer> timer = Timer::delay(callbackHandler, duration, [completer, onTimeout] {
-        lateref<Fn<void()>> _onTimeout;
-        if (onTimeout.isNotNull(_onTimeout))
-            _onTimeout();
-        completer->complete();
-    });
+    ref<Timer> timer = Timer::delay(callbackHandler, duration, [completer, onTimeout]
+                                    {
+                                        lateref<Fn<void()>> _onTimeout;
+                                        if (onTimeout.isNotNull(_onTimeout))
+                                            _onTimeout();
+                                        completer->complete();
+                                    });
     return completer->future;
 }
 
 ref<Future<void>> Future<void>::delay(ref<State<StatefulWidget>> state, Duration duration, option<Fn<void()>> onTimeout)
 {
     ref<Completer<void>> completer = Object::create<Completer<void>>(state);
-    ref<Timer> timer = Timer::delay(state, duration, [completer, onTimeout] {
-        lateref<Fn<void()>> _onTimeout;
-        if (onTimeout.isNotNull(_onTimeout))
-            _onTimeout();
-        completer->complete();
-    });
+    ref<Timer> timer = Timer::delay(state, duration, [completer, onTimeout]
+                                    {
+                                        lateref<Fn<void()>> _onTimeout;
+                                        if (onTimeout.isNotNull(_onTimeout))
+                                            _onTimeout();
+                                        completer->complete();
+                                    });
     return completer->future;
 }
 
 ref<Future<std::nullptr_t>> Future<void>::than(Function<void()> fn)
 {
     ref<Future<void>> self = self();
-    this->_callbackHandler->post([=] {
-        if (this->_completed == false)
-            this->_callbackList->emplace_back(fn);
-        else
-            fn();
-    });
+    this->_callbackHandler->post([this, self, fn]
+                                 {
+                                     if (this->_completed == false)
+                                         this->_callbackList->emplace_back(fn);
+                                     else
+                                         fn();
+                                 });
     return self;
 }
 
@@ -339,19 +348,21 @@ ref<Future<void>> Future<void>::timeout(Duration duration, option<Fn<void()>> on
     ref<Future<void>> self = self();
     ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
     Future<void>::delay(this->_callbackHandler, duration)
-        ->than([=] {
-            if (completer->_isCompleted == false)
-            {
-                lateref<Fn<void()>> _onTimeout;
-                if (onTimeout.isNotNull(_onTimeout))
-                    _onTimeout();
-                completer->completeSync();
-            }
-        });
-    this->than([=] {
-        if (completer->_isCompleted == false)
-            completer->completeSync();
-    });
+        ->than([completer, onTimeout]
+               {
+                   if (completer->_isCompleted == false)
+                   {
+                       lateref<Fn<void()>> _onTimeout;
+                       if (onTimeout.isNotNull(_onTimeout))
+                           _onTimeout();
+                       completer->completeSync();
+                   }
+               });
+    this->than([completer]
+               {
+                   if (completer->_isCompleted == false)
+                       completer->completeSync();
+               });
     return completer->future;
 }
 
