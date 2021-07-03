@@ -72,9 +72,6 @@ protected:
         super::dispose();
     }
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-public:
-#endif
     const ref<T> &widget = _widget;
 
 private:

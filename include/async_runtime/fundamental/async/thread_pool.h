@@ -28,8 +28,7 @@ class ThreadPool : public Object, public Disposable
     static ref<Lock> _lock;
 
 public:
-    static thread_local ref<String>
-        thisThreadName;
+    static thread_local ref<String> thisThreadName;
     static void setThreadName(ref<String> name);
 
     ThreadPool(size_t threads, option<String> name = nullptr);
