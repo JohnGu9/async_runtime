@@ -15,7 +15,7 @@
 
 <br/>
 
-- [Future::than](include/async_runtime/fundamental/async/future.h) now api accept return both sync data and async data by build [FutureOr](include/async_runtime/fundamental/async/future.h). It will help programmers make less callback hall codes. 
+- [Future::than](include/async_runtime/fundamental/async/future.h) now api accept return both sync data and async data by build [FutureOr](include/async_runtime/fundamental/async/future.h). It will help programmers make less callback-hell codes. 
 
 <br/>
 

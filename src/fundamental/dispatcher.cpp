@@ -25,13 +25,15 @@ static option<ThreadPool> _getThreadPool(option<ThreadPool> threadPool, size_t t
 AsyncDispatcher::AsyncDispatcher(ref<ThreadPool> handler, option<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(handler), _ownThreadPool(_getThreadPool(threadPool, 1))
 {
-    _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
+    _threadPool = threadPool.isNotNullElse([this]
+                                           { return this->_ownThreadPool.assertNotNull(); });
 }
 
 AsyncDispatcher::AsyncDispatcher(ref<State<StatefulWidget>> state, option<ThreadPool> threadPool, size_t threads = 1)
     : Dispatcher(state), _ownThreadPool(_getThreadPool(threadPool, 1))
 {
-    _threadPool = threadPool.isNotNullElse([this] { return this->_ownThreadPool.assertNotNull(); });
+    _threadPool = threadPool.isNotNullElse([this]
+                                           { return this->_ownThreadPool.assertNotNull(); });
 }
 
 std::future<void> AsyncDispatcher::post(Function<void()> fn) { return this->_threadPool->post(fn->toStdFunction()); }
@@ -41,7 +43,8 @@ std::future<void> AsyncDispatcher::post(Function<void(RunOnMainThread runner)> f
     ref<AsyncDispatcher> self = self();
     return this->_threadPool->post(
         fn->toStdFunction(),
-        [=](Function<void()> job) { self->postToMainThread(job); });
+        [this, self](Function<void()> job)
+        { this->postToMainThread(job); });
 }
 
 AsyncDispatcher::~AsyncDispatcher()

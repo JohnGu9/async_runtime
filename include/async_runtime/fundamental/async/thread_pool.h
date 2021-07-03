@@ -79,7 +79,7 @@ auto ThreadPool::post(F &&f, Args &&...args)
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
     -> std::future<typename std::invoke_result<F, Args...>::type>
 #else
-    -> std::future<typename result_of<F(Args...)>::type>
+        -> std::future < typename std::result_of<F(Args...)>::type>
 #endif
 
 {
@@ -113,7 +113,7 @@ auto ThreadPool::microTask(F &&f, Args &&...args)
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
     -> std::future<typename std::invoke_result<F, Args...>::type>
 #else
-    -> std::future<typename result_of<F(Args...)>::type>
+    -> std::future<typename std::result_of<F(Args...)>::type>
 #endif
 
 {

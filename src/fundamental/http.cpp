@@ -8,7 +8,9 @@ static ref<ThreadPool> sharedThreadPool()
 
 void Http::Client::dispose()
 {
-    sharedThreadPool()->post([=] { _client = nullptr; }).get(); // close httplib::Client on the same thread
+    sharedThreadPool()->post([this]
+                             { _client = nullptr; })
+        .get(); // close httplib::Client on the same thread
     super::dispose();
 }
 
@@ -107,63 +109,56 @@ using Res = ref<Http::Client::Result>;
 ref<Future<Res>> Http::Client::get(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
-    sharedThreadPool()->post([=] {
-        completer->complete(Object::create<Result>(_client->Get(pattern->c_str())));
-    });
+    sharedThreadPool()->post([this, completer, pattern]
+                             { completer->complete(Object::create<Result>(_client->Get(pattern->c_str()))); });
     return completer->future;
 }
 
 ref<Future<Res>> Http::Client::head(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
-    sharedThreadPool()->post([=] {
-        completer->complete(Object::create<Result>(_client->Head(pattern->c_str())));
-    });
+    sharedThreadPool()->post([this, completer, pattern]
+                             { completer->complete(Object::create<Result>(_client->Head(pattern->c_str()))); });
     return completer->future;
 }
 
 ref<Future<Res>> Http::Client::post(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
-    sharedThreadPool()->post([=] {
-        completer->complete(Object::create<Result>(_client->Post(pattern->c_str())));
-    });
+    sharedThreadPool()->post([this, completer, pattern]
+                             { completer->complete(Object::create<Result>(_client->Post(pattern->c_str()))); });
     return completer->future;
 }
 
 ref<Future<Res>> Http::Client::put(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
-    sharedThreadPool()->post([=] {
-        completer->complete(Object::create<Result>(_client->Put(pattern->c_str())));
-    });
+    sharedThreadPool()->post([this, completer, pattern]
+                             { completer->complete(Object::create<Result>(_client->Put(pattern->c_str()))); });
     return completer->future;
 }
 
 ref<Future<Res>> Http::Client::patch(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
-    sharedThreadPool()->post([=] {
-        completer->complete(Object::create<Result>(_client->Patch(pattern->c_str())));
-    });
+    sharedThreadPool()->post([this, completer, pattern]
+                             { completer->complete(Object::create<Result>(_client->Patch(pattern->c_str()))); });
     return completer->future;
 }
 
 ref<Future<Res>> Http::Client::del(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
-    sharedThreadPool()->post([=] {
-        completer->complete(Object::create<Result>(_client->Delete(pattern->c_str())));
-    });
+    sharedThreadPool()->post([this, completer, pattern]
+                             { completer->complete(Object::create<Result>(_client->Delete(pattern->c_str()))); });
     return completer->future;
 }
 
 ref<Future<Res>> Http::Client::options(ref<String> pattern)
 {
     ref<Completer<Res>> completer = Object::create<Completer<Res>>(_callbackHandler);
-    sharedThreadPool()->post([=] {
-        completer->complete(Object::create<Result>(_client->Options(pattern->c_str())));
-    });
+    sharedThreadPool()->post([this, completer, pattern]
+                             { completer->complete(Object::create<Result>(_client->Options(pattern->c_str()))); });
     return completer->future;
 }
 
@@ -179,13 +174,15 @@ public:
 
 Http::Server::Server(ref<State<StatefulWidget>> state) : Dispatcher(state)
 {
-    _server.new_task_queue = [this] { return new Http::Server::TaskQueue(this->_callbackHandler); };
+    _server.new_task_queue = [this]
+    { return new Http::Server::TaskQueue(this->_callbackHandler); };
 }
 
 Http::Server *Http::Server::listen(ref<String> address, int port)
 {
     _server.bind_to_port(address->c_str(), port);
-    _listenThread = Thread([this] { _server.listen_after_bind(); });
+    _listenThread = Thread([this]
+                           { _server.listen_after_bind(); });
     return this;
 }
 
