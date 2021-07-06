@@ -19,5 +19,7 @@ public:
         _unsubscribe();
         _unsubscribe = [] {};
     }
+
+protected:
     Function<void()> _unsubscribe;
 };
