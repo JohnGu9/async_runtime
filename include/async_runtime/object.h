@@ -35,7 +35,7 @@ public:
 
     template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
-    
+
     template <typename T0, typename T1>
     static bool identical(const option<T0> &, const option<T1> &);
     template <typename T0, typename T1>
@@ -75,6 +75,15 @@ ref<T> Object::create(_Args &&...__args)
     return object;
 }
 
+/**
+ * @brief detach let ref force to release the refences of object
+ * object may not dispose if there is any other ref of itself
+ * be careful to use this function that may cause serious problem
+ * 
+ * @tparam T 
+ * @tparam * 
+ * @param object the ref need to force to release
+ */
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 void Object::detach(ref<T> &object)
 {
@@ -129,7 +138,11 @@ ref<T> Object::covariant()
     if (T *castedPointer = dynamic_cast<T *>(this))
         return Object::cast<>(castedPointer);
     else
-        throw std::runtime_error(std::string("Invail type covariant from [") + typeid(*this).name() + "] to [" + typeid(T).name() + "]");
+    {
+        std::stringstream ss;
+        ss << "Invalid type covariant from [" << typeid(*this).name() << "] to [" << typeid(T).name() << "]";
+        throw std::runtime_error(ss.str());
+    }
 }
 
 #include "basic/function.h"
