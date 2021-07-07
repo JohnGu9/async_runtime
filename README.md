@@ -51,10 +51,35 @@ inline ref<State<>> MyWidget::createState() { return Object::create<_MyWidgetSta
 runApp(Object::create<MyWidget>());
 ```
 
+## Widget tree
+
+### Tree layout
+
+<img src="documents/widget_tree_layout.svg"/>
+
+<br/>
+
+### Tree lifecycle
+
+* as if both parent and child are StatefulWidget
+
+<img src="documents/widget_tree_lifecycle.svg"/>
+
+<br/>
+
+
+## State lifecycle
+
+* as if the widget is StatefulWidget
+
+<img src="documents/state_lifecycle.svg"/>
+
+<br/>
+
 ## Async
 This framework provides async task management. All async components showup in [fundamental]() folder. The common async tasks already build in framework. 
 <br/>
-1) Timer (callback style async, Also see: Future::delay)
+1) Timer (Callback style async. Also see: Future::delay)
 2) File
 3) Http
 
