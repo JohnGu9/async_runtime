@@ -48,6 +48,8 @@ public:
                                          this->_sinkCounter = 0;
                                          if (this->_isClosed)
                                              this->_onClose->completeSync();
+                                         this->_onClose->future->than([this, self]
+                                                                      { _listener = nullptr; });
                                      });
         return Object::create<StreamSubscription<void>>([this, self]
                                                         { this->_listener = nullptr; });
@@ -86,6 +88,8 @@ public:
                                          this->_cache->clear();
                                          if (this->_isClosed)
                                              this->_onClose->completeSync();
+                                         this->_onClose->future->than([this, self]
+                                                                      { _listener = nullptr; });
                                      });
         return Object::create<StreamSubscription<T>>([this, self]
                                                      { this->_listener = nullptr; });

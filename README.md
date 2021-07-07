@@ -7,11 +7,11 @@ A framework write in C++11 (compatible with up to C++17 standard) that similar w
 
 Welcome to nullsafety world! Now framework provide nullsafety feature. [ref](include/async_runtime/basic/ref.h) for non-null object and [option](include/async_runtime/basic/ref.h) for nullable object. 
 
-1) ref, option and weakref for object management (implement base on std::shared_ptr, cross-platform, less bug and nullsafety)
+1) [ref, option and weakref](include/async_runtime/basic/ref.h) for object management (implement base on std::shared_ptr, cross-platform, less bug and nullsafety)
 
 2) widget and context for software architecture management. (Widget tree layout and lifecycle just similar with Flutter. If you familiar with Flutter, there is nothing new for you to learn)
 
-3) all async api directly build upon context, init async tasks right after State::initState and dispose async resource when State::dispose (so that async work managed by framework). Ease code and less memory lack problem and less state-unknown conflict problem.
+3) all async apis directly build upon context, init async tasks right after State::initState and dispose async resource when State::dispose (so that async work managed by framework). Ease code and less memory lack problem and less state-unknown conflict problem.
 
 4) compatible with <span style="color:Fuchsia">Windows/Linux/macOS</span> and more. compatible with <span style="color:Fuchsia">C++17/14/11</span>. <span style="color:Fuchsia">CMake</span> build rule. 
 
@@ -45,20 +45,28 @@ class _MyWidgetState : public State<MyWidget> {
 inline ref<State<>> MyWidget::createState() { return Object::create<_MyWidgetState>(); }
 ```
 
+```c++
+// run your widget as root widget
+// framework will automatically expand the widget tree
+runApp(Object::create<MyWidget>());
+```
+
 ## Async
-This framework provide async task management. All async components showup in [fundamental](). The common async tasks already build in framework. 
+This framework provides async task management. All async components showup in [fundamental](). The common async tasks already build in framework. 
 <br/>
-1) Timer (callback style async)
+1) Timer (callback style async, Also see: Future::delay)
 2) File (sequence style async)
 3) Http (sequence style async)
 
 <br/>
 
-If you satisfy with build in async api. This framework provide [Completer]() for build [Future]() and [StreamController]() for build [Stream](). 
+Except Timer, all async components take advantage of [Future]() and [Stream]() to implement async. 
+
+If you not satisfy with build-in async api. This framework provides [Completer]() for build [Future]() and [StreamController]() for build [Stream]() to achieve async program. 
 
 <br/>
 
-All async api request one more argument than traditional async programming language. They always request [ref<State<>>]() or [ref\<ThreadPool>](), Because this framework is designed for multi-thread application. Async task must need to know which thread it should return to. for example: 
+All async api request one more argument than traditional async programming language. They always request [ref<State<>>]() or [ref\<ThreadPool>](), Because this framework is designed for multi-thread application. Async task must need to know which thread it should return to. For example: 
 
 ```c++
 class MyState : public State<MyWidget> {
@@ -71,7 +79,6 @@ class MyState : public State<MyWidget> {
         _timer = Timer::delay(self() /* timer always request a reference of current State to build a timer object */, 
             Duration(1000), []{ ... });
     }
-
 };
 ```
 
