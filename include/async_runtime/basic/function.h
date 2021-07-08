@@ -5,7 +5,7 @@
 #include <memory>
 #include "../object.h"
 /**
- * @brief 
+ * @brief Function object in Async Runtime
  * 
  * 
  * @tparam T 

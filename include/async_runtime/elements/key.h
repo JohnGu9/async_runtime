@@ -51,7 +51,7 @@ public:
         lateref<Key> key;
         if (other.isNotNull(key))
         {
-            return Object::identical(self(), key);
+            return Object::identical<>(self(), key);
         }
         else
         {
@@ -74,7 +74,7 @@ public:
         {
             lateref<GlobalObjectKey> castedPointer;
             if (nonNullOther->cast<GlobalObjectKey>().isNotNull(castedPointer))
-                return Object::identical(this->_object, castedPointer->_object);
+                return Object::identical<>(this->_object, castedPointer->_object);
         }
         return false;
     }
@@ -83,14 +83,3 @@ protected:
     GlobalObjectKey() = delete;
     option<Object> _object;
 };
-
-inline bool operator==(option<Key> key0, option<Key> key1)
-{
-    lateref<Key> nonNullKey0;
-    if (key0.isNotNull(nonNullKey0))
-    {
-        return nonNullKey0->equal(key1);
-    }
-
-    return key1 == nullptr;
-}

@@ -107,7 +107,7 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
     while (true)
     {
         auto index = this->find(pattern, lastIndex);
-        if (index == std::string::npos)
+        if (index == String::npos)
         {
             auto start = std::string::begin() + lastIndex;
             auto end = std::string::end();

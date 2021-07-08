@@ -102,10 +102,10 @@ ref<Future<ReturnType>> Future<void>::than(Function<FutureOr<ReturnType>()> fn)
                                          if (result._future.isNotNull(future))
                                          {
                                              future->template than<void>([completer](const ReturnType &value) -> FutureOr<void>
-                                                                {
-                                                                    completer->complete(value);
-                                                                    return {};
-                                                                });
+                                                                         {
+                                                                             completer->complete(value);
+                                                                             return {};
+                                                                         });
                                          }
                                          else
                                              completer->completeSync(result._value);
@@ -190,10 +190,10 @@ ref<Future<ReturnType>> Future<T>::than(Function<FutureOr<ReturnType>(const T &)
                                          if (result._future.isNotNull(future))
                                          {
                                              future->template than<void>([completer](const ReturnType &value) -> FutureOr<void>
-                                                                {
-                                                                    completer->complete(value);
-                                                                    return {};
-                                                                });
+                                                                         {
+                                                                             completer->complete(value);
+                                                                             return {};
+                                                                         });
                                          }
                                          else
                                              completer->completeSync(result._value);
@@ -227,12 +227,12 @@ ref<Future<T>> Future<T>::timeout(Duration duration, Function<T()> onTimeout)
     ref<Future<T>> self = self();
     ref<Completer<T>> completer = Object::create<Completer<T>>(this->_callbackHandler);
     Future<void>::delay(this->_callbackHandler, duration)
-        ->than([=]
+        ->than([completer, onTimeout]
                {
                    if (completer->_isCompleted == false)
                        completer->completeSync(onTimeout());
                });
-    this->than([=]
+    this->than([this, self, completer]
                {
                    if (completer->_isCompleted == false)
                        completer->completeSync(std::move(this->_data));

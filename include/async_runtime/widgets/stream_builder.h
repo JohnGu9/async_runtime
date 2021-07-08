@@ -8,7 +8,7 @@ class StreamBuilder : public StatefulWidget
     class _State;
 
 public:
-    using Builder = Funtion<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)>
+    using Builder = Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)>
     StreamBuilder(ref<Stream<T>> stream, Builder builder, option<Key> key = nullptr)
         : StatefulWidget(key),
           stream(stream), builder(builder) {}
@@ -21,6 +21,10 @@ public:
 template <typename T>
 class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
 {
+    using super = State<StreamBuilder<T>>;
+    lateref<StreamSubscription<T>> _subscription;
+    void initState() override {}
+    void dispose() override { _subscription->cancel(); }
     ref<Widget> build(ref<BuildContext>) override;
 };
 
