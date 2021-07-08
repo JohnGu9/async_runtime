@@ -189,12 +189,12 @@ void Timer::_setInterval(Duration interval, Function<void()> function)
 
 void Timer::cancel()
 {
-    this->_clear = true;
-    _onCancel();
+    this->dispose();
 }
 
 void Timer::dispose()
 {
-    this->cancel();
+    this->_clear = true;
+    _onCancel();
     Dispatcher::dispose();
 }

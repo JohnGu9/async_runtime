@@ -74,6 +74,7 @@ class String : public Object, protected std::string
 public:
     using const_iterator = std::string::const_iterator;
     using const_reverse_iterator = std::string::const_reverse_iterator;
+    static const std::size_t npos = std::string::npos;
     class View;
 
     template <typename... Args>
@@ -193,6 +194,7 @@ class String::View : public String
     ref<String> _parent;
 
 public:
+    // TODO: implement this class
 };
 
 ref<String> operator+(const char c, const ref<String> &string);
@@ -294,7 +296,7 @@ template <class First, class... Rest>
 void String::_unwrapPack(size_t &lastIndex, std::stringstream &ss, const First &first, const Rest &...rest)
 {
     auto index = this->find("{}", lastIndex);
-    if (lastIndex >= this->length() || index == std::string::npos)
+    if (lastIndex >= this->length() || index == String::npos)
     {
 #ifndef NDEBUG
         std::stringstream debugInfo;

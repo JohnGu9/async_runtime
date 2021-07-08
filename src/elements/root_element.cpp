@@ -57,7 +57,7 @@ void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement s
 void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement dependence would never change. "); }
 
 void RootElement::attach()
-{    
+{
     static finalref<Map<Object::RuntimeType, lateref<Inheritance>>> empty = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
     this->_inheritances = empty;
     this->attachElement(this->_child->createElement());
@@ -112,45 +112,46 @@ void RootElement::_console()
 {
     std::unique_lock<std::mutex> lock(this->_mutex);
     auto self = self();
-    auto thread = Thread([this, self] {
+    auto thread = Thread([this, self]
+                         {
 #ifndef NDEBUG
-        ThreadPool::setThreadName("ConsoleThread");
+                             ThreadPool::setThreadName("ConsoleThread");
 #endif
-        info_print("Enter '"
-                   << font_wrapper(BOLDBLUE, 'q')
-                   << "' to quit, '"
-                   << font_wrapper(BOLDBLUE, "-h")
-                   << "' or '"
-                   << font_wrapper(BOLDBLUE, "--help")
-                   << "' for more information");
+                             info_print("Enter '"
+                                        << font_wrapper(BOLDBLUE, 'q')
+                                        << "' to quit, '"
+                                        << font_wrapper(BOLDBLUE, "-h")
+                                        << "' or '"
+                                        << font_wrapper(BOLDBLUE, "--help")
+                                        << "' for more information");
 
-        while (true)
-        {
-            this->getStdoutHandler()->write(">> ")->sync();
-            ref<String> input = getline(std::cin);
-            if (this->_consoleStop) // runApp already required to exit, console not more accept command
-                return;
-            if (input == "q" || input == "quit")
-            {
-                std::stringstream ss;
-                ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
-                this->getStdoutHandler()->write(ss.str())->sync();
-                std::string confrim;
-                if (std::getline(std::cin, confrim) && (confrim == "y" || confrim == "yes" || this->_consoleStop))
-                    break;
-                this->getStdoutHandler()->writeLine("cancel")->sync();
-            }
-            else
-                onCommand(input);
-        }
-        if (this->_consoleStop == false)
-        {
-            // runApp exit by console command
-            info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
-            this->_consoleStop = true;
-            this->_exit(0);
-        }
-    });
+                             while (true)
+                             {
+                                 this->getStdoutHandler()->write(">> ")->sync();
+                                 ref<String> input = getline(std::cin);
+                                 if (this->_consoleStop) // runApp already required to exit, console not more accept command
+                                     return;
+                                 if (input == "q" || input == "quit")
+                                 {
+                                     std::stringstream ss;
+                                     ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
+                                     this->getStdoutHandler()->write(ss.str())->sync();
+                                     std::string confrim;
+                                     if (std::getline(std::cin, confrim) && (confrim == "y" || confrim == "yes" || this->_consoleStop))
+                                         break;
+                                     this->getStdoutHandler()->writeLine("cancel")->sync();
+                                 }
+                                 else
+                                     onCommand(input);
+                             }
+                             if (this->_consoleStop == false)
+                             {
+                                 // runApp exit by console command
+                                 info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
+                                 this->_consoleStop = true;
+                                 this->_exit(0);
+                             }
+                         });
     this->_condition.wait(lock); // wait for exit
     thread.detach();
 }
@@ -181,7 +182,7 @@ void RootElement::onCommand(const ref<String> &in)
         return;
 
     std::string::size_type commandLength = in->find(" ");
-    auto command = in->substr(0, commandLength == std::string::npos ? in->size() : commandLength);
+    auto command = in->substr(0, commandLength == String::npos ? in->size() : commandLength);
     if (command == "clear")
     {
         printf("\033c");
@@ -189,32 +190,36 @@ void RootElement::onCommand(const ref<String> &in)
     else if (command == "ls")
     {
         ref<Map<Element *, lateref<List<Element *>>>> map = {{this, Object::create<List<Element *>>()}};
-        this->visitDescendant([&map](ref<Element> element) -> bool {
-            option<Element> parent = element->parent.toOption();
-            map[parent.get()]->emplace_back(element.get());
-            map[element.get()] = Object::create<List<Element *>>();
-            return false;
-        });
+        this->visitDescendant([&map](ref<Element> element) -> bool
+                              {
+                                  option<Element> parent = element->parent.toOption();
+                                  map[parent.get()]->emplace_back(element.get());
+                                  map[element.get()] = Object::create<List<Element *>>();
+                                  return false;
+                              });
         ref<Tree> tree = Object::create<Tree>();
         lateref<Fn<void(Element *, ref<Tree>)>> buildTree;
         buildTree =
-            [&](Element *currentElement, ref<Tree> currentTree) {
-                std::stringstream ss;
-                ss << font_wrapper(BOLDBLUE, currentElement->toString()) << std::endl
-                   << "  widget: " << currentElement->getWidget()->toString() << std::endl;
-                if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
-                    ss << "  state: " << statefulElement->_state->toString() << std::endl;
-                currentTree->info = ss.str();
-                ref<List<Element *>> &children = map[currentElement];
-                for (Element *child : children)
-                {
-                    ref<Tree> childTree = Object::create<Tree>();
-                    buildTree(child, childTree);
-                    currentTree->children->emplace_back(childTree);
-                }
-            };
+            [&](Element *currentElement, ref<Tree> currentTree)
+        {
+            std::stringstream ss;
+            ss << font_wrapper(BOLDBLUE, currentElement->toString()) << std::endl
+               << "  widget: " << currentElement->getWidget()->toString() << std::endl;
+            if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
+                ss << "  state: " << statefulElement->_state->toString() << std::endl;
+            currentTree->info = ss.str();
+            ref<List<Element *>> &children = map[currentElement];
+            for (Element *child : children)
+            {
+                ref<Tree> childTree = Object::create<Tree>();
+                buildTree(child, childTree);
+                currentTree->children->emplace_back(childTree);
+            }
+        };
         buildTree(this, tree);
-        this->getMainHandler()->post([&] { tree->toStringStream(std::cout); }).get();
+        this->getMainHandler()->post([&]
+                                     { tree->toStringStream(std::cout); })
+            .get();
     }
     else if (command == "reassembly")
     {
@@ -226,7 +231,7 @@ void RootElement::onCommand(const ref<String> &in)
         if ((command == "command" || command == "cmd") && in->length() > commandLength)
         {
             auto begin = in->find_first_not_of(" ", commandLength);
-            if (begin != std::string::npos)
+            if (begin != String::npos)
             {
                 auto cmd = in->substr(begin);
                 this->_command->sinkSync(cmd);

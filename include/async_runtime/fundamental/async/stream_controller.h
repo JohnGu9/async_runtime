@@ -3,12 +3,15 @@
 #include "../async.h"
 #include "stream.h"
 
-template <typename T = std::nullptr_t>
-class AsyncStreamController;
-
 template <>
 class StreamController<std::nullptr_t> : public Object, protected StateHelper
 {
+protected:
+    static void completeSync(ref<Completer<void>> onClose)
+    {
+        onClose->completeSync();
+    }
+
 public:
     virtual void close() = 0;
 };
@@ -57,7 +60,7 @@ public:
     virtual void sink(const T &value)
     {
         assert(!_stream->_isClosed);
-        lateref<Fn<void(T)>> listener;
+        lateref<Fn<void(const T &)>> listener;
         if (_stream->_listener.isNotNull(listener))
             listener(value);
         else
@@ -67,9 +70,9 @@ public:
     virtual void sink(T &&value)
     {
         assert(!_stream->_isClosed);
-        lateref<Fn<void(T)>> listener;
+        lateref<Fn<void(const T &)>> listener;
         if (_stream->_listener.isNotNull(listener))
-            listener(std::move(value));
+            listener(value);
         else
             _stream->_cache->emplace_back(std::move(value));
     }
@@ -83,7 +86,85 @@ public:
     }
 };
 
+template <typename T>
+class BroadcastStreamController;
+
+template <>
+class BroadcastStreamController<void> : public StreamController<std::nullptr_t>
+{
+    ref<BroadcastStream<void>> _stream;
+
+public:
+    BroadcastStreamController(ref<ThreadPool> handler) : _stream(Object::create<BroadcastStream<void>>(handler)) {}
+    BroadcastStreamController(ref<State<StatefulWidget>> state) : _stream(Object::create<BroadcastStream<void>>(getHandlerfromState(state))) {}
+
+    const ref<BroadcastStream<void>> &stream = _stream;
+
+    virtual void sink()
+    {
+        assert(!_stream->_isClosed);
+        lateref<Fn<void()>> listener;
+        if (!_stream->_listeners->empty())
+            for (auto &fn : _stream->_listeners)
+                fn();
+        else
+            _stream->_sinkCounter++;
+    }
+
+    void close() override
+    {
+        assert(!_stream->_isClosed);
+        _stream->_isClosed = true;
+        if (_stream->_sinkCounter == 0)
+            completeSync(_stream->_onClose);
+    }
+};
+
+template <typename T>
+class BroadcastStreamController : public StreamController<std::nullptr_t>
+{
+    ref<BroadcastStream<T>> _stream;
+
+public:
+    BroadcastStreamController(ref<ThreadPool> handler) : _stream(Object::create<BroadcastStream<T>>(handler)) {}
+    BroadcastStreamController(ref<State<StatefulWidget>> state) : _stream(Object::create<BroadcastStream<T>>(StateHelper::getHandlerfromState(state))) {}
+
+    const ref<BroadcastStream<T>> &stream = _stream;
+
+    virtual void sink(const T &value)
+    {
+        assert(!_stream->_isClosed);
+        if (!_stream->_listeners->empty())
+            for (auto &fn : _stream->_listeners)
+                fn(value);
+        else
+            _stream->_cache->emplace_back(value);
+    }
+
+    virtual void sink(T &&value)
+    {
+        assert(!_stream->_isClosed);
+        lateref<Fn<void(T)>> listener;
+        if (!_stream->_listeners->empty())
+            for (auto &fn : _stream->_listeners)
+                fn(value);
+        else
+            _stream->_cache->emplace_back(std::move(value));
+    }
+
+    void close() override
+    {
+        assert(!_stream->_isClosed);
+        _stream->_isClosed = true;
+        if (_stream->_cache->empty())
+            completeSync(_stream->_onClose);
+    }
+};
+
 // @ thread safe
+template <typename T = std::nullptr_t>
+class AsyncStreamController;
+
 template <>
 class AsyncStreamController<void> : public StreamController<void>
 {
@@ -98,13 +179,15 @@ public:
     void sink() override
     {
         ref<StreamController<void>> self = self();
-        _handler->post([this, self] { this->StreamController<void>::sink(); });
+        _handler->post([this, self]
+                       { this->StreamController<void>::sink(); });
     }
 
     void close() override
     {
         ref<StreamController<void>> self = self();
-        _handler->post([this, self] { this->StreamController<void>::close(); });
+        _handler->post([this, self]
+                       { this->StreamController<void>::close(); });
     }
 };
 
@@ -122,28 +205,35 @@ public:
     void sink(const T &value) override
     {
         ref<AsyncStreamController<T>> self = self();
-        this->_handler->post([this, self, value] { this->StreamController<T>::sink(std::move(value)); });
+        this->_handler->post([this, self, value]
+                             { this->StreamController<T>::sink(std::move(value)); });
     }
 
     void sink(T &&value) override
     {
         ref<AsyncStreamController<T>> self = self();
-        this->_handler->post([this, self, value] { this->StreamController<T>::sink(std::move(value)); });
+        this->_handler->post([this, self, value]
+                             { this->StreamController<T>::sink(std::move(value)); });
     }
 
     virtual void sinkSync(const T &value)
     {
-        this->_handler->post([this, &value] { this->StreamController<T>::sink(value); }).get();
+        this->_handler->post([this, &value]
+                             { this->StreamController<T>::sink(value); })
+            .get();
     }
 
     virtual void sinkSync(T &&value)
     {
-        this->_handler->post([this, &value] { this->StreamController<T>::sink(std::move(value)); }).get();
+        this->_handler->post([this, &value]
+                             { this->StreamController<T>::sink(std::move(value)); })
+            .get();
     }
 
     void close() override
     {
         ref<AsyncStreamController<T>> self = self();
-        this->_handler->post([this, self] { this->StreamController<T>::close(); });
+        this->_handler->post([this, self]
+                             { this->StreamController<T>::close(); });
     }
 };

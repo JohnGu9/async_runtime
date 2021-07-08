@@ -3,7 +3,7 @@ Async Runtime
 
 A framework write in C++11 (compatible with up to C++17 standard) that similar with Flutter but without build GUI. Just for backend software. With object management, software architecture management and async runtime management. 
 
-## 0.2.6-nullsafety
+## 0.2.7-nullsafety
 
 Welcome to nullsafety world! Now framework provide nullsafety feature. [ref](include/async_runtime/basic/ref.h) for non-null refs of object and [option](include/async_runtime/basic/ref.h) for nullable refs of object. 
 
@@ -13,7 +13,7 @@ Welcome to nullsafety world! Now framework provide nullsafety feature. [ref](inc
 
 3) all async apis directly build upon context, init async tasks right after State::initState and dispose async resource when State::dispose (so that async work managed by framework). Ease code and less memory lack problem and less state-unknown conflict problem.
 
-4) compatible with <span style="color:Fuchsia">Windows/Linux/macOS</span> and more. compatible with <span style="color:Fuchsia">C++17/14/11</span>. <span style="color:Fuchsia">CMake</span> build rule. 
+4) compatible with <span style="color:Fuchsia">Windows/Linux/macOS</span> and more. compatible with <span style="color:Fuchsia">C++17/14/11</span>. <span style="color:Fuchsia">CMake</span> build rule. (Linux/macOS support C++20 but Windows MSVC has a bug on std::string constructor that cause compile error when enable C++20 flag)
 
 ## Code
 

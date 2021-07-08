@@ -21,6 +21,10 @@ public:
 template <typename T>
 class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
 {
+    using super = State<StreamBuilder<T>>;
+    lateref<StreamSubscription<T>> _subscription;
+    void initState() override {}
+    void dispose() override { _subscription->cancel(); }
     ref<Widget> build(ref<BuildContext>) override;
 };
 
