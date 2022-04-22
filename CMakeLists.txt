@@ -1,3 +1,4 @@
+project(async_runtime)
 cmake_minimum_required(VERSION 3.10)
 
 # message(STATUS "Compiler Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
@@ -30,10 +31,21 @@ set(INCLUDE_DIR
     ${OPENSSL_INCLUDE_DIR} 
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cpp-httplib
 )
-# export include directories
-set(ASYNC_RUNTIME_INCLUDE_DIR ${INCLUDE_DIR} PARENT_SCOPE)
 
 include_directories(${INCLUDE_DIR})
+
+if(PROJECT_IS_TOP_LEVEL)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    if(WIN32)
+        add_definitions(/wd4100 /wd4458)
+    else()
+        add_definitions(-Wall)
+    endif()
+elseif()
+    # export include directories
+    set(ASYNC_RUNTIME_INCLUDE_DIR ${INCLUDE_DIR} PARENT_SCOPE)
+endif()
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/basic basic_src)
