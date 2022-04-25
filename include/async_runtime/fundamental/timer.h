@@ -1,40 +1,26 @@
 #pragma once
 
 #include <atomic>
-#include "async.h"
-#include "dispatcher.h"
 #include "../basic/duration.h"
+#include "event_loop.h"
 
-class Timer : public Dispatcher
+class Timer : public Object, public EventLoopGetterMixin
 {
-    struct _FactoryOnly
-    {
-        constexpr _FactoryOnly() {}
-    };
-
 public:
-    class TimerThread;
+    static ref<Timer> delay(Duration duration, Function<void(ref<Timer>)> fn, option<EventLoopGetterMixin> getter = nullptr);
+    static ref<Timer> periodic(Duration interval, Function<void(ref<Timer>)> fn, option<EventLoopGetterMixin> getter = nullptr);
+    virtual void start() = 0;
+    virtual void cancel() = 0;
 
-    static ref<Timer> delay(ref<State<StatefulWidget>> state, Duration duration, Function<void()> fn);
-    static ref<Timer> periodic(ref<State<StatefulWidget>> state, Duration interval, Function<void()> fn);
-    static ref<Timer> delay(ref<ThreadPool> callbackHandler, Duration duration, Function<void()> fn);
-    static ref<Timer> periodic(ref<ThreadPool> callbackHandler, Duration interval, Function<void()> fn);
-
-    Timer(ref<State<StatefulWidget>> state, const _FactoryOnly &);
-    Timer(ref<ThreadPool> callbackHandler, const _FactoryOnly &);
-
-    virtual ~Timer();
-    virtual void cancel();
+    ref<EventLoop> eventLoop() override;
 
 protected:
-    void dispose() override;
+    Timer(ref<EventLoop> loop, Function<void(ref<Timer>)> fn) : _loop(loop), _fn(fn) {}
 
-    std::mutex _mutex;
-    std::atomic_bool _clear;
-    lateref<Fn<void()>> _onCancel;
+    ref<EventLoop> _loop;
+    Function<void(ref<Timer>)> _fn;
 
-    // now Timer can't reuse
-    // Please create new Timer for new task
-    virtual void _setTimeout(Duration delay, Function<void()> function);
-    virtual void _setInterval(Duration interval, Function<void()> function);
+    class _Timer;
 };
+
+inline ref<EventLoop> Timer::eventLoop() { return _loop; }

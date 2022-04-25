@@ -51,5 +51,5 @@ Duration Duration::abs() const
 
 std::chrono::milliseconds Duration::toChronoMilliseconds() const
 {
-    return std::chrono::milliseconds(this->_duration / 1000);
+    return std::chrono::milliseconds(toMilliseconds());
 }

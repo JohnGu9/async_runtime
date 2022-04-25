@@ -3,18 +3,14 @@
 #include "../object.h"
 #include "../basic/lock.h"
 #include "../basic/duration.h"
-#include "../widgets/stateful_widget.h"
 
-#include "async/thread.h"
-#include "async/thread_pool.h"
-
-#include "state_helper.h"
+#include "event_loop.h"
 
 #define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \
     template <typename R>                  \
-    friend class Completer;                \
-    template <typename R>                  \
     friend class Future;                   \
+    template <typename R>                  \
+    friend class Completer;        \
     template <typename R>                  \
     friend class Stream;                   \
     template <typename R>                  \
@@ -23,6 +19,8 @@
     friend class StreamSubscription;       \
     template <typename R>                  \
     friend class AsyncSnapshot;
+
+// Forward define
 
 // @ thread safe
 template <typename T = std::nullptr_t>
@@ -43,199 +41,45 @@ class StreamSubscription;
 template <typename T = std::nullptr_t>
 class AsyncSnapshot;
 
-template <typename T>
-ref<Future<T>> async(ref<ThreadPool> callbackHandler, Function<T()> fn);
-template <typename T>
-ref<Future<T>> async(ref<State<StatefulWidget>> state, Function<T()> fn);
-
 #include "async/future.h"
-#include "async/completer.h"
-#include "async/stream_subscription.h"
 #include "async/stream.h"
-#include "async/stream_controller.h"
+#include "async/stream_subscription.h"
 #include "async/async_snapshot.h"
-#include "async/async.h"
-
-/**
- * @brief Future<void> implement
- * 
- */
-
-template <>
-inline ref<Future<void>> Future<void>::than(Function<FutureOr<void>()> fn)
-{
-    ref<Future<void>> self = self();
-    ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
-    this->_callbackHandler->post([this, self, completer, fn]
-                                 {
-                                     Function<void()> handle = [completer, fn]
-                                     {
-                                         auto result = fn();
-                                         lateref<Future<void>> future;
-                                         if (result._future.isNotNull(future))
-                                         {
-                                             future->than([completer]
-                                                          { completer->complete(); });
-                                         }
-                                         else
-                                             completer->completeSync();
-                                     };
-                                     if (this->_completed == false)
-                                         this->_callbackList->emplace_back(handle);
-                                     else
-                                         handle();
-                                 });
-    return completer->future;
-}
-
-template <typename ReturnType>
-ref<Future<ReturnType>> Future<void>::than(Function<FutureOr<ReturnType>()> fn)
-{
-    ref<Future<void>> self = self();
-    ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
-    this->_callbackHandler->post([this, self, completer, fn]
-                                 {
-                                     Function<void()> handle = [completer, fn]
-                                     {
-                                         auto result = fn();
-                                         lateref<Future<ReturnType>> future;
-                                         if (result._future.isNotNull(future))
-                                         {
-                                             future->template than<void>([completer](const ReturnType &value) -> FutureOr<void>
-                                                                         {
-                                                                             completer->complete(value);
-                                                                             return {};
-                                                                         });
-                                         }
-                                         else
-                                             completer->completeSync(result._value);
-                                     };
-                                     if (this->_completed == false)
-                                         this->_callbackList->emplace_back(handle);
-                                     else
-                                         handle();
-                                 });
-    return completer->future;
-}
-
-/**
- * @brief Future<T> implement
- * 
- */
 
 template <typename T>
-ref<Future<T>> Future<T>::value(ref<ThreadPool> callbackHandler, const T &value)
+ref<Future<T>> async(Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr)
 {
-    return Object::create<Future<T>>(callbackHandler, value);
+    auto loop = EventLoopGetterMixin::ensureEventLoop(getter);
+    auto future = Object::create<Completer<T>>(getter);
+    loop->callSoon([future, fn]
+                   { future->resolve(fn()); });
+    return future;
+}
+
+#include "timer.h"
+
+template <typename T>
+ref<Future<T>> delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr)
+{
+    auto future = Object::create<Future<T>>(getter);
+    auto timer = Timer::delay(
+        timeout, [future, fn](ref<Timer> timer)
+        { future->resolve(fn()); },
+        getter);
+    return future;
 }
 
 template <typename T>
-ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>> state, const T &value)
-{
-    return Object::create<Future<T>>(StateHelper::getHandlerfromState(state), value);
-}
-
-template <typename T>
-ref<Future<T>> Future<T>::value(ref<ThreadPool> callbackHandler, T &&value)
-{
-    return Object::create<Future<T>>(callbackHandler, value);
-}
-
-template <typename T>
-ref<Future<T>> Future<T>::value(ref<State<StatefulWidget>> state, T &&value)
-{
-    return Object::create<Future<T>>(StateHelper::getHandlerfromState(state), value);
-}
-
-template <typename T>
-template <typename ReturnType, typename std::enable_if<std::is_void<ReturnType>::value>::type *>
-ref<Future<ReturnType>> Future<T>::than(Function<FutureOr<ReturnType>(const T &)> fn)
+ref<Future<T>> Future<T>::timeout(Duration timeout, Function<T()> onTimeout)
 {
     ref<Future<T>> self = self();
-    ref<Completer<void>> completer = Object::create<Completer<void>>(this->_callbackHandler);
-    this->_callbackHandler->post([this, self, completer, fn]
-                                 {
-                                     Function<void(const T &)> handle = [completer, fn](const T &val)
-                                     {
-                                         auto result = fn(val);
-                                         lateref<Future<ReturnType>> future;
-                                         if (result._future.isNotNull(future))
-                                         {
-                                             future->than([completer]
-                                                          { completer->complete(); });
-                                         }
-                                         else
-                                             completer->completeSync();
-                                     };
-                                     if (this->_completed == false)
-                                         this->_callbackList->emplace_back(handle);
-                                     else
-                                         handle(this->_data);
-                                 });
-    return completer->future;
-}
-
-template <typename T>
-template <typename ReturnType, typename std::enable_if<!std::is_void<ReturnType>::value>::type *>
-ref<Future<ReturnType>> Future<T>::than(Function<FutureOr<ReturnType>(const T &)> fn)
-{
-    ref<Future<T>> self = self();
-    ref<Completer<ReturnType>> completer = Object::create<Completer<ReturnType>>(this->_callbackHandler);
-    this->_callbackHandler->post([this, self, completer, fn]
-                                 {
-                                     Function<void(const T &)> handle = [completer, fn](const T &val)
-                                     {
-                                         auto result = fn(val);
-                                         lateref<Future<ReturnType>> future;
-                                         if (result._future.isNotNull(future))
-                                         {
-                                             future->template than<void>([completer](const ReturnType &value) -> FutureOr<void>
-                                                                         {
-                                                                             completer->complete(value);
-                                                                             return {};
-                                                                         });
-                                         }
-                                         else
-                                             completer->completeSync(result._value);
-                                     };
-                                     if (this->_completed == false)
-                                         this->_callbackList->emplace_back(handle);
-                                     else
-                                         handle(this->_data);
-                                 });
-    return completer->future;
-}
-
-template <typename T>
-ref<Future<std::nullptr_t>> Future<T>::than(Function<void()> fn)
-{
-    ref<Future<T>> self = self();
-    this->_callbackHandler->post([this, self, fn]
-                                 {
-                                     if (this->_completed == false)
-                                         this->_callbackList->emplace_back([fn](const T &)
-                                                                           { fn(); });
-                                     else
-                                         fn();
-                                 });
-    return self;
-}
-
-template <typename T>
-ref<Future<T>> Future<T>::timeout(Duration duration, Function<T()> onTimeout)
-{
-    ref<Future<T>> self = self();
-    ref<Completer<T>> completer = Object::create<Completer<T>>(this->_callbackHandler);
-    Future<void>::delay(this->_callbackHandler, duration)
-        ->than([completer, onTimeout]
-               {
-                   if (completer->_isCompleted == false)
-                       completer->completeSync(onTimeout());
-               });
-    this->than([this, self, completer]
-               {
-                   if (completer->_isCompleted == false)
-                       completer->completeSync(std::move(this->_data));
-               });
-    return completer->future;
+    ref<Completer<T>> future = Object::create<Completer<T>>(self);
+    self->template than<int>([future](const T &value)
+                             {if(!future->completed()) future->resolve(value);
+               return 0; });
+    Timer::delay(
+        timeout, [future, onTimeout](ref<Timer> timer)
+        { if(!future->completed()) future->resolve(onTimeout()); },
+        self);
+    return future;
 }

@@ -1,16 +1,13 @@
 #pragma once
 
 #include "async.h"
-#include "disposable.h"
-#include "dispatcher.h"
-#include "../widgets/state.h"
 #include "../basic/lock.h"
 
-class File : public AsyncDispatcher
+class File : public Object, public EventLoopGetterMixin, public EventLoop::WithHandleMixin
 {
 public:
-    static ref<File> fromPath(ref<State<StatefulWidget>> state, ref<String> path, size_t threads = 0);
-    File(ref<State<StatefulWidget>> state, ref<String> path, size_t threads = 0 /* if threads == 0, use the shared thread pool*/);
+    static ref<File> fromPath(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
+    File(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
     virtual ~File();
 
     virtual ref<Future<bool>> exists();
@@ -22,9 +19,9 @@ public:
     virtual long long sizeSync(); // unit: byte
 
     // write
-    virtual ref<Future<void>> append(ref<String> str);
-    virtual ref<Future<void>> overwrite(ref<String> str);
-    virtual ref<Future<void>> clear();
+    virtual ref<Future<int>> append(ref<String> str);
+    virtual ref<Future<int>> overwrite(ref<String> str);
+    virtual ref<Future<int>> clear();
 
     // read
     virtual ref<Future<ref<String>>> read();
@@ -32,9 +29,12 @@ public:
     virtual ref<Stream<ref<String>>> readWordAsStream();
     virtual ref<Stream<ref<String>>> readLineAsStream();
 
-    void dispose() override;
+    virtual void dispose();
+
+    ref<EventLoop> eventLoop() override;
 
 protected:
+    ref<EventLoop> _loop;
     ref<String> _path;
     ref<Lock> _lock;
 
@@ -43,3 +43,5 @@ protected:
 public:
     const ref<String> &path = _path;
 };
+
+inline ref<EventLoop> File::eventLoop() { return _loop; }

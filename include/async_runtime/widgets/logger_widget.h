@@ -1,0 +1,48 @@
+#include "../fundamental/logger.h"
+#include "inherited_widget.h"
+#include "stateful_widget.h"
+
+class Logger : public InheritedWidget
+{
+    class _Logger;
+    friend class StdoutLoggerState;
+
+public:
+    static ref<LoggerHandler> of(ref<BuildContext> context);
+
+    // support hot switch
+    static ref<Widget> cout(ref<Widget> child, option<Key> key = nullptr);
+    static ref<Widget> file(ref<String> path, ref<Widget> child, option<Key> key = nullptr);
+    static ref<Widget> block(ref<Widget> child, option<Key> key = nullptr);
+
+    Logger(ref<Widget> child, ref<LoggerHandler> handler, option<Key> key = nullptr);
+    bool updateShouldNotify(ref<InheritedWidget> oldWidget) override;
+
+protected:
+    ref<LoggerHandler> _handler;
+};
+
+class StdoutLogger : public StatefulWidget
+{
+public:
+    static ref<LoggerHandler> of(ref<BuildContext> context);
+    StdoutLogger(ref<Widget> child, option<Key> key = nullptr);
+    ref<State<StatefulWidget>> createState() override;
+    ref<Widget> child;
+};
+
+class StdoutLoggerState : public State<StdoutLogger>
+{
+public:
+    using super = State<StdoutLogger>;
+    lateref<LoggerHandler> _handler;
+
+    void initState() override;
+    void dispose() override;
+    ref<Widget> build(ref<BuildContext>) override;
+};
+
+inline ref<State<StatefulWidget>> StdoutLogger::createState()
+{
+    return Object::create<StdoutLoggerState>();
+}

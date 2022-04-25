@@ -2,7 +2,8 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/logger.h"
 #include "async_runtime/fundamental/file.h"
-#include "async_runtime/widgets/leaf_widget.h"
+
+#include "async_runtime/widgets/logger_widget.h"
 
 class Logger::_Logger : public StatefulWidget
 {
@@ -39,18 +40,20 @@ public:
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return async<bool>(this->_state, [str] {
+            return async<bool>([str]
+                               {
                 std::cout << str;
-                return true;
-            });
+                return true; },
+                               this->_state);
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return async<bool>(this->_state, [str] {
+            return async<bool>([str]
+                               {
                 std::cout << str << std::endl;
-                return true;
-            });
+                return true; },
+                               this->_state);
         }
 
         void dispose() override
@@ -65,16 +68,18 @@ public:
 
     public:
         _FileLoggerHandler(ref<State<StatefulWidget>> state, ref<String> path)
-            : _file(File::fromPath(state, path)) { _file->clear(); }
+            : _file(File::fromPath(path, state)) { _file->clear(); }
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return this->_file->append(str)->than<bool>([] { return true; });
+            return this->_file->append(str)->than<bool>([](const int &)
+                                                        { return true; });
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return this->_file->append(str + '\n')->than<bool>([] { return true; });
+            return this->_file->append(str + '\n')->than<bool>([](const int &)
+                                                               { return true; });
         }
 
         void dispose() override
@@ -85,10 +90,10 @@ public:
 
     class _LoggerProxyHandler : public LoggerHandler
     {
-        Logger::Handler _proxyTarget;
+        ref<LoggerHandler> _proxyTarget;
 
     public:
-        _LoggerProxyHandler(Logger::Handler proxyTarget) : _proxyTarget(proxyTarget) {}
+        _LoggerProxyHandler(ref<LoggerHandler> proxyTarget) : _proxyTarget(proxyTarget) {}
         ref<Future<bool>> write(ref<String> str) override
         {
             return this->_proxyTarget->write(str);
@@ -110,11 +115,11 @@ public:
         _LoggerBlocker(ref<State<StatefulWidget>> state) : _state(state) {}
         ref<Future<bool>> write(ref<String> str) override
         {
-            return Future<bool>::value(this->_state, true);
+            return Future<bool>::value(true, this->_state);
         }
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return Future<bool>::value(this->_state, true);
+            return Future<bool>::value(true, this->_state);
         }
 
         void dispose() override
@@ -178,12 +183,12 @@ ref<State<StatefulWidget>> Logger::_Logger::createState()
     return Object::create<_State>();
 }
 
-Logger::Handler Logger::of(ref<BuildContext> context)
+ref<LoggerHandler> Logger::of(ref<BuildContext> context)
 {
     return context->dependOnInheritedWidgetOfExactType<Logger>().assertNotNull()->_handler;
 }
 
-Logger::Logger(ref<Widget> child, Handler handler, option<Key> key)
+Logger::Logger(ref<Widget> child, ref<LoggerHandler> handler, option<Key> key)
     : InheritedWidget(child, key), _handler(handler) {}
 
 bool Logger::updateShouldNotify(ref<InheritedWidget> oldWidget)
@@ -211,10 +216,10 @@ ref<Widget> Logger::block(ref<Widget> child, option<Key> key)
 class _StdoutLoggerInheritedWidget : public InheritedWidget
 {
     friend class StdoutLogger;
-    Logger::Handler _handler;
+    ref<LoggerHandler> _handler;
 
 public:
-    _StdoutLoggerInheritedWidget(ref<Widget> child, Logger::Handler handler, option<Key> key = nullptr)
+    _StdoutLoggerInheritedWidget(ref<Widget> child, ref<LoggerHandler> handler, option<Key> key = nullptr)
         : InheritedWidget(Object::create<Logger>(child, handler), key), _handler(handler) {}
 
     bool updateShouldNotify(ref<InheritedWidget> oldWidget) override
@@ -242,7 +247,7 @@ ref<Widget> StdoutLoggerState::build(ref<BuildContext>)
         this->_handler);
 }
 
-Logger::Handler StdoutLogger::of(ref<BuildContext> context)
+ref<LoggerHandler> StdoutLogger::of(ref<BuildContext> context)
 {
     return context->dependOnInheritedWidgetOfExactType<_StdoutLoggerInheritedWidget>().assertNotNull()->_handler;
 }

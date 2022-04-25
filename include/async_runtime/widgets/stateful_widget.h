@@ -2,6 +2,7 @@
 
 #include "widget.h"
 #include "state.h"
+#include "../fundamental/async.h"
 #include "../elements/stateful_element.h"
 
 class StatefulWidget : public Widget
@@ -15,13 +16,15 @@ protected:
 };
 
 template <>
-class State<StatefulWidget> : public Object
+class State<StatefulWidget> : public Object, public EventLoopGetterMixin
 {
     friend class StatefulElement;
     friend class StateHelper;
 
     template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
     friend class State;
+
+    ref<EventLoop> eventLoop() override { return EventLoopGetterMixin::ensureEventLoop(nullptr); }
 
     // @mustCallSuper
     virtual void initState() {}

@@ -1,12 +1,12 @@
 /**
  * @file duration.h
- * @brief 
+ * @brief
  * Duration work for time duration in async runtime
  * Mostly for Timer
- * 
+ *
  * Duration is not Object that not a part of nullsafety system
  * Do not use ref<Duration> or option <Duration>
- * 
+ *
  */
 
 #pragma once
@@ -28,7 +28,7 @@
 
 /**
  * @brief Duration for a peroid of time in Async Runtime
- * 
+ *
  * @alarm native copyable type that don't not need ref
  * @alarm only support minimum unit milliseconds
  */
@@ -82,21 +82,21 @@ public:
     }
 
     /**
-   * Subtracts [other] from this Duration and
-   * returns the difference as a new Duration object.
-   */
+     * Subtracts [other] from this Duration and
+     * returns the difference as a new Duration object.
+     */
     Duration operator-(Duration &&other) const
     {
         return Duration(_duration - other._duration);
     }
 
     /**
-   * Multiplies this Duration by the given [factor] and returns the result
-   * as a new Duration object.
-   *
-   * Note that when [factor] is a double, and the duration is greater than
-   * 53 bits, precision is lost because of double-precision arithmetic.
-   */
+     * Multiplies this Duration by the given [factor] and returns the result
+     * as a new Duration object.
+     *
+     * Note that when [factor] is a double, and the duration is greater than
+     * 53 bits, precision is lost because of double-precision arithmetic.
+     */
     Duration operator*(DataType factor) const
     {
         return Duration(_duration * factor);
@@ -109,11 +109,11 @@ public:
     }
 
     /**
-   * Divides this Duration by the given [quotient] and returns the truncated
-   * result as a new Duration object.
-   *
-   * Throws an [IntegerDivisionByZeroException] if [quotient] is `0`.
-   */
+     * Divides this Duration by the given [quotient] and returns the truncated
+     * result as a new Duration object.
+     *
+     * Throws an [IntegerDivisionByZeroException] if [quotient] is `0`.
+     */
     Duration operator/(int quotient) const
     {
         // By doing the check here instead of relying on "~/" below we get the
@@ -123,32 +123,33 @@ public:
     }
 
     /**
-   * Returns `true` if the value of this Duration
-   * is less than the value of [other].
-   */
+     * Returns `true` if the value of this Duration
+     * is less than the value of [other].
+     */
     bool operator<(Duration other) const { return this->_duration < other._duration; }
 
     /**
-   * Returns `true` if the value of this Duration
-   * is greater than the value of [other].
-   */
+     * Returns `true` if the value of this Duration
+     * is greater than the value of [other].
+     */
     bool operator>(Duration other) const { return this->_duration > other._duration; }
 
     /**
-   * Returns `true` if the value of this Duration
-   * is less than or equal to the value of [other].
-   */
+     * Returns `true` if the value of this Duration
+     * is less than or equal to the value of [other].
+     */
     bool operator<=(Duration other) const { return this->_duration <= other._duration; }
 
     /**
-   * Returns `true` if the value of this Duration
-   * is greater than or equal to the value of [other].
-   */
+     * Returns `true` if the value of this Duration
+     * is greater than or equal to the value of [other].
+     */
     bool operator>=(Duration other) const { return this->_duration >= other._duration; }
 
     Duration abs() const;
 
     std::chrono::milliseconds toChronoMilliseconds() const;
+    DataType toMilliseconds() const { return _duration / 1000; }
 
 protected:
     DataType _duration;

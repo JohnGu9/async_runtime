@@ -1,10 +1,10 @@
 #include "async_runtime/basic/tree.h"
-#include "async_runtime/fundamental/logger.h"
+#include "async_runtime/fundamental/thread.h"
 #include "async_runtime/elements/root_element.h"
 #include "async_runtime/elements/key.h"
+
+#include "async_runtime/widgets/logger_widget.h"
 #include "async_runtime/widgets/stateful_widget.h"
-#include "async_runtime/widgets/process.h"
-#include "async_runtime/widgets/scheduler.h"
 
 class RootElement::RootWidget : public Widget
 {
@@ -13,7 +13,19 @@ public:
     ref<Element> createElement() override { return Object::create<RootElement>(self()); }
 };
 
-class RootElement::RootFundamental::_State : public State<RootFundamental>
+class RootElement::RootFundamental : public StatefulWidget
+{
+    ref<State<StatefulWidget>> createState() override;
+
+public:
+    RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
+        : StatefulWidget(key), child(child), rootElement(rootElement) {}
+
+    ref<Widget> child;
+    RootElement *rootElement;
+};
+
+class RootElement::RootFundamentalState : public State<RootFundamental>
 {
     using super = State<RootFundamental>;
 
@@ -21,7 +33,7 @@ class RootElement::RootFundamental::_State : public State<RootFundamental>
     {
         super::initState();
         widget->rootElement->_coutKey = Object::create<GlobalKey>();
-        widget->rootElement->_command = Object::create<AsyncStreamController<ref<String>>>(self());
+        widget->rootElement->_command = Object::create<StreamController<ref<String>>>(self());
     }
 
     void dispose() override
@@ -32,25 +44,23 @@ class RootElement::RootFundamental::_State : public State<RootFundamental>
 
     ref<Widget> build(ref<BuildContext>) override
     {
-        return Object::create<Process>(
-            Object::create<StdoutLogger>(widget->child, widget->rootElement->_coutKey), // StdoutLogger
-            Object::cast<>(widget->rootElement));                                       // Process
+        return Object::create<StdoutLogger>(widget->child, widget->rootElement->_coutKey); // Process
     }
 };
 
 ref<State<StatefulWidget>> RootElement::RootFundamental::createState()
 {
-    return Object::create<_State>();
+    return Object::create<RootElement::RootFundamentalState>();
 }
 
 /**
  * @brief Construct a new Root Element:: Root Element object
- * 
- * @param widget 
+ *
+ * @param widget
  */
 RootElement::RootElement(ref<Widget> widget)
     : SingleChildElement(Object::create<RootWidget>()),
-      _child(Object::create<Scheduler>(Object::create<RootFundamental>(widget, this))), _consoleStop(false) {}
+      _child(Object::create<RootFundamental>(widget, this)), _consoleStop(false) {}
 
 void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
 
@@ -95,17 +105,11 @@ void RootElement::_exit(int exitCode)
     return this->_condition.notify_all();
 }
 
-Logger::Handler RootElement::getStdoutHandler()
+ref<LoggerHandler> RootElement::getStdoutHandler()
 {
     ref<State<StatefulWidget>> currentState = this->_coutKey->getCurrentState().assertNotNull();
     ref<StdoutLoggerState> state = currentState->covariant<StdoutLoggerState>();
     return state->_handler;
-}
-
-Scheduler::Handler RootElement::getMainHandler()
-{
-    ref<BuildContext> context = this->_coutKey->getCurrentContext().assertNotNull();
-    return Scheduler::of(context);
 }
 
 void RootElement::_console()
@@ -115,7 +119,7 @@ void RootElement::_console()
     auto thread = Thread([this, self]
                          {
 #ifndef NDEBUG
-                             ThreadPool::setThreadName("ConsoleThread");
+                             ThreadUnit::setThreadName("ConsoleThread");
 #endif
                              info_print("Enter '"
                                         << font_wrapper(BOLDBLUE, 'q')
@@ -127,7 +131,7 @@ void RootElement::_console()
 
                              while (true)
                              {
-                                 this->getStdoutHandler()->write(">> ")->sync();
+                                 this->getStdoutHandler()->write(">> ");
                                  ref<String> input = getline(std::cin);
                                  if (this->_consoleStop) // runApp already required to exit, console not more accept command
                                      return;
@@ -135,11 +139,11 @@ void RootElement::_console()
                                  {
                                      std::stringstream ss;
                                      ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
-                                     this->getStdoutHandler()->write(ss.str())->sync();
+                                     this->getStdoutHandler()->write(ss.str());
                                      std::string confrim;
                                      if (std::getline(std::cin, confrim) && (confrim == "y" || confrim == "yes" || this->_consoleStop))
                                          break;
-                                     this->getStdoutHandler()->writeLine("cancel")->sync();
+                                     this->getStdoutHandler()->writeLine("cancel");
                                  }
                                  else
                                      onCommand(input);
@@ -150,8 +154,7 @@ void RootElement::_console()
                                  info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
                                  this->_consoleStop = true;
                                  this->_exit(0);
-                             }
-                         });
+                             } });
     this->_condition.wait(lock); // wait for exit
     thread.detach();
 }
@@ -164,7 +167,7 @@ void RootElement::_noConsole()
 
 void RootElement::onCommand(const ref<String> &in)
 {
-    Logger::Handler handler = this->getStdoutHandler();
+    ref<LoggerHandler> handler = this->getStdoutHandler();
     if (in == "-h" || in == "--help")
     {
 #define help_format(x, y) " " << x << "\t\t" << y
@@ -195,8 +198,7 @@ void RootElement::onCommand(const ref<String> &in)
                                   option<Element> parent = element->parent.toOption();
                                   map[parent.get()]->emplace_back(element.get());
                                   map[element.get()] = Object::create<List<Element *>>();
-                                  return false;
-                              });
+                                  return false; });
         ref<Tree> tree = Object::create<Tree>();
         lateref<Fn<void(Element *, ref<Tree>)>> buildTree;
         buildTree =
@@ -217,9 +219,7 @@ void RootElement::onCommand(const ref<String> &in)
             }
         };
         buildTree(this, tree);
-        this->getMainHandler()->post([&]
-                                     { tree->toStringStream(std::cout); })
-            .get();
+        tree->toStringStream(std::cout);
     }
     else if (command == "reassembly")
     {
@@ -234,7 +234,7 @@ void RootElement::onCommand(const ref<String> &in)
             if (begin != String::npos)
             {
                 auto cmd = in->substr(begin);
-                this->_command->sinkSync(cmd);
+                this->_command->sink(cmd);
                 return;
             }
         }

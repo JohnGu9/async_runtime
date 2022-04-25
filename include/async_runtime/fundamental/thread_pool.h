@@ -7,29 +7,25 @@
 #include <future>
 #include <functional>
 
-#include "../async.h"
-#include "../disposable.h"
 #include "thread.h"
 
 /**
- * @brief 
- * ThreadPool Object provide thread pool that handle task in other thread. 
- * ThreadPool must call dispose before drop the object. 
- * After dispose, ThreadPool will flush all added task and no longer accept new task. 
+ * @brief
+ * ThreadPool Object provide thread pool that handle task in other thread.
+ * ThreadPool must call dispose before drop the object.
+ * After dispose, ThreadPool will flush all added task and no longer accept new task.
  * If try to add new task to a disposed ThreadPool, it will get a never-return std::future (In Debug mode also print info on console)
- * 
+ *
  * @example
- * 
- * 
+ *
+ *
  */
-class ThreadPool : public Object, public Disposable
+class ThreadPool : public Object
 {
     static ref<Set<ref<String>>> _namePool;
     static ref<Lock> _lock;
 
 public:
-    static thread_local ref<String> thisThreadName;
-    static void setThreadName(ref<String> name);
 
     ThreadPool(size_t threads, option<String> name = nullptr);
     virtual ~ThreadPool();
@@ -49,7 +45,7 @@ public:
     virtual ref<String> childrenThreadName(size_t id);
     virtual size_t threads() const;
     virtual bool isActive();
-    void dispose() override; // join thread
+    virtual void dispose(); // join thread
 
 protected:
     virtual std::function<void()> workerBuilder(size_t);
@@ -79,7 +75,7 @@ auto ThreadPool::post(F &&f, Args &&...args)
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
     -> std::future<typename std::invoke_result<F, Args...>::type>
 #else
-        -> std::future < typename std::result_of<F(Args...)>::type>
+    -> std::future<typename std::result_of<F(Args...)>::type>
 #endif
 
 {
@@ -142,15 +138,15 @@ auto ThreadPool::microTask(F &&f, Args &&...args)
 }
 
 /**
- * @brief 
+ * @brief
  * AutoReleaseThreadPool don't must dispose before drop so that convince as static object in program
  * And it will automatically finish all task before object drop after you call dispose and release all the ref of it
  * Really it will hold ref of itself and release the ref until dispose and finish all task
  * AutoReleaseThreadPool generation must come from AutoReleaseThreadPool::factory
- * 
+ *
  * @example
- * 
- * 
+ *
+ *
  */
 class AutoReleaseThreadPool : public ThreadPool
 {

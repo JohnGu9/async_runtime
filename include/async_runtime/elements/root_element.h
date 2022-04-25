@@ -2,8 +2,8 @@
 
 #include <atomic>
 #include "key.h"
-#include "single_child_element.h"
 #include "../fundamental/async.h"
+#include "single_child_element.h"
 
 class GlobalKey;
 class LoggerHandler;
@@ -11,22 +11,11 @@ class ThreadPool;
 class RootElement : public SingleChildElement
 {
     class RootWidget;
-    class RootFundamental : public StatefulWidget
-    {
-        ref<State<StatefulWidget>> createState() override;
-
-    public:
-        class _State;
-
-        RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
-            : StatefulWidget(key), child(child), rootElement(rootElement) {}
-
-        ref<Widget> child;
-        RootElement *rootElement;
-    };
+    class RootFundamental;
+    class RootFundamentalState;
 
     friend class Process;
-    friend class RootFundamental::_State;
+    friend class RootFundamentalState;
 
 public:
     RootElement(ref<Widget> child);
@@ -38,7 +27,6 @@ public:
     virtual void _noConsole();
 
     virtual ref<LoggerHandler> getStdoutHandler();
-    virtual ref<ThreadPool> getMainHandler();
     virtual void onCommand(const ref<String> &in);
 
 protected:
@@ -51,7 +39,7 @@ protected:
     std::mutex _mutex;
     std::condition_variable _condition;
 
-    lateref<AsyncStreamController<ref<String>>> _command;
+    lateref<StreamController<ref<String>>> _command;
     ref<Widget> _child;
     lateref<GlobalKey> _coutKey;
     std::atomic_bool _consoleStop;

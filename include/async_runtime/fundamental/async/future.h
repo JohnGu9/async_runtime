@@ -6,94 +6,58 @@ template <typename T>
 class FutureOr;
 
 template <>
-class Future<std::nullptr_t> : public Object, protected StateHelper
+class Future<std::nullptr_t> : public Object, public EventLoopGetterMixin
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
-    Future(ref<ThreadPool> callbackHandler) : _callbackHandler(callbackHandler), _completed(false) {}
-    ref<ThreadPool> _callbackHandler;
+    Future(ref<EventLoop> loop) : _loop(loop), _completed(false) {}
+    ref<EventLoop> _loop;
     std::atomic_bool _completed;
 
-public:
-    virtual ref<Future<std::nullptr_t>> than(Function<void()>) = 0;
-
-    // not recommend to use [Future::sync]
-    // async function should always be async
-    // try to sync may cause deadlock
-    virtual void sync();
-    virtual void sync(Duration timeout);
-};
-
-template <>
-class Future<void> : public Future<std::nullptr_t>
-{
-    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
-
-    template <typename R>
-    friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
-
-    template <typename R>
-    friend ref<Future<R>> async(ref<State<StatefulWidget>> state, Function<R()> fn);
+    ref<EventLoop> eventLoop() override { return _loop; }
 
 public:
-    static ref<Future<void>> race(ref<State<StatefulWidget>> state, ref<Set<ref<Future<>>>> set);
-    static ref<Future<void>> wait(ref<State<StatefulWidget>> state, ref<Set<ref<Future<>>>> set);
-
-    static ref<Future<void>> value(ref<ThreadPool> callbackHandler);
-    static ref<Future<void>> value(ref<State<StatefulWidget>> state);
-
-    static ref<Future<void>> delay(ref<ThreadPool> callbackHandler, Duration duration, option<Fn<void()>> onTimeout = nullptr);
-    static ref<Future<void>> delay(ref<State<StatefulWidget>> state, Duration duration, option<Fn<void()>> onTimeout = nullptr);
-
-    Future(ref<ThreadPool> callbackHandler) : Future<std::nullptr_t>(callbackHandler), _callbackList(Object::create<List<Function<void()>>>()) {}
-
-    template <typename ReturnType>
-    ref<Future<ReturnType>> than(Function<FutureOr<ReturnType>()>);
-    ref<Future<std::nullptr_t>> than(Function<void()>) override;
-
-    virtual ref<Future<void>> timeout(Duration, option<Fn<void()>> onTimeout = nullptr);
-
-protected:
-    ref<List<Function<void()>>> _callbackList;
+    bool completed() const { return _completed; }
 };
 
 template <typename T>
 class Future : public Future<std::nullptr_t>
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
-
-    template <typename R>
-    friend ref<Future<R>> async(ref<ThreadPool> callbackHandler, Function<R()> fn);
-
-    template <typename R>
-    friend ref<Future<R>> async(ref<State<StatefulWidget>> state, Function<R()> fn);
+    static ref<List<Function<void(const T &)>>> dummy;
 
 public:
-    static ref<Future<T>> value(ref<ThreadPool> callbackHandler, const T &);
-    static ref<Future<T>> value(ref<State<StatefulWidget>> state, const T &);
-    static ref<Future<T>> value(ref<ThreadPool> callbackHandler, T &&);
-    static ref<Future<T>> value(ref<State<StatefulWidget>> state, T &&);
+    static ref<Future<T>> value(const T &, option<EventLoopGetterMixin> getter = nullptr);
+    static ref<Future<T>> value(T &&, option<EventLoopGetterMixin> getter = nullptr);
 
-    Future(ref<ThreadPool> callbackHandler)
-        : Future<std::nullptr_t>(callbackHandler), _data(),
+    Future(option<EventLoopGetterMixin> getter = nullptr)
+        : Future<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)), _data(),
           _callbackList(Object::create<List<Function<void(const T &)>>>()) {}
 
-    Future(ref<ThreadPool> callbackHandler, const T &data)
-        : Future<std::nullptr_t>(callbackHandler), _data(data),
-          _callbackList(Object::create<List<Function<void(const T &)>>>()) { this->_completed = true; }
-
-    template <typename ReturnType, typename std::enable_if<!std::is_void<ReturnType>::value>::type * = nullptr>
+    template <typename ReturnType = std::nullptr_t>
     ref<Future<ReturnType>> than(Function<FutureOr<ReturnType>(const T &)>);
-    template <typename ReturnType, typename std::enable_if<std::is_void<ReturnType>::value>::type * = nullptr>
-    ref<Future<ReturnType>> than(Function<FutureOr<ReturnType>(const T &)>);
-    ref<Future<std::nullptr_t>> than(Function<void()>) override;
-
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
 protected:
+    virtual void resolve(const T &);
+    virtual void resolve(T &&);
     T _data;
     ref<List<Function<void(const T &)>>> _callbackList;
+};
+
+template <typename T>
+ref<List<Function<void(const T &)>>> Future<T>::dummy = Object::create<List<Function<void(const T &)>>>();
+
+template <typename T>
+class Completer : public Future<T>
+{
+    using super = Future<T>;
+
+public:
+    Completer(option<EventLoopGetterMixin> getter = nullptr) : super(getter) {}
+    void resolve(const T &v) override { super::resolve(v); }
+    void resolve(T &&v) override { super::resolve(std::move(v)); }
 };
 
 template <typename T>
@@ -111,16 +75,85 @@ protected:
     option<Future<T>> _future;
 };
 
-template <>
-class FutureOr<void>
+template <typename T>
+void Future<T>::resolve(const T &data)
 {
-    template <typename R>
-    friend class Future;
+    if (_completed)
+        throw std::logic_error("Future can not be resolved twice");
+    _completed = true;
+    _data = data;
+    auto self = self();
+    auto callbackList = _callbackList;
+    _loop->callSoon([self, callbackList]
+                    {
+        for(const auto& element : callbackList){
+            element(self->_data);
+        } });
+    _callbackList = dummy;
+}
 
-public:
-    FutureOr() {}
-    FutureOr(ref<Future<void>> asyncReturn) : _future(asyncReturn) {}
+template <typename T>
+void Future<T>::resolve(T &&data)
+{
+    if (_completed)
+        throw std::logic_error("Future can not be resolved twice");
+    _completed = true;
+    _data = std::move(data);
+    auto self = self();
+    auto callbackList = _callbackList;
+    _loop->callSoon([self, callbackList]
+                    {
+        for(const auto& element : callbackList){
+            element(self->_data);
+        } });
+    _callbackList = dummy;
+}
 
-protected:
-    option<Future<void>> _future;
-};
+template <typename T>
+ref<Future<T>> Future<T>::value(const T &value, option<EventLoopGetterMixin> getter)
+{
+    auto future = Object::create<Future<T>>(getter);
+    future->resolve(value);
+    return future;
+}
+
+template <typename T>
+ref<Future<T>> Future<T>::value(T &&value, option<EventLoopGetterMixin> getter)
+{
+    auto future = Object::create<Future<T>>(getter);
+    future->resolve(std::move(value));
+    return future;
+}
+
+template <typename T>
+template <typename ReturnType>
+ref<Future<ReturnType>> Future<T>::than(Function<FutureOr<ReturnType>(const T &)> fn)
+{
+    ref<Future<T>> self = self();
+    ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self);
+    Function<void(const T &)> callback = [future, fn](const T &value)
+    {
+        FutureOr<ReturnType> result = fn(value);
+        lateref<Future<ReturnType>> resultFuture;
+        if (result._future.isNotNull(resultFuture))
+        {
+            resultFuture->template than<int>([future, fn](const ReturnType &value)
+                                             {
+                future->resolve(value);
+                return 0; });
+        }
+        else
+        {
+            future->resolve(result._value);
+        }
+    };
+    if (self->_completed)
+    {
+        callback(self->_data);
+    }
+    else
+    {
+        self->_callbackList->emplace_back(std::move(callback));
+    }
+    return future;
+}

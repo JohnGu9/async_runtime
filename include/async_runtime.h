@@ -12,14 +12,11 @@
 #include "async_runtime/widgets/builder.h"
 #include "async_runtime/widgets/value_listenable_builder.h"
 #include "async_runtime/widgets/future_builder.h"
-#include "async_runtime/widgets/process.h"
-#include "async_runtime/widgets/scheduler.h"
 
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/timer.h"
 #include "async_runtime/fundamental/logger.h"
 #include "async_runtime/fundamental/file.h"
-#include "async_runtime/fundamental/http.h"
 
 #ifdef ASYNC_RUNTIME_DISABLE_CONSOLE
 #define __WITH_CONSOLE false
@@ -36,14 +33,14 @@ int runApp(ref<Widget> widget, bool withConsole = __WITH_CONSOLE);
 namespace _async_runtime
 {
     /**
-     * @brief 
+     * @brief
      * reserve file name only that without full path
-     * 
+     *
      * @example
      * /usr/local/async_runtime_test/async_runtime/src/object.cpp
      * ->
      * object.cpp
-     * 
+     *
      */
     template <typename T, size_t S>
     inline constexpr size_t get_file_name_offset(const T (&str)[S], size_t i = S - 1)

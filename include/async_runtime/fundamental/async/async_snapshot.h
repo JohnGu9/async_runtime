@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class AsyncSnapshot<std::nullptr_t> : public Object, protected StateHelper
+class AsyncSnapshot<std::nullptr_t> : public Object
 {
 public:
     class ConnectionState
@@ -39,17 +39,6 @@ public:
     {
         return future->_completed;
     }
-};
-
-template <>
-class AsyncSnapshot<void> : public AsyncSnapshot<std::nullptr_t>
-{
-public:
-    AsyncSnapshot(ConnectionState::Value state = ConnectionState::done)
-        : AsyncSnapshot<std::nullptr_t>(state) {}
-    AsyncSnapshot(ref<Future<void>> future)
-        : AsyncSnapshot<std::nullptr_t>(future->_completed ? ConnectionState::done : ConnectionState::active) {}
-    bool hasData() override { return false; }
 };
 
 template <typename T>
