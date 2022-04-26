@@ -1,8 +1,7 @@
-#include "async_runtime/basic/tree.h"
-#include "async_runtime/fundamental/thread.h"
 #include "async_runtime/elements/root_element.h"
-#include "async_runtime/widgets/key.h"
+#include "async_runtime/fundamental/thread.h"
 
+#include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/logger_widget.h"
 #include "async_runtime/widgets/stateful_widget.h"
 
@@ -10,47 +9,45 @@ class RootElement::RootWidget : public Widget
 {
 public:
     RootWidget() : Widget(nullptr) {}
-    ref<Element> createElement() override { return Object::create<RootElement>(self()); }
+    ref<Element> createElement() override
+    {
+        return Object::create<RootElement>(self(), [] {});
+    }
 };
 
-class RootElement::RootFundamental : public StatefulWidget
+class RootElement::RootFundamental : public StatelessWidget
 {
-    ref<State<StatefulWidget>> createState() override;
-
-public:
-    RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
-        : StatefulWidget(key), child(child), rootElement(rootElement) {}
 
     ref<Widget> child;
     RootElement *rootElement;
-};
 
-class RootElement::RootFundamentalState : public State<RootFundamental>
-{
-    using super = State<RootFundamental>;
-
-    void initState() override
+public:
+    class RootInteritedWidget : public InheritedWidget
     {
-        super::initState();
-        widget->rootElement->_coutKey = Object::create<GlobalKey>();
-        widget->rootElement->_command = Object::create<StreamController<ref<String>>>(self());
-    }
+    public:
+        RootElement *rootElement;
+        RootInteritedWidget(ref<Widget> child, RootElement *rootElement) : InheritedWidget(child), rootElement(rootElement) {}
+        bool updateShouldNotify(ref<InheritedWidget> oldWidget) override
+        {
+            return oldWidget->covariant<RootInteritedWidget>()->rootElement != this->rootElement;
+        }
+    };
 
-    void dispose() override
-    {
-        widget->rootElement->_command->close();
-        super::dispose();
-    }
+    RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
+        : StatelessWidget(key), child(child), rootElement(rootElement) {}
 
-    ref<Widget> build(ref<BuildContext>) override
+    ref<Widget> build(ref<BuildContext> context) override
     {
-        return Object::create<StdoutLogger>(widget->child, widget->rootElement->_coutKey); // Process
+        return Object::create<RootInteritedWidget>(child, rootElement);
     }
 };
 
-ref<State<StatefulWidget>> RootElement::RootFundamental::createState()
+ref<RootElement> RootElement::of(ref<BuildContext> context)
 {
-    return Object::create<RootElement::RootFundamentalState>();
+    return Object::cast<>(context
+                              ->dependOnInheritedWidgetOfExactType<RootElement::RootFundamental::RootInteritedWidget>()
+                              .assertNotNull()
+                              ->rootElement);
 }
 
 /**
@@ -58,9 +55,9 @@ ref<State<StatefulWidget>> RootElement::RootFundamental::createState()
  *
  * @param widget
  */
-RootElement::RootElement(ref<Widget> widget)
-    : SingleChildElement(Object::create<RootWidget>()),
-      _child(Object::create<RootFundamental>(widget, this)), _consoleStop(false) {}
+RootElement::RootElement(ref<Widget> widget, Function<void()> exit)
+    : SingleChildElement(Object::create<RootWidget>()), exit(exit),
+      _child(Object::create<RootFundamental>(widget, this)) {}
 
 void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
 
@@ -98,147 +95,3 @@ void RootElement::visitDescendant(Function<bool(ref<Element>)> fn)
 }
 
 void RootElement::visitAncestor(Function<bool(ref<Element>)>) {}
-
-void RootElement::_exit(int exitCode)
-{
-    this->_exitCode = exitCode;
-    return this->_condition.notify_all();
-}
-
-ref<LoggerHandler> RootElement::getStdoutHandler()
-{
-    ref<State<StatefulWidget>> currentState = this->_coutKey->getCurrentState().assertNotNull();
-    ref<StdoutLoggerState> state = currentState->covariant<StdoutLoggerState>();
-    return state->_handler;
-}
-
-void RootElement::_console()
-{
-    std::unique_lock<std::mutex> lock(this->_mutex);
-    auto self = self();
-    auto thread = Thread([this, self]
-                         {
-#ifndef NDEBUG
-                             ThreadUnit::setThreadName("ConsoleThread");
-#endif
-                             info_print("Enter '"
-                                        << font_wrapper(BOLDBLUE, 'q')
-                                        << "' to quit, '"
-                                        << font_wrapper(BOLDBLUE, "-h")
-                                        << "' or '"
-                                        << font_wrapper(BOLDBLUE, "--help")
-                                        << "' for more information");
-
-                             while (true)
-                             {
-                                 this->getStdoutHandler()->write(">> ");
-                                 ref<String> input = getline(std::cin);
-                                 if (this->_consoleStop) // runApp already required to exit, console not more accept command
-                                     return;
-                                 if (input == "q" || input == "quit")
-                                 {
-                                     std::stringstream ss;
-                                     ss << "Sure to quit (" << font_wrapper(BOLDBLUE, 'y') << '/' << font_wrapper(BOLDRED, "n") << " default is n)? ";
-                                     this->getStdoutHandler()->write(ss.str());
-                                     std::string confrim;
-                                     if (std::getline(std::cin, confrim) && (confrim == "y" || confrim == "yes" || this->_consoleStop))
-                                         break;
-                                     this->getStdoutHandler()->writeLine("cancel");
-                                 }
-                                 else
-                                     onCommand(input);
-                             }
-                             if (this->_consoleStop == false)
-                             {
-                                 // runApp exit by console command
-                                 info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " is shutting down");
-                                 this->_consoleStop = true;
-                                 this->_exit(0);
-                             } });
-    this->_condition.wait(lock); // wait for exit
-    thread.detach();
-}
-
-void RootElement::_noConsole()
-{
-    std::unique_lock<std::mutex> lock(this->_mutex);
-    this->_condition.wait(lock);
-}
-
-void RootElement::onCommand(const ref<String> &in)
-{
-    ref<LoggerHandler> handler = this->getStdoutHandler();
-    if (in == "-h" || in == "--help")
-    {
-#define help_format(x, y) " " << x << "\t\t" << y
-        std::stringstream ss;
-        ss << std::endl;
-        ss << help_format(BOLDWHITE << "command", "arguments" << RESET) << std::endl;
-        ss << help_format("-------", "---------") << std::endl;
-        ss << help_format("ls\t", "()") << std::endl;
-        ss << help_format("reassembly", "()") << std::endl;
-        ss << help_format("clear\t", "()") << std::endl;
-        handler->write(ss.str());
-        return;
-    }
-    else if (in->isEmpty())
-        return;
-
-    std::string::size_type commandLength = in->find(" ");
-    auto command = in->substr(0, commandLength == String::npos ? in->size() : commandLength);
-    if (command == "clear")
-    {
-        printf("\033c");
-    }
-    else if (command == "ls")
-    {
-        ref<Map<Element *, lateref<List<Element *>>>> map = {{this, Object::create<List<Element *>>()}};
-        this->visitDescendant([&map](ref<Element> element) -> bool
-                              {
-                                  option<Element> parent = element->parent.toOption();
-                                  map[parent.get()]->emplace_back(element.get());
-                                  map[element.get()] = Object::create<List<Element *>>();
-                                  return false; });
-        ref<Tree> tree = Object::create<Tree>();
-        lateref<Fn<void(Element *, ref<Tree>)>> buildTree;
-        buildTree =
-            [&](Element *currentElement, ref<Tree> currentTree)
-        {
-            std::stringstream ss;
-            ss << font_wrapper(BOLDBLUE, currentElement->toString()) << std::endl
-               << "  widget: " << currentElement->getWidget()->toString() << std::endl;
-            if (StatefulElement *statefulElement = dynamic_cast<StatefulElement *>(currentElement))
-                ss << "  state: " << statefulElement->_state->toString() << std::endl;
-            currentTree->info = ss.str();
-            ref<List<Element *>> &children = map[currentElement];
-            for (Element *child : children)
-            {
-                ref<Tree> childTree = Object::create<Tree>();
-                buildTree(child, childTree);
-                currentTree->children->emplace_back(childTree);
-            }
-        };
-        buildTree(this, tree);
-        tree->toStringStream(std::cout);
-    }
-    else if (command == "reassembly")
-    {
-        this->detach();
-        this->attach();
-    }
-    else
-    {
-        if ((command == "command" || command == "cmd") && in->length() > commandLength)
-        {
-            auto begin = in->find_first_not_of(" ", commandLength);
-            if (begin != String::npos)
-            {
-                auto cmd = in->substr(begin);
-                this->_command->sink(cmd);
-                return;
-            }
-        }
-        error_print("No such method");
-        info_print("'-h' or '--help' for more information");
-    }
-}

@@ -36,7 +36,7 @@ public:
           _callbackList(Object::create<List<Function<void(const T &)>>>()) {}
 
     template <typename ReturnType = std::nullptr_t>
-    ref<Future<ReturnType>> than(Function<FutureOr<ReturnType>(const T &)>);
+    ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>(const T &)>);
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
 protected:
@@ -127,7 +127,7 @@ ref<Future<T>> Future<T>::value(T &&value, option<EventLoopGetterMixin> getter)
 
 template <typename T>
 template <typename ReturnType>
-ref<Future<ReturnType>> Future<T>::than(Function<FutureOr<ReturnType>(const T &)> fn)
+ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)> fn)
 {
     ref<Future<T>> self = self();
     ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self);
@@ -137,7 +137,7 @@ ref<Future<ReturnType>> Future<T>::than(Function<FutureOr<ReturnType>(const T &)
         lateref<Future<ReturnType>> resultFuture;
         if (result._future.isNotNull(resultFuture))
         {
-            resultFuture->template than<int>([future, fn](const ReturnType &value)
+            resultFuture->template then<int>([future, fn](const ReturnType &value)
                                              {
                 future->resolve(value);
                 return 0; });

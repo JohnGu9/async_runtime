@@ -4,6 +4,8 @@
 #include "async_runtime/fundamental/thread_pool.h"
 #include "async_runtime/fundamental/file.h"
 
+// @TODO: fix thread not safe bug
+
 static finalref<Lock> invalidLock = Object::create<Lock::InvalidLock>();
 
 static ref<ThreadPool> sharedThreadPool()

@@ -24,7 +24,7 @@
 #define __WITH_CONSOLE true
 #endif
 
-int runApp(ref<Widget> widget, bool withConsole = __WITH_CONSOLE);
+void runApp(ref<Widget> widget);
 
 #ifndef __FILENAME__
 #ifndef NDEBUG

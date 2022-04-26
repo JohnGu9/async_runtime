@@ -1,7 +1,16 @@
 #include "async_runtime/elements/root_element.h"
+#include "async_runtime/fundamental/async.h"
 #include "async_runtime/widgets/widget.h"
 
-int runApp(ref<Widget> widget, bool withConsole)
+static void task(ref<Widget> widget);
+
+void runApp(ref<Widget> widget)
+{
+    EventLoop::run([widget]
+                   { task(widget); });
+}
+
+static void task(ref<Widget> widget)
 {
 #ifndef NDEBUG
     info_print("Debug mode on");
@@ -13,17 +22,19 @@ int runApp(ref<Widget> widget, bool withConsole)
 
     info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " start");
 
-    ref<RootElement> root = Object::create<RootElement>(widget);
+    auto handle = EventLoop::Handle::create();
+    auto completer = Object::create<Completer<int>>();
+    completer->then<int>([handle](const int &)
+                         { handle->dispose(); return 0; });
+
+    ref<RootElement> root = Object::create<RootElement>(widget, [completer]
+                                                        {
+        if(!completer->completed())completer->resolve(0); });
+
+    completer->then<int>([root](const int &)
+                         {
+                           root->detach();
+                           info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited");
+                           return 0 ; });
     root->attach();
-
-    if (withConsole)
-        root->_console();
-    else
-        root->_noConsole();
-
-    root->detach();
-    const auto &exitCode = root->exitCode;
-
-    info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited with code " << exitCode);
-    return exitCode;
 }

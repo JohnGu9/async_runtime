@@ -50,7 +50,6 @@ public:
      * @brief
      * Ensure a not yet run event loop or a running event loop
      * The closed event loop will be replace with a new not running event loop
-     * Please call this before [EventLoop::run]
      *
      * @return ref<EventLoop>
      */
@@ -59,12 +58,11 @@ public:
     /**
      * @brief
      * Schedular event loop on current thread
-     * Please call after [EventLoop::ensure]
      *
      * @param fn The task will run just after the event scheduled
      * @return int The return code from [uv_run]
      */
-    static int run(Function<void()> fn);
+    static void run(Function<void()> fn);
 
     /**
      * @brief Create a New [EventLoop] object and schedular it to a new thread

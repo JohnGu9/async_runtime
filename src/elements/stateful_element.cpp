@@ -67,7 +67,7 @@ void StatefulElement::attach()
 void StatefulElement::detach()
 {
     this->_lifeCycle = StatefulElement::_LifeCycle::unmount;
-    assert(this->_state->_mounted && "This [State] class dispose more than twice is not allowed. User should not reuse [State] class or manually call [dispose]");
+    assert(this->_state->_mounted && "This [State] class dispose more then twice is not allowed. User should not reuse [State] class or manually call [dispose]");
     this->detachElement();
     this->_state->dispose();
     this->_state->_mounted = false;

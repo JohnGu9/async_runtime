@@ -7,13 +7,25 @@ extern "C"
 
 #include "async_runtime/fundamental/event_loop.h"
 
+static void useless_cb(uv_async_t *handle)
+{
+}
+
+static void delete_handle(uv_handle_t *handle)
+{
+    delete reinterpret_cast<uv_async_t *>(handle);
+}
+
 static void call_once(uv_async_t *handle)
 {
     auto fn = reinterpret_cast<Function<void()> *>(handle->data);
     (*fn)();
-    uv_unref(reinterpret_cast<uv_handle_t *>(handle));
+
     delete fn;
-    delete handle;
+    handle->data = nullptr;
+    // safely delete handle on [uv_close]'s callback
+    // do not delete handle just in [uv_async_t]'s callback
+    uv_close(reinterpret_cast<uv_handle_t *>(handle), delete_handle);
 }
 
 class EventLoop::_EventLoop : public EventLoop
@@ -23,12 +35,7 @@ protected:
 
 public:
     _EventLoop() noexcept : EventLoop() { uv_loop_init(&_loop); }
-    ~_EventLoop() noexcept { close(); }
-    void close() override
-    {
-        if (alive())
-            uv_loop_close(&_loop);
-    }
+    void close() override {}
     bool alive() const noexcept override { return uv_loop_alive(&_loop); }
     void *nativeHandle() noexcept override { return &_loop; }
     void callSoon(Function<void()> fn) override
@@ -79,7 +86,7 @@ public:
 
     _Handle(ref<EventLoop> loop)
     {
-        uv_async_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()), &_async, call_once /* never call, just for init argument */);
+        uv_async_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()), &_async, useless_cb /* never call, just for init argument */);
     }
 
     void dispose() override
@@ -123,23 +130,25 @@ static void execute_async_fn(uv_async_t *handler)
     uv_unref(reinterpret_cast<uv_handle_t *>(handler));
 }
 
-int EventLoop::run(Function<void()> fn)
+void EventLoop::run(Function<void()> fn)
 {
-    lateref<EventLoop> loop;
-    if (runningEventLoop.isNotNull(loop))
+    ref<EventLoop> loop = ensure();
+    if (isRunning)
+    {
+        loop->callSoon(fn);
+    }
+    else
     {
         auto eventLoop = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
-
         uv_async_t async;
         uv_async_init(eventLoop, &async, execute_async_fn);
         async.data = &fn;
         uv_async_send(&async);
         isRunning = true;
-        const auto code = uv_run(eventLoop, UV_RUN_DEFAULT);
+        uv_run(eventLoop, UV_RUN_DEFAULT);
+        uv_loop_close(eventLoop);
         isRunning = false;
-        return code;
     }
-    throw std::logic_error("No event loop register on this thread. Please run [EventLoop::ensure] before call [EventLoop::run]");
 }
 
 ref<EventLoop> EventLoop::createEventLoopOnNewThread(Function<void()> fn)

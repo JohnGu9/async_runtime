@@ -16,25 +16,13 @@ set(THREAD_LIBRARY_NAME "HP thread")
 endif()
 message(STATUS "Async Runtime using Threads: ${THREAD_LIBRARY_NAME}")
 
-# openssl setup
-find_package(OpenSSL)
-if(OPENSSL_FOUND)
-    message(STATUS "Async Runtime using OpenSSL version: ${OPENSSL_VERSION}")
-    message(STATUS "Async Runtime using OpenSSL include: ${OPENSSL_INCLUDE_DIR}")
-    message(STATUS "Async Runtime using OpenSSL libraries: ${OPENSSL_LIBRARIES}")
-    # add_compile_options(-DCPPHTTPLIB_OPENSSL_SUPPORT)
-endif()
-
 # libuv setup
 message(STATUS "Informations from libuv: ")
 add_subdirectory(vendor/libuv)
 
-
 # build target
 set(INCLUDE_DIR 
     ${CMAKE_CURRENT_SOURCE_DIR}/include 
-    ${OPENSSL_INCLUDE_DIR} 
-    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cpp-httplib
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/libuv/include
 )
 
@@ -44,8 +32,6 @@ if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
-# export include directories
-set(ASYNC_RUNTIME_INCLUDE_DIR ${INCLUDE_DIR} PARENT_SCOPE)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/basic basic_src)
@@ -63,7 +49,7 @@ else()
     add_library(async_runtime_a ${all_src})
 endif()
 
-target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} uv_a)
+target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} uv_a)
 target_compile_options(async_runtime PRIVATE
      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall>
      $<$<CXX_COMPILER_ID:MSVC>:/wd4100 /wd4458>)

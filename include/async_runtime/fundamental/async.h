@@ -57,11 +57,12 @@ ref<Future<T>> async(Function<T()> fn, option<EventLoopGetterMixin> getter = nul
 template <typename T>
 ref<Future<T>> delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr)
 {
-    auto future = Object::create<Future<T>>(getter);
-    auto timer = Timer::delay(
+    auto future = Object::create<Completer<T>>(getter);
+    Timer::delay(
         timeout, [future, fn](ref<Timer> timer)
         { future->resolve(fn()); },
-        getter);
+        getter)
+        ->start();
     return future;
 }
 
@@ -70,12 +71,13 @@ ref<Future<T>> Future<T>::timeout(Duration timeout, Function<T()> onTimeout)
 {
     ref<Future<T>> self = self();
     ref<Completer<T>> future = Object::create<Completer<T>>(self);
-    self->template than<int>([future](const T &value)
+    self->template then<int>([future](const T &value)
                              {if(!future->completed()) future->resolve(value);
                return 0; });
     Timer::delay(
         timeout, [future, onTimeout](ref<Timer> timer)
         { if(!future->completed()) future->resolve(onTimeout()); },
-        self);
+        self)
+        ->start();
     return future;
 }

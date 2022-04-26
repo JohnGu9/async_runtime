@@ -72,13 +72,13 @@ public:
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return this->_file->append(str)->than<bool>([](const int &)
+            return this->_file->append(str)->then<bool>([](const int &)
                                                         { return true; });
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return this->_file->append(str + '\n')->than<bool>([](const int &)
+            return this->_file->append(str + '\n')->then<bool>([](const int &)
                                                                { return true; });
         }
 
