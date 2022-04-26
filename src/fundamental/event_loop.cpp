@@ -23,7 +23,7 @@ static void call_once(uv_async_t *handle)
 
     delete fn;
     handle->data = nullptr;
-    // safely delete handle on [uv_close]'s callback
+    // safely delete handle in [uv_close]'s callback
     // do not delete handle just in [uv_async_t]'s callback
     uv_close(reinterpret_cast<uv_handle_t *>(handle), delete_handle);
 }

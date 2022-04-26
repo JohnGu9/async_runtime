@@ -34,7 +34,9 @@ class Stream : public Stream<std::nullptr_t>
 
 public:
     Stream(option<EventLoopGetterMixin> getter = nullptr)
-        : Stream<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)), _cache(Object::create<List<T>>()) {}
+        : Stream<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)),
+          _cache(Object::create<List<T>>()),
+          _listeners(Object::create<Set<ref<StreamSubscription<T>>>>()) {}
 
     virtual ref<StreamSubscription<T>> listen(Function<void(const T &)> fn);
 

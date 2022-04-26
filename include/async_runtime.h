@@ -1,6 +1,11 @@
 #pragma once
 
 // export library
+#include "async_runtime/fundamental/async.h"
+#include "async_runtime/fundamental/file.h"
+#include "async_runtime/fundamental/logger.h"
+#include "async_runtime/fundamental/timer.h"
+
 #include "async_runtime/widgets/builder.h"
 #include "async_runtime/widgets/future_builder.h"
 #include "async_runtime/widgets/inherited_widget.h"
@@ -13,19 +18,10 @@
 #include "async_runtime/widgets/value_listenable_builder.h"
 #include "async_runtime/widgets/widget.h"
 
-#include "async_runtime/fundamental/async.h"
-#include "async_runtime/fundamental/file.h"
-#include "async_runtime/fundamental/logger.h"
-#include "async_runtime/fundamental/timer.h"
-
-#ifdef ASYNC_RUNTIME_DISABLE_CONSOLE
-#define __WITH_CONSOLE false
-#else
-#define __WITH_CONSOLE true
-#endif
-
+// run widgets from this api
 void runApp(ref<Widget> widget);
 
+// ease logger marco
 #ifndef __FILENAME__
 #ifndef NDEBUG
 #define __FILENAME__ __FILE__
