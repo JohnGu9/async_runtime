@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class Stream<std::nullptr_t> : public Object, public EventLoopGetterMixin
+class Stream<std::nullptr_t> : public virtual Object, public EventLoopGetterMixin
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
@@ -17,10 +17,8 @@ protected:
     ref<EventLoop> eventLoop() override { return _loop; }
 
 public:
-    virtual ref<Future<int>> asFuture()
-    {
-        return _onClose;
-    }
+    virtual bool isClosed() const { return _isClosed; }
+    virtual ref<Future<int>> asFuture() { return _onClose; }
 
     virtual ~Stream()
     {
@@ -63,6 +61,7 @@ public:
 template <typename T>
 ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
 {
+    assert(!_isClosed);
     ref<Stream<T>> self = self();
     auto subscription = Object::create<StreamSubscription<T>>(fn);
     subscription->_cancel = [this, subscription]

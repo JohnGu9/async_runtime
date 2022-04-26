@@ -1,16 +1,33 @@
 #pragma once
 
-#include "../object.h"
-#include "../basic/lock.h"
 #include "../basic/duration.h"
+#include "../object.h"
 
 #include "event_loop.h"
+
+// Forward define
+// All async components are not thread safe
+// You need to handle multi-threading issue by your own
+// You can checkout [basic/lock.h] for some ease thread-locker
+
+template <typename T = std::nullptr_t>
+class Future;
+template <typename T = std::nullptr_t>
+class Completer;
+template <typename T = std::nullptr_t>
+class Stream;
+template <typename T = std::nullptr_t>
+class StreamController;
+template <typename T = std::nullptr_t>
+class StreamSubscription;
+template <typename T = std::nullptr_t>
+class AsyncSnapshot;
 
 #define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \
     template <typename R>                  \
     friend class Future;                   \
     template <typename R>                  \
-    friend class Completer;        \
+    friend class Completer;                \
     template <typename R>                  \
     friend class Stream;                   \
     template <typename R>                  \
@@ -20,31 +37,10 @@
     template <typename R>                  \
     friend class AsyncSnapshot;
 
-// Forward define
-
-// @ thread safe
-template <typename T = std::nullptr_t>
-class Future;
-// @ thread safe
-template <typename T = std::nullptr_t>
-class Completer;
-// @ thread safe
-template <typename T = std::nullptr_t>
-class Stream;
-// @ not thread safe
-template <typename T = std::nullptr_t>
-class StreamController;
-// @ not thread safe
-template <typename T = std::nullptr_t>
-class StreamSubscription;
-// @ thread safe
-template <typename T = std::nullptr_t>
-class AsyncSnapshot;
-
+#include "async/async_snapshot.h"
 #include "async/future.h"
 #include "async/stream.h"
 #include "async/stream_subscription.h"
-#include "async/async_snapshot.h"
 
 template <typename T>
 ref<Future<T>> async(Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr)

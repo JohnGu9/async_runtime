@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class StreamSubscription<std::nullptr_t> : public Object
+class StreamSubscription<std::nullptr_t> : public virtual Object
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY
 public:

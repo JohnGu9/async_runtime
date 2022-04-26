@@ -4,7 +4,7 @@
 #include "../basic/duration.h"
 #include "event_loop.h"
 
-class Timer : public Object, public EventLoopGetterMixin
+class Timer : public virtual Object, public EventLoopGetterMixin
 {
 public:
     static ref<Timer> delay(Duration duration, Function<void(ref<Timer>)> fn, option<EventLoopGetterMixin> getter = nullptr);

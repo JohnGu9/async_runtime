@@ -8,7 +8,7 @@
 
 #include "async.h"
 
-class LoggerHandler : public Object
+class LoggerHandler : public virtual Object
 {
 public:
     LoggerHandler() {}

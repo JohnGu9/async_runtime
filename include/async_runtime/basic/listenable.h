@@ -3,7 +3,7 @@
 #include "../object.h"
 
 // abstract class
-class Listenable : public Object
+class Listenable : public virtual Object
 {
 public:
     virtual void addListener(Function<void()> fn);

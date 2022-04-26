@@ -1,7 +1,7 @@
 #pragma once
 
 #include <thread>
-#include "async.h"
+#include "../object.h"
 
 using Thread = std::thread;
 

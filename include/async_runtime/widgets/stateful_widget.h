@@ -16,7 +16,7 @@ protected:
 };
 
 template <>
-class State<StatefulWidget> : public Object, public EventLoopGetterMixin
+class State<StatefulWidget> : public virtual Object, public EventLoopGetterMixin
 {
     friend class StatefulElement;
     friend class StateHelper;

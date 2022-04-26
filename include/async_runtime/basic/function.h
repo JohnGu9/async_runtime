@@ -19,7 +19,7 @@ template <typename T = std::nullptr_t>
 class Fn;
 
 template <>
-class Fn<std::nullptr_t> : public Object
+class Fn<std::nullptr_t> : public virtual Object
 {
 };
 

@@ -2,7 +2,7 @@
 
 #include "../object.h"
 
-class Tree : public Object
+class Tree : public virtual Object
 {
 public:
     Tree() : children(Object::create<List<ref<Tree>>>()) {}

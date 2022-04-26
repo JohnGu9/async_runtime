@@ -28,7 +28,7 @@
  * }
  *
  */
-class Lock : public Object
+class Lock : public virtual Object
 {
 public:
     class SharedLock;
@@ -50,7 +50,7 @@ protected:
     std::condition_variable _condition;
 };
 
-class Lock::SharedLock : public Object
+class Lock::SharedLock : public virtual Object
 {
 public:
     SharedLock(Lock &lock);
@@ -60,7 +60,7 @@ protected:
     Lock &_lock;
 };
 
-class Lock::UniqueLock : public Object
+class Lock::UniqueLock : public virtual Object
 {
 public:
     UniqueLock(Lock &lock);

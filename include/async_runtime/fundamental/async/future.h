@@ -6,14 +6,14 @@ template <typename T>
 class FutureOr;
 
 template <>
-class Future<std::nullptr_t> : public Object, public EventLoopGetterMixin
+class Future<std::nullptr_t> : public virtual Object, public EventLoopGetterMixin
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
     Future(ref<EventLoop> loop) : _loop(loop), _completed(false) {}
     ref<EventLoop> _loop;
-    std::atomic_bool _completed;
+    bool _completed;
 
     ref<EventLoop> eventLoop() override { return _loop; }
 

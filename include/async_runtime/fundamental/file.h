@@ -3,7 +3,7 @@
 #include "async.h"
 #include "../basic/lock.h"
 
-class File : public Object, public EventLoopGetterMixin, public EventLoop::WithHandleMixin
+class File : public virtual Object, public EventLoopGetterMixin, public EventLoop::WithHandleMixin
 {
 public:
     static ref<File> fromPath(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);

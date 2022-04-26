@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class AsyncSnapshot<std::nullptr_t> : public Object
+class AsyncSnapshot<std::nullptr_t> : public virtual Object
 {
 public:
     class ConnectionState

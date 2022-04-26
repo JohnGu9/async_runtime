@@ -33,7 +33,7 @@ class ref<String>;
  * ref<String> withTrueString = string + 1.023;
  *
  */
-class String : public Object, protected std::string
+class String : public virtual Object, protected std::string
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 

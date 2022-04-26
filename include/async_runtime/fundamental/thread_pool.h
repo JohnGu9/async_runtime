@@ -1,12 +1,13 @@
 #pragma once
 
-#include <vector>
-#include <queue>
-#include <mutex>
 #include <condition_variable>
-#include <future>
 #include <functional>
+#include <future>
+#include <mutex>
+#include <queue>
+#include <vector>
 
+#include "../basic/lock.h"
 #include "thread.h"
 
 /**
@@ -20,13 +21,12 @@
  *
  *
  */
-class ThreadPool : public Object
+class ThreadPool : public virtual Object
 {
     static ref<Set<ref<String>>> _namePool;
     static ref<Lock> _lock;
 
 public:
-
     ThreadPool(size_t threads, option<String> name = nullptr);
     virtual ~ThreadPool();
 

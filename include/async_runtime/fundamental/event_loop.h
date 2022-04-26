@@ -17,7 +17,7 @@ public:
     virtual ref<EventLoop> eventLoop() = 0;
 };
 
-class EventLoop : public Object, public EventLoopGetterMixin
+class EventLoop : public virtual Object, public EventLoopGetterMixin
 {
 public:
     /**
@@ -26,7 +26,7 @@ public:
      * Call [Handle::dispose] let event loop to close when all handle disposed
      *
      */
-    class Handle : virtual public Object
+    class Handle : public virtual Object
     {
         class _Handle;
 

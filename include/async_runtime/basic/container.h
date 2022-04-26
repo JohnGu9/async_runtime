@@ -3,7 +3,7 @@
 #include "function.h"
 
 template <typename T>
-class Iterable : public Object
+class Iterable : public virtual Object
 {
 public:
     virtual bool any(Function<bool(const T &)> fn) const = 0;

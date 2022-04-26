@@ -7,7 +7,7 @@ class Widget;
 class Element;
 class BuildContext;
 
-class Key : public Object
+class Key : public virtual Object
 {
 public:
     virtual bool equal(option<Key> other) = 0;
