@@ -1,12 +1,12 @@
 /**
- * @brief 
+ * @brief
  * The mechanism of nullsafety system
  * Implement base on std::shared_ptr and std::weak_ptr (don't be confused by std::ref)
  * Thread safe and memory safe
- * 
- * 
+ *
+ *
  * inherits layout:
- * 
+ *
  * std::shared_ptr
  *       ^
  *       |
@@ -14,8 +14,8 @@
  *       ^
  *       |
  *  option
- * 
- * 
+ *
+ *
  * std::shared_ptr
  *       ^
  *       |
@@ -26,45 +26,45 @@
  *       ^
  *       |
  *  lateref
- * 
- * 
+ *
+ *
  *  std::weak_ptr
  *       ^
  *       |
  *  weakref
- * 
- * 
+ *
+ *
  * @example
  * ref<Object> object = Object::create<Object>(); // create a object through Object::create
  * ref<Object> refOfObject = object; // another ref of object
- * 
+ *
  * option<Object> opt = object; // nullable ref and lock the object resource
  * opt = nullptr; // release ref and unlock the resource
- * 
+ *
  * weakref<Object> wr = object; // weak ref that point toward a ref that doesn't lock the resource
- * 
+ *
  * refOfObject->function(); // only ref call directly call member. option and weakref can not.
  * // only way option and weakref call member is to change option and weakref to ref
- * 
- * 
+ *
+ *
  * // change option(/weakref) to ref through ToRefMixin api
  * object = opt.assertNotNull(); // assert is not a good option change that may cause error
- * 
+ *
  * if (opt.isNotNull(object)) { // null check is a good option
- *     // object is not null here 
+ *     // object is not null here
  * }
- * 
+ *
  * object = opt.isNotNullElse([]() ->ref<Object> { return Object::create<Object>(); }) // if opt is not null change opt to ref, otherwise create a new Object
  * object = opt.isNotNullElse(Object::create<Object>); another syntax
- * 
+ *
  */
 
 #pragma once
 
-#include <memory>
-#include <functional>
-#include <exception>
 #include <assert.h>
+#include <exception>
+#include <functional>
+#include <memory>
 
 #define finalref const ref
 #define finaloption const option
@@ -181,11 +181,11 @@ public:
      * so that option no need to specialize template
      * but for nullsafety, option quick init need at least one argument (zero arguments will cause null ref init)
      * this api should only used inside nullsafety system, not for public usage
-     *  
-     * @tparam First 
-     * @tparam Args 
-     * @param first 
-     * @param args 
+     *
+     * @tparam First
+     * @tparam Args
+     * @param first
+     * @param args
      */
     template <typename First, typename... Args>
     option(const First &first, Args &&...args);

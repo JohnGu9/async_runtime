@@ -1,8 +1,8 @@
 #pragma once
 
-#include <sstream>
-#include <exception>
 #include <assert.h>
+#include <exception>
+#include <sstream>
 
 #include "basic/io.h"
 #include "basic/ref.h"
@@ -12,14 +12,14 @@
 class String;
 
 /**
- * @brief 
+ * @brief
  * Object is the element of nullsafety system
  * Only Object can take advantage of nullsafety system
- * 
+ *
  * @example
  * class YourClass : public Object{};
  * ref<YourClass> yourClass = Object::create<YourClass>();
- * 
+ *
  */
 class Object : public std::enable_shared_from_this<Object>
 {
@@ -79,9 +79,9 @@ ref<T> Object::create(_Args &&...__args)
  * @brief detach let ref force to release the refences of object
  * object may not dispose if there is any other ref of itself
  * be careful to use this function that may cause serious problem
- * 
- * @tparam T 
- * @tparam * 
+ *
+ * @tparam T
+ * @tparam *
  * @param object the ref need to force to release
  */
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
@@ -145,5 +145,12 @@ ref<T> Object::covariant()
     }
 }
 
+/**
+ * @brief object.h come with [function.h] [string.h] [container.h]
+ * that you do not need to include them alone
+ * include them alone may cause include order issue
+ *
+ */
+#include "basic/container.h"
 #include "basic/function.h"
 #include "basic/string.h"

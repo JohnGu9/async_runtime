@@ -1,19 +1,19 @@
 #pragma once
 
-#include <functional>
-#include <type_traits>
-#include <memory>
 #include "../object.h"
+#include <functional>
+#include <memory>
+#include <type_traits>
 /**
  * @brief Function object in Async Runtime
- * 
- * 
- * @tparam T 
+ *
+ *
+ * @tparam T
  * the function format
- * 
+ *
  * @example
  * Function<void()> fn = []() -> void {};
- * 
+ *
  */
 template <typename T = std::nullptr_t>
 class Fn;
@@ -34,7 +34,7 @@ public:
     Fn(Lambda lambda) : std::function<ReturnType(Args...)>(lambda) {}
 
     ReturnType operator()(Args... args) const { return std::function<ReturnType(Args...)>::operator()(std::forward<Args>(args)...); }
-    const std::function<ReturnType(Args...)>& toStdFunction()const{return *this;}
+    const std::function<ReturnType(Args...)> &toStdFunction() const { return *this; }
 };
 
 template <typename ReturnType, class... Args>

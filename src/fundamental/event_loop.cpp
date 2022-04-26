@@ -7,7 +7,7 @@ extern "C"
 
 #include "async_runtime/fundamental/event_loop.h"
 
-static void callOnce(uv_async_t *handle)
+static void call_once(uv_async_t *handle)
 {
     auto fn = reinterpret_cast<Function<void()> *>(handle->data);
     (*fn)();
@@ -34,7 +34,7 @@ public:
     void callSoon(Function<void()> fn) override
     {
         uv_async_t *async = new uv_async_t;
-        uv_async_init(&_loop, async, callOnce);
+        uv_async_init(&_loop, async, call_once);
         async->data = new Function<void()>(fn);
         uv_async_send(async);
     }
@@ -79,7 +79,7 @@ public:
 
     _Handle(ref<EventLoop> loop)
     {
-        uv_async_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()), &_async, callOnce);
+        uv_async_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()), &_async, call_once /* never call, just for init argument */);
     }
 
     void dispose() override

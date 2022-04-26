@@ -1,7 +1,7 @@
 #include "async_runtime/basic/tree.h"
 #include "async_runtime/fundamental/thread.h"
 #include "async_runtime/elements/root_element.h"
-#include "async_runtime/elements/key.h"
+#include "async_runtime/widgets/key.h"
 
 #include "async_runtime/widgets/logger_widget.h"
 #include "async_runtime/widgets/stateful_widget.h"
@@ -68,7 +68,7 @@ void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement d
 
 void RootElement::attach()
 {
-    static finalref<Map<Object::RuntimeType, lateref<Inheritance>>> empty = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
+    static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> empty = Object::create<Map<Object::RuntimeType, lateref<InheritedWidget>>>();
     this->_inheritances = empty;
     this->attachElement(this->_child->createElement());
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../object.h"
-#include "../basic/function.h"
 
 class EventLoop;
 class EventLoopGetterMixin
@@ -27,7 +26,7 @@ public:
      * Call [Handle::dispose] let event loop to close when all handle disposed
      *
      */
-    class Handle
+    class Handle : virtual public Object
     {
         class _Handle;
 

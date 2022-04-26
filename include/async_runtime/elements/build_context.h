@@ -1,15 +1,10 @@
 #pragma once
 
 #include "context.h"
-#include "../basic/container.h"
 
 class Element;
 class Widget;
 class InheritedWidget;
-
-class Inheritance : public virtual Object
-{
-};
 
 class BuildContext : public Context
 {
@@ -21,5 +16,7 @@ public:
 
 protected:
     ref<Widget> widget;
-    lateref<Map<Object::RuntimeType, lateref<Inheritance>>> _inheritances;
+    lateref<Map<Object::RuntimeType, lateref<InheritedWidget>>> _inheritances;
 };
+
+inline BuildContext::BuildContext(ref<Widget> widget_) : widget(widget_) {}

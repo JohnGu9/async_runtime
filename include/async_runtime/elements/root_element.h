@@ -1,9 +1,8 @@
 #pragma once
 
-#include <atomic>
-#include "key.h"
 #include "../fundamental/async.h"
 #include "single_child_element.h"
+#include <atomic>
 
 class GlobalKey;
 class LoggerHandler;

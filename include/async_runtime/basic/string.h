@@ -1,37 +1,37 @@
 #pragma once
 
-#include <string>
-#include <sstream>
-#include <memory>
-#include <limits>
-#include <deque>
-#include "ref.h"
 #include "../object.h"
 #include "container.h"
+#include "ref.h"
+#include <deque>
+#include <limits>
+#include <memory>
+#include <sstream>
+#include <string>
 
 template <>
 class ref<String>;
 
 /**
- * @brief 
- * String is Object. 
- * Nest it into ref<String> or option<String>. 
- * ref<String> and option<String> also work with Map and Set like std::string. 
- * String is immutable, the c str is fixed since they were born. 
- * 
+ * @brief
+ * String is Object.
+ * Nest it into ref<String> or option<String>.
+ * ref<String> and option<String> also work with Map and Set like std::string.
+ * String is immutable, the c str is fixed since they were born.
+ *
  * @example
  * ref<String> string = "This is a non-null String object"; // directly init ref<String> from const char* const
  * option<String> nullableString = "This is a nullable String object, but now it isn't null with value \"this string\""; // directly init option<String> from const char* const
  * option<String> nullString = nullptr; // this is a null String object
- * 
+ *
  * ref<String> newString = string + nullableString.assertNotNull(); // append two ref<String> to a new ref<String>
- * 
+ *
  * if (newString == string) { / *** / } // compare two ref<String>
  * if (newString == "This is a non-null String object") { / *** / } // compare with const char* const
- * 
+ *
  * ref<String> withTrueString = string + true; // append any type that support ostream &operator<<(std::ostream &out, T b)
  * ref<String> withTrueString = string + 1.023;
- * 
+ *
  */
 class String : public Object, protected std::string
 {
@@ -271,7 +271,7 @@ void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std
 #endif
                    << first;
                 lastIndex = index;
-                ++++lastIndex; // lastIndex = lastIndex + 2;
+                ++ ++lastIndex; // lastIndex = lastIndex + 2;
                 _unwrapPackToIterator(lastIndex, end, ss, rest...);
                 return;
             }

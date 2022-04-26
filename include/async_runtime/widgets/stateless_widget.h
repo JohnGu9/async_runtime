@@ -1,7 +1,9 @@
 #pragma once
 
 #include "widget.h"
-#include "../contexts/build_context.h"
+
+class Element;
+class BuildContext;
 
 class StatelessWidget : public Widget
 {

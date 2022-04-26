@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../object.h"
+#include "function.h"
 
 template <typename T>
 class Iterable : public Object

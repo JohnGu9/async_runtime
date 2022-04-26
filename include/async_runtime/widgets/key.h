@@ -1,9 +1,11 @@
 #pragma once
 
-#include "element.h"
-#include "../widgets/state.h"
+#include "../object.h"
+#include "state.h"
 
 class Widget;
+class Element;
+class BuildContext;
 
 class Key : public Object
 {

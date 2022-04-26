@@ -1,5 +1,5 @@
 #include "async_runtime/elements/element.h"
-#include "async_runtime/elements/key.h"
+#include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/widget.h"
 
 Element::Element(ref<Widget> widget) : BuildContext(widget) {}
@@ -18,7 +18,7 @@ void Element::detach()
     lateref<Key> key;
     if (this->widget->key.isNotNull(key))
         key->dispose();
-    static finalref<Map<Object::RuntimeType, lateref<Inheritance>>> _empty = Object::create<Map<Object::RuntimeType, lateref<Inheritance>>>();
+    static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> _empty = Object::create<Map<Object::RuntimeType, lateref<InheritedWidget>>>();
     this->_inheritances = _empty; // release map reference
 }
 
