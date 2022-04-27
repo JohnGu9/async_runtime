@@ -1,7 +1,7 @@
 #pragma once
 
-#include "stateful_widget.h"
 #include "../fundamental/async.h"
+#include "stateful_widget.h"
 
 template <typename T>
 class FutureBuilder : public StatefulWidget
@@ -30,14 +30,14 @@ public:
     {
         super::initState();
         ref<Future<T>> future = this->widget->future;
-        if (!AsyncSnapshot<>::getCompletedFromFuture(future))
+        if (!future->completed())
         {
             ref<FutureBuilder<T>::_State> self = self();
-            future->then([this, self, future]
-                         {
-                             if (this->widget->future == future)
-                                 this->setState([] {});
-                         });
+            future->template then<int>([this, self, future](const T &)
+                                       {
+                            if (this->widget->future == future)
+                                this->setState([] {});
+                            return 0; });
         }
     }
 
@@ -45,14 +45,14 @@ public:
     {
         super::didWidgetUpdated(oldWidget);
         ref<Future<T>> future = this->widget->future;
-        if (oldWidget->future != future && !AsyncSnapshot<>::getCompletedFromFuture(future))
+        if (oldWidget->future != future && !future->completed())
         {
-            ref<FutureBuilder<T>::_State> self = self();
-            future->then([this, self, future]
-                         {
-                             if (this->widget->future == future)
-                                 this->setState([] {});
-                         });
+            auto self = self();
+            future->template then<int>([this, self, future](const T &)
+                                       {
+                            if (this->widget->future == future)
+                                this->setState([] {});
+                            return 0; });
         }
     }
 

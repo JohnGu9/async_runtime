@@ -76,6 +76,7 @@ public:
     virtual bool alive() const noexcept = 0;
     virtual void *nativeHandle() noexcept = 0;
     virtual void callSoon(Function<void()> fn) = 0;
+    virtual void callSoonThreadSafe(Function<void()> fn) = 0;
     ref<EventLoop> eventLoop() override { return self(); }
 
 protected:

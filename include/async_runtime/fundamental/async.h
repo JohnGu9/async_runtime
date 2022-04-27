@@ -42,25 +42,15 @@ class AsyncSnapshot;
 #include "async/stream.h"
 #include "async/stream_subscription.h"
 
-template <typename T>
-ref<Future<T>> async(Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr)
-{
-    auto loop = EventLoopGetterMixin::ensureEventLoop(getter);
-    auto future = Object::create<Completer<T>>(getter);
-    loop->callSoon([future, fn]
-                   { future->resolve(fn()); });
-    return future;
-}
-
 #include "timer.h"
 
 template <typename T>
-ref<Future<T>> delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr)
+ref<Future<T>> Future<T>::delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter)
 {
     auto future = Object::create<Completer<T>>(getter);
     Timer::delay(
         timeout, [future, fn](ref<Timer> timer)
-        { future->resolve(fn()); },
+        { future->complete(fn()); },
         getter)
         ->start();
     return future;
@@ -72,11 +62,11 @@ ref<Future<T>> Future<T>::timeout(Duration timeout, Function<T()> onTimeout)
     ref<Future<T>> self = self();
     ref<Completer<T>> future = Object::create<Completer<T>>(self);
     self->template then<int>([future](const T &value)
-                             {if(!future->completed()) future->resolve(value);
+                             {if(!future->completed()) future->complete(value);
                return 0; });
     Timer::delay(
         timeout, [future, onTimeout](ref<Timer> timer)
-        { if(!future->completed()) future->resolve(onTimeout()); },
+        { if(!future->completed()) future->complete(onTimeout()); },
         self)
         ->start();
     return future;

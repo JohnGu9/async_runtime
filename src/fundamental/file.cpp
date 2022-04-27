@@ -34,7 +34,7 @@ ref<Future<bool>> File::exists()
     ref<File> self = self();
     ref<Completer<bool>> completer = Object::create<Completer<bool>>(self);
     sharedThreadPool()->post([this, self, completer]
-                             { completer->resolve(existsSync()); });
+                             { completer->complete(existsSync()); });
     return completer;
 }
 
@@ -43,7 +43,7 @@ ref<Future<int>> File::remove()
     ref<File> self = self();
     ref<Completer<int>> completer = Object::create<Completer<int>>(self);
     sharedThreadPool()->post([this, self, completer]
-                             { completer->resolve(removeSync()); });
+                             { completer->complete(removeSync()); });
     return completer;
 }
 
@@ -52,7 +52,7 @@ ref<Future<long long>> File::size()
     ref<File> self = self();
     ref<Completer<long long>> completer = Object::create<Completer<long long>>(self);
     sharedThreadPool()->post([this, self, completer]
-                             { completer->resolve(sizeSync()); });
+                             { completer->complete(sizeSync()); });
     return completer;
 }
 
@@ -93,7 +93,7 @@ ref<Future<int>> File::append(ref<String> str)
             file << str;
             file.close();
         }
-        completer->resolve(0); });
+        completer->complete(0); });
     return completer;
 }
 
@@ -109,7 +109,7 @@ ref<Future<int>> File::overwrite(ref<String> str)
             file << str;
             file.close();
         }
-        completer->resolve(0); });
+        completer->complete(0); });
     return completer;
 }
 
@@ -124,7 +124,7 @@ ref<Future<int>> File::clear()
             std::ofstream file(_path->toStdString(), std::ofstream::trunc);
             file.close();
         }
-        completer->resolve(0); });
+        completer->complete(0); });
     return completer;
 }
 
@@ -144,7 +144,7 @@ ref<Future<ref<String>>> File::read()
             str.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
             file.close();
         }
-        completer->resolve(std::move(str)); });
+        completer->complete(std::move(str)); });
     return completer;
 }
 

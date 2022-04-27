@@ -68,19 +68,3 @@ public:
     ref<State<StatefulWidget>> createState() override;
     ref<Widget> child;
 };
-
-class StdoutLoggerState : public State<StdoutLogger>
-{
-public:
-    using super = State<StdoutLogger>;
-    lateref<LoggerHandler> _handler;
-
-    void initState() override;
-    void dispose() override;
-    ref<Widget> build(ref<BuildContext>) override;
-};
-
-inline ref<State<StatefulWidget>> StdoutLogger::createState()
-{
-    return Object::create<StdoutLoggerState>();
-}

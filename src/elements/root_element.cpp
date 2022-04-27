@@ -3,51 +3,68 @@
 
 #include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/logger_widget.h"
-#include "async_runtime/widgets/stateful_widget.h"
+#include "async_runtime/widgets/root_widget.h"
 
-class RootElement::RootWidget : public Widget
+class RootElement::RootWrapper : public StatelessWidget
 {
-public:
-    RootWidget() : Widget(nullptr) {}
-    ref<Element> createElement() override
-    {
-        return Object::create<RootElement>(self(), [] {});
-    }
-};
-
-class RootElement::RootFundamental : public StatelessWidget
-{
-
     ref<Widget> child;
     RootElement *rootElement;
 
 public:
-    class RootInteritedWidget : public InheritedWidget
-    {
-    public:
-        RootElement *rootElement;
-        RootInteritedWidget(ref<Widget> child, RootElement *rootElement) : InheritedWidget(child), rootElement(rootElement) {}
-        bool updateShouldNotify(ref<InheritedWidget> oldWidget) override
-        {
-            return oldWidget->covariant<RootInteritedWidget>()->rootElement != this->rootElement;
-        }
-    };
-
-    RootFundamental(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
+    RootWrapper(ref<Widget> child, RootElement *rootElement, option<Key> key = nullptr)
         : StatelessWidget(key), child(child), rootElement(rootElement) {}
 
     ref<Widget> build(ref<BuildContext> context) override
     {
-        return Object::create<RootInteritedWidget>(child, rootElement);
+        return Object::create<RootWidget>(
+            Object::create<Logger>(child, rootElement->cout),
+            rootElement);
     }
 };
 
-ref<RootElement> RootElement::of(ref<BuildContext> context)
+class _StdoutLoggerHandler : public LoggerHandler
 {
-    return Object::cast<>(context
-                              ->dependOnInheritedWidgetOfExactType<RootElement::RootFundamental::RootInteritedWidget>()
-                              .assertNotNull()
-                              ->rootElement);
+    ref<EventLoop> _loop;
+
+    ref<Future<bool>> _write(ref<String> str, bool wrap)
+    {
+        lateref<EventLoop> current;
+        if (EventLoop::runningEventLoop.isNotNull(current) && _loop == current)
+        {
+            // call on one event loop
+            // no need to sync
+            return Future<bool>::async([str, wrap]
+                                       {
+                std::cout << str;
+                if (wrap) std::cout<< std::endl;
+                return true; });
+        }
+        else
+        {
+            // call from another event loop
+            EventLoop::runningEventLoop.assertNotNull();
+            auto completer = Object::create<Completer<bool>>(current);
+            _loop->callSoonThreadSafe([str, current, completer, wrap]
+                                      {
+                std::cout << str;
+                if (wrap) std::cout<< std::endl;
+                current->callSoonThreadSafe([completer]{completer->complete(true);}); });
+            return completer;
+        }
+    }
+
+public:
+    _StdoutLoggerHandler() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)) {}
+
+    ref<Future<bool>> write(ref<String> str) override { return _write(str, false); }
+    ref<Future<bool>> writeLine(ref<String> str) override { return _write(str, true); }
+    void dispose() override {}
+};
+
+static ref<LoggerHandler> coutLoggerBuilder()
+{
+    static finalref<LoggerHandler> singleton = Object::create<_StdoutLoggerHandler>();
+    return singleton;
 }
 
 /**
@@ -56,8 +73,10 @@ ref<RootElement> RootElement::of(ref<BuildContext> context)
  * @param widget
  */
 RootElement::RootElement(ref<Widget> widget, Function<void()> exit)
-    : SingleChildElement(Object::create<RootWidget>()), exit(exit),
-      _child(Object::create<RootFundamental>(widget, this)) {}
+    : SingleChildElement(widget),
+      exit(exit),
+      cout(coutLoggerBuilder()),
+      _child(Object::create<RootWrapper>(widget, this)) {}
 
 void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
 

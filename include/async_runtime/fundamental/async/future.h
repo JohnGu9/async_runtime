@@ -28,6 +28,9 @@ class Future : public Future<std::nullptr_t>
     static ref<List<Function<void(const T &)>>> dummy;
 
 public:
+    static ref<Future<T>> async(Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr);
+    static ref<Future<T>> delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr);
+
     static ref<Future<T>> value(const T &, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Future<T>> value(T &&, option<EventLoopGetterMixin> getter = nullptr);
 
@@ -40,8 +43,8 @@ public:
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
 protected:
-    virtual void resolve(const T &);
-    virtual void resolve(T &&);
+    virtual void complete(const T &);
+    virtual void complete(T &&);
     T _data;
     ref<List<Function<void(const T &)>>> _callbackList;
 };
@@ -50,14 +53,24 @@ template <typename T>
 ref<List<Function<void(const T &)>>> Future<T>::dummy = Object::create<List<Function<void(const T &)>>>();
 
 template <typename T>
+ref<Future<T>> Future<T>::async(Function<T()> fn, option<EventLoopGetterMixin> getter)
+{
+    auto loop = EventLoopGetterMixin::ensureEventLoop(getter);
+    auto future = Object::create<Completer<T>>(getter);
+    loop->callSoon([future, fn]
+                   { future->complete(fn()); });
+    return future;
+}
+
+template <typename T>
 class Completer : public Future<T>
 {
     using super = Future<T>;
 
 public:
     Completer(option<EventLoopGetterMixin> getter = nullptr) : super(getter) {}
-    void resolve(const T &v) override { super::resolve(v); }
-    void resolve(T &&v) override { super::resolve(std::move(v)); }
+    void complete(const T &v) override { super::complete(v); }
+    void complete(T &&v) override { super::complete(std::move(v)); }
 };
 
 template <typename T>
@@ -76,44 +89,44 @@ protected:
 };
 
 template <typename T>
-void Future<T>::resolve(const T &data)
+void Future<T>::complete(const T &data)
 {
     if (_completed)
-        throw std::logic_error("Future can not be resolved twice");
+        throw std::logic_error("Future can not be completed twice");
     _completed = true;
     _data = data;
-    auto self = self();
     auto callbackList = _callbackList;
+    _callbackList = dummy;
+    auto self = self();
     _loop->callSoon([self, callbackList]
                     {
         for(const auto& element : callbackList){
             element(self->_data);
         } });
-    _callbackList = dummy;
 }
 
 template <typename T>
-void Future<T>::resolve(T &&data)
+void Future<T>::complete(T &&data)
 {
     if (_completed)
-        throw std::logic_error("Future can not be resolved twice");
+        throw std::logic_error("Future can not be completed twice");
     _completed = true;
     _data = std::move(data);
-    auto self = self();
     auto callbackList = _callbackList;
+    _callbackList = dummy;
+    auto self = self();
     _loop->callSoon([self, callbackList]
                     {
         for(const auto& element : callbackList){
             element(self->_data);
         } });
-    _callbackList = dummy;
 }
 
 template <typename T>
 ref<Future<T>> Future<T>::value(const T &value, option<EventLoopGetterMixin> getter)
 {
     auto future = Object::create<Future<T>>(getter);
-    future->resolve(value);
+    future->complete(value);
     return future;
 }
 
@@ -121,7 +134,7 @@ template <typename T>
 ref<Future<T>> Future<T>::value(T &&value, option<EventLoopGetterMixin> getter)
 {
     auto future = Object::create<Future<T>>(getter);
-    future->resolve(std::move(value));
+    future->complete(std::move(value));
     return future;
 }
 
@@ -139,12 +152,12 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
         {
             resultFuture->template then<int>([future, fn](const ReturnType &value)
                                              {
-                future->resolve(value);
+                future->complete(value);
                 return 0; });
         }
         else
         {
-            future->resolve(result._value);
+            future->complete(result._value);
         }
     };
     if (self->_completed)

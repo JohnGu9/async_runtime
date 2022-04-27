@@ -29,7 +29,7 @@ static void task(ref<Widget> widget)
 
     ref<RootElement> root = Object::create<RootElement>(widget, [completer]
                                                         {
-        if(!completer->completed())completer->resolve(0); });
+        if(!completer->completed())completer->complete(0); });
 
     completer->then<int>([root](const int &)
                          {

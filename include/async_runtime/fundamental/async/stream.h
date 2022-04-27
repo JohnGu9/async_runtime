@@ -23,7 +23,7 @@ public:
     virtual ~Stream()
     {
         if (!this->_isClosed)
-            this->_onClose->resolve(0);
+            this->_onClose->complete(0);
     }
 };
 
@@ -79,7 +79,7 @@ ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
                                     listener->_listener(cache);
                             this->_cache->clear();
                             if (this->_isClosed) {
-                                this->_onClose->resolve(0);
+                                this->_onClose->complete(0);
                                 for (auto &listener : this->_listeners)
                                     listener->_cancel = [] {};
                                 this->_listeners->clear();
@@ -108,7 +108,7 @@ void Stream<T>::close()
     _isClosed = true;
     if (_cache->empty())
     {
-        _onClose->resolve(0);
+        _onClose->complete(0);
         for (auto &listener : this->_listeners)
             listener->_cancel = [] {};
         this->_listeners->clear();

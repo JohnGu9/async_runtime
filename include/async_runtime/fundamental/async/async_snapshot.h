@@ -33,12 +33,6 @@ protected:
 
 public:
     const ConnectionState::Value &state = _state;
-
-    template <typename T>
-    static const std::atomic_bool &getCompletedFromFuture(ref<Future<T>> future)
-    {
-        return future->_completed;
-    }
 };
 
 template <typename T>

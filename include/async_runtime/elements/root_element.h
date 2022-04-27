@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../fundamental/async.h"
+#include "../fundamental/logger.h"
 #include "single_child_element.h"
 #include <atomic>
 
@@ -9,14 +10,12 @@ class LoggerHandler;
 class ThreadPool;
 class RootElement : public SingleChildElement
 {
-    class RootWidget;
-    class RootFundamental;
-    class RootFundamentalState;
-    friend class RootFundamentalState;
+    friend class RootWidget;
+    class RootWrapper;
 
 public:
-    static ref<RootElement> of(ref<BuildContext> context);
     finalref<Fn<void()>> exit;
+    finalref<LoggerHandler> cout;
 
     RootElement(ref<Widget> child, Function<void()> exit);
 

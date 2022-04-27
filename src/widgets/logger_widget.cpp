@@ -2,7 +2,7 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/logger.h"
 #include "async_runtime/fundamental/file.h"
-
+#include "async_runtime/widgets/root_widget.h"
 #include "async_runtime/widgets/logger_widget.h"
 
 class Logger::_Logger : public StatefulWidget
@@ -40,7 +40,7 @@ public:
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return async<bool>([str]
+            return Future<bool>::async([str]
                                {
                 std::cout << str;
                 return true; },
@@ -49,7 +49,7 @@ public:
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return async<bool>([str]
+            return Future<bool>::async([str]
                                {
                 std::cout << str << std::endl;
                 return true; },
@@ -88,25 +88,6 @@ public:
         }
     };
 
-    class _LoggerProxyHandler : public LoggerHandler
-    {
-        ref<LoggerHandler> _proxyTarget;
-
-    public:
-        _LoggerProxyHandler(ref<LoggerHandler> proxyTarget) : _proxyTarget(proxyTarget) {}
-        ref<Future<bool>> write(ref<String> str) override
-        {
-            return this->_proxyTarget->write(str);
-        }
-
-        ref<Future<bool>> writeLine(ref<String> str) override
-        {
-            return this->_proxyTarget->writeLine(str);
-        }
-
-        void dispose() override {}
-    };
-
     class _LoggerBlocker : public LoggerHandler
     {
         ref<State<StatefulWidget>> _state;
@@ -138,7 +119,7 @@ public:
         if (this->widget->path.isNotNull(path))
         {
             if (path->isEmpty())
-                this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(context));
+                this->_handler = RootWidget::of(context)->cout;
             else
                 this->_handler = Object::create<_FileLoggerHandler>(self(), path);
         }
@@ -157,7 +138,7 @@ public:
             if (this->widget->path.isNotNull(path))
             {
                 if (path->isEmpty())
-                    this->_handler = Object::create<_LoggerProxyHandler>(StdoutLogger::of(context));
+                    this->_handler = RootWidget::of(context)->cout;
                 else
                     this->_handler = Object::create<_FileLoggerHandler>(self(), path);
             }
@@ -212,45 +193,3 @@ ref<Widget> Logger::block(ref<Widget> child, option<Key> key)
 {
     return Object::create<_Logger>(child, nullptr, key);
 }
-
-class _StdoutLoggerInheritedWidget : public InheritedWidget
-{
-    friend class StdoutLogger;
-    ref<LoggerHandler> _handler;
-
-public:
-    _StdoutLoggerInheritedWidget(ref<Widget> child, ref<LoggerHandler> handler, option<Key> key = nullptr)
-        : InheritedWidget(Object::create<Logger>(child, handler), key), _handler(handler) {}
-
-    bool updateShouldNotify(ref<InheritedWidget> oldWidget) override
-    {
-        ref<_StdoutLoggerInheritedWidget> old = oldWidget->covariant<_StdoutLoggerInheritedWidget>();
-        return old->_handler != this->_handler;
-    }
-};
-void StdoutLoggerState::initState()
-{
-    super::initState();
-    this->_handler = Object::create<Logger::_Logger::_State::_StdoutLoggerHandler>(self());
-}
-
-void StdoutLoggerState::dispose()
-{
-    this->_handler->dispose();
-    super::dispose();
-}
-
-ref<Widget> StdoutLoggerState::build(ref<BuildContext>)
-{
-    return Object::create<_StdoutLoggerInheritedWidget>(
-        this->widget->child,
-        this->_handler);
-}
-
-ref<LoggerHandler> StdoutLogger::of(ref<BuildContext> context)
-{
-    return context->dependOnInheritedWidgetOfExactType<_StdoutLoggerInheritedWidget>().assertNotNull()->_handler;
-}
-
-StdoutLogger::StdoutLogger(ref<Widget> child, option<Key> key)
-    : StatefulWidget(key), child(child) {}
