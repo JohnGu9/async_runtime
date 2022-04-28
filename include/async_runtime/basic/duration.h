@@ -60,23 +60,23 @@ public:
 
     static const DataType minutesPerDay = minutesPerHour * hoursPerDay;
 
-    static Duration fromDetail(
+    constexpr static Duration fromDetail(
         signed long long days = 0,
         signed long long hours = 0,
         signed long long minutes = 0,
         signed long long seconds = 0,
         signed long long milliseconds = 0,
-        signed long long microseconds = 0 /* Duration only support milliseconds, microseconds mean nothing */);
+        signed long long microseconds = 0);
 
-    static Duration fromMilliseconds(signed long long milliseconds);
-    static Duration fromSeconds(signed long long seconds);
-    static Duration fromMinutes(signed long long minutes);
-    static Duration fromHours(signed long long hours);
-    static Duration fromDays(signed long long days);
+    constexpr static Duration fromMilliseconds(signed long long milliseconds);
+    constexpr static Duration fromSeconds(signed long long seconds);
+    constexpr static Duration fromMinutes(signed long long minutes);
+    constexpr static Duration fromHours(signed long long hours);
+    constexpr static Duration fromDays(signed long long days);
 
-    Duration(signed long long milliseconds);
+    constexpr Duration(signed long long milliseconds);
 
-    Duration operator+(Duration &&other) const
+    constexpr Duration operator+(Duration &&other) const
     {
         return Duration(_duration + other._duration);
     }
@@ -85,7 +85,7 @@ public:
      * Subtracts [other] from this Duration and
      * returns the difference as a new Duration object.
      */
-    Duration operator-(Duration &&other) const
+    constexpr Duration operator-(Duration &&other) const
     {
         return Duration(_duration - other._duration);
     }
@@ -97,15 +97,14 @@ public:
      * Note that when [factor] is a double, and the duration is greater than
      * 53 bits, precision is lost because of double-precision arithmetic.
      */
-    Duration operator*(DataType factor) const
+    constexpr Duration operator*(size_t factor) const
     {
         return Duration(_duration * factor);
     }
 
     Duration operator*(double factor) const
     {
-        double result = factor * _duration;
-        return Duration(std::llround(result));
+        return Duration(std::llround(factor * _duration));
     }
 
     /**
@@ -114,11 +113,8 @@ public:
      *
      * Throws an [IntegerDivisionByZeroException] if [quotient] is `0`.
      */
-    Duration operator/(int quotient) const
+    Duration operator/(double quotient) const
     {
-        // By doing the check here instead of relying on "~/" below we get the
-        // exception even with dart2js.
-        assert(quotient != 0);
         return Duration(std::llround(_duration / quotient));
     }
 
@@ -126,31 +122,82 @@ public:
      * Returns `true` if the value of this Duration
      * is less than the value of [other].
      */
-    bool operator<(Duration other) const { return this->_duration < other._duration; }
+    constexpr bool operator<(Duration other) const { return this->_duration < other._duration; }
 
     /**
      * Returns `true` if the value of this Duration
      * is greater than the value of [other].
      */
-    bool operator>(Duration other) const { return this->_duration > other._duration; }
+    constexpr bool operator>(Duration other) const { return this->_duration > other._duration; }
 
     /**
      * Returns `true` if the value of this Duration
      * is less than or equal to the value of [other].
      */
-    bool operator<=(Duration other) const { return this->_duration <= other._duration; }
+    constexpr bool operator<=(Duration other) const { return this->_duration <= other._duration; }
 
     /**
      * Returns `true` if the value of this Duration
      * is greater than or equal to the value of [other].
      */
-    bool operator>=(Duration other) const { return this->_duration >= other._duration; }
+    constexpr bool operator>=(Duration other) const { return this->_duration >= other._duration; }
 
-    Duration abs() const;
+    constexpr Duration abs() const;
 
-    std::chrono::milliseconds toChronoMilliseconds() const;
-    DataType toMilliseconds() const { return _duration / 1000; }
+    constexpr DataType toSeconds() const { return _duration / microsecondsPerSecond; }
+    constexpr DataType toMilliseconds() const { return _duration / microsecondsPerMillisecond; }
+    constexpr DataType toMicroseconds() const { return _duration; }
 
 protected:
-    DataType _duration;
+    const DataType _duration;
+    constexpr Duration(DataType milliseconds, DataType microseconds);
 };
+
+constexpr inline Duration::Duration(DataType milliseconds) : _duration(microsecondsPerMillisecond * milliseconds) {}
+constexpr inline Duration::Duration(DataType milliseconds, DataType microseconds) : _duration(microseconds) {}
+
+constexpr inline Duration Duration::fromDetail(
+    DataType days,
+    DataType hours,
+    DataType minutes,
+    DataType seconds,
+    DataType milliseconds,
+    DataType microseconds)
+{
+    return Duration(0, microsecondsPerDay * days +
+                           microsecondsPerHour * hours +
+                           microsecondsPerMinute * minutes +
+                           microsecondsPerSecond * seconds +
+                           microsecondsPerMillisecond * milliseconds +
+                           microseconds);
+}
+
+constexpr inline Duration Duration::fromMilliseconds(DataType milliseconds)
+{
+    return Duration(milliseconds);
+}
+
+constexpr inline Duration Duration::fromSeconds(DataType seconds)
+{
+    return Duration(millisecondsPerSecond * seconds);
+}
+
+constexpr inline Duration Duration::fromMinutes(DataType minutes)
+{
+    return Duration(millisecondsPerMinute * minutes);
+}
+
+constexpr inline Duration Duration::fromHours(DataType hours)
+{
+    return Duration(millisecondsPerHour * hours);
+}
+
+constexpr inline Duration Duration::fromDays(DataType days)
+{
+    return Duration(millisecondsPerDay * days);
+}
+
+constexpr inline Duration Duration::abs() const
+{
+    return Duration(std::abs(this->_duration));
+}

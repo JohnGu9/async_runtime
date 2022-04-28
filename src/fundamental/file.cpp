@@ -1,216 +1,274 @@
-#include <iostream>
-#include <fstream>
-#include "async_runtime/fundamental/async.h"
-#include "async_runtime/fundamental/thread_pool.h"
 #include "async_runtime/fundamental/file.h"
+#include "async_runtime/fundamental/async.h"
 
-// @TODO: fix thread not safe bug
-
-static finalref<Lock> invalidLock = Object::create<Lock::InvalidLock>();
-
-static ref<ThreadPool> sharedThreadPool()
+#include <fstream>
+#include <iostream>
+extern "C"
 {
-    static finalref<ThreadPool> sharedThreadPool = AutoReleaseThreadPool::factory(1, "FileSharedThreadPool");
-    return sharedThreadPool;
+#include <uv.h>
 }
 
-File::File(ref<String> path, option<EventLoopGetterMixin> getter)
-    : EventLoop::WithHandleMixin(getter), _loop(EventLoopGetterMixin::ensureEventLoop(getter)), _path(path), _lock(invalidLock)
+void File::Stat::toStringStream(std::ostream &ss)
 {
+    ss << "File::Stat" << std::endl
+       << " st_dev - " << st_dev << std::endl
+       << " st_mode - " << st_mode << std::endl
+       << " st_nlink - " << st_nlink << std::endl
+       << " st_uid - " << st_uid << std::endl
+       << " st_gid - " << st_gid << std::endl
+       << " st_rdev - " << st_rdev << std::endl
+       << " st_ino - " << st_ino << std::endl
+       << " st_size - " << st_size << std::endl
+       << " st_blocks - " << st_blocks << std::endl
+       << " st_flags - " << st_flags << std::endl
+       << " st_gen - " << st_gen << std::endl;
 }
 
-ref<File> File::fromPath(ref<String> path, option<EventLoopGetterMixin> getter)
+class File::_File : public File
 {
-    return Object::create<File>(path, getter);
-}
+public:
+    using super = File;
 
-File::~File()
-{
-    assert(this->_isDisposed && "Detect memory leak. Call dispose before release File object. ");
-}
+    uv_loop_t *loop;
+    uv_fs_t *openRequest;
 
-ref<Future<bool>> File::exists()
-{
-    ref<File> self = self();
-    ref<Completer<bool>> completer = Object::create<Completer<bool>>(self);
-    sharedThreadPool()->post([this, self, completer]
-                             { completer->complete(existsSync()); });
-    return completer;
-}
+    ref<Completer<int>> closed;
 
-ref<Future<int>> File::remove()
-{
-    ref<File> self = self();
-    ref<Completer<int>> completer = Object::create<Completer<int>>(self);
-    sharedThreadPool()->post([this, self, completer]
-                             { completer->complete(removeSync()); });
-    return completer;
-}
+    _File(ref<String> path, uv_fs_t *openRequest, option<EventLoopGetterMixin> getter)
+        : super(path, getter),
+          loop(reinterpret_cast<uv_loop_t *>(_loop->nativeHandle())),
+          openRequest(openRequest),
+          closed(Object::create<Completer<int>>(getter)) {}
+    ~_File() { close(); }
+    int openCode() override { return openRequest->result; }
+    int flags() override { return openRequest->flags; }
+    int mode() override { return openRequest->mode; }
 
-ref<Future<long long>> File::size()
-{
-    ref<File> self = self();
-    ref<Completer<long long>> completer = Object::create<Completer<long long>>(self);
-    sharedThreadPool()->post([this, self, completer]
-                             { completer->complete(sizeSync()); });
-    return completer;
-}
+    struct _stat_data
+    {
+        ref<Completer<ref<Stat>>> completer;
+    };
 
-bool File::existsSync()
-{
-    option<Lock::SharedLock> readLock = this->_lock->sharedLock();
-    std::ifstream f(path->c_str());
-    return f.good();
-}
+    static void copy(Stat &stat, uv_stat_t &buf)
+    {
+        stat.st_dev = buf.st_dev;
+        stat.st_mode = buf.st_mode;
+        stat.st_nlink = buf.st_nlink;
+        stat.st_uid = buf.st_uid;
+        stat.st_gid = buf.st_gid;
+        stat.st_rdev = buf.st_rdev;
+        stat.st_ino = buf.st_ino;
+        stat.st_size = buf.st_size;
+        stat.st_blksize = buf.st_blksize;
+        stat.st_blocks = buf.st_blocks;
+        stat.st_flags = buf.st_flags;
+        stat.st_gen = buf.st_gen;
+    }
+    static void onStat(uv_fs_t *req)
+    {
+        auto data = reinterpret_cast<_stat_data *>(req->data);
+        auto stat = Object::create<Stat>();
+        data->completer->complete(stat);
+        copy(*stat, req->statbuf);
+        uv_fs_req_cleanup(req);
+        delete data;
+        delete req;
+    }
+    ref<Future<ref<Stat>>> stat() override
+    {
+        auto request = new uv_fs_t;
+        auto data = new _stat_data{
+            .completer = Object::create<Completer<ref<Stat>>>(),
+        };
+        request->data = data;
+        uv_fs_fstat(loop, request, openRequest->result, onStat);
+        return data->completer;
+    }
 
-int File::removeSync()
-{
-    option<Lock::UniqueLock> writeLock = this->_lock->uniqueLock();
-    return std::remove(path->c_str());
-}
+    struct _write_data
+    {
+        ref<Completer<int>> completer;
+        ref<String> str;
+    };
 
-long long File::sizeSync()
-{
-    using std::ifstream;
-    option<Lock::SharedLock> readLock = this->_lock->sharedLock();
-    ifstream file(path->toStdString(), std::ios::binary);
-    const auto begin = file.tellg();
-    file.seekg(0, std::ios::end);
-    const auto end = file.tellg();
-    file.close();
-    return end - begin;
-}
+    static void onWrite(uv_fs_t *req)
+    {
+        auto data = reinterpret_cast<_write_data *>(req->data);
+        data->completer->complete(req->result);
+        uv_fs_req_cleanup(req);
+        delete data;
+        delete req;
+    }
+    ref<Future<int>> write(ref<String> str) override
+    {
+        auto request = new uv_fs_t;
+        auto data = new _write_data{
+            .completer = Object::create<Completer<int>>(_loop),
+            .str = str,
+        };
+        request->data = data;
+        uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->c_str()), str->length());
+        uv_fs_write(loop, request, openRequest->result, &buffer, 1, -1, onWrite);
+        return data->completer;
+    }
 
-ref<Future<int>> File::append(ref<String> str)
-{
-    ref<File> self = self();
-    ref<Completer<int>> completer = Object::create<Completer<int>>(self);
-    sharedThreadPool()->post([this, self, completer, str]
-                             {
+    struct _truncate_data
+    {
+        ref<Completer<int>> completer;
+    };
+
+    static void onTruncate(uv_fs_t *req)
+    {
+        auto data = reinterpret_cast<_truncate_data *>(req->data);
+        data->completer->complete(req->result);
+        uv_fs_req_cleanup(req);
+        delete data;
+        delete req;
+    }
+    ref<Future<int>> truncate(int64_t offset) override
+    {
+        auto request = new uv_fs_t;
+        auto data = new _truncate_data{
+            .completer = Object::create<Completer<int>>()};
+        request->data = data;
+        uv_fs_ftruncate(loop, request, openRequest->result, offset, onTruncate);
+        return data->completer;
+    }
+
+    struct _read_data
+    {
+        ref<_File> self;
+        lateref<Completer<ref<String>>> completer;
+        lateref<StreamController<ref<String>>> stream;
+        std::stringstream ss;
+        uv_buf_t buffer;
+    };
+
+    static void onRead(uv_fs_t *req)
+    {
+        auto data = reinterpret_cast<_read_data *>(req->data);
+        if (req->result <= 0)
         {
-            option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
-            std::ofstream file(_path->toStdString(), std::ios::app);
-            file << str;
-            file.close();
+            data->completer->complete(data->ss.str());
+            uv_fs_req_cleanup(req);
+            delete[] data->buffer.base;
+            delete data;
+            delete req;
         }
-        completer->complete(0); });
+        else
+        {
+            data->ss << data->buffer.base;
+            memset(data->buffer.base, 0, data->buffer.len);
+            uv_fs_req_cleanup(req);
+            uv_fs_read(data->self->loop, req, data->self->openRequest->result, &(data->buffer), 1, -1, onRead);
+        }
+    }
+    ref<Future<ref<String>>> read() override
+    {
+        auto request = new uv_fs_t;
+        auto data = new _read_data{
+            .self = self(),
+            .completer = Object::create<Completer<ref<String>>>(_loop),
+            .stream = lateref<StreamController<ref<String>>>(),
+            .ss = std::stringstream(""),
+            .buffer = uv_buf_init(new char[1024], 1023),
+        };
+        memset(data->buffer.base, 0, 1024);
+        request->data = data;
+        uv_fs_read(loop, request, openRequest->result, &(data->buffer), 1, -1, onRead);
+        return data->completer;
+    }
+
+    static void onReadStream(uv_fs_t *req)
+    {
+        auto data = reinterpret_cast<_read_data *>(req->data);
+        if (req->result <= 0)
+        {
+            data->stream->close();
+            uv_fs_req_cleanup(req);
+            delete[] data->buffer.base;
+            delete data;
+            delete req;
+        }
+        else
+        {
+            data->stream->sink(data->buffer.base);
+            memset(data->buffer.base, 0, data->buffer.len);
+            uv_fs_req_cleanup(req);
+            uv_fs_read(data->self->loop, req, data->self->openRequest->result, &(data->buffer), 1, -1, onReadStream);
+        }
+    }
+    ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) override
+    {
+        auto request = new uv_fs_t;
+        auto data = new _read_data{
+            .self = self(),
+            .completer = lateref<Completer<ref<String>>>(),
+            .stream = Object::create<StreamController<ref<String>>>(_loop),
+            .ss = std::stringstream(""),
+            .buffer = uv_buf_init(new char[segmentationLength + 1], segmentationLength),
+        };
+        memset(data->buffer.base, 0, segmentationLength + 1);
+        request->data = data;
+        uv_fs_read(loop, request, openRequest->result, &(data->buffer), 1, -1, onReadStream);
+        return data->stream;
+    }
+
+    bool isClosed() override { return openRequest == nullptr; }
+
+    static void onClose(uv_fs_t *req)
+    {
+        auto closed = reinterpret_cast<ref<Completer<int>> *>(req->data);
+        (*closed)->complete(req->result);
+        uv_fs_req_cleanup(req);
+        delete closed;
+        delete req;
+    }
+    ref<Future<int>> close() override
+    {
+        if (openRequest != nullptr)
+        {
+            auto request = new uv_fs_t;
+            request->data = new ref<Completer<int>>(closed);
+            uv_fs_close(loop, request, openRequest->result, onClose);
+            delete openRequest;
+            openRequest = nullptr;
+        }
+        return closed;
+    }
+
+    struct _open_data
+    {
+        ref<String> path;
+        ref<Completer<ref<File>>> completer;
+    };
+};
+
+static void on_open(uv_fs_t *req)
+{
+    auto data = reinterpret_cast<File::_File::_open_data *>(req->data);
+    if (req->result > -1)
+    {
+        data->completer->complete(Object::create<File::_File>(data->path, req, data->completer));
+        uv_fs_req_cleanup(req);
+    }
+    else
+    {
+        data->completer->complete(Object::create<File::Error>(data->path, req->result, data->completer));
+        uv_fs_req_cleanup(req);
+        delete req;
+    }
+    delete data;
+}
+
+ref<Future<ref<File>>> File::fromPath(ref<String> path, OpenFlags flags, OpenMode mode, option<EventLoopGetterMixin> getter)
+{
+    auto completer = Object::create<Completer<ref<File>>>(getter);
+    auto loop = ensureEventLoop(getter);
+    auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
+    uv_fs_t *request = new uv_fs_t;
+    request->data = new File::_File::_open_data{
+        .path = path, .completer = completer};
+    uv_fs_open(handle, request, path->c_str(), flags, mode, on_open);
     return completer;
-}
-
-ref<Future<int>> File::overwrite(ref<String> str)
-{
-    ref<File> self = self();
-    ref<Completer<int>> completer = Object::create<Completer<int>>(self);
-    sharedThreadPool()->post([this, self, completer, str]
-                             {
-        {
-            option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
-            std::ofstream file(_path->toStdString(), std::ofstream::trunc);
-            file << str;
-            file.close();
-        }
-        completer->complete(0); });
-    return completer;
-}
-
-ref<Future<int>> File::clear()
-{
-    ref<File> self = self();
-    ref<Completer<int>> completer = Object::create<Completer<int>>(self);
-    sharedThreadPool()->post([this, self, completer]
-                             {
-        {
-            option<Lock::UniqueLock> writeLock = _lock->uniqueLock();
-            std::ofstream file(_path->toStdString(), std::ofstream::trunc);
-            file.close();
-        }
-        completer->complete(0); });
-    return completer;
-}
-
-ref<Future<ref<String>>> File::read()
-{
-    ref<File> self = self();
-    ref<Completer<ref<String>>> completer = Object::create<Completer<ref<String>>>(self);
-    sharedThreadPool()->post([this, self, completer]
-                             {
-        std::string str;
-        {
-            option<Lock::SharedLock> readLock = _lock->sharedLock();
-            std::ifstream file(_path->toStdString(), std::ios::in | std::ios::ate);
-            file.seekg(0, std::ios::end);
-            str.reserve(file.tellg()); // reserve file size
-            file.seekg(0, std::ios::beg);
-            str.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-            file.close();
-        }
-        completer->complete(std::move(str)); });
-    return completer;
-}
-
-ref<Stream<ref<String>>> File::readAsStream(size_t segmentationLength)
-{
-    ref<File> self = self();
-    ref<StreamController<ref<String>>> controller = Object::create<StreamController<ref<String>>>(self);
-    sharedThreadPool()->post([this, self, controller, segmentationLength]
-                             {
-        {
-            option<Lock::SharedLock> readLock = _lock->sharedLock();
-            std::ifstream file(_path->toStdString(), std::ios::in | std::ios::ate);
-            file.seekg(0);
-            size_t i;
-            while (!file.eof() && _isDisposed == false)
-            {
-                std::string str;
-                str.reserve(segmentationLength);
-                for (i = 0; i < segmentationLength && !file.eof(); i++)
-                    str += static_cast<char>(file.get());
-                controller->sink(std::move(str));
-            }
-            file.close();
-        }
-        controller->close(); });
-    return controller;
-}
-
-ref<Stream<ref<String>>> File::readWordAsStream()
-{
-    ref<File> self = self();
-    ref<StreamController<ref<String>>> controller = Object::create<StreamController<ref<String>>>(self);
-    sharedThreadPool()->post([this, self, controller]
-                             {
-        std::string str;
-        {
-            option<Lock::SharedLock> readLock = _lock->sharedLock();
-            std::ifstream file(_path->toStdString());
-            while (file >> str && _isDisposed == false)
-                controller->sink(std::move(str));
-            file.close();
-        }
-        controller->close(); });
-    return controller;
-}
-
-ref<Stream<ref<String>>> File::readLineAsStream()
-{
-    ref<File> self = self();
-    ref<StreamController<ref<String>>> controller = Object::create<StreamController<ref<String>>>(self);
-    sharedThreadPool()->post([this, self, controller]
-                             {
-        {
-            option<Lock::SharedLock> readLock = _lock->sharedLock();
-            std::ifstream file(_path->toStdString());
-            lateref<String> str;
-            while ((str = getline(file))->isNotEmpty() && _isDisposed == false)
-                controller->sink(str);
-            file.close();
-        }
-        controller->close(); });
-    return controller;
-}
-
-void File::dispose()
-{
-    _isDisposed = true;
-    handle->dispose();
 }

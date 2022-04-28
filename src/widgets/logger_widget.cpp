@@ -1,9 +1,9 @@
-#include <sstream>
-#include "async_runtime/fundamental/async.h"
-#include "async_runtime/fundamental/logger.h"
-#include "async_runtime/fundamental/file.h"
-#include "async_runtime/widgets/root_widget.h"
 #include "async_runtime/widgets/logger_widget.h"
+#include "async_runtime/fundamental/async.h"
+#include "async_runtime/fundamental/file.h"
+#include "async_runtime/fundamental/logger.h"
+#include "async_runtime/widgets/root_widget.h"
+#include <sstream>
 
 class Logger::_Logger : public StatefulWidget
 {
@@ -41,19 +41,19 @@ public:
         ref<Future<bool>> write(ref<String> str) override
         {
             return Future<bool>::async([str]
-                               {
+                                       {
                 std::cout << str;
                 return true; },
-                               this->_state);
+                                       this->_state);
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
             return Future<bool>::async([str]
-                               {
+                                       {
                 std::cout << str << std::endl;
                 return true; },
-                               this->_state);
+                                       this->_state);
         }
 
         void dispose() override
@@ -62,29 +62,27 @@ public:
         }
     };
 
+    // @TODO implement this
     class _FileLoggerHandler : public LoggerHandler
     {
-        ref<File> _file;
 
     public:
-        _FileLoggerHandler(ref<State<StatefulWidget>> state, ref<String> path)
-            : _file(File::fromPath(path, state)) { _file->clear(); }
+        _FileLoggerHandler(ref<State<StatefulWidget>> state, ref<String> path) {}
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return this->_file->append(str)->then<bool>([](const int &)
-                                                        { return true; });
+            return Future<bool>::async([]
+                                       { return true; });
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return this->_file->append(str + '\n')->then<bool>([](const int &)
-                                                               { return true; });
+            return Future<bool>::async([]
+                                       { return true; });
         }
 
         void dispose() override
         {
-            this->_file->dispose();
         }
     };
 

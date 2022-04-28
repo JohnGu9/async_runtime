@@ -6,6 +6,9 @@
 #include "async_runtime/fundamental/logger.h"
 #include "async_runtime/fundamental/timer.h"
 
+// maybe you like to include widgets by your own
+#ifndef ASYNC_RUNTIME_NO_EXPORT_WIDGETS
+
 #include "async_runtime/widgets/builder.h"
 #include "async_runtime/widgets/future_builder.h"
 #include "async_runtime/widgets/inherited_widget.h"
@@ -19,6 +22,8 @@
 #include "async_runtime/widgets/stateless_widget.h"
 #include "async_runtime/widgets/value_listenable_builder.h"
 #include "async_runtime/widgets/widget.h"
+
+#endif
 
 // run widgets from this api
 void runApp(ref<Widget> widget);

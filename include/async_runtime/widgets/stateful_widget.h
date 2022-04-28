@@ -1,9 +1,9 @@
 #pragma once
 
-#include "widget.h"
-#include "state.h"
-#include "../fundamental/async.h"
 #include "../elements/stateful_element.h"
+#include "../fundamental/async.h"
+#include "state.h"
+#include "widget.h"
 
 class StatefulWidget : public Widget
 {

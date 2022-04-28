@@ -136,31 +136,3 @@ auto ThreadPool::microTask(F &&f, Args &&...args)
     _condition.notify_one();
     return res;
 }
-
-/**
- * @brief
- * AutoReleaseThreadPool don't must dispose before drop so that convince as static object in program
- * And it will automatically finish all task before object drop after you call dispose and release all the ref of it
- * Really it will hold ref of itself and release the ref until dispose and finish all task
- * AutoReleaseThreadPool generation must come from AutoReleaseThreadPool::factory
- *
- * @example
- *
- *
- */
-class AutoReleaseThreadPool : public ThreadPool
-{
-    struct _FactoryOnly
-    {
-    };
-
-public:
-    static ref<AutoReleaseThreadPool> factory(size_t threads = 1, option<String> name = nullptr);
-    AutoReleaseThreadPool(_FactoryOnly, size_t threads = 1, option<String> name = nullptr);
-    virtual ~AutoReleaseThreadPool();
-    void dispose() override;
-
-protected:
-    std::function<void()> workerBuilder(size_t) override;
-    bool _join = false;
-};

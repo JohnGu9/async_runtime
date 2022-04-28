@@ -1,11 +1,11 @@
-#include <ctime>
+#include "async_runtime/fundamental/timer.h"
+
 #include <algorithm>
+#include <ctime>
 extern "C"
 {
 #include <uv.h>
 }
-
-#include "async_runtime/fundamental/timer.h"
 
 static void timer_cb(uv_timer_t *handle)
 {

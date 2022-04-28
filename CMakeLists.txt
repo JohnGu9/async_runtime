@@ -21,17 +21,17 @@ message(STATUS "Informations from libuv: ")
 add_subdirectory(vendor/libuv)
 
 # build target
+if(PROJECT_IS_TOP_LEVEL)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 set(INCLUDE_DIR 
     ${CMAKE_CURRENT_SOURCE_DIR}/include 
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/libuv/include
 )
 
 include_directories(${INCLUDE_DIR})
-
-if(PROJECT_IS_TOP_LEVEL)
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/basic basic_src)
