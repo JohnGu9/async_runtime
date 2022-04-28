@@ -9,9 +9,11 @@
 class File : public virtual Object, public EventLoopGetterMixin
 {
 public:
-    // Checkout your system's [fcntl.h] available flags and mode
-    // Unix: https://man7.org/linux/man-pages/man2/open.2.html
-    // Windows: https://docs.microsoft.com/en-us/cpp/c-runtime-library/file-constants?view=msvc-170
+    /**
+     * @brief Checkout your system's [fcntl.h] available flags and mode
+     * Unix: https://man7.org/linux/man-pages/man2/open.2.html
+     * Windows: https://docs.microsoft.com/en-us/cpp/c-runtime-library/file-constants?view=msvc-170
+     */
     using OpenFlags = int;
     using OpenMode = int;
 
@@ -29,6 +31,8 @@ public:
         uint64_t st_blocks;
         uint64_t st_flags;
         uint64_t st_gen;
+
+        /* not available yet */
         Duration st_atim = 0;
         Duration st_mtim = 0;
         Duration st_ctim = 0;
@@ -36,7 +40,18 @@ public:
 
         void toStringStream(std::ostream &ss) override;
     };
-
+    /**
+     * @brief Create a file object from given path string.
+     * Checkout your system's [fcntl.h] available flags and mode.
+     * Unix: https://man7.org/linux/man-pages/man2/open.2.html
+     * Windows: https://docs.microsoft.com/en-us/cpp/c-runtime-library/file-constants?view=msvc-170
+     *
+     * @param path file's path (absolute or relative)
+     * @param flags depend on system fcntl.h define
+     * @param mode depend on system fcntl.h define
+     * @param getter loop
+     * @return ref<Future<ref<File>>>
+     */
     static ref<Future<ref<File>>> fromPath(ref<String> path, OpenFlags flags, OpenMode mode, option<EventLoopGetterMixin> getter = nullptr);
     virtual ~File() {}
 

@@ -108,7 +108,7 @@ public:
         };
         request->data = data;
         uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->c_str()), str->length());
-        uv_fs_write(loop, request, openRequest->result, &buffer, 1, -1, onWrite);
+        uv_fs_write(loop, request, openRequest->result, &buffer, 1, 0, onWrite);
         return data->completer;
     }
 
