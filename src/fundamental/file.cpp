@@ -112,6 +112,41 @@ public:
         return data->completer;
     }
 
+    struct _write_all_data
+    {
+        ref<Completer<int>> completer;
+        ref<List<ref<String>>> str;
+    };
+
+    static void onWriteAll(uv_fs_t *req)
+    {
+        auto data = reinterpret_cast<_write_data *>(req->data);
+        data->completer->complete(req->result);
+        uv_fs_req_cleanup(req);
+        delete data;
+        delete req;
+    }
+    ref<Future<int>> writeAll(ref<List<ref<String>>> str) override
+    {
+        auto request = new uv_fs_t;
+        auto data = new _write_all_data{
+            .completer = Object::create<Completer<int>>(_loop),
+            .str = str->copy(),
+        };
+        request->data = data;
+
+        const auto length = str->size();
+        uv_buf_t *buffers = new uv_buf_t[length];
+        for (auto i = 0; i < length; i++)
+        {
+            auto &value = str[i];
+            buffers[i] = uv_buf_init(const_cast<char *>(value->c_str()), value->length());
+        }
+        uv_fs_write(loop, request, openRequest->result, buffers, length, -1, onWriteAll);
+        delete[] buffers;
+        return data->completer;
+    };
+
     struct _truncate_data
     {
         ref<Completer<int>> completer;

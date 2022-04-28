@@ -114,7 +114,7 @@ protected:
 template <typename T>
 ref<List<T>> List<T>::copy() const
 {
-    return Object::create<List<T>>(this->begin(), this->end());
+    return Object::create<List<T>>(*this);
 }
 
 template <typename T>

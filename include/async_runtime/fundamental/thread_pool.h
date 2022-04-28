@@ -17,9 +17,6 @@
  * After dispose, ThreadPool will flush all added task and no longer accept new task.
  * If try to add new task to a disposed ThreadPool, it will get a never-return std::future (In Debug mode also print info on console)
  *
- * @example
- *
- *
  */
 class ThreadPool : public virtual Object
 {

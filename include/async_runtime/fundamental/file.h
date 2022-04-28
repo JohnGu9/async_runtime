@@ -61,6 +61,7 @@ public:
     virtual ref<Future<ref<Stat>>> stat() { throw NotImplementedError(); }
 
     virtual ref<Future<int>> write(ref<String> str) { throw NotImplementedError(); };
+    virtual ref<Future<int>> writeAll(ref<List<ref<String>>> str) { throw NotImplementedError(); };
     virtual ref<Future<int>> truncate(int64_t offset) { throw NotImplementedError(); };
 
     virtual ref<Future<ref<String>>> read() { throw NotImplementedError(); };

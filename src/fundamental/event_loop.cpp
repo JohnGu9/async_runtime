@@ -81,9 +81,10 @@ public:
 
     void callSoonThreadSafe(Function<void()> fn) override
     {
-        this->mtx.lock();
-        this->_tasks_queue_thread_safe.emplace_back(fn);
-        this->mtx.unlock();
+        {
+            std::unique_lock<std::mutex> lock(mtx);
+            this->_tasks_queue_thread_safe.emplace_back(fn);
+        }
         uv_async_send(&_clear_tasks_queue_thread_safe);
     }
 };

@@ -5,6 +5,13 @@
 #include "async_runtime/widgets/root_widget.h"
 #include <sstream>
 
+static ref<String> endOfLine()
+{
+    std::stringstream ss;
+    ss << std::endl;
+    return ss.str();
+}
+
 class Logger::_Logger : public StatefulWidget
 {
 public:
@@ -31,80 +38,58 @@ class Logger::_Logger::_State : public State<Logger::_Logger>
     }
 
 public:
-    class _StdoutLoggerHandler : public LoggerHandler
-    {
-        ref<State<StatefulWidget>> _state;
-
-    public:
-        _StdoutLoggerHandler(ref<State<StatefulWidget>> state) : _state(state) {}
-
-        ref<Future<bool>> write(ref<String> str) override
-        {
-            return Future<bool>::async([str]
-                                       {
-                std::cout << str;
-                return true; },
-                                       this->_state);
-        }
-
-        ref<Future<bool>> writeLine(ref<String> str) override
-        {
-            return Future<bool>::async([str]
-                                       {
-                std::cout << str << std::endl;
-                return true; },
-                                       this->_state);
-        }
-
-        void dispose() override
-        {
-            _state = _invalidState();
-        }
-    };
-
-    // @TODO implement this
     class _FileLoggerHandler : public LoggerHandler
     {
+        ref<EventLoop> _loop;
+        ref<Future<ref<File>>> _file;
 
     public:
-        _FileLoggerHandler(ref<State<StatefulWidget>> state, ref<String> path) {}
+        _FileLoggerHandler(ref<String> path, ref<EventLoopGetterMixin> getter)
+            : _loop(EventLoopGetterMixin::ensureEventLoop(getter)),
+              _file(File::fromPath(path, O_WRONLY | O_TRUNC, 0, getter)) {}
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return Future<bool>::async([]
-                                       { return true; });
+            return _file->then<bool>([str](ref<File> file)
+                                     { 
+                                         file->write(str); 
+                                         return true; });
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return Future<bool>::async([]
-                                       { return true; });
+            static finalref<String> endl = endOfLine();
+            return _file->then<bool>([str](ref<File> file)
+                                     {
+                                         file->writeAll({str, endl}); 
+                                         return true; });
         }
 
         void dispose() override
         {
+            _file->then<int>([](ref<File> file)
+                             { return file->close(); });
         }
     };
 
     class _LoggerBlocker : public LoggerHandler
     {
-        ref<State<StatefulWidget>> _state;
+        ref<Future<bool>> _future;
 
     public:
-        _LoggerBlocker(ref<State<StatefulWidget>> state) : _state(state) {}
+        _LoggerBlocker(ref<EventLoopGetterMixin> getter)
+            : _future(Future<bool>::value(false, EventLoopGetterMixin::ensureEventLoop(getter))) {}
+
         ref<Future<bool>> write(ref<String> str) override
         {
-            return Future<bool>::value(true, this->_state);
+            return _future;
         }
         ref<Future<bool>> writeLine(ref<String> str) override
         {
-            return Future<bool>::value(true, this->_state);
+            return _future;
         }
 
-        void dispose() override
-        {
-            _state = _invalidState();
-        }
+        void dispose() override {}
     };
 
     using super = State<Logger::_Logger>;
@@ -119,7 +104,7 @@ public:
             if (path->isEmpty())
                 this->_handler = RootWidget::of(context)->cout;
             else
-                this->_handler = Object::create<_FileLoggerHandler>(self(), path);
+                this->_handler = Object::create<_FileLoggerHandler>(path, self());
         }
         else
             this->_handler = Object::create<_LoggerBlocker>(self());
@@ -138,7 +123,7 @@ public:
                 if (path->isEmpty())
                     this->_handler = RootWidget::of(context)->cout;
                 else
-                    this->_handler = Object::create<_FileLoggerHandler>(self(), path);
+                    this->_handler = Object::create<_FileLoggerHandler>(path, self());
             }
             else
                 this->_handler = Object::create<_LoggerBlocker>(self());

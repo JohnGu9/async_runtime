@@ -6,4 +6,3 @@ bool Widget::canUpdate(ref<Widget> other)
 {
     return this->runtimeType() == other->runtimeType() && this->key == other->key;
 }
-
