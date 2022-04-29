@@ -38,7 +38,7 @@ public:
 
     bool alive() override
     {
-        return _alive;
+        return !_canceled && _alive;
     }
 
 protected:

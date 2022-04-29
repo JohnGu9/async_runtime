@@ -57,6 +57,18 @@ ref<Future<T>> Future<T>::delay(Duration timeout, Function<T()> fn, option<Event
 }
 
 template <typename T>
+ref<Future<T>> Future<T>::delay(Duration timeout, T value, option<EventLoopGetterMixin> getter)
+{
+    auto future = Object::create<Completer<T>>(getter);
+    Timer::delay(
+        timeout, [future, value](ref<Timer> timer)
+        { future->complete(value); },
+        getter)
+        ->start();
+    return future;
+}
+
+template <typename T>
 ref<Future<T>> Future<T>::timeout(Duration timeout, Function<T()> onTimeout)
 {
     ref<Future<T>> self = self();

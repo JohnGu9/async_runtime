@@ -26,43 +26,54 @@ public:
 
 class Logger::_Logger::_State : public State<Logger::_Logger>
 {
-    class _InvalidState : public State<StatefulWidget>
+    static bool checkFileAndWrite(ref<File> file, ref<String> str)
     {
-        ref<Widget> build(ref<BuildContext>) final { throw std::runtime_error("AsyncRuntime Internal Error"); }
-    };
+        lateref<File::Error> error;
+        if (file->cast<File::Error>().isNotNull(error))
+        {
+            return false;
+        }
+        file->write(str);
+        return true;
+    }
 
-    static ref<State<StatefulWidget>> _invalidState()
+    static bool checkFileAndWriteLine(ref<File> file, ref<String> str)
     {
-        static finalref<State<StatefulWidget>> singleton = Object::create<_InvalidState>();
-        return singleton;
+        static finalref<String> endl = endOfLine();
+        lateref<File::Error> error;
+        if (file->cast<File::Error>().isNotNull(error))
+        {
+            return false;
+        }
+        file->writeAll({str, endl});
+        return true;
     }
 
 public:
     class _FileLoggerHandler : public LoggerHandler
     {
-        ref<EventLoop> _loop;
         ref<Future<ref<File>>> _file;
 
     public:
         _FileLoggerHandler(ref<String> path, ref<EventLoopGetterMixin> getter)
-            : _loop(EventLoopGetterMixin::ensureEventLoop(getter)),
-              _file(File::fromPath(path, O_WRONLY | O_TRUNC, 0, getter)) {}
+            : _file(File::fromPath(path, O_WRONLY | O_APPEND, 0, getter))
+        {
+            _file->onCompleted([](ref<File>)
+                               { 
+                                   return 0; });
+        }
 
         ref<Future<bool>> write(ref<String> str) override
         {
             return _file->then<bool>([str](ref<File> file)
-                                     { 
-                                         file->write(str); 
-                                         return true; });
+                                     { return checkFileAndWrite(file, str); });
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
             static finalref<String> endl = endOfLine();
             return _file->then<bool>([str](ref<File> file)
-                                     {
-                                         file->writeAll({str, endl}); 
-                                         return true; });
+                                     { return checkFileAndWriteLine(file, str); });
         }
 
         void dispose() override
@@ -95,9 +106,8 @@ public:
     using super = State<Logger::_Logger>;
     lateref<LoggerHandler> _handler;
 
-    void initState() override
+    void didDependenceChanged() override
     {
-        super::initState();
         lateref<String> path;
         if (this->widget->path.isNotNull(path))
         {

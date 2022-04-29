@@ -29,12 +29,17 @@ inline option<T> BuildContext::dependOnInheritedWidgetOfExactType()
         if (option<Element>(this->cast<Element>()).isNotNull(element))
         {
             std::stringstream ss;
-            ss << element->widget->toString();
-            element->visitAncestor([&ss](ref<Element> element) {
-                ss << " > " << element->widget->toString();
-                return false;
-            });
-            debug_print("Can't find InheritedWidget [" << typeid(T).name() << "] from context: " << ss.rdbuf());
+            ss << " > " << element->widget->toString() << std::endl;
+            auto list = Object::create<List<ref<Widget>>>();
+            element->visitAncestor([&list](ref<Element> element)
+                                   {
+                list->emplace_back(element->widget);                 
+                return false; });
+            list->pop_back();
+            list->forEach([&ss](ref<Widget> widget)
+                          { ss << " > " << widget->toString() << std::endl; });
+            debug_print("Can't find InheritedWidget [" << typeid(T).name() << "] from context: " << std::endl
+                                                       << ss.rdbuf());
         }
 #endif
         return nullptr;

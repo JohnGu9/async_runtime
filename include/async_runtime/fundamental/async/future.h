@@ -30,6 +30,7 @@ class Future : public Future<std::nullptr_t>
 public:
     static ref<Future<T>> async(Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Future<T>> delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr);
+    static ref<Future<T>> delay(Duration timeout, T value, option<EventLoopGetterMixin> getter = nullptr);
 
     static ref<Future<T>> value(const T &, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Future<T>> value(T &&, option<EventLoopGetterMixin> getter = nullptr);
@@ -40,6 +41,7 @@ public:
 
     template <typename ReturnType = std::nullptr_t>
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>(const T &)>);
+    ref<Future<T>> onCompleted(Function<void(const T &)>);
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
 protected:
@@ -61,32 +63,6 @@ ref<Future<T>> Future<T>::async(Function<T()> fn, option<EventLoopGetterMixin> g
                    { future->complete(fn()); });
     return future;
 }
-
-template <typename T>
-class Completer : public Future<T>
-{
-    using super = Future<T>;
-
-public:
-    Completer(option<EventLoopGetterMixin> getter = nullptr) : super(getter) {}
-    void complete(const T &v) override { super::complete(v); }
-    void complete(T &&v) override { super::complete(std::move(v)); }
-};
-
-template <typename T>
-class FutureOr
-{
-    template <typename R>
-    friend class Future;
-
-public:
-    FutureOr(T directlyReturn) : _value(directlyReturn) {}
-    FutureOr(ref<Future<T>> asyncReturn) : _future(asyncReturn) {}
-
-protected:
-    T _value;
-    option<Future<T>> _future;
-};
 
 template <typename T>
 void Future<T>::complete(const T &data)
@@ -175,3 +151,46 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
         return future;
     }
 }
+
+template <typename T>
+ref<Future<T>> Future<T>::onCompleted(Function<void(const T &)> fn)
+{
+    auto self = self();
+    if (this->_completed)
+    {
+        _loop->callSoon([this, self, fn]
+                        { fn(_data); });
+    }
+    else
+    {
+        this->_callbackList->emplace_back([fn](const T &value)
+                                          { fn(value); });
+    }
+    return self;
+}
+
+template <typename T>
+class Completer : public Future<T>
+{
+    using super = Future<T>;
+
+public:
+    Completer(option<EventLoopGetterMixin> getter = nullptr) : super(getter) {}
+    void complete(const T &v) override { super::complete(v); }
+    void complete(T &&v) override { super::complete(std::move(v)); }
+};
+
+template <typename T>
+class FutureOr
+{
+    template <typename R>
+    friend class Future;
+
+public:
+    FutureOr(T directlyReturn) : _value(directlyReturn) {}
+    FutureOr(ref<Future<T>> asyncReturn) : _future(asyncReturn) {}
+
+protected:
+    T _value;
+    option<Future<T>> _future;
+};
