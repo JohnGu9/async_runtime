@@ -35,8 +35,8 @@ void Timer::_Timer::cancel()
     {
         delete reinterpret_cast<std::function<void()> *>(_handle.data);
         _handle.data = nullptr;
+        uv_timer_stop(&_handle);
     }
-    uv_timer_stop(&_handle);
 }
 
 class Timer::_Timer::_Delay : public Timer::_Timer
@@ -48,11 +48,14 @@ public:
     {
         cancel();
         auto self = self();
-        _handle.data = new std::function<void()>([self]
+        _handle.data = new std::function<void()>([this, self]
                                                  {
-        auto cache = self;
-        cache->_fn(cache);
-        cache->cancel(); });
+            auto cache = self;
+            auto data = reinterpret_cast<std::function<void()> *>(_handle.data);
+            _handle.data = nullptr;
+            uv_timer_stop(&_handle);
+            _fn(cache);
+            delete data; });
         uv_timer_start(&_handle, timer_cb, timeout.toMilliseconds(), 0);
     }
 };

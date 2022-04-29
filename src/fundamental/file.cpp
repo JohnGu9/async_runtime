@@ -277,6 +277,12 @@ public:
         ref<String> path;
         ref<Completer<ref<File>>> completer;
     };
+
+    struct _unlink_data
+    {
+        ref<String> path;
+        ref<Completer<int>> completer;
+    };
 };
 
 static void on_open(uv_fs_t *req)
@@ -305,5 +311,26 @@ ref<Future<ref<File>>> File::fromPath(ref<String> path, OpenFlags flags, OpenMod
     request->data = new File::_File::_open_data{
         .path = path, .completer = completer};
     uv_fs_open(handle, request, path->c_str(), flags, mode, on_open);
+    return completer;
+}
+
+static void on_unlink(uv_fs_t *req)
+{
+    auto data = reinterpret_cast<File::_File::_unlink_data *>(req->data);
+    data->completer->complete(req->result);
+    uv_fs_req_cleanup(req);
+    delete data;
+    delete req;
+}
+
+ref<Future<int>> File::unlink(ref<String> path, option<EventLoopGetterMixin> getter)
+{
+    auto completer = Object::create<Completer<int>>(getter);
+    auto loop = ensureEventLoop(getter);
+    auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
+    uv_fs_t *request = new uv_fs_t;
+    request->data = new File::_File::_unlink_data{
+        .path = path, .completer = completer};
+    uv_fs_unlink(handle, request, path->c_str(), on_unlink);
     return completer;
 }

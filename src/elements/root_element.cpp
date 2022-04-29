@@ -25,6 +25,7 @@ public:
 class _StdoutLoggerHandler : public LoggerHandler
 {
     ref<EventLoop> _loop;
+    ref<Future<bool>> _future;
 
     ref<Future<bool>> _write(ref<String> str, bool wrap)
     {
@@ -33,11 +34,10 @@ class _StdoutLoggerHandler : public LoggerHandler
         {
             // call on one event loop
             // no need to sync
-            return Future<bool>::async([str, wrap]
-                                       {
-                std::cout << str;
-                if (wrap) std::cout<< std::endl;
-                return true; });
+            std::cout << str;
+            if (wrap)
+                std::cout << std::endl;
+            return _future;
         }
         else
         {
@@ -54,7 +54,9 @@ class _StdoutLoggerHandler : public LoggerHandler
     }
 
 public:
-    _StdoutLoggerHandler() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)) {}
+    _StdoutLoggerHandler()
+        : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)),
+          _future(Future<bool>::value(true, _loop)) {}
 
     ref<Future<bool>> write(ref<String> str) override { return _write(str, false); }
     ref<Future<bool>> writeLine(ref<String> str) override { return _write(str, true); }

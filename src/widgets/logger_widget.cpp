@@ -55,12 +55,13 @@ public:
         ref<Future<ref<File>>> _file;
 
     public:
-        _FileLoggerHandler(ref<String> path, ref<EventLoopGetterMixin> getter)
-            : _file(File::fromPath(path, O_WRONLY | O_APPEND, 0, getter))
+        _FileLoggerHandler(ref<String> path, Function<void(ref<File::Error>)> onError, ref<EventLoopGetterMixin> getter)
+            : _file(File::fromPath(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR, getter))
         {
-            _file->onCompleted([](ref<File>)
+            _file->onCompleted([onError](ref<File> file)
                                { 
-                                   return 0; });
+                                   lateref<File::Error> error;
+                                   if(file->cast<File::Error>().isNotNull(error)) onError(error); });
         }
 
         ref<Future<bool>> write(ref<String> str) override
@@ -106,7 +107,7 @@ public:
     using super = State<Logger::_Logger>;
     lateref<LoggerHandler> _handler;
 
-    void didDependenceChanged() override
+    void updateHandler()
     {
         lateref<String> path;
         if (this->widget->path.isNotNull(path))
@@ -114,10 +115,22 @@ public:
             if (path->isEmpty())
                 this->_handler = RootWidget::of(context)->cout;
             else
-                this->_handler = Object::create<_FileLoggerHandler>(path, self());
+                this->_handler = Object::create<_FileLoggerHandler>(
+                    path,
+                    [this, path](ref<File::Error> error)
+                    {
+                        std::stringstream message("");
+                        message << "Logger::file open file [" << path << "] failed with code " << error->openCode() << std::endl;
+                        Logger::of(context)->writeLine(message.str()); },
+                    self());
         }
         else
             this->_handler = Object::create<_LoggerBlocker>(self());
+    }
+
+    void didDependenceChanged() override
+    {
+        this->updateHandler();
     }
 
     void didWidgetUpdated(ref<_Logger> oldWidget) override
@@ -126,17 +139,7 @@ public:
         if (oldWidget->path != this->widget->path)
         {
             this->_handler->dispose();
-
-            lateref<String> path;
-            if (this->widget->path.isNotNull(path))
-            {
-                if (path->isEmpty())
-                    this->_handler = RootWidget::of(context)->cout;
-                else
-                    this->_handler = Object::create<_FileLoggerHandler>(path, self());
-            }
-            else
-                this->_handler = Object::create<_LoggerBlocker>(self());
+            this->updateHandler();
         }
     }
 

@@ -40,6 +40,7 @@ public:
 
         void toStringStream(std::ostream &ss) override;
     };
+
     /**
      * @brief Create a file object from given path string.
      * Checkout your system's [fcntl.h] available flags and mode.
@@ -53,6 +54,7 @@ public:
      * @return ref<Future<ref<File>>>
      */
     static ref<Future<ref<File>>> fromPath(ref<String> path, OpenFlags flags, OpenMode mode, option<EventLoopGetterMixin> getter = nullptr);
+    static ref<Future<int>> unlink(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
     virtual ~File() {}
 
     virtual int openCode() { throw NotImplementedError(); }
