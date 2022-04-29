@@ -74,11 +74,13 @@ void Future<T>::complete(const T &data)
     auto callbackList = _callbackList;
     _callbackList = dummy;
     auto self = self();
-    _loop->callSoon([self, callbackList]
-                    {
-        for(const auto& element : callbackList){
-            element(self->_data);
-        } });
+    _loop->callSoon([self, callbackList] //
+                    {                    //
+                        for (const auto &element : callbackList)
+                        {
+                            element(self->_data);
+                        }
+                    });
 }
 
 template <typename T>
@@ -91,11 +93,11 @@ void Future<T>::complete(T &&data)
     auto callbackList = _callbackList;
     _callbackList = dummy;
     auto self = self();
-    _loop->callSoon([self, callbackList]
-                    {
-        for(const auto& element : callbackList){
-            element(self->_data);
-        } });
+    _loop->callSoon([self, callbackList] //
+                    {                    //
+                        for (const auto &element : callbackList)
+                            element(self->_data);
+                    });
 }
 
 template <typename T>
@@ -133,21 +135,24 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
     else
     {
         ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
-        this->_callbackList->emplace_back([future, fn](const T &value)
-                                          {
-            FutureOr<ReturnType> result = fn(value);
-            lateref<Future<ReturnType>> resultFuture;
-            if (result._future.isNotNull(resultFuture))
-            {
-                resultFuture->template then<int>([future](const ReturnType &value)
-                                                {
-                    future->complete(value);
-                    return 0; });
-            }
-            else
-            {
-                future->complete(result._value);
-            } });
+        this->_callbackList
+            ->emplace_back([future, fn](const T &value) //
+                           {                            //
+                               FutureOr<ReturnType> result = fn(value);
+                               lateref<Future<ReturnType>> resultFuture;
+                               if (result._future.isNotNull(resultFuture))
+                               {
+                                   resultFuture->template then<int>([future](const ReturnType &value) //
+                                                                    {                                 //
+                                                                        future->complete(value);
+                                                                        return 0;
+                                                                    });
+                               }
+                               else
+                               {
+                                   future->complete(result._value);
+                               }
+                           });
         return future;
     }
 }

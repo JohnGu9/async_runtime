@@ -58,10 +58,12 @@ public:
         _FileLoggerHandler(ref<String> path, Function<void(ref<File::Error>)> onError, ref<EventLoopGetterMixin> getter)
             : _file(File::fromPath(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR, getter))
         {
-            _file->onCompleted([onError](ref<File> file)
-                               { 
+            _file->onCompleted([onError](ref<File> file) //
+                               {                         //
                                    lateref<File::Error> error;
-                                   if(file->cast<File::Error>().isNotNull(error)) onError(error); });
+                                   if (file->cast<File::Error>().isNotNull(error))
+                                       onError(error);
+                               });
         }
 
         ref<Future<bool>> write(ref<String> str) override
@@ -117,11 +119,12 @@ public:
             else
                 this->_handler = Object::create<_FileLoggerHandler>(
                     path,
-                    [this, path](ref<File::Error> error)
-                    {
+                    [this, path](ref<File::Error> error) //
+                    {                                    //
                         std::stringstream message("");
                         message << "Logger::file open file [" << path << "] failed with code " << error->openCode() << std::endl;
-                        Logger::of(context)->writeLine(message.str()); },
+                        Logger::of(context)->writeLine(message.str());
+                    },
                     self());
         }
         else

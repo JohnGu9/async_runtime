@@ -1,8 +1,8 @@
 #include "async_runtime/fundamental/thread_pool.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <windows.h>
 #include <processthreadsapi.h>
+#include <windows.h>
 #endif
 
 /**
@@ -56,8 +56,8 @@ ThreadPool::~ThreadPool()
 
 std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
-    return [this, threadId]
-    {
+    return [this, threadId] //
+    {                       //
         ThreadUnit::setThreadName(this->childrenThreadName(threadId));
 #ifndef NDEBUG
         const std::string debugThreadName = ThreadUnit::threadName->toStdString();

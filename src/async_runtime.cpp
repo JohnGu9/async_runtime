@@ -27,14 +27,17 @@ static void task(ref<Widget> widget)
     completer->then<int>([handle](const int &)
                          { handle->dispose(); return 0; });
 
-    ref<RootElement> root = Object::create<RootElement>(widget, [completer]
-                                                        {
-        if(!completer->completed())completer->complete(0); });
+    ref<RootElement> root = Object::create<RootElement>(widget, [completer] //
+                                                        {                   //
+                                                            if (!completer->completed())
+                                                                completer->complete(0);
+                                                        });
 
-    completer->then<int>([root](const int &)
-                         {
-                           root->detach();
-                           info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited");
-                           return 0 ; });
+    completer->then<int>([root](const int &) //
+                         {                   //
+                             root->detach();
+                             info_print(font_wrapper(BOLDCYAN, "AsyncRuntime") << " exited");
+                             return 0;
+                         });
     root->attach();
 }

@@ -198,12 +198,13 @@ ref<EventLoop> EventLoop::createEventLoopOnNewThread(Function<void()> fn)
     std::mutex mutex;
     std::condition_variable cv;
     std::unique_lock<std::mutex> lock(mutex);
-    auto thread = std::thread([fn, &loop, &done, &cv]
-                              {
-        EventLoop::runningEventLoop = loop = Object::create<_ThreadEventLoop>(); 
-        done = true;
-        cv.notify_all();
-        EventLoop::run(fn); });
+    auto thread = std::thread([fn, &loop, &done, &cv] //
+                              {                       //
+                                  EventLoop::runningEventLoop = loop = Object::create<_ThreadEventLoop>();
+                                  done = true;
+                                  cv.notify_all();
+                                  EventLoop::run(fn);
+                              });
     cv.wait(lock, [&done]
             { return done; });
     loop->_thread.swap(thread);

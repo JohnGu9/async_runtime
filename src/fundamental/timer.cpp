@@ -48,14 +48,15 @@ public:
     {
         cancel();
         auto self = self();
-        _handle.data = new std::function<void()>([this, self]
-                                                 {
-            auto cache = self;
-            auto data = reinterpret_cast<std::function<void()> *>(_handle.data);
-            _handle.data = nullptr;
-            uv_timer_stop(&_handle);
-            _fn(cache);
-            delete data; });
+        _handle.data = new std::function<void()>([this, self] //
+                                                 {            //
+                                                     auto cache = self;
+                                                     auto data = reinterpret_cast<std::function<void()> *>(_handle.data);
+                                                     _handle.data = nullptr;
+                                                     uv_timer_stop(&_handle);
+                                                     _fn(cache);
+                                                     delete data;
+                                                 });
         uv_timer_start(&_handle, timer_cb, timeout.toMilliseconds(), 0);
     }
 };
@@ -70,8 +71,8 @@ public:
     {
         cancel();
         auto self = self();
-        _handle.data = new std::function<void()>([self]
-                                                 { auto cache = self; cache->_fn(cache); });
+        _handle.data = new std::function<void()>([this, self]
+                                                 { self->_fn(self); });
         uv_timer_start(&_handle, timer_cb, interval.toMilliseconds(), interval.toMilliseconds());
     }
 };

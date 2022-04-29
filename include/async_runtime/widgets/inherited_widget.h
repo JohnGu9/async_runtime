@@ -31,10 +31,11 @@ inline option<T> BuildContext::dependOnInheritedWidgetOfExactType()
             std::stringstream ss;
             ss << " > " << element->widget->toString() << std::endl;
             auto list = Object::create<List<ref<Widget>>>();
-            element->visitAncestor([&list](ref<Element> element)
-                                   {
-                list->emplace_back(element->widget);                 
-                return false; });
+            element->visitAncestor([&list](ref<Element> element) //
+                                   {                             //
+                                       list->emplace_back(element->widget);
+                                       return false;
+                                   });
             list->pop_back();
             list->forEach([&ss](ref<Widget> widget)
                           { ss << " > " << widget->toString() << std::endl; });

@@ -72,18 +72,20 @@ ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
         subscription->_cancel = [] {};
     };
     _listeners->insert(subscription);
-    _loop->callSoon([this, self]
-                    {
-                            for (auto &cache : this->_cache)
-                                for (auto &listener : this->_listeners)
-                                    listener->_listener(cache);
-                            this->_cache->clear();
-                            if (this->_isClosed) {
-                                this->_onClose->complete(0);
-                                for (auto &listener : this->_listeners)
-                                    listener->_cancel = [] {};
-                                this->_listeners->clear();
-                                } });
+    _loop->callSoon([this, self] //
+                    {            //
+                        for (auto &cache : this->_cache)
+                            for (auto &listener : this->_listeners)
+                                listener->_listener(cache);
+                        this->_cache->clear();
+                        if (this->_isClosed)
+                        {
+                            this->_onClose->complete(0);
+                            for (auto &listener : this->_listeners)
+                                listener->_cancel = [] {};
+                            this->_listeners->clear();
+                        }
+                    });
     return subscription;
 }
 
@@ -92,13 +94,14 @@ void Stream<T>::sink(T value)
 {
     assert(!_isClosed);
     auto self = self();
-    _loop->callSoon([this, self, value]
-                    {
-        if (!this->_listeners->empty())
-            for (auto &listener : this->_listeners)
-                listener->_listener(value);
-        else
-            _cache->emplace_back(std::move(value)); });
+    _loop->callSoon([this, self, value] //
+                    {                   //
+                        if (!this->_listeners->empty())
+                            for (auto &listener : this->_listeners)
+                                listener->_listener(value);
+                        else
+                            _cache->emplace_back(std::move(value));
+                    });
 }
 
 template <typename T>

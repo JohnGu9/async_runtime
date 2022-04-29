@@ -73,12 +73,19 @@ ref<Future<T>> Future<T>::timeout(Duration timeout, Function<T()> onTimeout)
 {
     ref<Future<T>> self = self();
     ref<Completer<T>> future = Object::create<Completer<T>>(self);
-    self->template then<int>([future](const T &value)
-                             {if(!future->completed()) future->complete(value);
-               return 0; });
+    self->template then<int>([future](const T &value) //
+                             {                        //
+                                 if (!future->completed())
+                                     future->complete(value);
+                                 return 0;
+                             });
     Timer::delay(
-        timeout, [future, onTimeout](ref<Timer> timer)
-        { if(!future->completed()) future->complete(onTimeout()); },
+        timeout,
+        [future, onTimeout](ref<Timer> timer) //
+        {                                     //
+            if (!future->completed())
+                future->complete(onTimeout());
+        },
         self)
         ->start();
     return future;
