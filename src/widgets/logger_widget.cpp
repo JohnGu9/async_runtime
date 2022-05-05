@@ -92,7 +92,7 @@ public:
 
     public:
         _LoggerBlocker(ref<EventLoopGetterMixin> getter)
-            : _future(Future<bool>::value(false, EventLoopGetterMixin::ensureEventLoop(getter))) {}
+            : _future(Future<bool>::value(false, getter)) {}
 
         ref<Future<bool>> write(ref<String> str) override
         {

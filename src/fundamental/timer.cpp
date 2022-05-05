@@ -72,7 +72,7 @@ public:
         cancel();
         auto self = self();
         _handle.data = new std::function<void()>([this, self]
-                                                 { self->_fn(self); });
+                                                 { auto cache = self; _fn(cache); });
         uv_timer_start(&_handle, timer_cb, interval.toMilliseconds(), interval.toMilliseconds());
     }
 };

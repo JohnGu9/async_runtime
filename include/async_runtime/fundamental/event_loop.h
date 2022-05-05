@@ -73,10 +73,10 @@ public:
     static ref<EventLoop> createEventLoopOnNewThread(Function<void()> fn);
 
     virtual void close() = 0;
-    virtual bool alive() const noexcept = 0;
+    virtual bool alive() noexcept = 0;
     virtual void *nativeHandle() noexcept = 0;
-    virtual void callSoon(Function<void()> fn) = 0;
-    virtual void callSoonThreadSafe(Function<void()> fn) = 0;
+    virtual void callSoon(Function<void()> fn) noexcept = 0;
+    virtual void callSoonThreadSafe(Function<void()> fn) noexcept = 0;
     ref<EventLoop> eventLoop() override { return self(); }
 
 protected:

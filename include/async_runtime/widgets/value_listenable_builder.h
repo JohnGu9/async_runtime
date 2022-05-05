@@ -15,12 +15,12 @@ public:
     {
     }
     finalref<ValueListenable<T>> valueListenable;
-    Function<ref<Widget>(ref<BuildContext>, T, option<Widget>)> builder;
+    finalref<Fn<ref<Widget>(ref<BuildContext>, T, option<Widget>)>> builder;
     finaloption<Widget> child;
-    ref<State<StatefulWidget>> createState() override;
 
 protected:
     class _State;
+    ref<State<StatefulWidget>> createState() override;
 };
 
 template <typename T>
@@ -30,7 +30,8 @@ public:
     using super = State<ValueListenableBuilder<T>>;
     lateref<ValueListenable<T>> _valueListenable;
 
-    Function<void()> _listener = [this] { this->setState([] {}); };
+    Function<void()> _listener = [this]
+    { this->setState([] {}); };
 
     void initState() override
     {

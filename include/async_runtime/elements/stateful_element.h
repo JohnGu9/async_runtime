@@ -1,7 +1,7 @@
 #pragma once
 
-#include "single_child_element.h"
 #include "../widgets/state.h"
+#include "single_child_element.h"
 
 class StatefulElement : public SingleChildElement
 {
@@ -17,7 +17,7 @@ public:
     ref<State<StatefulWidget>> _state;
 
 protected:
-    class _LifeCycle
+    class LifeCycle
     {
     public:
         enum Value
@@ -31,7 +31,7 @@ protected:
         static ref<String> toString(Value value);
     };
 
-    _LifeCycle::Value _lifeCycle;
+    LifeCycle::Value _lifeCycle;
 
     void attach() override;
     void detach() override;

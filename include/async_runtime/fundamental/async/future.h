@@ -77,9 +77,7 @@ void Future<T>::complete(const T &data)
     _loop->callSoon([self, callbackList] //
                     {                    //
                         for (const auto &element : callbackList)
-                        {
                             element(self->_data);
-                        }
                     });
 }
 

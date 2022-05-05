@@ -6,6 +6,7 @@ extern "C"
 #include <uv.h>
 }
 
+#include "async_runtime/basic/lock.h"
 #include "async_runtime/fundamental/event_loop.h"
 
 static void useless_cb(uv_async_t *handle)
@@ -68,18 +69,17 @@ public:
         _clear_tasks_queue_thread_safe.data = this;
         uv_unref(reinterpret_cast<uv_handle_t *>(&_clear_tasks_queue_thread_safe));
     }
-
-    void close() override {}
-    bool alive() const noexcept override { return uv_loop_alive(&_loop); }
     void *nativeHandle() noexcept override { return &_loop; }
 
-    void callSoon(Function<void()> fn) override
+    void close() override {}
+    bool alive() noexcept override { return uv_loop_alive(&_loop); }
+
+    void callSoon(Function<void()> fn) noexcept override
     {
         this->_tasks_queue.emplace_back(fn);
         uv_async_send(&_clear_tasks_queue);
     }
-
-    void callSoonThreadSafe(Function<void()> fn) override
+    void callSoonThreadSafe(Function<void()> fn) noexcept override
     {
         {
             std::unique_lock<std::mutex> lock(mtx);
@@ -92,21 +92,28 @@ public:
 class _ThreadEventLoop : public EventLoop::_EventLoop
 {
     using super = EventLoop::_EventLoop;
-    static void close_event_loop(uv_async_t *handler)
+    static void close_event_loop(uv_async_t *handle)
     {
-        auto loop = reinterpret_cast<_ThreadEventLoop *>(handler->data);
-        uv_unref(reinterpret_cast<uv_handle_t *>(handler));
-        loop->super::close();
+        uv_unref(reinterpret_cast<uv_handle_t *>(handle));
     }
 
 public:
     uv_async_t _close_signal;
     std::thread _thread;
 
-    _ThreadEventLoop() noexcept : super()
+    bool _alive = true;
+    ref<Lock> _lock;
+
+    _ThreadEventLoop() noexcept : super(), _lock(Object::create<Lock>())
     {
         uv_async_init(&_loop, &_close_signal, close_event_loop); // maintains a handler that stop loop from automatically close
         _close_signal.data = this;
+    }
+
+    bool alive() noexcept override
+    {
+        auto lk = _lock->sharedLock();
+        return _alive;
     }
 
     void close() override
@@ -115,6 +122,10 @@ public:
         {
             uv_async_send(&_close_signal); // use async handler close the event loop
             _thread.join();
+            {
+                auto lk = _lock->uniqueLock();
+                _alive = false;
+            }
         }
     }
 };
@@ -193,18 +204,22 @@ void EventLoop::run(Function<void()> fn)
 
 ref<EventLoop> EventLoop::createEventLoopOnNewThread(Function<void()> fn)
 {
-    lateref<_ThreadEventLoop> loop;
     bool done = false;
+    lateref<_ThreadEventLoop> loop;
     std::mutex mutex;
     std::condition_variable cv;
     std::unique_lock<std::mutex> lock(mutex);
-    auto thread = std::thread([fn, &loop, &done, &cv] //
-                              {                       //
-                                  EventLoop::runningEventLoop = loop = Object::create<_ThreadEventLoop>();
-                                  done = true;
-                                  cv.notify_all();
-                                  EventLoop::run(fn);
-                              });
+    auto thread = std::thread(
+        [fn, &done, &loop, &cv] //
+        {                       //
+            EventLoop::runningEventLoop = loop = Object::create<_ThreadEventLoop>();
+            EventLoop::run([fn, &done, &cv] //
+                           {                //
+                               done = true;
+                               cv.notify_all();
+                               fn();
+                           });
+        });
     cv.wait(lock, [&done]
             { return done; });
     loop->_thread.swap(thread);

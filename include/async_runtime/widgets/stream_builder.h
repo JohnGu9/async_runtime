@@ -8,13 +8,13 @@ class StreamBuilder : public StatefulWidget
     class _State;
 
 public:
-    using Builder = Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)>
+    using Builder = Function<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)>;
     StreamBuilder(ref<Stream<T>> stream, Builder builder, option<Key> key = nullptr)
         : StatefulWidget(key),
           stream(stream), builder(builder) {}
 
     finalref<Stream<T>> stream;
-    Builder builder;
+    finalref<Fn<ref<Widget>(ref<BuildContext>, ref<AsyncSnapshot<T>>)>> builder;
     ref<State<StatefulWidget>> createState() override;
 };
 

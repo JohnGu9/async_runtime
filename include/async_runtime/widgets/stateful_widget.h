@@ -19,12 +19,12 @@ template <>
 class State<StatefulWidget> : public virtual Object, public EventLoopGetterMixin
 {
     friend class StatefulElement;
-    friend class StateHelper;
 
     template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
     friend class State;
 
-    ref<EventLoop> eventLoop() override { return EventLoopGetterMixin::ensureEventLoop(nullptr); }
+    ref<EventLoop> _loop;
+    ref<EventLoop> eventLoop() override { return this->_loop; }
 
     // @mustCallSuper
     virtual void initState() {}
@@ -37,6 +37,7 @@ class State<StatefulWidget> : public virtual Object, public EventLoopGetterMixin
 
     virtual ref<Widget> build(ref<BuildContext> context) = 0;
 
+    bool _dirty = false;
     bool _mounted = false;
     lateref<StatefulElement> _element;
     lateref<BuildContext> _context;
@@ -46,6 +47,9 @@ protected:
     void setState(Function<void()> fn);
     const bool &mounted = _mounted;
     const ref<BuildContext> &context = _context;
+
+public:
+    State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)) {}
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
@@ -59,7 +63,7 @@ protected:
     void initState() override
     {
         super::initState();
-        _widget = _element->_statefulWidget->covariant<T>();
+        this->_widget = this->_element->_statefulWidget->template covariant<T>();
     }
 
     // @mustCallSuper
@@ -71,7 +75,7 @@ protected:
     // @mustCallSuper
     void dispose() override
     {
-        Object::detach(_widget);
+        Object::detach(this->_widget);
         super::dispose();
     }
 
@@ -81,7 +85,7 @@ private:
     void didWidgetUpdated(ref<StatefulWidget> oldWidget) final
     {
         super::didWidgetUpdated(oldWidget);
-        _widget = _element->_statefulWidget->covariant<T>();
+        this->_widget = this->_element->_statefulWidget->template covariant<T>();
         this->didWidgetUpdated(oldWidget->covariant<T>());
     }
 };

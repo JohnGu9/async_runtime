@@ -333,6 +333,16 @@ bool operator==(const ref<T> &object0, const ref<R> &object1) { return static_ca
 template <typename T, typename R>
 bool operator!=(const ref<T> &object0, const ref<R> &object1) { return !(object0 == object1); }
 
+template <typename T, typename R>
+bool operator==(const ref<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
+template <typename T, typename R>
+bool operator!=(const ref<T> &object0, const option<R> &object1) { return !(object0 == object1); }
+
+template <typename T, typename R>
+bool operator==(const option<T> &object0, const ref<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
+template <typename T, typename R>
+bool operator!=(const option<T> &object0, const ref<R> &object1) { return !(object0 == object1); }
+
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 option<T>::option(const ref<R> &other)
