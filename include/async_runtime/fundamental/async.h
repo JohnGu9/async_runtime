@@ -39,8 +39,8 @@ class AsyncSnapshot;
 
 #include "async/async_snapshot.h"
 #include "async/future.h"
-#include "async/stream.h"
 #include "async/stream_subscription.h"
+#include "async/stream.h"
 
 #include "timer.h"
 

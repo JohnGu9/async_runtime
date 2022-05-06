@@ -4,7 +4,6 @@
 #include <exception>
 #include <sstream>
 
-#include "basic/io.h"
 #include "basic/ref.h"
 
 #define self() Object::cast<>(this)
@@ -49,9 +48,9 @@ public:
 
     // dynamic cast
     template <typename T>
-    option<T> cast();
+    option<T> cast(); // safely cast
     template <typename T>
-    ref<T> covariant();
+    ref<T> covariant(); // unsafely cast
 
     virtual ref<String> toString();
     virtual void toStringStream(std::ostream &);
@@ -91,12 +90,19 @@ void Object::detach(ref<T> &object)
     obj = nullptr;
 }
 
+#ifndef NDEBUG
+#include <iostream>
+#endif
+
 template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
 ref<T> Object::create(_Args &&...__args)
 {
     // recommend set a break pointer here
     // not-Object class should not create from this api
-    assert(debug_print("Object::create call on a not Object derived class [" << typeid(T).name() << "]"));
+
+#ifndef NDEBUG
+    std::cout << "Object::create call on a not Object derived class [" << typeid(T).name() << "]" << std::endl;
+#endif
     return std::make_shared<T>(std::forward<_Args>(__args)...);
 }
 

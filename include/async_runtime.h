@@ -69,18 +69,23 @@ namespace _async_runtime
 #define ASYNC_RUNTIME_TIMESTAMP_FORMAT "%F %T"
 #endif
 
+#ifndef ASYNC_RUNTIME_BUILD_TIMEBUF
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__) localtime_s(&__buf__, &__t__)
 #else
 #define ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__) localtime_r(&__t__, &__buf__)
 #endif
+#endif ASYNC_RUNTIME_BUILD_TIMEBUF
 
+#ifndef ASYNC_RUNTIME_OSTREAM_REDIRECT
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
 #define ASYNC_RUNTIME_OSTREAM_REDIRECT << std::boolalpha
 #else
 #define ASYNC_RUNTIME_OSTREAM_REDIRECT
 #endif
+#endif
 
+#ifndef _ASYNC_RUNTIME_LOG_FORMAT
 #define _ASYNC_RUNTIME_LOG_FORMAT(_type, _format, ...)                                                                                                                                                 \
     {                                                                                                                                                                                                  \
         std::stringstream __ss__;                                                                                                                                                                      \
@@ -90,12 +95,24 @@ namespace _async_runtime
         __ss__ << std::put_time(&__buf__, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << _type << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT << _format << std::endl; \
         Logger::of(context)->write(ref<String>(__ss__.str())->format(__VA_ARGS__));                                                                                                                    \
     }
+#endif _ASYNC_RUNTIME_LOG_FORMAT
 
+#ifndef LogDebug
 #ifndef NDEBUG
 #define LogDebug(_format, ...) _ASYNC_RUNTIME_LOG_FORMAT("DEBUG", _format, __VA_ARGS__)
 #else
 #define LogDebug(_format, ...) ((void)0)
 #endif
+#endif
+
+#ifndef LogInfo
 #define LogInfo(_format, ...) _ASYNC_RUNTIME_LOG_FORMAT("INFO ", _format, __VA_ARGS__)
+#endif LogInfo
+
+#ifndef LogWarning
 #define LogWarning(_format, ...) _ASYNC_RUNTIME_LOG_FORMAT("WARNING", _format, __VA_ARGS__)
+#endif LogWarning
+
+#ifndef LogError
 #define LogError(_format, ...) _ASYNC_RUNTIME_LOG_FORMAT("ERROR", _format, __VA_ARGS__)
+#endif LogError

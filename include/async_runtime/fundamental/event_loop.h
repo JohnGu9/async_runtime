@@ -21,7 +21,7 @@ class EventLoop : public virtual Object, public EventLoopGetterMixin
 {
 public:
     /**
-     * @brief The class mark the event has not yet complete
+     * @brief The class mark the event loop has not yet complete
      * Tell the master event loop not to close yet when the event loop want to close
      * Call [Handle::dispose] let event loop to close when all handle disposed
      *
@@ -50,6 +50,7 @@ public:
      * @brief
      * Ensure a not yet run event loop or a running event loop
      * The closed event loop will be replace with a new not running event loop
+     * You can access event loop object before it run via this api
      *
      * @return ref<EventLoop>
      */
@@ -60,7 +61,7 @@ public:
      * Schedular event loop on current thread
      *
      * @param fn The task will run just after the event scheduled
-     * @return int The return code from [uv_run]
+     * @return void
      */
     static void run(Function<void()> fn);
 
@@ -68,7 +69,7 @@ public:
      * @brief Create a New [EventLoop] object and schedular it to a new thread
      *
      * @param fn The task will run just after the event scheduled
-     * @return ref<EventLoop>
+     * @return ref<EventLoop> the event running on the new thread
      */
     static ref<EventLoop> createEventLoopOnNewThread(Function<void()> fn);
 

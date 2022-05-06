@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+// not work in Windows CMD
 #define RESET "\033[0m"
 #define BLACK "\033[30m"              /* Black */
 #define RED "\033[31m"                /* Red */
@@ -20,14 +21,26 @@
 #define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
 #define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
 
+#ifndef debug_print
 #ifndef NDEBUG
 #define debug_print(x) std::cout << "[" << BOLDBLUE << "DEBUG" << RESET << "] " << x << std::endl
 #else
 #define debug_print(x) void(0)
 #endif
+#endif
 
+#ifndef info_print
 #define info_print(x) std::cout << "[" << BOLDGREEN << "INFO " << RESET << "] " << x << std::endl
-#define warning_print(x) std::cout << "[" << BOLDYELLOW << "WARNING" << RESET << "] " << x << std::endl
-#define error_print(x) std::cout << "[" << BOLDRED << "ERROR" << RESET << "] " << x << std::endl
+#endif
 
+#ifndef warning_print
+#define warning_print(x) std::cout << "[" << BOLDYELLOW << "WARNING" << RESET << "] " << x << std::endl
+#endif
+
+#ifndef error_print
+#define error_print(x) std::cout << "[" << BOLDRED << "ERROR" << RESET << "] " << x << std::endl
+#endif
+
+#ifndef font_wrapper
 #define font_wrapper(font, x) font << x << RESET
+#endif

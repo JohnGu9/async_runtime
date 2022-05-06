@@ -88,11 +88,9 @@ auto ThreadPool::post(F &&f, Args &&...args)
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop)
-        {
-            debug_print("Async task post after ThreadPool disposed. The task will be dropped and future will never return. ");
-            return res;
-        }
+        if (_stop) // [[unlikely]]
+            throw std::runtime_error("Async task post after ThreadPool disposed. The task will be dropped and future will never return. ");
+
         _tasks.emplace([task]
                        { (*task)(); });
     }
@@ -122,11 +120,8 @@ auto ThreadPool::microTask(F &&f, Args &&...args)
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        if (_stop)
-        {
-            debug_print("Async task post after ThreadPool disposed. The task will be dropped and future will never return. ");
-            return res;
-        }
+        if (_stop) // [[unlikely]]
+            throw std::runtime_error("Async task post after ThreadPool disposed. The task will be dropped and future will never return. ");
         _microTasks.emplace([task]
                             { (*task)(); });
     }

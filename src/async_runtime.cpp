@@ -1,3 +1,4 @@
+#include "async_runtime/basic/console_format.h"
 #include "async_runtime/elements/root_element.h"
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/widgets/widget.h"

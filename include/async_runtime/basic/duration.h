@@ -30,7 +30,7 @@
  * @brief Duration for a peroid of time in Async Runtime
  *
  * @alarm native copyable type that don't not need ref
- * @alarm only support minimum unit milliseconds
+ * 
  */
 class Duration
 {

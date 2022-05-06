@@ -22,7 +22,7 @@ public:
 
     virtual ~Stream()
     {
-        if (!this->_isClosed)
+        if (!this->_onClose->completed())
             this->_onClose->complete(0);
     }
 };
@@ -32,11 +32,18 @@ class Stream : public Stream<std::nullptr_t>
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
+    static Function<void(ref<StreamSubscription<T>>)> _useless()
+    {
+        static Function<void(ref<StreamSubscription<T>>)> useless = [](ref<StreamSubscription<T>>) {};
+        return useless;
+    }
+
 public:
     Stream(option<EventLoopGetterMixin> getter = nullptr)
         : Stream<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)),
           _cache(Object::create<List<T>>()),
-          _listeners(Object::create<Set<ref<StreamSubscription<T>>>>()) {}
+          _listeners(Object::create<Set<ref<StreamSubscription<T>>>>()),
+          _active(Object::create<Set<ref<StreamSubscription<T>>>>()) {}
 
     virtual ref<StreamSubscription<T>> listen(Function<void(const T &)> fn);
 
@@ -46,6 +53,26 @@ protected:
 
     ref<List<T>> _cache;
     ref<Set<ref<StreamSubscription<T>>>> _listeners;
+    ref<Set<ref<StreamSubscription<T>>>> _active;
+
+    Function<void(ref<StreamSubscription<T>>)> _resume = [this](ref<StreamSubscription<T>> subscription)
+    {
+        this->_active->insert(subscription);
+    };
+    Function<void(ref<StreamSubscription<T>>)> _pause = [this](ref<StreamSubscription<T>> subscription)
+    {
+        this->_active->erase(this->_active->find(subscription));
+    };
+    Function<void(ref<StreamSubscription<T>>)> _cancel = [this](ref<StreamSubscription<T>> subscription)
+    {
+        this->_active->erase(this->_active->find(subscription));
+        this->_listeners->erase(this->_active->find(subscription));
+        subscription->_resume = _useless();
+        subscription->_pause = _useless();
+        subscription->_cancel = _useless();
+    };
+
+    void rawClose();
 };
 
 template <typename T>
@@ -61,30 +88,47 @@ public:
 };
 
 template <typename T>
+void Stream<T>::rawClose()
+{
+    this->_onClose->complete(0);
+    this->_active->clear();
+    for (auto &listener : this->_listeners)
+    {
+        listener->_resume = _useless();
+        listener->_pause = _useless();
+        listener->_cancel = _useless();
+        listener->cancel();
+    }
+    this->_listeners->clear();
+}
+
+template <typename T>
 ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
 {
     assert(!_isClosed);
     ref<Stream<T>> self = self();
     auto subscription = Object::create<StreamSubscription<T>>(fn);
-    subscription->_cancel = [this, subscription]
-    {
-        this->_listeners->erase(this->_listeners->find(subscription));
-        subscription->_cancel = [] {};
-    };
+    subscription->_resume = this->_resume;
+    subscription->_pause = this->_pause;
+    subscription->_cancel = this->_cancel;
+    _active->insert(subscription);
     _listeners->insert(subscription);
     _loop->callSoon([this, self] //
                     {            //
-                        for (auto &cache : this->_cache)
-                            for (auto &listener : this->_listeners)
-                                listener->_listener(cache);
-                        this->_cache->clear();
-                        if (this->_isClosed)
+                        for (auto iter = this->_cache->begin(); iter != this->_cache->end();)
                         {
-                            this->_onClose->complete(0);
-                            for (auto &listener : this->_listeners)
-                                listener->_cancel = [] {};
-                            this->_listeners->clear();
+                            if (!this->_active->empty())
+                            {
+                                auto copy = this->_active->copy();
+                                for (auto &listener : copy)
+                                    listener->_listener(*iter);
+                                iter = this->_cache->erase(iter);
+                            }
+                            else
+                                break;
                         }
+                        if (this->_isClosed && _cache->empty() && !this->_onClose->completed())
+                            this->rawClose();
                     });
     return subscription;
 }
@@ -93,15 +137,14 @@ template <typename T>
 void Stream<T>::sink(T value)
 {
     assert(!_isClosed);
-    auto self = self();
-    _loop->callSoon([this, self, value] //
-                    {                   //
-                        if (!this->_listeners->empty())
-                            for (auto &listener : this->_listeners)
-                                listener->_listener(value);
-                        else
-                            _cache->emplace_back(std::move(value));
-                    });
+    if (!this->_active->empty())
+    {
+        auto copy = this->_active->copy();
+        for (auto &listener : copy)
+            listener->_listener(value);
+    }
+    else
+        this->_cache->emplace_back(std::move(value));
 }
 
 template <typename T>
@@ -109,11 +152,6 @@ void Stream<T>::close()
 {
     assert(!_isClosed);
     _isClosed = true;
-    if (_cache->empty())
-    {
-        _onClose->complete(0);
-        for (auto &listener : this->_listeners)
-            listener->_cancel = [] {};
-        this->_listeners->clear();
-    }
+    if (_cache->empty() && !this->_onClose->completed())
+        this->rawClose();
 }

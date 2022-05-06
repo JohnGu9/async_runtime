@@ -15,6 +15,7 @@ protected:
 };
 
 #ifndef NDEBUG
+#include "../basic/console_format.h"
 #include "../elements/element.h"
 #endif
 
