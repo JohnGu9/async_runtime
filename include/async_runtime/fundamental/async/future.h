@@ -15,9 +15,8 @@ protected:
     ref<EventLoop> _loop;
     bool _completed;
 
-    ref<EventLoop> eventLoop() override { return _loop; }
-
 public:
+    ref<EventLoop> eventLoop() override { return _loop; }
     bool completed() const { return _completed; }
 };
 
@@ -73,12 +72,8 @@ void Future<T>::complete(const T &data)
     _data = data;
     auto callbackList = _callbackList;
     _callbackList = dummy;
-    auto self = self();
-    _loop->callSoon([self, callbackList] //
-                    {                    //
-                        for (const auto &element : callbackList)
-                            element(self->_data);
-                    });
+    for (const auto &element : callbackList)
+        element(this->_data);
 }
 
 template <typename T>
@@ -90,12 +85,8 @@ void Future<T>::complete(T &&data)
     _data = std::move(data);
     auto callbackList = _callbackList;
     _callbackList = dummy;
-    auto self = self();
-    _loop->callSoon([self, callbackList] //
-                    {                    //
-                        for (const auto &element : callbackList)
-                            element(self->_data);
-                    });
+    for (const auto &element : callbackList)
+        element(this->_data);
 }
 
 template <typename T>

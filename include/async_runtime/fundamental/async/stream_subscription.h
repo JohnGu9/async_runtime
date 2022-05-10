@@ -17,6 +17,13 @@ template <typename T>
 class StreamSubscription : public StreamSubscription<std::nullptr_t>
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY
+
+    static Function<void(const T &)> _useless()
+    {
+        static Function<void(const T &)> useless = [](const T &) {};
+        return useless;
+    }
+
 public:
     StreamSubscription(Function<void(const T &)> listener) : _listener(listener) {}
     void resume() override
@@ -37,6 +44,7 @@ public:
         _alive = false;
         _canceled = true;
         _cancel(self());
+        _listener = _useless();
     }
 
     bool alive() override

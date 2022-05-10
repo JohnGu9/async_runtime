@@ -30,7 +30,7 @@ public:
     {
         auto data = reinterpret_cast<_Udp *>(handle->data);
         auto str = new std::string;
-        str->resize(suggested_size, 0);
+        str->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
         buf->base = const_cast<char *>(str->c_str());
         buf->len = suggested_size;
         data->_str = str;
@@ -54,7 +54,7 @@ public:
 
     bool _isClosed = false;
     uv_udp_t _handle;
-    std::string *_str;
+    std::string *_str; // recv buffer
     ref<StreamController<ref<RecvMessage>>> _recv;
 
     _Udp(ref<EventLoop> lp) : super(lp), _recv(Object::create<StreamController<ref<RecvMessage>>>(lp))

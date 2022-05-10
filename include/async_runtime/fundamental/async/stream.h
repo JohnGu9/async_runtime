@@ -14,9 +14,9 @@ protected:
     ref<Future<int>> _onClose;
     bool _isClosed = false;
 
+public:
     ref<EventLoop> eventLoop() override { return _loop; }
 
-public:
     virtual bool isClosed() const { return _isClosed; }
     virtual ref<Future<int>> asFuture() { return _onClose; }
 
