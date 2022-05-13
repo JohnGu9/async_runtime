@@ -1,14 +1,16 @@
 #include "async_runtime/fundamental/thread.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(_WIN32)
+// alarm: do not mass up include order below
 #include <windows.h>
+
 #include <processthreadsapi.h>
 #endif
 
 thread_local ref<String> ThreadUnit::threadName = "";
 void ThreadUnit::setThreadName(ref<String> name)
 {
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(_WIN32)
     wchar_t *wtext = new wchar_t[name->length() + 1];
     size_t outputSize;
     mbstowcs_s(&outputSize, wtext, name->length() + 1, name->c_str(), name->length());

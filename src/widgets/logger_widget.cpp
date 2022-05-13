@@ -55,6 +55,10 @@ public:
         ref<Future<ref<File>>> _file;
 
     public:
+#ifdef _WIN32
+        static const auto S_IRUSR = _S_IREAD;
+        static const auto S_IWUSR = _S_IWRITE;
+#endif
         _FileLoggerHandler(ref<String> path, Function<void(ref<File::Error>)> onError, ref<EventLoopGetterMixin> getter)
             : _file(File::fromPath(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR, getter))
         {

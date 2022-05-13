@@ -70,7 +70,7 @@ namespace _async_runtime
 #endif
 
 #ifndef ASYNC_RUNTIME_BUILD_TIMEBUF
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(_WIN32)
 #define ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__) localtime_s(&__buf__, &__t__)
 #else
 #define ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__) localtime_r(&__t__, &__buf__)

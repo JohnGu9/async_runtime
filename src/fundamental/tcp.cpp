@@ -37,6 +37,7 @@ public:
 
     struct _shutdown_data
     {
+        _shutdown_data(ref<Completer<int>> completer) : completer(completer) {}
         ref<Completer<int>> completer;
     };
 
@@ -54,9 +55,7 @@ public:
         _isClosed = true;
 
         stopRead();
-        auto data = new _shutdown_data{
-            .completer = Object::create<Completer<int>>(),
-        };
+        auto data = new _shutdown_data{Object::create<Completer<int>>()};
         auto req = new uv_shutdown_t;
         req->data = data;
         uv_shutdown(req, _connection, _on_shutdown);
@@ -97,7 +96,7 @@ public:
         auto buffer = new std::string;
         buffer->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
         buf->base = const_cast<char *>(buffer->c_str());
-        buf->len = suggested_size;
+        buf->len = static_cast<ULONG>(suggested_size);
 
 #ifndef NDEBUG
         assert(data->_buffer == nullptr);
@@ -145,6 +144,7 @@ public:
 
     struct _write_data
     {
+        _write_data(ref<Completer<int>> completer) : completer(completer) {}
         ref<Completer<int>> completer;
     };
 
@@ -160,12 +160,10 @@ public:
     {
         assert(!_isClosed);
 
-        auto data = new _write_data{
-            .completer = Object::create<Completer<int>>(),
-        };
+        auto data = new _write_data{Object::create<Completer<int>>()};
         auto req = new uv_write_t;
         req->data = data;
-        auto buf = uv_buf_init(const_cast<char *>(message->c_str()), message->length());
+        auto buf = uv_buf_init(const_cast<char *>(message->c_str()), static_cast<unsigned int>(message->length()));
         uv_write(req, _connection, &buf, 1, _on_write);
         return data->completer;
     }
@@ -200,6 +198,7 @@ public:
 
     struct _connect_data
     {
+        _connect_data(ref<_Tcp> tcp) : tcp(tcp) {}
         ref<_Tcp> tcp;
     };
 
@@ -228,9 +227,7 @@ public:
 
         _connect = Object::create<Completer<ref<Connection>>>();
         auto connect_req = new uv_connect_t;
-        connect_req->data = new _connect_data{
-            .tcp = self(),
-        };
+        connect_req->data = new _connect_data{self()};
         uv_tcp_connect(connect_req, &_handle, addr, _on_connect);
         return _connect;
     }
@@ -283,7 +280,7 @@ public:
     int keepalive(int enable, Duration delay) override
     {
         assert(!_isClosed);
-        return uv_tcp_keepalive(&_handle, enable, delay.toSeconds());
+        return uv_tcp_keepalive(&_handle, enable, static_cast<unsigned int>(delay.toSeconds()));
     }
 };
 

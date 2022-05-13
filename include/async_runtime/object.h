@@ -16,7 +16,7 @@ class String;
  * Only Object can take advantage of nullsafety system
  *
  * @example
- * class YourClass : public virtual Objectl Object{};
+ * class YourClass : public virtual Object{};
  * ref<YourClass> yourClass = Object::create<YourClass>();
  *
  */

@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+
 extern "C"
 {
 #include <uv.h>
@@ -40,12 +41,19 @@ public:
           openRequest(openRequest),
           closed(Object::create<Completer<int>>(getter)) {}
     ~_File() { close(); }
-    int openCode() override { return openRequest->result; }
+    int openCode() override { return static_cast<int>(openRequest->result); }
     int flags() override { return openRequest->flags; }
-    int mode() override { return openRequest->mode; }
+
+#ifndef _WIN32
+    int mode() override
+    {
+        return openRequest->mode;
+    }
+#endif
 
     struct _stat_data
     {
+        _stat_data(ref<Completer<ref<Stat>>> completer) : completer(completer) {}
         ref<Completer<ref<Stat>>> completer;
     };
 
@@ -77,16 +85,15 @@ public:
     ref<Future<ref<Stat>>> stat() override
     {
         auto request = new uv_fs_t;
-        auto data = new _stat_data{
-            .completer = Object::create<Completer<ref<Stat>>>(),
-        };
+        auto data = new _stat_data(Object::create<Completer<ref<Stat>>>());
         request->data = data;
-        uv_fs_fstat(loop, request, openRequest->result, onStat);
+        uv_fs_fstat(loop, request, static_cast<uv_file>(openRequest->result), onStat);
         return data->completer;
     }
 
     struct _write_data
     {
+        _write_data(ref<Completer<int>> completer, ref<String> str) : completer(completer), str(str) {}
         ref<Completer<int>> completer;
         ref<String> str;
     };
@@ -94,7 +101,7 @@ public:
     static void onWrite(uv_fs_t *req)
     {
         auto data = reinterpret_cast<_write_data *>(req->data);
-        data->completer->complete(req->result);
+        data->completer->complete(static_cast<int>(req->result));
         uv_fs_req_cleanup(req);
         delete data;
         delete req;
@@ -102,18 +109,16 @@ public:
     ref<Future<int>> write(ref<String> str) override
     {
         auto request = new uv_fs_t;
-        auto data = new _write_data{
-            .completer = Object::create<Completer<int>>(_loop),
-            .str = str,
-        };
+        auto data = new _write_data(Object::create<Completer<int>>(_loop), str);
         request->data = data;
-        uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->c_str()), str->length());
-        uv_fs_write(loop, request, openRequest->result, &buffer, 1, 0, onWrite);
+        uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->c_str()), static_cast<unsigned int>(str->length()));
+        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), &buffer, 1, 0, onWrite);
         return data->completer;
     }
 
     struct _write_all_data
     {
+        _write_all_data(ref<Completer<int>> completer, ref<List<ref<String>>> str) : completer(completer), str(str) {}
         ref<Completer<int>> completer;
         ref<List<ref<String>>> str;
     };
@@ -121,7 +126,7 @@ public:
     static void onWriteAll(uv_fs_t *req)
     {
         auto data = reinterpret_cast<_write_data *>(req->data);
-        data->completer->complete(req->result);
+        data->completer->complete(static_cast<int>(req->result));
         uv_fs_req_cleanup(req);
         delete data;
         delete req;
@@ -129,10 +134,7 @@ public:
     ref<Future<int>> writeAll(ref<List<ref<String>>> str) override
     {
         auto request = new uv_fs_t;
-        auto data = new _write_all_data{
-            .completer = Object::create<Completer<int>>(_loop),
-            .str = str->copy(),
-        };
+        auto data = new _write_all_data{Object::create<Completer<int>>(_loop), str->copy()};
         request->data = data;
 
         const auto length = str->size();
@@ -140,22 +142,23 @@ public:
         for (auto i = 0; i < length; i++)
         {
             auto &value = str[i];
-            buffers[i] = uv_buf_init(const_cast<char *>(value->c_str()), value->length());
+            buffers[i] = uv_buf_init(const_cast<char *>(value->c_str()), static_cast<unsigned int>(value->length()));
         }
-        uv_fs_write(loop, request, openRequest->result, buffers, length, -1, onWriteAll);
+        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), buffers, static_cast<unsigned int>(length), -1, onWriteAll);
         delete[] buffers;
         return data->completer;
     };
 
     struct _truncate_data
     {
+        _truncate_data(ref<Completer<int>> completer) : completer(completer) {}
         ref<Completer<int>> completer;
     };
 
     static void onTruncate(uv_fs_t *req)
     {
         auto data = reinterpret_cast<_truncate_data *>(req->data);
-        data->completer->complete(req->result);
+        data->completer->complete(static_cast<int>(req->result));
         uv_fs_req_cleanup(req);
         delete data;
         delete req;
@@ -163,16 +166,20 @@ public:
     ref<Future<int>> truncate(int64_t offset) override
     {
         auto request = new uv_fs_t;
-        auto data = new _truncate_data{
-            .completer = Object::create<Completer<int>>()};
+        auto data = new _truncate_data{Object::create<Completer<int>>()};
         request->data = data;
-        uv_fs_ftruncate(loop, request, openRequest->result, offset, onTruncate);
+        uv_fs_ftruncate(loop, request, static_cast<uv_file>(openRequest->result), offset, onTruncate);
         return data->completer;
     }
 
     struct _read_data
     {
-        ref<_File> self;
+        _read_data(ref<_File> file,
+                   lateref<Completer<ref<String>>> completer,
+                   lateref<StreamController<ref<String>>> stream,
+                   std::stringstream &&ss,
+                   uv_buf_t &&buffer) : file(file), completer(completer), stream(stream), ss(std::move(ss)), buffer(std::move(buffer)) {}
+        ref<_File> file;
         lateref<Completer<ref<String>>> completer;
         lateref<StreamController<ref<String>>> stream;
         std::stringstream ss;
@@ -195,22 +202,22 @@ public:
             data->ss << data->buffer.base;
             memset(data->buffer.base, 0, data->buffer.len);
             uv_fs_req_cleanup(req);
-            uv_fs_read(data->self->loop, req, data->self->openRequest->result, &(data->buffer), 1, -1, onRead);
+            uv_fs_read(data->file->loop, req, static_cast<uv_file>(data->file->openRequest->result), &(data->buffer), 1, -1, onRead);
         }
     }
     ref<Future<ref<String>>> read() override
     {
         auto request = new uv_fs_t;
         auto data = new _read_data{
-            .self = self(),
-            .completer = Object::create<Completer<ref<String>>>(_loop),
-            .stream = lateref<StreamController<ref<String>>>(),
-            .ss = std::stringstream(""),
-            .buffer = uv_buf_init(new char[1024], 1023),
+            self(),
+            Object::create<Completer<ref<String>>>(_loop),
+            lateref<StreamController<ref<String>>>(),
+            std::stringstream(""),
+            uv_buf_init(new char[1024], 1023),
         };
         memset(data->buffer.base, 0, 1024);
         request->data = data;
-        uv_fs_read(loop, request, openRequest->result, &(data->buffer), 1, -1, onRead);
+        uv_fs_read(loop, request, static_cast<uv_file>(openRequest->result), &(data->buffer), 1, -1, onRead);
         return data->completer;
     }
 
@@ -230,22 +237,22 @@ public:
             data->stream->sink(data->buffer.base);
             memset(data->buffer.base, 0, data->buffer.len);
             uv_fs_req_cleanup(req);
-            uv_fs_read(data->self->loop, req, data->self->openRequest->result, &(data->buffer), 1, -1, onReadStream);
+            uv_fs_read(data->file->loop, req, static_cast<uv_file>(data->file->openRequest->result), &(data->buffer), 1, -1, onReadStream);
         }
     }
     ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) override
     {
         auto request = new uv_fs_t;
         auto data = new _read_data{
-            .self = self(),
-            .completer = lateref<Completer<ref<String>>>(),
-            .stream = Object::create<StreamController<ref<String>>>(_loop),
-            .ss = std::stringstream(""),
-            .buffer = uv_buf_init(new char[segmentationLength + 1], segmentationLength),
+            self(),
+            lateref<Completer<ref<String>>>(),
+            Object::create<StreamController<ref<String>>>(_loop),
+            std::stringstream(""),
+            uv_buf_init(new char[segmentationLength + 1], static_cast<unsigned int>(segmentationLength)),
         };
         memset(data->buffer.base, 0, segmentationLength + 1);
         request->data = data;
-        uv_fs_read(loop, request, openRequest->result, &(data->buffer), 1, -1, onReadStream);
+        uv_fs_read(loop, request, static_cast<uv_file>(openRequest->result), &(data->buffer), 1, -1, onReadStream);
         return data->stream;
     }
 
@@ -254,7 +261,7 @@ public:
     static void onClose(uv_fs_t *req)
     {
         auto closed = reinterpret_cast<ref<Completer<int>> *>(req->data);
-        (*closed)->complete(req->result);
+        (*closed)->complete(static_cast<int>(req->result));
         uv_fs_req_cleanup(req);
         delete closed;
         delete req;
@@ -265,7 +272,7 @@ public:
         {
             auto request = new uv_fs_t;
             request->data = new ref<Completer<int>>(closed);
-            uv_fs_close(loop, request, openRequest->result, onClose);
+            uv_fs_close(loop, request, static_cast<uv_file>(openRequest->result), onClose);
             delete openRequest;
             openRequest = nullptr;
         }
@@ -274,12 +281,18 @@ public:
 
     struct _open_data
     {
+        _open_data(ref<String> path,
+                   ref<Completer<ref<File>>> completer)
+            : path(path), completer(completer) {}
         ref<String> path;
         ref<Completer<ref<File>>> completer;
     };
 
     struct _unlink_data
     {
+        _unlink_data(ref<String> path,
+                     ref<Completer<int>> completer)
+            : path(path), completer(completer) {}
         ref<String> path;
         ref<Completer<int>> completer;
     };
@@ -295,7 +308,7 @@ static void on_open(uv_fs_t *req)
     }
     else
     {
-        data->completer->complete(Object::create<File::Error>(data->path, req->result, data->completer));
+        data->completer->complete(Object::create<File::Error>(data->path, static_cast<int>(req->result), data->completer));
         uv_fs_req_cleanup(req);
         delete req;
     }
@@ -308,8 +321,7 @@ ref<Future<ref<File>>> File::fromPath(ref<String> path, OpenFlags flags, OpenMod
     auto loop = ensureEventLoop(getter);
     auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
     uv_fs_t *request = new uv_fs_t;
-    request->data = new File::_File::_open_data{
-        .path = path, .completer = completer};
+    request->data = new File::_File::_open_data{path, completer};
     uv_fs_open(handle, request, path->c_str(), flags, mode, on_open);
     return completer;
 }
@@ -317,7 +329,7 @@ ref<Future<ref<File>>> File::fromPath(ref<String> path, OpenFlags flags, OpenMod
 static void on_unlink(uv_fs_t *req)
 {
     auto data = reinterpret_cast<File::_File::_unlink_data *>(req->data);
-    data->completer->complete(req->result);
+    data->completer->complete(static_cast<int>(req->result));
     uv_fs_req_cleanup(req);
     delete data;
     delete req;
@@ -329,8 +341,7 @@ ref<Future<int>> File::unlink(ref<String> path, option<EventLoopGetterMixin> get
     auto loop = ensureEventLoop(getter);
     auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
     uv_fs_t *request = new uv_fs_t;
-    request->data = new File::_File::_unlink_data{
-        .path = path, .completer = completer};
+    request->data = new File::_File::_unlink_data{path, completer};
     uv_fs_unlink(handle, request, path->c_str(), on_unlink);
     return completer;
 }

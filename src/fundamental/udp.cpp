@@ -12,6 +12,9 @@ public:
 
     struct _send_data
     {
+        _send_data(ref<Completer<int>> completer,
+                   ref<String> message)
+            : completer(completer), message(message) {}
         ref<Completer<int>> completer;
         ref<String> message;
     };
@@ -32,7 +35,7 @@ public:
         auto str = new std::string;
         str->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
         buf->base = const_cast<char *>(str->c_str());
-        buf->len = suggested_size;
+        buf->len = static_cast<ULONG>(suggested_size);
         data->_str = str;
     }
 
@@ -80,13 +83,10 @@ public:
     ref<Future<int>> send(ref<String> message, const struct sockaddr *addr) override
     {
         assert(!_isClosed);
-        auto data = new _send_data{
-            .completer = Object::create<Completer<int>>(self()),
-            .message = message,
-        };
+        auto data = new _send_data{Object::create<Completer<int>>(self()), message};
         uv_udp_send_t *req = new uv_udp_send_t;
         req->data = data;
-        uv_buf_t buf = uv_buf_init(const_cast<char *>(message->c_str()), message->length());
+        uv_buf_t buf = uv_buf_init(const_cast<char *>(message->c_str()), static_cast<unsigned int>(message->length()));
         uv_udp_send(req, &_handle, &buf, 1, addr, _send_cb);
         return data->completer;
     }

@@ -1,15 +1,5 @@
 #include "async_runtime/fundamental/thread_pool.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <processthreadsapi.h>
-#include <windows.h>
-#endif
-
-/**
- * @brief ThreadPool implement
- *
- */
-
 ref<Lock> ThreadPool::_lock = Object::create<Lock>();
 ref<Set<ref<String>>> ThreadPool::_namePool = Object::create<Set<ref<String>>>();
 

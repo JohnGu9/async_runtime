@@ -2,7 +2,7 @@
 #include "async.h"
 #include "event_loop.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(_WIN32)
 #include <winsock2.h>
 #else
 #include <sys/socket.h>
