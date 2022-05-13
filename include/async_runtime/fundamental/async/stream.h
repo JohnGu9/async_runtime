@@ -40,10 +40,7 @@ class Stream : public Stream<std::nullptr_t>
 
 public:
     Stream(option<EventLoopGetterMixin> getter = nullptr)
-        : Stream<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)),
-          _cache(Object::create<List<T>>()),
-          _listeners(Object::create<Set<ref<StreamSubscription<T>>>>()),
-          _active(Object::create<Set<ref<StreamSubscription<T>>>>()) {}
+        : Stream<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)) {}
 
     virtual ref<StreamSubscription<T>> listen(Function<void(const T &)> fn);
 
@@ -51,9 +48,9 @@ protected:
     virtual void sink(T value);
     virtual void close();
 
-    ref<List<T>> _cache;
-    ref<Set<ref<StreamSubscription<T>>>> _listeners;
-    ref<Set<ref<StreamSubscription<T>>>> _active;
+    finalref<List<T>> _cache = Object::create<List<T>>();
+    finalref<Set<ref<StreamSubscription<T>>>> _listeners = Object::create<Set<ref<StreamSubscription<T>>>>();
+    finalref<Set<ref<StreamSubscription<T>>>> _active = Object::create<Set<ref<StreamSubscription<T>>>>();
 
     Function<void(ref<StreamSubscription<T>>)> _resume = [this](ref<StreamSubscription<T>> subscription)
     {
@@ -140,7 +137,7 @@ void Stream<T>::sink(T value)
     if (!this->_active->empty())
     {
         auto copy = this->_active->copy();
-        for (auto &listener : copy)
+        for (const auto &listener : copy)
             listener->_listener(value);
     }
     else

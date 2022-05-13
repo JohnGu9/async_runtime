@@ -37,7 +37,9 @@ public:
 
     struct _shutdown_data
     {
-        _shutdown_data(ref<Completer<int>> completer) : completer(completer) {}
+        _shutdown_data(ref<Tcp::Connection> connection, ref<Completer<int>> completer)
+            : connection(connection), completer(completer) {}
+        ref<Tcp::Connection> connection;
         ref<Completer<int>> completer;
     };
 
@@ -55,20 +57,21 @@ public:
         _isClosed = true;
 
         stopRead();
-        auto data = new _shutdown_data{Object::create<Completer<int>>()};
+        auto data = new _shutdown_data{self(), Object::create<Completer<int>>()};
         auto req = new uv_shutdown_t;
         req->data = data;
         uv_shutdown(req, _connection, _on_shutdown);
         return data->completer;
     }
 
+    option<Tcp::Connection> _refLock;
     lateref<Completer<int>> _close;
 
     static void _on_close(uv_handle_t *handle)
     {
         auto data = reinterpret_cast<_Connection *>(handle->data);
         data->_close->complete(0);
-        delete data;
+        data->_refLock = nullptr;
     }
 
     ref<Future<int>> closeReset() override
@@ -78,6 +81,7 @@ public:
 
         stopRead();
         _close = Object::create<Completer<int>>();
+        _refLock = self();
         uv_tcp_close_reset(_handle, _on_close);
         return _close;
     }
@@ -172,7 +176,6 @@ public:
 class Tcp::_Tcp : public Tcp
 {
 public:
-    static void _close_cb(uv_handle_t *handle) {}
     using super = Tcp;
 
     bool _isClosed = false;
@@ -234,6 +237,11 @@ public:
 
     ref<StreamController<ref<Connection>>> _listen = Object::create<StreamController<ref<Connection>>>();
 
+    static void _close_tcp_connection(uv_handle_t *handle)
+    {
+        delete handle;
+    }
+
     static void _on_listen(uv_stream_t *req, int status)
     {
         auto data = reinterpret_cast<_Tcp *>(req->data);
@@ -243,14 +251,13 @@ public:
             (status = uv_tcp_init(loop, handle)) == 0 &&
             (status = uv_accept(req, reinterpret_cast<uv_stream_t *>(handle))) == 0)
         {
-            data->_listen->sink(Object::create<Tcp::_Connection>(data->_listen->eventLoop(), status, handle));
+            data->_listen->sink(Object::create<Tcp::_Connection>(data->_listen->eventLoop(), status, handle, nullptr));
         }
         else
         {
             data->_listen->sink(Object::create<Tcp::Connection::Error>(data->_listen->eventLoop(), status));
             if (uv_is_active(reinterpret_cast<uv_handle_t *>(handle)))
-                uv_close(reinterpret_cast<uv_handle_t *>(handle), _close_cb);
-            delete handle;
+                uv_close(reinterpret_cast<uv_handle_t *>(handle), _close_tcp_connection);
         }
     }
 
@@ -261,13 +268,22 @@ public:
         return _listen;
     }
 
+    option<_Tcp> _refLock;
+
+    static void _close_tcp(uv_handle_t *handle)
+    {
+        auto data = reinterpret_cast<_Tcp *>(handle->data);
+        data->_refLock = nullptr;
+    }
+
     void close() override
     {
         if (!_isClosed)
         {
             _isClosed = true;
+            _refLock = self();
             _listen->close();
-            uv_close(reinterpret_cast<uv_handle_t *>(&_handle), _close_cb);
+            uv_close(reinterpret_cast<uv_handle_t *>(&_handle), _close_tcp);
         }
     }
 

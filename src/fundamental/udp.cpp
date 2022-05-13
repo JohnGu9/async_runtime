@@ -8,8 +8,6 @@ extern "C"
 class Udp::_Udp : public Udp
 {
 public:
-    static void _close_cb(uv_handle_t *handle) {}
-
     struct _send_data
     {
         _send_data(ref<Completer<int>> completer,
@@ -67,6 +65,10 @@ public:
         _handle.data = this;
         _recv->close();
     };
+    ~_Udp()
+    {
+        assert(_isClosed);
+    }
 
     int bind(const struct sockaddr *addr, unsigned int flags) override
     {
@@ -118,13 +120,22 @@ public:
         return _isClosed;
     }
 
+    option<_Udp> _refLock = nullptr;
+
+    static void _close_udp(uv_handle_t *handle)
+    {
+        auto data = reinterpret_cast<_Udp *>(handle->data);
+        data->_refLock = nullptr;
+    }
+
     void close() override
     {
         if (!_isClosed)
         {
             _isClosed = true;
+            _refLock = self();
             stopRecv();
-            uv_close(reinterpret_cast<uv_handle_t *>(&_handle), _close_cb);
+            uv_close(reinterpret_cast<uv_handle_t *>(&_handle), _close_udp);
         }
     }
 };
