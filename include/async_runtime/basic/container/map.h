@@ -25,6 +25,8 @@ public:
     Map(const std::initializer_list<R> &list) : std::unordered_map<Key, Value>(list.begin(), list.end()) {}
 
     ref<Map<Key, Value>> copy() const;
+    template <typename R>
+    ref<Map<Key, R>> map(Function<R(const Value &)>) const;
 
     bool any(Function<bool(const value_type &)> fn) const override
     {
@@ -118,6 +120,16 @@ template <typename Key, typename Value>
 ref<Map<Key, Value>> Map<Key, Value>::copy() const
 {
     return Object::create<Map<Key, Value>>(*this);
+}
+
+template <typename Key, typename Value>
+template <typename R>
+ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Value &)> fn) const
+{
+    auto mapped = Object::create<Map<Key, R>>();
+    for (const auto &pair : *this)
+        mapped[pair.first] = fn(pair.second);
+    return mapped;
 }
 
 template <typename Key, typename Value>

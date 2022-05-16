@@ -1,9 +1,9 @@
 #pragma once
 
+#include "../container.h"
 #include <initializer_list>
 #include <memory>
 #include <unordered_set>
-#include "../container.h"
 
 template <typename T>
 class Set : public std::unordered_set<T>, public Iterable<T>, public Removable<T>
@@ -23,6 +23,8 @@ public:
     Set(const std::initializer_list<R> &list) : std::unordered_set<T>(list.begin(), list.end()) {}
 
     ref<Set<T>> copy() const;
+    template <typename R>
+    ref<Set<R>> map(Function<R(const T &)>) const;
 
     bool any(Function<bool(const T &)> fn) const override
     {
@@ -113,6 +115,16 @@ template <typename T>
 ref<Set<T>> Set<T>::copy() const
 {
     return Object::create<Set<T>>(*this);
+}
+
+template <typename T>
+template <typename R>
+ref<Set<R>> Set<T>::map(Function<R(const T &)> fn) const
+{
+    auto mapped = Object::create<Set<R>>();
+    for (const auto &element : *this)
+        mapped->insert(fn(element));
+    return mapped;
 }
 
 template <typename T>

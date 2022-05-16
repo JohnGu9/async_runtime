@@ -1,8 +1,8 @@
 #pragma once
 
+#include <deque>
 #include <initializer_list>
 #include <memory>
-#include <deque>
 
 #include "../container.h"
 
@@ -24,6 +24,8 @@ public:
     List(const std::initializer_list<R> &list) : std::deque<T>(list.begin(), list.end()) {}
 
     ref<List<T>> copy() const;
+    template <typename R>
+    ref<List<R>> map(Function<R(const T &)>) const;
 
     bool any(Function<bool(const T &)> fn) const override
     {
@@ -115,6 +117,16 @@ template <typename T>
 ref<List<T>> List<T>::copy() const
 {
     return Object::create<List<T>>(*this);
+}
+
+template <typename T>
+template <typename R>
+ref<List<R>> List<T>::map(Function<R(const T &)> fn) const
+{
+    auto mapped = Object::create<List<R>>();
+    for (const auto &element : *this)
+        mapped->emplace_back(fn(element));
+    return mapped;
 }
 
 template <typename T>
