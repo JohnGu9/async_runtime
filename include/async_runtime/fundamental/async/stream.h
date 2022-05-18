@@ -32,11 +32,8 @@ class Stream : public Stream<std::nullptr_t>
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
-    static Function<void(ref<StreamSubscription<T>>)> _useless()
-    {
-        static Function<void(ref<StreamSubscription<T>>)> useless = [](ref<StreamSubscription<T>>) {};
-        return useless;
-    }
+    static finalref<Fn<void(ref<StreamSubscription<T>>)>> _useless;
+    static finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>>)>> _extraceListeners;
 
 public:
     Stream(option<EventLoopGetterMixin> getter = nullptr)
@@ -64,9 +61,9 @@ protected:
     {
         this->_active->erase(this->_active->find(subscription));
         this->_listeners->erase(this->_active->find(subscription));
-        subscription->_resume = _useless();
-        subscription->_pause = _useless();
-        subscription->_cancel = _useless();
+        subscription->_resume = _useless;
+        subscription->_pause = _useless;
+        subscription->_cancel = _useless;
     };
 
     void rawClose();
@@ -85,15 +82,25 @@ public:
 };
 
 template <typename T>
+finalref<Fn<void(ref<StreamSubscription<T>>)>> Stream<T>::_useless = [](ref<StreamSubscription<T>>) {};
+
+template <typename T>
+finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>>)>> Stream<T>::_extraceListeners =
+    [](const ref<StreamSubscription<T>> &subscription)
+{
+    return subscription->_listener;
+};
+
+template <typename T>
 void Stream<T>::rawClose()
 {
     this->_onClose->complete(0);
     this->_active->clear();
     for (auto &listener : this->_listeners)
     {
-        listener->_resume = _useless();
-        listener->_pause = _useless();
-        listener->_cancel = _useless();
+        listener->_resume = _useless;
+        listener->_pause = _useless;
+        listener->_cancel = _useless;
         listener->cancel();
     }
     this->_listeners->clear();
@@ -136,9 +143,9 @@ void Stream<T>::sink(T value)
     assert(!_isClosed);
     if (!this->_active->empty())
     {
-        auto copy = this->_active->copy();
+        auto copy = this->_active->map<Function<void(const T &)>>(_extraceListeners);
         for (const auto &listener : copy)
-            listener->_listener(value);
+            listener(value);
     }
     else
         this->_cache->emplace_back(std::move(value));
