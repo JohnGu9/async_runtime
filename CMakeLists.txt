@@ -39,17 +39,29 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/contexts contexts_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/fundamental fundamental_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/elements elements_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/widgets widgets_src)
-set(all_src ${src} ${basic_src} ${contexts_src} ${fundamental_src} ${elements_src} ${widgets_src})
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/io io_src)
 
-if(WIN32)
-    add_library(async_runtime ${all_src}) # in Windows, async_runtime not support shared library mode
-    add_library(async_runtime_a ${all_src})
-else()
-    add_library(async_runtime SHARED ${all_src})
-    add_library(async_runtime_a ${all_src})
+set(async_runtime_fundamental_src ${src} ${basic_src} ${fundamental_src})
+add_library(async_runtime_fundamental ${async_runtime_fundamental_src})
+
+set(async_runtime_src ${contexts_src} ${elements_src} ${widgets_src})
+
+# async_runtime optional library
+option(ASYNC_RUNTIME_WITH_IO "build async runtime lib with io components" OFF)
+if(ASYNC_RUNTIME_WITH_IO)
+    message("Async runtime io components enabled. ")
+    set(async_runtime_src ${async_runtime_src} ${io_src})
 endif()
 
-target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} uv_a)
+if(WIN32)
+    add_library(async_runtime ${async_runtime_src}) # in Windows, async_runtime not support shared library mode
+    add_library(async_runtime_a ${async_runtime_src})
+else()
+    add_library(async_runtime SHARED ${async_runtime_src})
+    add_library(async_runtime_a ${async_runtime_src})
+endif()
+
+target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} uv_a async_runtime_fundamental)
 target_compile_options(async_runtime PRIVATE
      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall>
      $<$<CXX_COMPILER_ID:MSVC>:/wd4100 /wd4458>)

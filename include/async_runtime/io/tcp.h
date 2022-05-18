@@ -1,8 +1,7 @@
 #pragma once
 #include "../basic/duration.h"
 #include "../basic/not_implemented_error.h"
-#include "async.h"
-#include "event_loop.h"
+#include "../fundamental/async.h"
 
 #if defined(_WIN32)
 #include <winsock2.h>
