@@ -33,12 +33,11 @@ public:
         if (!future->completed())
         {
             ref<FutureBuilder<T>::_State> self = self();
-            future->template then<int>([this, self, future](const T &) //
-                                       {                               //
-                                           if (this->widget->future == future)
-                                               this->setState([] {});
-                                           return 0;
-                                       });
+            future->template then<int>([this, self, future](const T &) { //
+                if (this->widget->future == future)
+                    this->setState([] {});
+                return 0;
+            });
         }
     }
 
@@ -49,12 +48,11 @@ public:
         if (oldWidget->future != future && !future->completed())
         {
             auto self = self();
-            future->template then<int>([this, self, future](const T &) //
-                                       {                               //
-                                           if (this->widget->future == future)
-                                               this->setState([] {});
-                                           return 0;
-                                       });
+            future->template then<int>([this, self, future](const T &) { //
+                if (this->widget->future == future)
+                    this->setState([] {});
+                return 0;
+            });
         }
     }
 

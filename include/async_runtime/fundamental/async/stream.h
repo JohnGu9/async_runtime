@@ -49,16 +49,15 @@ protected:
     finalref<Set<ref<StreamSubscription<T>>>> _listeners = Object::create<Set<ref<StreamSubscription<T>>>>();
     finalref<Set<ref<StreamSubscription<T>>>> _active = Object::create<Set<ref<StreamSubscription<T>>>>();
 
-    Function<void(ref<StreamSubscription<T>>)> _resume = [this](ref<StreamSubscription<T>> subscription)
-    {
+    Function<void(ref<StreamSubscription<T>>)> _resume = [this](ref<StreamSubscription<T>> subscription) { //
         this->_active->insert(subscription);
     };
-    Function<void(ref<StreamSubscription<T>>)> _pause = [this](ref<StreamSubscription<T>> subscription)
-    {
+
+    Function<void(ref<StreamSubscription<T>>)> _pause = [this](ref<StreamSubscription<T>> subscription) { //
         this->_active->erase(this->_active->find(subscription));
     };
-    Function<void(ref<StreamSubscription<T>>)> _cancel = [this](ref<StreamSubscription<T>> subscription)
-    {
+
+    Function<void(ref<StreamSubscription<T>>)> _cancel = [this](ref<StreamSubscription<T>> subscription) { //
         this->_active->erase(this->_active->find(subscription));
         this->_listeners->erase(this->_active->find(subscription));
         subscription->_resume = _useless;
@@ -86,10 +85,9 @@ finalref<Fn<void(ref<StreamSubscription<T>>)>> Stream<T>::_useless = [](ref<Stre
 
 template <typename T>
 finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>>)>> Stream<T>::_extraceListeners =
-    [](const ref<StreamSubscription<T>> &subscription)
-{
-    return subscription->_listener;
-};
+    [](const ref<StreamSubscription<T>> &subscription) { //
+        return subscription->_listener;
+    };
 
 template <typename T>
 void Stream<T>::rawClose()
@@ -117,23 +115,22 @@ ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
     subscription->_cancel = this->_cancel;
     _active->insert(subscription);
     _listeners->insert(subscription);
-    _loop->callSoon([this, self] //
-                    {            //
-                        for (auto iter = this->_cache->begin(); iter != this->_cache->end();)
-                        {
-                            if (!this->_active->empty())
-                            {
-                                auto copy = this->_active->copy();
-                                for (auto &listener : copy)
-                                    listener->_listener(*iter);
-                                iter = this->_cache->erase(iter);
-                            }
-                            else
-                                break;
-                        }
-                        if (this->_isClosed && _cache->empty() && !this->_onClose->completed())
-                            this->rawClose();
-                    });
+    _loop->callSoon([this, self] { //
+        for (auto iter = this->_cache->begin(); iter != this->_cache->end();)
+        {
+            if (!this->_active->empty())
+            {
+                auto copy = this->_active->copy();
+                for (auto &listener : copy)
+                    listener->_listener(*iter);
+                iter = this->_cache->erase(iter);
+            }
+            else
+                break;
+        }
+        if (this->_isClosed && _cache->empty() && !this->_onClose->completed())
+            this->rawClose();
+    });
     return subscription;
 }
 

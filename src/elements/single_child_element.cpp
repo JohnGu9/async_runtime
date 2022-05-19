@@ -1,6 +1,6 @@
 #include "async_runtime/elements/single_child_element.h"
-#include "async_runtime/widgets/widget.h"
 #include "async_runtime/widgets/stateless_widget.h"
+#include "async_runtime/widgets/widget.h"
 
 class SingleChildElement::InvalidWidget : public StatelessWidget
 {

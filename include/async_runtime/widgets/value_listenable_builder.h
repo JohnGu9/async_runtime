@@ -11,9 +11,7 @@ public:
                            Function<ref<Widget>(ref<BuildContext> context, T value, option<Widget> child)> builder,
                            option<Widget> child = nullptr,
                            option<Key> key = nullptr)
-        : StatefulWidget(key), valueListenable(valueListenable), builder(builder), child(child)
-    {
-    }
+        : StatefulWidget(key), valueListenable(valueListenable), builder(builder), child(child) {}
     finalref<ValueListenable<T>> valueListenable;
     finalref<Fn<ref<Widget>(ref<BuildContext>, T, option<Widget>)>> builder;
     finaloption<Widget> child;

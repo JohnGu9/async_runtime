@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../async.h"
+#include <tuple>
 
 template <typename T>
 class FutureOr;
@@ -11,6 +12,15 @@ class Future<std::nullptr_t> : public virtual Object, public EventLoopGetterMixi
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
 protected:
+    static void _setCallback(Function<void()> callback) {}
+
+    template <class T, class... _Args>
+    static void _setCallback(Function<void()> callback, ref<Future<T>> future, ref<Future<_Args>>... __args)
+    {
+        future->then(callback);
+        Future<>::_setCallback(callback, __args...);
+    }
+
     Future(ref<EventLoop> loop) : _loop(loop), _completed(false) {}
     ref<EventLoop> _loop;
     bool _completed;
@@ -24,7 +34,7 @@ public:
      *
      * @tparam T Future<T>
      */
-    template <class T, class... _Args>
+    template <class... _Args>
     class Package;
 
     template <class T, class... _Args>
@@ -61,8 +71,9 @@ public:
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>(const T &)>);
     template <typename ReturnType = std::nullptr_t>
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>()>);
-    ref<Future<T>> then(Function<void(const T &)>);
-    ref<Future<T>> then(Function<void()>);
+
+    virtual ref<Future<T>> then(Function<void(const T &)>);
+    virtual ref<Future<T>> then(Function<void()>);
 
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
@@ -73,42 +84,32 @@ protected:
     ref<List<Function<void(const T &)>>> _callbackList;
 };
 
-template <class T>
-class Future<std::nullptr_t>::Package<T> : public virtual Object
+template <class... _Args>
+class Future<>::Package : public virtual Object, public std::tuple<ref<Future<_Args>>...>
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
+    using super = std::tuple<ref<Future<_Args>>...>;
 
 public:
-    Package(ref<Future<T>> future) : future(future) {}
-    ref<Future<T>> future;
-    const T &value = future->_data;
+    Package(ref<Future<_Args>>... __args)
+        : super(__args...) {}
 
-protected:
-    void _setCallback(Function<void()> callback)
+    template <size_t Index>
+    const auto &getFuture()
     {
-        future->then(callback);
+        return std::get<Index>(static_cast<super &>(*this));
     }
-};
 
-template <class T, class... _Args>
-class Future<std::nullptr_t>::Package : public virtual Object
-{
-    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
-
-public:
-    Package(ref<Future<T>> future, ref<Future<_Args>>... __args)
-        : future(future),
-          next(Object::create<Package<_Args...>>(__args...)) {}
-
-    ref<Future<T>> future;
-    const T &value = future->_data;
-    ref<Package<_Args...>> next;
-
-protected:
-    void _setCallback(Function<void()> callback)
+    template <size_t Index>
+    const auto &getValue()
     {
-        future->then(callback);
-        next->_setCallback(callback);
+        return this->template getFuture<Index>()->_data;
+    }
+
+    template <size_t Index>
+    bool completed()
+    {
+        return this->template getFuture<Index>()->completed();
     }
 };
 
@@ -120,14 +121,13 @@ ref<Future<ref<Future<>::Package<T, _Args...>>>> Future<>::wait(ref<Future<T>> f
     auto completer = Object::create<Completer<ref<Package<T, _Args...>>>>();
     Function<void()> onCompleted = [counter, completer, package] //
     {                                                            //
-        (*counter)++;
-        if (*counter == (sizeof...(_Args) + 1))
+        if (++(*counter) == (sizeof...(_Args) + 1))
         {
             completer->complete(package);
             delete counter;
         }
     };
-    package->_setCallback(onCompleted);
+    Future<>::_setCallback(onCompleted, future, __args...);
     return completer;
 }
 
@@ -143,7 +143,7 @@ ref<Future<ref<Future<>::Package<T, _Args...>>>> Future<>::race(ref<Future<T>> f
             completer->complete(package);
         }
     };
-    package->_setCallback(onCompleted);
+    Future<>::_setCallback(onCompleted, future, __args...);
     return completer;
 }
 
@@ -236,24 +236,21 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
     else
     {
         ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
-        this->_callbackList
-            ->emplace_back([future, fn](const T &value) //
-                           {                            //
-                               FutureOr<ReturnType> result = fn(value);
-                               lateref<Future<ReturnType>> resultFuture;
-                               if (result._future.isNotNull(resultFuture))
-                               {
-                                   resultFuture->template then<int>([future](const ReturnType &value) //
-                                                                    {                                 //
-                                                                        future->complete(value);
-                                                                        return 0;
-                                                                    });
-                               }
-                               else
-                               {
-                                   future->complete(result._value);
-                               }
-                           });
+        this->_callbackList->emplace_back([future, fn](const T &value) { //
+            FutureOr<ReturnType> result = fn(value);
+            lateref<Future<ReturnType>> resultFuture;
+            if (result._future.isNotNull(resultFuture))
+            {
+                resultFuture->template then<int>([future](const ReturnType &value) { //
+                    future->complete(value);
+                    return 0;
+                });
+            }
+            else
+            {
+                future->complete(result._value);
+            }
+        });
         return future;
     }
 }
