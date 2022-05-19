@@ -13,6 +13,7 @@ class Set : public std::unordered_set<T>, public Iterable<T>, public Removable<T
 public:
     using iterator = typename std::unordered_set<T>::iterator;
     using const_iterator = typename std::unordered_set<T>::const_iterator;
+    static ref<Set<T>> create();
 
     Set() {}
     Set(const Set<T> &other) : std::unordered_set<T>(other) {}
@@ -110,6 +111,12 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<Set<T>>(other) {}
 };
+
+template <typename T>
+ref<Set<T>> Set<T>::create()
+{
+    return Object::create<Set<T>>();
+}
 
 template <typename T>
 ref<Set<T>> Set<T>::copy() const

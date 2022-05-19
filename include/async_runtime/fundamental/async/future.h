@@ -16,6 +16,15 @@ protected:
     bool _completed;
 
 public:
+    template <class T, class... _Args>
+    class Package;
+
+    template <class T, class... _Args>
+    static ref<Future<ref<Package<T, _Args...>>>> wait(ref<Future<T>> future, ref<Future<_Args>>... __args);
+
+    template <class T, class... _Args>
+    static ref<Future<ref<Package<T, _Args...>>>> race(ref<Future<T>> future, ref<Future<_Args>>... __args);
+
     ref<EventLoop> eventLoop() override { return _loop; }
     bool completed() const { return _completed; }
 };
@@ -40,7 +49,9 @@ public:
 
     template <typename ReturnType = std::nullptr_t>
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>(const T &)>);
-    ref<Future<T>> onCompleted(Function<void(const T &)>);
+    ref<Future<T>> then(Function<void(const T &)>);
+    ref<Future<T>> then(Function<void()>);
+
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
 protected:
@@ -49,6 +60,80 @@ protected:
     T _data;
     ref<List<Function<void(const T &)>>> _callbackList;
 };
+
+template <class T>
+class Future<std::nullptr_t>::Package<T> : public virtual Object
+{
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
+
+public:
+    Package(ref<Future<T>> future) : future(future) {}
+    ref<Future<T>> future;
+    const T &value = future->_data;
+
+protected:
+    void _setCallback(Function<void()> callback)
+    {
+        future->then(callback);
+    }
+};
+
+template <class T, class... _Args>
+class Future<std::nullptr_t>::Package : public virtual Object
+{
+    _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
+
+public:
+    Package(ref<Future<T>> future, ref<Future<_Args>>... __args)
+        : future(future),
+          next(Object::create<Package<_Args...>>(__args...)) {}
+
+    ref<Future<T>> future;
+    const T &value = future->_data;
+    ref<Package<_Args...>> next;
+
+protected:
+    void _setCallback(Function<void()> callback)
+    {
+        future->then(callback);
+        next->_setCallback(callback);
+    }
+};
+
+template <class T, class... _Args>
+ref<Future<ref<Future<>::Package<T, _Args...>>>> Future<>::wait(ref<Future<T>> future, ref<Future<_Args>>... __args)
+{
+    auto counter = new size_t(0);
+    auto package = Object::create<Package<T, _Args...>>(future, __args...);
+    auto completer = Object::create<Completer<ref<Package<T, _Args...>>>>();
+    Function<void()> onCompleted = [counter, completer, package]() //
+    {                                                              //
+        (*counter)++;
+        if (*counter == (sizeof...(_Args) + 1))
+        {
+            completer->complete(package);
+            delete counter;
+        }
+    };
+    package->_setCallback(onCompleted);
+    return completer;
+}
+
+template <class T, class... _Args>
+ref<Future<ref<Future<>::Package<T, _Args...>>>> Future<>::race(ref<Future<T>> future, ref<Future<_Args>>... __args)
+{
+    auto package = Object::create<Package<T, _Args...>>(future, __args...);
+    auto completer = Object::create<Completer<ref<Package<T, _Args...>>>>();
+    Function<void()> onCompleted = [completer, package]() //
+    {                                                     //
+        if (!completer->completed())
+        {
+            completer->complete(package);
+        }
+    };
+    package->_setCallback(onCompleted);
+    return completer;
+}
 
 template <typename T>
 ref<List<Function<void(const T &)>>> Future<T>::dummy = Object::create<List<Function<void(const T &)>>>();
@@ -147,20 +232,34 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
 }
 
 template <typename T>
-ref<Future<T>> Future<T>::onCompleted(Function<void(const T &)> fn)
+ref<Future<T>> Future<T>::then(Function<void(const T &)> fn)
 {
-    auto self = self();
     if (this->_completed)
     {
-        _loop->callSoon([this, self, fn]
-                        { fn(_data); });
+        fn(_data);
     }
     else
     {
-        this->_callbackList->emplace_back([fn](const T &value)
-                                          { fn(value); });
+        this->_callbackList
+            ->emplace_back(fn);
     }
-    return self;
+    return self();
+}
+
+template <typename T>
+ref<Future<T>> Future<T>::then(Function<void()> fn)
+{
+    if (this->_completed)
+    {
+        fn();
+    }
+    else
+    {
+        this->_callbackList
+            ->emplace_back([fn](const T &value)
+                           { fn(); });
+    }
+    return self();
 }
 
 template <typename T>

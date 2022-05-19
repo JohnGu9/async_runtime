@@ -16,6 +16,7 @@ protected:
     class _Connection;
     ref<EventLoop> _loop;
     ref<EventLoop> eventLoop() override { return _loop; }
+    Tcp(ref<EventLoop> loop) : _loop(loop) {}
 
 public:
     class Connection : public virtual Object, public EventLoopGetterMixin
@@ -25,11 +26,9 @@ public:
         int _status;
 
     public:
-        ref<EventLoop> eventLoop() override { return _loop; }
-
         Connection(ref<EventLoop> loop, int status) : _loop(loop), _status(status) {}
 
-        virtual int status() { return _status; }
+        virtual int status() noexcept { return _status; }
 
         virtual bool isClosed() { throw NotImplementedError(); }
         virtual ref<Future<int>> shutdown() { throw NotImplementedError(); }
@@ -42,11 +41,11 @@ public:
         virtual int stopRead() { throw NotImplementedError(); }
         virtual ref<Future<int>> write(ref<String>) { throw NotImplementedError(); }
 
+        ref<EventLoop> eventLoop() override { return _loop; }
         class Error;
     };
 
     static ref<Tcp> from(const struct sockaddr *bind = nullptr, unsigned int bindFlags = -1, option<EventLoopGetterMixin> getter = nullptr);
-    Tcp(ref<EventLoop> loop) : _loop(loop) {}
 
     virtual int bind(const struct sockaddr *addr, unsigned int flags) = 0;
     virtual ref<Future<ref<Connection>>> connect(const struct sockaddr *addr) = 0; // client

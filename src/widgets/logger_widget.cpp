@@ -1,7 +1,6 @@
 #include "async_runtime/widgets/logger_widget.h"
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/file.h"
-#include "async_runtime/fundamental/logger.h"
 #include "async_runtime/widgets/root_widget.h"
 #include <sstream>
 
@@ -62,7 +61,7 @@ public:
         _FileLoggerHandler(ref<String> path, Function<void(ref<File::Error>)> onError, ref<EventLoopGetterMixin> getter)
             : _file(File::fromPath(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR, getter))
         {
-            _file->onCompleted([onError](ref<File> file) //
+            _file->then([onError](ref<File> file) //
                                {                         //
                                    lateref<File::Error> error;
                                    if (file->cast<File::Error>().isNotNull(error))
@@ -126,7 +125,7 @@ public:
                     [this, path](ref<File::Error> error) //
                     {                                    //
                         std::stringstream message("");
-                        message << "Logger::file open file [" << path << "] failed with code " << error->openCode() << std::endl;
+                        message << "Logger::file open file [" << path << "] failed with code " << error->error() << std::endl;
                         Logger::of(context)->writeLine(message.str());
                     },
                     self());

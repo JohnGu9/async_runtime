@@ -14,6 +14,7 @@ class List : public std::deque<T>, public Iterable<T>, public Removable<size_t>
 public:
     using iterator = typename std::deque<T>::iterator;
     using const_iterator = typename std::deque<T>::const_iterator;
+    static ref<List<T>> create();
 
     List() {}
     List(const List<T> &other) : std::deque<T>(other) {}
@@ -112,6 +113,12 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<List<T>>(other) {}
 };
+
+template <typename T>
+ref<List<T>> List<T>::create()
+{
+    return Object::create<List<T>>();
+}
 
 template <typename T>
 ref<List<T>> List<T>::copy() const

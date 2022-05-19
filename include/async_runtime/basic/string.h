@@ -255,9 +255,7 @@ void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std
         if (index == end)
         {
 #ifndef NDEBUG
-            std::stringstream debugInfo;
-            debugInfo << "String::format arguments overflow" << std::endl;
-            std::cout << debugInfo.str();
+            std::cout << "String::format arguments overflow" << std::endl;
 #endif
             return;
         }

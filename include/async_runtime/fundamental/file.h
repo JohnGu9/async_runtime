@@ -3,9 +3,9 @@
 /**
  * @file file.h
  * @brief file is an io-component, but I think it's a basic functional component, so I put in fundamental folder
- * 
+ *
  * fundamental folder for more advanced io-components
- * 
+ *
  */
 
 #include "../basic/duration.h"
@@ -16,6 +16,7 @@
 
 class File : public virtual Object, public EventLoopGetterMixin
 {
+
 public:
     /**
      * @brief Checkout your system's [fcntl.h] available flags and mode
@@ -65,7 +66,7 @@ public:
     static ref<Future<int>> unlink(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
     virtual ~File() {}
 
-    virtual int openCode() { throw NotImplementedError(); }
+    virtual int error() noexcept { return code; }
     virtual int flags() { throw NotImplementedError(); }
     virtual int mode() { throw NotImplementedError(); }
     virtual ref<Future<ref<Stat>>> stat() { throw NotImplementedError(); }
@@ -89,10 +90,11 @@ public:
 
 protected:
     ref<EventLoop> _loop;
+    const int code;
     ref<String> _path;
 
-    File(ref<String> path, option<EventLoopGetterMixin> getter = nullptr)
-        : _loop(ensureEventLoop(getter)), _path(path) {}
+    File(ref<String> path, const int code, option<EventLoopGetterMixin> getter = nullptr)
+        : _loop(ensureEventLoop(getter)), code(code), _path(path) {}
 
 public:
     const ref<String> &path = _path;
@@ -106,10 +108,6 @@ class File::Error : public File
     using super = File;
 
 public:
-    const int code;
     Error(ref<String> path, const int code, option<EventLoopGetterMixin> getter = nullptr)
-        : super(path, getter), code(code) {}
-
-    int openCode() override { return code; }
-    virtual int error() { return code; }
+        : super(path, code, getter) {}
 };

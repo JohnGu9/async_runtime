@@ -15,6 +15,7 @@ public:
     using iterator = typename std::unordered_map<Key, Value>::iterator;
     using const_iterator = typename std::unordered_map<Key, Value>::const_iterator;
     using value_type = typename std::unordered_map<Key, Value>::value_type;
+    static ref<Map<Key, Value>> create();
 
     Map() {}
     Map(const Map<Key, Value> &other) : std::unordered_map<Key, Value>(other) {}
@@ -115,6 +116,12 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<Map<Key, Value>>(other) {}
 };
+
+template <typename Key, typename Value>
+ref<Map<Key, Value>> Map<Key, Value>::create()
+{
+    return Object::create<Map<Key, Value>>();
+}
 
 template <typename Key, typename Value>
 ref<Map<Key, Value>> Map<Key, Value>::copy() const

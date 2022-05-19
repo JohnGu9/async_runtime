@@ -3,7 +3,8 @@
 // export library
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/file.h"
-#include "async_runtime/fundamental/logger.h"
+#include "async_runtime/fundamental/thread.h"
+#include "async_runtime/fundamental/thread_pool.h"
 #include "async_runtime/fundamental/timer.h"
 
 // maybe you like to include widgets by your own
@@ -23,13 +24,12 @@
 #include "async_runtime/widgets/value_listenable_builder.h"
 #include "async_runtime/widgets/widget.h"
 
-#endif
-
 // run widgets from this api
 void runApp(ref<Widget> widget);
 
 // ease logger marco
 #ifndef __FILENAME__
+
 #ifndef NDEBUG
 #define __FILENAME__ __FILE__
 #else
@@ -37,7 +37,7 @@ namespace _async_runtime
 {
     /**
      * @brief
-     * reserve file name only that without full path
+     * reserve file name only without file's full-path
      *
      * @example
      * /usr/local/async_runtime_test/async_runtime/src/object.cpp
@@ -59,6 +59,7 @@ namespace _async_runtime
 };
 #define __FILENAME__ &__FILE__[_async_runtime::get_file_name_offset(__FILE__)]
 #endif
+
 #endif
 
 #define __STDC_WANT_LIB_EXT1__ 1
@@ -75,7 +76,7 @@ namespace _async_runtime
 #else
 #define ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__) localtime_r(&__t__, &__buf__)
 #endif
-#endif ASYNC_RUNTIME_BUILD_TIMEBUF
+#endif
 
 #ifndef ASYNC_RUNTIME_OSTREAM_REDIRECT
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
@@ -84,6 +85,8 @@ namespace _async_runtime
 #define ASYNC_RUNTIME_OSTREAM_REDIRECT
 #endif
 #endif
+
+#include <iomanip>
 
 #ifndef _ASYNC_RUNTIME_LOG_FORMAT
 #define _ASYNC_RUNTIME_LOG_FORMAT(_type, _format, ...)                                                                                                                                                 \
@@ -95,7 +98,7 @@ namespace _async_runtime
         __ss__ << std::put_time(&__buf__, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << _type << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT << _format << std::endl; \
         Logger::of(context)->write(ref<String>(__ss__.str())->format(__VA_ARGS__));                                                                                                                    \
     }
-#endif _ASYNC_RUNTIME_LOG_FORMAT
+#endif
 
 #ifndef LogDebug
 #ifndef NDEBUG
@@ -107,12 +110,14 @@ namespace _async_runtime
 
 #ifndef LogInfo
 #define LogInfo(_format, ...) _ASYNC_RUNTIME_LOG_FORMAT("INFO ", _format, __VA_ARGS__)
-#endif LogInfo
+#endif
 
 #ifndef LogWarning
 #define LogWarning(_format, ...) _ASYNC_RUNTIME_LOG_FORMAT("WARNING", _format, __VA_ARGS__)
-#endif LogWarning
+#endif
 
 #ifndef LogError
 #define LogError(_format, ...) _ASYNC_RUNTIME_LOG_FORMAT("ERROR", _format, __VA_ARGS__)
-#endif LogError
+#endif
+
+#endif

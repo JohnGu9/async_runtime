@@ -36,9 +36,18 @@
  *
  */
 #pragma once
-#include "../fundamental/logger.h"
 #include "inherited_widget.h"
 #include "stateful_widget.h"
+
+class LoggerHandler : public virtual Object
+{
+public:
+    LoggerHandler() {}
+
+    virtual ref<Future<bool>> write(ref<String> str) = 0;
+    virtual ref<Future<bool>> writeLine(ref<String> str) = 0;
+    virtual void dispose() = 0;
+};
 
 class Logger : public InheritedWidget
 {

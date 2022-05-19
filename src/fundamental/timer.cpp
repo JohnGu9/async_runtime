@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <ctime>
+
 extern "C"
 {
 #include <uv.h>
@@ -50,11 +51,10 @@ public:
         auto self = self();
         _handle.data = new std::function<void()>([this, self] //
                                                  {            //
-                                                     auto cache = self;
                                                      auto data = reinterpret_cast<std::function<void()> *>(_handle.data);
                                                      _handle.data = nullptr;
                                                      uv_timer_stop(&_handle);
-                                                     _fn(cache);
+                                                     _fn(self);
                                                      delete data;
                                                  });
         uv_timer_start(&_handle, timer_cb, timeout.toMilliseconds(), 0);

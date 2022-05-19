@@ -1,13 +1,12 @@
 #pragma once
 
 #include "../fundamental/async.h"
-#include "../fundamental/logger.h"
 #include "single_child_element.h"
 #include <atomic>
 
 class GlobalKey;
-class LoggerHandler;
 class ThreadPool;
+class LoggerHandler;
 class RootElement : public SingleChildElement
 {
     friend class RootWidget;

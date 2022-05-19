@@ -35,12 +35,11 @@ public:
     ref<Completer<int>> closed;
 
     _File(ref<String> path, uv_fs_t *openRequest, option<EventLoopGetterMixin> getter)
-        : super(path, getter),
+        : super(path, static_cast<int>(openRequest->result), getter),
           loop(reinterpret_cast<uv_loop_t *>(_loop->nativeHandle())),
           openRequest(openRequest),
           closed(Object::create<Completer<int>>(getter)) {}
     ~_File() { close(); }
-    int openCode() override { return static_cast<int>(openRequest->result); }
     int flags() override { return openRequest->flags; }
 
 #ifndef _WIN32
@@ -265,6 +264,7 @@ public:
         delete closed;
         delete req;
     }
+
     ref<Future<int>> close() override
     {
         if (openRequest != nullptr)

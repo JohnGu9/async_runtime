@@ -1,6 +1,6 @@
 #pragma once
-#include "../fundamental/logger.h"
 #include "inherited_widget.h"
+#include "logger_widget.h"
 
 class RootElement;
 class RootWidget : public InheritedWidget
