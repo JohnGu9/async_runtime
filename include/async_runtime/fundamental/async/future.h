@@ -44,7 +44,9 @@ class Future : public Future<std::nullptr_t>
     static ref<List<Function<void(const T &)>>> dummy;
 
 public:
-    static ref<Future<T>> async(Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr);
+    static ref<Future<T>> async(Function<T()> fn);
+    static ref<Future<T>> toEventLoop(Function<T()> fn, ref<EventLoop> eventLoop);
+
     static ref<Future<T>> delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Future<T>> delay(Duration timeout, T value, option<EventLoopGetterMixin> getter = nullptr);
 
@@ -57,6 +59,8 @@ public:
 
     template <typename ReturnType = std::nullptr_t>
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>(const T &)>);
+    template <typename ReturnType = std::nullptr_t>
+    ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>()>);
     ref<Future<T>> then(Function<void(const T &)>);
     ref<Future<T>> then(Function<void()>);
 
@@ -147,12 +151,27 @@ template <typename T>
 ref<List<Function<void(const T &)>>> Future<T>::dummy = Object::create<List<Function<void(const T &)>>>();
 
 template <typename T>
-ref<Future<T>> Future<T>::async(Function<T()> fn, option<EventLoopGetterMixin> getter)
+ref<Future<T>> Future<T>::async(Function<T()> fn)
 {
-    auto loop = EventLoopGetterMixin::ensureEventLoop(getter);
+    auto loop = EventLoopGetterMixin::ensureEventLoop(nullptr);
     auto future = Object::create<Completer<T>>(getter);
     loop->callSoon([future, fn]
                    { future->complete(fn()); });
+    return future;
+}
+
+template <typename T>
+ref<Future<T>> Future<T>::toEventLoop(Function<T()> fn, ref<EventLoop> eventLoop)
+{
+    auto future = Object::create<Completer<T>>();
+    eventLoop->callSoonThreadSafe(
+        [fn, future] //
+        {            //
+            future->eventLoop()->callSoonThreadSafe(std::bind(
+                [future](T &value)
+                { future->complete(std::move(value)); },
+                fn()));
+        });
     return future;
 }
 
@@ -237,6 +256,14 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
                            });
         return future;
     }
+}
+
+template <typename T>
+template <typename ReturnType>
+ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>()> fn)
+{
+    return this->then<ReturnType>([fn](const T &)
+                                  { return fn(); });
 }
 
 template <typename T>

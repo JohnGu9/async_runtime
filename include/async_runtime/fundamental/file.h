@@ -81,9 +81,7 @@ public:
     virtual bool isClosed() { return true; }
     virtual ref<Future<int>> close()
     {
-        return Future<int>::async([]
-                                  { return 0; },
-                                  _loop);
+        return Future<int>::value(0);
     }
 
     ref<EventLoop> eventLoop() override { return _loop; }
