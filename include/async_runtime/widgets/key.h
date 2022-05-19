@@ -27,7 +27,7 @@ class ValueKey : public Key
 {
 public:
     ValueKey(T &value) : _value(value) {}
-    virtual bool equal(option<Key> other) override
+    bool equal(option<Key> other) override
     {
         lateref<Key> nonNullOther;
         if (other.isNotNull(nonNullOther))
@@ -48,7 +48,7 @@ protected:
 class GlobalKey : public Key
 {
 public:
-    inline virtual bool equal(option<Key> other)
+    bool equal(option<Key> other) override
     {
         lateref<Key> key;
         if (other.isNotNull(key))
@@ -69,7 +69,7 @@ class GlobalObjectKey : public GlobalKey
 {
 public:
     GlobalObjectKey(option<Object> object) : _object(object){};
-    virtual bool equal(option<Key> other)
+    bool equal(option<Key> other) override
     {
         lateref<Key> nonNullOther;
         if (other.isNotNull(nonNullOther))

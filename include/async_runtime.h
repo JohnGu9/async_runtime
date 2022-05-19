@@ -31,6 +31,11 @@ void runApp(ref<Widget> widget);
 #ifndef __FILENAME__
 
 #ifndef NDEBUG
+/**
+ * @brief
+ * In debug mode, show the files' full-path
+ *
+ */
 #define __FILENAME__ __FILE__
 #else
 namespace _async_runtime
@@ -57,6 +62,11 @@ namespace _async_runtime
         return 0;
     }
 };
+/**
+ * @brief 
+ * In non-debug mode, only show the file name
+ * 
+ */
 #define __FILENAME__ &__FILE__[_async_runtime::get_file_name_offset(__FILE__)]
 #endif
 

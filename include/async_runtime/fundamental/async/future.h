@@ -16,6 +16,14 @@ protected:
     bool _completed;
 
 public:
+    /**
+     * @brief For [Future::wait] and [Future::race] return value wrapper
+     *
+     * Under [Future::wait], all [Package::value] is safe to access.
+     * But under [Future::race], it's not. You need to check every [Package::future] completed status before you access.
+     *
+     * @tparam T Future<T>
+     */
     template <class T, class... _Args>
     class Package;
 
