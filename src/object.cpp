@@ -17,7 +17,7 @@ ref<String> Object::toString()
 void Object::toStringStream(std::ostream &os)
 {
     os << "class<"
-#if defined(_WIN32)
+#ifdef _WIN32
        << &(typeid(*this).name()[6]) // from "class MyClass" to "MyClass"
 #else
        << typeid(*this).name()

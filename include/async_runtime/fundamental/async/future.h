@@ -114,8 +114,8 @@ ref<Future<ref<Future<>::Package<T, _Args...>>>> Future<>::wait(ref<Future<T>> f
     auto counter = new size_t(0);
     auto package = Object::create<Package<T, _Args...>>(future, __args...);
     auto completer = Object::create<Completer<ref<Package<T, _Args...>>>>();
-    Function<void()> onCompleted = [counter, completer, package]() //
-    {                                                              //
+    Function<void()> onCompleted = [counter, completer, package] //
+    {                                                            //
         (*counter)++;
         if (*counter == (sizeof...(_Args) + 1))
         {
@@ -132,8 +132,8 @@ ref<Future<ref<Future<>::Package<T, _Args...>>>> Future<>::race(ref<Future<T>> f
 {
     auto package = Object::create<Package<T, _Args...>>(future, __args...);
     auto completer = Object::create<Completer<ref<Package<T, _Args...>>>>();
-    Function<void()> onCompleted = [completer, package]() //
-    {                                                     //
+    Function<void()> onCompleted = [completer, package] //
+    {                                                   //
         if (!completer->completed())
         {
             completer->complete(package);
