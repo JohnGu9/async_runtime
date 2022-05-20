@@ -34,9 +34,9 @@ void Timer::_Timer::cancel()
 {
     if (_handle.data != nullptr)
     {
+        uv_timer_stop(&_handle);
         delete reinterpret_cast<std::function<void()> *>(_handle.data);
         _handle.data = nullptr;
-        uv_timer_stop(&_handle);
     }
 }
 
@@ -44,7 +44,9 @@ class Timer::_Timer::_Delay : public Timer::_Timer
 {
 public:
     Duration timeout;
-    _Delay(ref<EventLoop> loop, Duration timeout, Function<void(ref<Timer>)> fn) : Timer::_Timer(loop, fn), timeout(timeout) {}
+    _Delay(ref<EventLoop> loop, Duration timeout, Function<void(ref<Timer>)> fn)
+        : Timer::_Timer(loop, fn), timeout(timeout) {}
+
     void start() override
     {
         cancel();
@@ -65,7 +67,8 @@ class Timer::_Timer::_Periodic : public Timer::_Timer
 {
 public:
     Duration interval;
-    _Periodic(ref<EventLoop> loop, Duration interval, Function<void(ref<Timer>)> fn) : Timer::_Timer(loop, fn), interval(interval) {}
+    _Periodic(ref<EventLoop> loop, Duration interval, Function<void(ref<Timer>)> fn)
+        : Timer::_Timer(loop, fn), interval(interval) {}
 
     void start() override
     {
@@ -85,4 +88,20 @@ ref<Timer> Timer::delay(Duration duration, Function<void(ref<Timer>)> fn, option
 ref<Timer> Timer::periodic(Duration interval, Function<void(ref<Timer>)> fn, option<EventLoopGetterMixin> getter)
 {
     return Object::create<Timer::_Timer::_Periodic>(EventLoopGetterMixin::ensureEventLoop(getter), interval, fn);
+}
+
+ref<Timer> Timer::delay(Duration duration, Function<void()> fn, option<EventLoopGetterMixin> getter)
+{
+    return Timer::delay(
+        duration, [fn](ref<Timer>)
+        { fn(); },
+        getter);
+}
+
+ref<Timer> Timer::periodic(Duration interval, Function<void()> fn, option<EventLoopGetterMixin> getter)
+{
+    return Timer::periodic(
+        interval, [fn](ref<Timer>)
+        { fn(); },
+        getter);
 }

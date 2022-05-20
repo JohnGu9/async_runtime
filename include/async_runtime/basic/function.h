@@ -41,8 +41,9 @@ template <typename ReturnType, class... Args>
 class ref<Fn<ReturnType(Args...)>> : public _async_runtime::RefImplement<Fn<ReturnType(Args...)>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+
     template <typename X, typename Y>
-    friend bool operator==(const ref<X> &object0, const ref<Y> &object1);
+    friend bool operator==(const ref<X> &object0, ref<Y> object1);
 
 public:
     ref(std::nullptr_t) = delete;

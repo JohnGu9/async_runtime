@@ -161,9 +161,19 @@ class option : public _async_runtime::OptionImplement<T>
     friend bool operator!=(const option<R> &opt, std::nullptr_t);
 
     template <typename X, typename Y>
-    friend bool operator==(const option<X> &object0, const option<Y> &object1);
+    friend bool operator==(const option<X> &object0, option<Y> object1);
     template <typename X, typename Y>
-    friend bool operator!=(const option<X> &object0, const option<Y> &object1);
+    friend bool operator!=(const option<X> &object0, option<Y> object1);
+
+    template <typename X, typename Y>
+    friend bool operator==(const option<X> &object0, ref<Y> object1);
+    template <typename X, typename Y>
+    friend bool operator!=(const option<X> &object0, ref<Y> object1);
+
+    template <typename X, typename Y>
+    friend bool operator==(const ref<X> &object0, option<Y> object1);
+    template <typename X, typename Y>
+    friend bool operator!=(const ref<X> &object0, option<Y> object1);
 
 public:
     option() {}
@@ -239,7 +249,19 @@ class ref : public _async_runtime::RefImplement<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     template <typename X, typename Y>
-    friend bool operator==(const ref<X> &object0, const ref<Y> &object1);
+    friend bool operator==(const ref<X> &object0, ref<Y> object1);
+    template <typename X, typename Y>
+    friend bool operator!=(const ref<X> &object0, ref<Y> object1);
+
+    template <typename X, typename Y>
+    friend bool operator==(const option<X> &object0, ref<Y> object1);
+    template <typename X, typename Y>
+    friend bool operator!=(const option<X> &object0, ref<Y> object1);
+
+    template <typename X, typename Y>
+    friend bool operator==(const ref<X> &object0, option<Y> object1);
+    template <typename X, typename Y>
+    friend bool operator!=(const ref<X> &object0, option<Y> object1);
 
 public:
     ref(std::nullptr_t) = delete;
@@ -324,24 +346,24 @@ template <typename T>
 bool operator!=(const option<T> &opt, std::nullptr_t) { return static_cast<const std::shared_ptr<T> &>(opt) != nullptr; }
 
 template <typename T, typename R>
-bool operator==(const option<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool operator==(const option<T> &object0, option<R> object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, const option<R> &object1) { return !(object0 == object1); }
+bool operator!=(const option<T> &object0, option<R> object1) { return !(object0 == object1); }
 
 template <typename T, typename R>
-bool operator==(const ref<T> &object0, const ref<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool operator==(const ref<T> &object0, ref<R> object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T, typename R>
-bool operator!=(const ref<T> &object0, const ref<R> &object1) { return !(object0 == object1); }
+bool operator!=(const ref<T> &object0, ref<R> object1) { return !(object0 == object1); }
 
 template <typename T, typename R>
-bool operator==(const ref<T> &object0, const option<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool operator==(const ref<T> &object0, option<R> object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T, typename R>
-bool operator!=(const ref<T> &object0, const option<R> &object1) { return !(object0 == object1); }
+bool operator!=(const ref<T> &object0, option<R> object1) { return !(object0 == object1); }
 
 template <typename T, typename R>
-bool operator==(const option<T> &object0, const ref<R> &object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool operator==(const option<T> &object0, ref<R> object1) { return static_cast<const std::shared_ptr<T> &>(object0) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, const ref<R> &object1) { return !(object0 == object1); }
+bool operator!=(const option<T> &object0, ref<R> object1) { return !(object0 == object1); }
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>

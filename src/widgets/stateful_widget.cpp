@@ -3,8 +3,12 @@
 
 void State<StatefulWidget>::setState(Function<void()> fn)
 {
+#ifndef NDEBUG
+    auto loop = this->eventLoop();
+    assert(EventLoop::runningEventLoop == loop);
     assert(this->mounted && "[setState] call on a disposed State");
     assert(this->_element->_lifeCycle == StatefulElement::LifeCycle::mounted && "[setState] can't not call in widget lifecycle hooker [build]. ");
+#endif
     fn();
     this->_element->build();
 }

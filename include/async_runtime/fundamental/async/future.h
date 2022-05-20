@@ -29,8 +29,8 @@ public:
     /**
      * @brief For [Future::wait] and [Future::race] return value wrapper
      *
-     * Under [Future::wait], all [Package::value] is safe to access.
-     * But under [Future::race], it's not. You need to check every [Package::future] completed status before you access.
+     * Under [Future::wait], all [Package::getValue<Index>()] is safe to access.
+     * But under [Future::race], it's not. You need to check every [Package::completed<Index>()] completed status before you access.
      *
      * @tparam T Future<T>
      */

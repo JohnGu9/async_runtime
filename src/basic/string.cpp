@@ -1,7 +1,7 @@
 #include "async_runtime/basic/string.h"
 
 template <>
-bool operator==(const option<String> &lhs, const option<String> &rhs)
+bool operator==(const option<String> &lhs, option<String> rhs)
 {
     lateref<String> lh;
     if (lhs.isNotNull(lh))
@@ -16,7 +16,7 @@ bool operator==(const option<String> &lhs, const option<String> &rhs)
 }
 
 template <>
-bool operator!=(const option<String> &lhs, const option<String> &rhs)
+bool operator!=(const option<String> &lhs, option<String> rhs)
 {
     return !(lhs == rhs);
 }

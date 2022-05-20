@@ -329,9 +329,9 @@ ref<String> String::format(Args &&...args)
 }
 
 template <>
-bool operator==(const option<String> &object0, const option<String> &object1);
+bool operator==(const option<String> &object0, option<String> object1);
 template <>
-bool operator!=(const option<String> &object0, const option<String> &object1);
+bool operator!=(const option<String> &object0, option<String> object1);
 
 namespace std
 {

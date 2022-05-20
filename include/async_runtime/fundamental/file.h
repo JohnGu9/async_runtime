@@ -10,7 +10,6 @@
 
 #include "../basic/duration.h"
 #include "../basic/not_implemented_error.h"
-
 #include "../fundamental/async.h"
 #include <fcntl.h>
 
@@ -78,7 +77,7 @@ public:
     virtual ref<Future<ref<String>>> read() { throw NotImplementedError(); };
     virtual ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) { throw NotImplementedError(); };
 
-    virtual bool isClosed() { return true; }
+    virtual bool isClosed() noexcept { return true; }
     virtual ref<Future<int>> close()
     {
         return Future<int>::value(0);
