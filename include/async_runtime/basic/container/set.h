@@ -57,6 +57,14 @@ public:
         this->erase(iter);
         return true;
     }
+
+    void toStringStream(std::ostream &os) override
+    {
+        os << "Set { ";
+        for (const auto &element : *this)
+            os << element << ", ";
+        os << "}";
+    }
 };
 
 template <typename T>

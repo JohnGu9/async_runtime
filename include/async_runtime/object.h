@@ -32,9 +32,6 @@ public:
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     static void detach(ref<T> &);
 
-    template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
-    static ref<T> create(_Args &&...);
-
     template <typename T0, typename T1>
     static bool identical(const option<T0> &, const option<T1> &);
     template <typename T0, typename T1>
@@ -94,18 +91,6 @@ void Object::detach(ref<T> &object)
 #include <iostream>
 #endif
 
-template <typename T, typename std::enable_if<!std::is_base_of<Object, T>::value>::type *, class... _Args>
-ref<T> Object::create(_Args &&...__args)
-{
-    // recommend set a break pointer here
-    // not-Object class should not create from this api
-
-#ifndef NDEBUG
-    std::cout << "Object::create call on a not Object derived class [" << typeid(T).name() << "]" << std::endl;
-#endif
-    return std::make_shared<T>(std::forward<_Args>(__args)...);
-}
-
 template <typename T0, typename T1>
 bool Object::identical(const option<T0> &lhs, const option<T1> &rhs)
 {
@@ -151,6 +136,9 @@ ref<T> Object::covariant()
     }
 }
 
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const ref<T> &);
+
 /**
  * @brief object.h come with [function.h] [string.h] [container.h]
  * that you do not need to include them alone
@@ -160,3 +148,10 @@ ref<T> Object::covariant()
 #include "basic/container.h"
 #include "basic/function.h"
 #include "basic/string.h"
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const ref<T> &object)
+{
+    object->toStringStream(os);
+    return os;
+}

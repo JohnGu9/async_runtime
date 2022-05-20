@@ -59,6 +59,14 @@ public:
         this->erase(iter);
         return true;
     }
+
+    void toStringStream(std::ostream &os) override
+    {
+        os << "Set { ";
+        for (const std::pair<Key, Value> &element : *this)
+            os << '{' << element.first << " : " << element.second << "}, ";
+        os << "}";
+    }
 };
 
 template <typename Key, typename Value>

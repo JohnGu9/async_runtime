@@ -7,7 +7,9 @@
 #include <processthreadsapi.h>
 #endif
 
-thread_local ref<String> ThreadUnit::threadName = "";
+thread_local static ref<String> _threadName = "";
+thread_local finalref<String> &ThreadUnit::threadName = _threadName;
+
 void ThreadUnit::setThreadName(ref<String> name)
 {
 #ifdef _WIN32
@@ -21,5 +23,5 @@ void ThreadUnit::setThreadName(ref<String> name)
 #elif __linux__
     pthread_setname_np(pthread_self(), name->c_str());
 #endif
-    threadName = name;
+    _threadName = name;
 }

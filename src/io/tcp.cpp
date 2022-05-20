@@ -33,7 +33,7 @@ public:
             delete _handle;
     }
 
-    bool isClosed() override { return _isClosed; }
+    bool isClosed() noexcept override { return _isClosed; }
 
     struct _shutdown_data
     {

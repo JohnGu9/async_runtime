@@ -29,8 +29,8 @@ public:
         Connection(ref<EventLoop> loop, int status) : _loop(loop), _status(status) {}
 
         virtual int status() noexcept { return _status; }
+        virtual bool isClosed() noexcept { return true; }
 
-        virtual bool isClosed() { throw NotImplementedError(); }
         virtual ref<Future<int>> shutdown() { throw NotImplementedError(); }
         virtual ref<Future<int>> closeReset() { throw NotImplementedError(); }
 

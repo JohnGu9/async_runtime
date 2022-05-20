@@ -30,11 +30,11 @@ public:
                           uv_buf_t *buf)
     {
         auto data = reinterpret_cast<_Udp *>(handle->data);
-        auto str = new std::string;
-        str->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
-        buf->base = const_cast<char *>(str->c_str());
+        auto buffer = new std::string;
+        buffer->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
+        buf->base = const_cast<char *>(buffer->c_str());
         buf->len = static_cast<ULONG>(suggested_size);
-        data->_str = str;
+        data->_buffer = buffer;
     }
 
     static void _recv_cb(uv_udp_t *handle,
@@ -44,10 +44,10 @@ public:
                          unsigned flags)
     {
         auto data = reinterpret_cast<_Udp *>(handle->data);
-        auto str = data->_str;
-        str->resize(nread);
-        ref<String> message(std::move(*str));
-        delete str;
+        auto buffer = data->_buffer;
+        buffer->resize(nread);
+        ref<String> message(std::move(*buffer));
+        delete buffer;
         data->_recv->sink(Object::create<RecvMessage>(addr, message));
     }
 
@@ -55,7 +55,7 @@ public:
 
     bool _isClosed = false;
     uv_udp_t _handle;
-    std::string *_str; // recv buffer
+    std::string *_buffer; // recv buffer
     ref<StreamController<ref<RecvMessage>>> _recv;
 
     _Udp(ref<EventLoop> lp) : super(lp), _recv(Object::create<StreamController<ref<RecvMessage>>>(lp))

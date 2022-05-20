@@ -200,7 +200,6 @@ public:
 ref<String> operator+(const char c, const ref<String> &string);
 ref<String> operator+(const char *const str, const ref<String> &string);
 std::ostream &operator<<(std::ostream &os, const ref<String> &str);
-std::istream &operator>>(std::istream &is, ref<String> &str);
 ref<String> getline(std::istream &os);
 
 template <class First, class... Rest>

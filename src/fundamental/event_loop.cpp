@@ -1,6 +1,5 @@
 #include <atomic>
 #include <list>
-#include <thread>
 extern "C"
 {
 #include <uv.h>
@@ -8,6 +7,7 @@ extern "C"
 
 #include "async_runtime/basic/lock.h"
 #include "async_runtime/fundamental/event_loop.h"
+#include "async_runtime/fundamental/thread.h"
 
 static void useless_cb(uv_async_t *handle)
 {
@@ -190,6 +190,13 @@ void EventLoop::run(Function<void()> fn)
     }
     else
     {
+#ifndef NDEBUG
+        {
+            std::stringstream ss("");
+            ss << "EventLoop[" << std::this_thread::get_id() << "]";
+            ThreadUnit::setThreadName(ss.str());
+        }
+#endif
         auto eventLoop = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
         uv_async_t async;
         uv_async_init(eventLoop, &async, event_loop_main);

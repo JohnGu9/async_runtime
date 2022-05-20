@@ -1,10 +1,7 @@
 #pragma once
 
+#include "../widgets/inherited_widget.h"
 #include "context.h"
-
-class Element;
-class Widget;
-class InheritedWidget;
 
 class BuildContext : public Context
 {
