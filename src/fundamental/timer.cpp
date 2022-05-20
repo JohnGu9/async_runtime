@@ -24,13 +24,13 @@ public:
         uv_timer_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()), &_handle);
         _handle.data = nullptr;
     }
-    void cancel() override;
+    void cancel() noexcept override;
 
     class _Delay;
     class _Periodic;
 };
 
-void Timer::_Timer::cancel()
+void Timer::_Timer::cancel() noexcept
 {
     if (_handle.data != nullptr)
     {

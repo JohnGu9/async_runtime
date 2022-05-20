@@ -21,6 +21,7 @@
 #include "async_runtime/widgets/root_widget.h"
 #include "async_runtime/widgets/stateful_widget.h"
 #include "async_runtime/widgets/stateless_widget.h"
+#include "async_runtime/widgets/stream_builder.h"
 #include "async_runtime/widgets/value_listenable_builder.h"
 #include "async_runtime/widgets/widget.h"
 

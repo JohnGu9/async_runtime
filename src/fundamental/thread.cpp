@@ -23,5 +23,6 @@ void ThreadUnit::setThreadName(ref<String> name)
 #elif __linux__
     pthread_setname_np(pthread_self(), name->c_str());
 #endif
+
     _threadName = name;
 }

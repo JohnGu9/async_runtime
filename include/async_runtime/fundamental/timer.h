@@ -12,7 +12,7 @@ public:
     static ref<Timer> periodic(Duration interval, Function<void(ref<Timer>)> fn, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Timer> periodic(Duration interval, Function<void()> fn, option<EventLoopGetterMixin> getter = nullptr);
     virtual void start() = 0;
-    virtual void cancel() = 0;
+    virtual void cancel() noexcept = 0;
 
     ref<EventLoop> eventLoop() override;
 

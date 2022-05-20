@@ -19,7 +19,7 @@ public:
         static ref<String> toString(Value value);
     };
 
-    virtual bool hasData() = 0;
+    virtual bool hasData() noexcept = 0;
 
 protected:
     AsyncSnapshot(ConnectionState::Value state) : _state(state) {}
@@ -39,26 +39,76 @@ template <typename T>
 class AsyncSnapshot : public AsyncSnapshot<std::nullptr_t>
 {
 public:
-    AsyncSnapshot()
-        : AsyncSnapshot<std::nullptr_t>(ConnectionState::none),
-          _hasData(false) {}
-    AsyncSnapshot(const T &data, ConnectionState::Value state = ConnectionState::done)
-        : AsyncSnapshot<std::nullptr_t>(state),
-          _data(data), data(_data),
-          _hasData(true) {}
-    AsyncSnapshot(T &&data, ConnectionState::Value state = ConnectionState::done)
-        : AsyncSnapshot<std::nullptr_t>(state),
-          _data(std::move(data)), data(_data),
-          _hasData(true) {}
-    AsyncSnapshot(ref<Future<T>> future)
-        : AsyncSnapshot<std::nullptr_t>(future->_completed ? ConnectionState::done : ConnectionState::active),
-          _hasData(future->_completed), data(future->_data) {}
+    static ref<AsyncSnapshot<T>> noData(ConnectionState::Value state = ConnectionState::done);
+    static ref<AsyncSnapshot<T>> fromFuture(ref<Future<T>> future);
+    static ref<AsyncSnapshot<T>> hasData(const T &data, ConnectionState::Value state = ConnectionState::done);
+    static ref<AsyncSnapshot<T>> hasData(T &&data, ConnectionState::Value state = ConnectionState::done);
+    static ref<AsyncSnapshot<T>> stateWrapper(ref<AsyncSnapshot<T>>, ConnectionState::Value state);
+
+    AsyncSnapshot(ConnectionState::Value state = ConnectionState::none)
+        : AsyncSnapshot<std::nullptr_t>(state) {}
+
+protected:
+    class _HasDataAsyncSnapshot;
+    class _FromFuture;
+    class _StateWrapper;
+
+public:
+    virtual const T &data() { throw std::runtime_error("AsyncSnapshot has no data"); };
+    bool hasData() noexcept override { return false; }
+};
+
+template <typename T>
+class AsyncSnapshot<T>::_HasDataAsyncSnapshot : public AsyncSnapshot<T>
+{
+    using super = AsyncSnapshot<T>;
 
 protected:
     T _data;
-    bool _hasData;
 
 public:
-    const T &data;
-    bool hasData() override { return _hasData; }
+    _HasDataAsyncSnapshot(const T &data, ConnectionState::Value state) : super(state), _data(data) {}
+    _HasDataAsyncSnapshot(T &&data, ConnectionState::Value state) : super(state), _data(std::move(data)) {}
+    const T &data() noexcept override { return _data; };
+    bool hasData() noexcept override { return true; }
 };
+
+template <typename T>
+class AsyncSnapshot<T>::_StateWrapper : public AsyncSnapshot<T>
+{
+    using super = AsyncSnapshot<T>;
+
+protected:
+    ref<AsyncSnapshot<T>> _data;
+
+public:
+    _StateWrapper(ref<AsyncSnapshot<T>> other, ConnectionState::Value state)
+        : super(state), _data(other) {}
+
+    const T &data() override { return _data->data(); };
+    bool hasData() noexcept override { return _data->hasData(); }
+};
+
+template <typename T>
+ref<AsyncSnapshot<T>> AsyncSnapshot<T>::noData(ConnectionState::Value state)
+{
+    return Object::create<AsyncSnapshot<T>>(state);
+}
+
+template <typename T>
+ref<AsyncSnapshot<T>> AsyncSnapshot<T>::hasData(const T &data, ConnectionState::Value state)
+{
+    return Object::create<AsyncSnapshot<T>::_HasDataAsyncSnapshot>(data, state);
+}
+
+template <typename T>
+ref<AsyncSnapshot<T>> AsyncSnapshot<T>::hasData(T &&data, ConnectionState::Value state)
+{
+    return Object::create<AsyncSnapshot<T>::_HasDataAsyncSnapshot>(std::move(data), state);
+}
+
+template <typename T>
+ref<AsyncSnapshot<T>> AsyncSnapshot<T>::stateWrapper(ref<AsyncSnapshot<T>> other, ConnectionState::Value state)
+{
+    return Object::create<AsyncSnapshot<T>::_StateWrapper>(other, state);
+}

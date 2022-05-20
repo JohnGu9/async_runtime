@@ -43,7 +43,7 @@ public:
 
 protected:
     virtual void sink(T value);
-    virtual void close();
+    virtual void close() noexcept;
 
     finalref<List<T>> _cache = Object::create<List<T>>();
     finalref<Set<ref<StreamSubscription<T>>>> _listeners = Object::create<Set<ref<StreamSubscription<T>>>>();
@@ -77,7 +77,7 @@ class StreamController : public Stream<T>
 public:
     StreamController(option<EventLoopGetterMixin> getter = nullptr) : super(getter) {}
     void sink(T value) override { super::sink(std::move(value)); }
-    void close() override { super::close(); }
+    void close() noexcept override { super::close(); }
 };
 
 template <typename T>
@@ -149,10 +149,12 @@ void Stream<T>::sink(T value)
 }
 
 template <typename T>
-void Stream<T>::close()
+void Stream<T>::close() noexcept
 {
-    assert(!_isClosed);
-    _isClosed = true;
-    if (_cache->empty() && !this->_onClose->completed())
-        this->rawClose();
+    if (!_isClosed)
+    {
+        _isClosed = true;
+        if (_cache->empty() && !this->_onClose->completed())
+            this->rawClose();
+    }
 }

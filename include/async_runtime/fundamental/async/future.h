@@ -319,3 +319,31 @@ protected:
     T _value;
     option<Future<T>> _future;
 };
+
+template <typename T>
+class AsyncSnapshot<T>::_FromFuture : public AsyncSnapshot<T>
+{
+    using super = AsyncSnapshot<T>;
+
+protected:
+    ref<Future<T>> _future;
+
+public:
+    _FromFuture(ref<Future<T>> future)
+        : super(future->completed() ? ConnectionState::done : ConnectionState::active), _future(future) {}
+
+    bool hasData() noexcept override { return _future->completed(); }
+    const T &data() override
+    {
+        if (this->hasData())
+            return _future->_data;
+        else
+            throw std::runtime_error("AsyncSnapshot has no data");
+    };
+};
+
+template <typename T>
+ref<AsyncSnapshot<T>> AsyncSnapshot<T>::fromFuture(ref<Future<T>> future)
+{
+    return Object::create<AsyncSnapshot<T>::_FromFuture>(future);
+}

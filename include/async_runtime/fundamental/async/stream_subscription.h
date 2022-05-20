@@ -9,8 +9,8 @@ class StreamSubscription<std::nullptr_t> : public virtual Object
 public:
     virtual void resume() = 0;
     virtual void pause() = 0;
-    virtual void cancel() = 0;
-    virtual bool alive() = 0;
+    virtual void cancel() noexcept = 0;
+    virtual bool alive() noexcept = 0;
 };
 
 template <typename T>
@@ -34,7 +34,7 @@ public:
         _pause(self());
     }
 
-    void cancel() override
+    void cancel() noexcept override
     {
         _alive = false;
         _canceled = true;
@@ -42,7 +42,7 @@ public:
         _listener = _useless;
     }
 
-    bool alive() override
+    bool alive() noexcept override
     {
         return !_canceled && _alive;
     }

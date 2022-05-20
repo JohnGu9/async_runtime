@@ -59,8 +59,7 @@ public:
     ref<Widget> build(ref<BuildContext> context) override
     {
         return this->widget->builder(
-            context,
-            Object::create<AsyncSnapshot<T>>(this->widget->future));
+            context, AsyncSnapshot<T>::fromFuture(this->widget->future));
     }
 };
 
