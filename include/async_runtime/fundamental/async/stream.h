@@ -22,8 +22,7 @@ public:
 
     virtual ~Stream()
     {
-        if (!this->_onClose->completed())
-            this->_onClose->complete(0);
+        assert(_isClosed && "Stream must be closed before dispose");
     }
 };
 

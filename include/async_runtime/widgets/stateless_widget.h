@@ -4,7 +4,6 @@
 
 class Element;
 class BuildContext;
-
 class StatelessWidget : public Widget
 {
 public:

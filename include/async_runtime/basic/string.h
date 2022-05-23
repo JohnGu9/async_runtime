@@ -78,8 +78,12 @@ public:
     class View;
 
     template <typename... Args>
+    static ref<String> formatFromString(std::stringstream &ss, const char *const str, Args &&...args);
+    template <typename... Args>
     static ref<String> formatFromString(const char *const str, Args &&...args);
 
+    template <typename Iterator, typename... Args>
+    static ref<String> formatFromIterator(std::stringstream &ss, const Iterator begin, const Iterator end, Args &&...args);
     template <typename Iterator, typename... Args>
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
@@ -235,14 +239,20 @@ void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::st
 }
 
 template <typename... Args>
-ref<String> String::formatFromString(const char *const str, Args &&...args)
+ref<String> String::formatFromString(std::stringstream &ss, const char *const str, Args &&...args)
 {
-    std::stringstream ss;
     size_t lastIndex = 0;
-    _unwrapPackToCstr(str, lastIndex, ss, args...);
+    String::_unwrapPackToCstr(str, lastIndex, ss, args...);
     if (str[lastIndex] != '\0')
         ss << std::string(&(str[lastIndex]));
     return ss.str();
+}
+
+template <typename... Args>
+ref<String> String::formatFromString(const char *const str, Args &&...args)
+{
+    std::stringstream ss;
+    return String::formatFromString(ss, str, std::forward<Args>(args)...);
 }
 
 template <typename Iterator, class First, class... Rest>
@@ -279,14 +289,20 @@ void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std
 }
 
 template <typename Iterator, typename... Args>
-ref<String> String::formatFromIterator(const Iterator begin, const Iterator end, Args &&...args)
+ref<String> String::formatFromIterator(std::stringstream &ss, const Iterator begin, const Iterator end, Args &&...args)
 {
-    std::stringstream ss;
     Iterator lastIndex = begin;
-    _unwrapPackToIterator(lastIndex, end, ss, args...);
+    String::_unwrapPackToIterator(lastIndex, end, ss, args...);
     if (lastIndex != end)
         ss << std::string(lastIndex, end);
     return ss.str();
+}
+
+template <typename Iterator, typename... Args>
+ref<String> String::formatFromIterator(const Iterator begin, const Iterator end, Args &&...args)
+{
+    std::stringstream ss;
+    return String::formatFromIterator(ss, begin, end, std::forward<Args>(args)...);
 }
 
 template <class First, class... Rest>

@@ -17,7 +17,7 @@ static void task(ref<Widget> widget)
     info_print("Debug mode on");
     info_print("Root widget is " << widget->toString());
 #else
-    printf("\033c");
+    printf("\033c"); // clear console
     info_print("Debug mode off");
 #endif
 
@@ -25,8 +25,10 @@ static void task(ref<Widget> widget)
 
     auto handle = EventLoop::Handle::create();
     auto completer = Object::create<Completer<int>>();
-    completer->then<int>([handle](const int &)
-                         { handle->dispose(); return 0; });
+    completer->then<int>([handle](const int &) { //
+        handle->dispose();
+        return 0;
+    });
 
     ref<RootElement> root = Object::create<RootElement>(widget, [completer] { //
         if (!completer->completed())
@@ -39,4 +41,12 @@ static void task(ref<Widget> widget)
         return 0;
     });
     root->attach();
+}
+
+namespace _async_runtime
+{
+    const char *debug_logger_type = "DEBUG";
+    const char *info_logger_type = "INFO ";
+    const char *warning_logger_type = "WARNING";
+    const char *error_logger_type = "ERROR";
 }

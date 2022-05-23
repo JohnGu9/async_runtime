@@ -5,6 +5,8 @@
 #include "async_runtime/widgets/logger_widget.h"
 #include "async_runtime/widgets/root_widget.h"
 
+#include <iostream>
+
 class RootElement::RootWrapper : public StatelessWidget
 {
     ref<Widget> child;
@@ -30,7 +32,7 @@ class _StdoutLoggerHandler : public LoggerHandler
     ref<Future<bool>> _write(ref<String> str, bool wrap)
     {
         lateref<EventLoop> current;
-        if (EventLoop::runningEventLoop.isNotNull(current) && _loop == current)
+        if (EventLoop::runningEventLoop == _loop)
         {
             // call on one event loop
             // no need to sync
@@ -42,7 +44,7 @@ class _StdoutLoggerHandler : public LoggerHandler
         else
         {
             // call from another event loop
-            EventLoop::runningEventLoop.assertNotNull();
+            ref<EventLoop> current = EventLoop::runningEventLoop.assertNotNull();
             auto completer = Object::create<Completer<bool>>(current);
             _loop->callSoonThreadSafe([str, current, completer, wrap] //
                                       {                               //

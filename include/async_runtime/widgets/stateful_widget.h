@@ -23,33 +23,36 @@ class State<StatefulWidget> : public virtual Object, public EventLoopGetterMixin
     template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
     friend class State;
 
-    ref<EventLoop> _loop;
-    ref<EventLoop> eventLoop() override { return this->_loop; }
-
-    // @mustCallSuper
-    virtual void initState() {}
-    // @mustCallSuper
-    virtual void didWidgetUpdated(ref<StatefulWidget> oldWidget) {}
-    // @mustCallSuper
-    virtual void didDependenceChanged() {}
-    // @mustCallSuper
-    virtual void dispose() {}
-
-    virtual ref<Widget> build(ref<BuildContext> context) = 0;
-
-    bool _dirty = false;
     bool _mounted = false;
+    ref<EventLoop> _loop;
+    ref<List<Function<void()>>> _setStateCallbacks;
     lateref<StatefulElement> _element;
     lateref<BuildContext> _context;
 
+    virtual void initState();
+    virtual void dispose();
+    void beforeBuild(); // call by [StatefulElement] for mark state is not dirty any more
+
+    virtual void didDependenceChanged() = 0;
+    virtual void callDidWidgetUpdated(ref<StatefulWidget> oldWidget) = 0;
+    virtual ref<Widget> build(ref<BuildContext> context) = 0;
+
 protected:
-    // @immutable
-    void setState(Function<void()> fn);
     const bool &mounted = _mounted;
     const ref<BuildContext> &context = _context;
 
+    void setState(Function<void()> fn);
+    ref<EventLoop> eventLoop() override { return this->_loop; }
+
 public:
-    State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)) {}
+    State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)),
+              _setStateCallbacks(List<Function<void()>>::create()) {}
+    ~State()
+    {
+#ifndef NDEBUG
+        assert(_mounted == false && "[dispose] must to call super::dispose");
+#endif
+    }
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
@@ -59,32 +62,75 @@ class State : public State<StatefulWidget>
     lateref<T> _widget;
 
 protected:
-    // @mustCallSuper
+    /**
+     * @brief mustCallSuper
+     * [the hook invoke when widget mounting]
+     *
+     * @example
+     * void initState() override
+     * {
+     *      super::initState(); // call before your custom actions
+     *      ......
+     * }
+     *
+     */
     void initState() override
     {
         super::initState();
         this->_widget = this->_element->_statefulWidget->template covariant<T>();
     }
 
-    // @mustCallSuper
+    /**
+     * @brief mustCallSuper
+     * [the hook invoke when widget change]
+     *
+     * @example
+     * void didWidgetUpdated(ref<T> oldWidget) override
+     * {
+     *      super::didWidgetUpdated(oldWidget);
+     *      ......
+     * }
+     *
+     */
     virtual void didWidgetUpdated(ref<T> oldWidget) {}
 
-    // @mustCallSuper
-    void didDependenceChanged() override { super::didDependenceChanged(); }
+    /**
+     * @brief mustCallSuper
+     * [the hook invoke when context change or when widget mounting]
+     *
+     * @example
+     * void didDependenceChanged() override
+     * {
+     *      super::didDependenceChanged();
+     *      ......
+     * }
+     *
+     */
+    void didDependenceChanged() override {}
 
-    // @mustCallSuper
+    /**
+     * @brief  mustCallSuper
+     * [the hook invoke when widget unmounting]
+     *
+     * @example
+     * void dispose() override
+     * {
+     *      ......
+     *      super::dispose(); // call after your custom actions
+     * }
+     *
+     */
     void dispose() override
     {
         Object::detach(this->_widget);
         super::dispose();
     }
 
-    const ref<T> &widget = _widget;
+    finalref<T> &widget = _widget;
 
 private:
-    void didWidgetUpdated(ref<StatefulWidget> oldWidget) final
+    void callDidWidgetUpdated(ref<StatefulWidget> oldWidget) override final
     {
-        super::didWidgetUpdated(oldWidget);
         this->_widget = this->_element->_statefulWidget->template covariant<T>();
         this->didWidgetUpdated(oldWidget->covariant<T>());
     }

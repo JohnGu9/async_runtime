@@ -3,7 +3,6 @@
 #include "../object.h"
 #include "state.h"
 
-class Widget;
 class Element;
 class BuildContext;
 
@@ -11,22 +10,17 @@ class Key : public virtual Object
 {
 public:
     virtual bool equal(option<Key> other) = 0;
-    virtual void setElement(ref<Element> element);
-    virtual void dispose();
-    virtual option<const Widget> getCurrentWidget();
-
-protected:
-    virtual option<Element> getElement();
-
-private:
-    weakref<Element> _element;
+    virtual void setElement(ref<Element> element) {}
+    virtual void dispose() {}
 };
 
 template <typename T>
 class ValueKey : public Key
 {
 public:
-    ValueKey(T &value) : _value(value) {}
+    ValueKey(const T &value) : _value(value) {}
+    ValueKey(T &&value) : _value(std::move(value)) {}
+
     bool equal(option<Key> other) override
     {
         lateref<Key> nonNullOther;
@@ -35,7 +29,7 @@ public:
             lateref<ValueKey<T>> castedPointer;
             if (nonNullOther->cast<ValueKey<T>>().isNotNull(castedPointer))
             {
-                return castedPointer->_value == this->_value;
+                return this->_value == castedPointer->_value;
             }
         }
         return false;
@@ -45,6 +39,7 @@ protected:
     T _value;
 };
 
+class Widget;
 class GlobalKey : public Key
 {
 public:
@@ -61,8 +56,15 @@ public:
         }
     }
 
+    void setElement(ref<Element> element) override;
+    void dispose() override;
+
+    virtual option<Widget> getCurrentWidget();
     virtual option<BuildContext> getCurrentContext();
     virtual option<State<StatefulWidget>> getCurrentState();
+
+protected:
+    weakref<Element> _element;
 };
 
 class GlobalObjectKey : public GlobalKey

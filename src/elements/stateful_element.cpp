@@ -53,10 +53,8 @@ StatefulElement::StatefulElement(ref<StatefulWidget> widget)
 void StatefulElement::attach()
 {
     this->_lifeCycle = StatefulElement::LifeCycle::building;
-    assert(this->_state->_mounted == false && "This [State] class mount twice is not allowed. User should not reuse [State] class or manually call [initState]");
     Element::attach();
     this->_state->_element = self();
-    this->_state->_mounted = true;
     this->_state->initState();
     this->_state->_context = self(); // context only available after initState
     this->_state->didDependenceChanged();
@@ -68,10 +66,8 @@ void StatefulElement::attach()
 void StatefulElement::detach()
 {
     this->_lifeCycle = StatefulElement::LifeCycle::unmount;
-    assert(this->_state->_mounted && "This [State] class dispose more then twice is not allowed. User should not reuse [State] class or manually call [dispose]");
     this->detachElement();
     this->_state->dispose();
-    this->_state->_mounted = false;
 
     // release ref avoid ref each other
     static finalref<StatefulElement> _invalidElement = Object::create<StatefulElement>(Object::create<StatefulElement::InvalidWidget>());
@@ -83,7 +79,7 @@ void StatefulElement::detach()
 void StatefulElement::build()
 {
     this->_lifeCycle = StatefulElement::LifeCycle::building;
-    assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
+    this->_state->beforeBuild();
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     ref<Widget> oldWidget = this->_childElement->getWidget();
     if (Object::identical(widget, oldWidget))
@@ -100,31 +96,31 @@ void StatefulElement::build()
 
 void StatefulElement::update(ref<Widget> newWidget)
 {
-    assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
     ref<StatefulWidget> oldWidget = this->_statefulWidget;
     this->_statefulWidget = newWidget->covariant<StatefulWidget>();
-    this->_state->didWidgetUpdated(oldWidget);
+    this->_state->callDidWidgetUpdated(oldWidget);
     Element::update(newWidget);
 }
 
 void StatefulElement::notify(ref<Widget> newWidget)
 {
+    this->_lifeCycle = StatefulElement::LifeCycle::building;
     {
-        assert(this->_state->_mounted && "This [State] class has been disposed. User should not reuse [State] class or manually call [dispose]");
         Element::notify(newWidget);
         ref<StatefulWidget> oldWidget = this->_statefulWidget;
         this->_statefulWidget = newWidget->covariant<StatefulWidget>();
-        this->_state->didWidgetUpdated(oldWidget);
+        this->_state->callDidWidgetUpdated(oldWidget);
         this->_state->didDependenceChanged();
     }
-
-    this->_lifeCycle = StatefulElement::LifeCycle::building;
-    ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
-    ref<Widget> oldWidget = this->_childElement->getWidget();
-    if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
-        this->_childElement->notify(widget);
-    else
-        this->reattachElement(widget->createElement());
+    {
+        this->_state->beforeBuild();
+        ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
+        ref<Widget> oldWidget = this->_childElement->getWidget();
+        if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
+            this->_childElement->notify(widget);
+        else
+            this->reattachElement(widget->createElement());
+    }
     this->_lifeCycle = StatefulElement::LifeCycle::mounted;
 }
 

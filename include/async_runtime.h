@@ -7,6 +7,8 @@
 #include "async_runtime/fundamental/thread_pool.h"
 #include "async_runtime/fundamental/timer.h"
 
+#include <iostream>
+
 // maybe you like to include widgets by your own
 #ifndef ASYNC_RUNTIME_NO_EXPORT_WIDGETS
 
@@ -43,7 +45,7 @@ namespace _async_runtime
 {
     /**
      * @brief
-     * reserve file name only without file's full-path
+     * clip file name from file's full-path
      *
      * @example
      * /usr/local/async_runtime_test/async_runtime/src/object.cpp
@@ -81,13 +83,33 @@ namespace _async_runtime
 #define ASYNC_RUNTIME_TIMESTAMP_FORMAT "%F %T"
 #endif
 
-#ifndef ASYNC_RUNTIME_BUILD_TIMEBUF
+// for std::put_time
+#include <iomanip>
+
+namespace _async_runtime
+{
+    extern const char *debug_logger_type;
+    extern const char *info_logger_type;
+    extern const char *warning_logger_type;
+    extern const char *error_logger_type;
+
+    template <class... Args>
+    inline constexpr std::size_t variable_arguments_amount(Args &&...) { return sizeof...(Args); }
+
+    inline std::stringstream &stringstream_setup(std::stringstream &ss)
+    {
+        struct tm timebuf;
+        time_t t = time(nullptr);
 #ifdef _WIN32
-#define ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__) localtime_s(&__buf__, &__t__)
+        localtime_s(&timebuf, &t);
 #else
-#define ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__) localtime_r(&__t__, &__buf__)
+        localtime_r(&t, &timebuf);
 #endif
-#endif
+        ss << std::put_time(&timebuf, ASYNC_RUNTIME_TIMESTAMP_FORMAT);
+        
+        return ss;
+    }
+}
 
 #ifndef ASYNC_RUNTIME_OSTREAM_REDIRECT
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
@@ -97,38 +119,35 @@ namespace _async_runtime
 #endif
 #endif
 
-#include <iomanip>
-
-#ifndef _ASYNC_RUNTIME_LOG_FORMAT
-#define _ASYNC_RUNTIME_LOG_FORMAT(__type__, __format__, ...)                                                                                                                                                 \
-    {                                                                                                                                                                                                        \
-        std::stringstream __ss__;                                                                                                                                                                            \
-        struct tm __buf__;                                                                                                                                                                                   \
-        time_t __t__ = time(nullptr);                                                                                                                                                                        \
-        ASYNC_RUNTIME_BUILD_TIMEBUF(__t__, __buf__);                                                                                                                                                         \
-        __ss__ << std::put_time(&__buf__, ASYNC_RUNTIME_TIMESTAMP_FORMAT) << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT << __format__ << std::endl; \
-        Logger::of(context)->write(ref<String>(__ss__.str())->format(__VA_ARGS__));                                                                                                                          \
+#ifndef ASYNC_RUNTIME_LOG_FORMAT
+#define ASYNC_RUNTIME_LOG_FORMAT(__type__, __format__, ...)                                                        \
+    {                                                                                                              \
+        std::stringstream __stringstream__("");                                                                    \
+        _async_runtime::stringstream_setup(__stringstream__)                                                       \
+            << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT \
+            << __format__ << std::endl;                                                                            \
+        Logger::of(context)->write(String::formatFromString(__stringstream__.str().c_str(), __VA_ARGS__));         \
     }
 #endif
 
 #ifndef LogDebug
 #ifndef NDEBUG
-#define LogDebug(__format__, ...) _ASYNC_RUNTIME_LOG_FORMAT("DEBUG", __format__, __VA_ARGS__)
+#define LogDebug(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::debug_logger_type, __format__, __VA_ARGS__)
 #else
 #define LogDebug(__format__, ...) ((void)0)
 #endif
 #endif
 
 #ifndef LogInfo
-#define LogInfo(__format__, ...) _ASYNC_RUNTIME_LOG_FORMAT("INFO ", __format__, __VA_ARGS__)
+#define LogInfo(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::info_logger_type, __format__, __VA_ARGS__)
 #endif
 
 #ifndef LogWarning
-#define LogWarning(__format__, ...) _ASYNC_RUNTIME_LOG_FORMAT("WARNING", __format__, __VA_ARGS__)
+#define LogWarning(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::warning_logger_type, __format__, __VA_ARGS__)
 #endif
 
 #ifndef LogError
-#define LogError(__format__, ...) _ASYNC_RUNTIME_LOG_FORMAT("ERROR", __format__, __VA_ARGS__)
+#define LogError(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::error_logger_type, __format__, __VA_ARGS__)
 #endif
 
-#endif
+#endif ASYNC_RUNTIME_NO_EXPORT_WIDGETS

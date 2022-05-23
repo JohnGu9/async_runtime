@@ -4,8 +4,6 @@
 #include "single_child_element.h"
 #include <atomic>
 
-class GlobalKey;
-class ThreadPool;
 class LoggerHandler;
 class RootElement : public SingleChildElement
 {
