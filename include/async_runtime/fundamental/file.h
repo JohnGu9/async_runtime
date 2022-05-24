@@ -63,8 +63,10 @@ public:
      */
     static ref<Future<ref<File>>> fromPath(ref<String> path, OpenFlags flags, OpenMode mode, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Future<int>> unlink(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
+
     virtual ~File() {}
 
+    virtual ref<String> path() noexcept { return this->_path; }
     virtual int error() noexcept { return code; }
     virtual int flags() { throw NotImplementedError(); }
     virtual int mode() { throw NotImplementedError(); }
@@ -80,7 +82,7 @@ public:
     virtual bool isClosed() noexcept { return true; }
     virtual ref<Future<int>> close()
     {
-        return Future<int>::value(0);
+        return Future<int>::value(0, _loop);
     }
 
     ref<EventLoop> eventLoop() override { return _loop; }

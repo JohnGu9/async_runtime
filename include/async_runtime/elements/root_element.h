@@ -9,6 +9,9 @@ class RootElement : public SingleChildElement
 {
     friend class RootWidget;
     class RootWrapper;
+    class StdoutLoggerHandler;
+
+    friend ref<LoggerHandler> coutLoggerBuilder();
 
 public:
     finalref<Fn<void()>> exit;

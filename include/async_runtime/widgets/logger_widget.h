@@ -59,7 +59,7 @@ public:
 
     // support hot switch
     static ref<Widget> cout(ref<Widget> child, option<Key> key = nullptr);
-    static ref<Widget> file(ref<String> path, ref<Widget> child, option<Key> key = nullptr);
+    static ref<Widget> file(ref<Widget> child, ref<String> path, option<Key> key = nullptr);
     static ref<Widget> block(ref<Widget> child, option<Key> key = nullptr);
 
     Logger(ref<Widget> child, ref<LoggerHandler> handler, option<Key> key = nullptr);
@@ -67,13 +67,4 @@ public:
 
 protected:
     ref<LoggerHandler> _handler;
-};
-
-class StdoutLogger : public StatefulWidget
-{
-public:
-    static ref<LoggerHandler> of(ref<BuildContext> context);
-    StdoutLogger(ref<Widget> child, option<Key> key = nullptr);
-    ref<State<StatefulWidget>> createState() override;
-    ref<Widget> child;
 };

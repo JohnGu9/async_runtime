@@ -24,7 +24,7 @@ public:
     }
 };
 
-class _StdoutLoggerHandler : public LoggerHandler
+class RootElement::StdoutLoggerHandler : public LoggerHandler
 {
     ref<EventLoop> _loop;
     ref<Future<bool>> _future;
@@ -59,7 +59,7 @@ class _StdoutLoggerHandler : public LoggerHandler
     }
 
 public:
-    _StdoutLoggerHandler()
+    StdoutLoggerHandler()
         : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)),
           _future(Future<bool>::value(true, _loop)) {}
 
@@ -70,7 +70,7 @@ public:
 
 static ref<LoggerHandler> coutLoggerBuilder()
 {
-    static finalref<LoggerHandler> singleton = Object::create<_StdoutLoggerHandler>();
+    static finalref<LoggerHandler> singleton = Object::create<RootElement::StdoutLoggerHandler>();
     return singleton;
 }
 

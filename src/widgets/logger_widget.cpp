@@ -62,11 +62,11 @@ public:
             : _file(File::fromPath(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR, getter))
         {
             _file->then([onError](ref<File> file) //
-                               {                         //
-                                   lateref<File::Error> error;
-                                   if (file->cast<File::Error>().isNotNull(error))
-                                       onError(error);
-                               });
+                        {                         //
+                            lateref<File::Error> error;
+                            if (file->cast<File::Error>().isNotNull(error))
+                                onError(error);
+                        });
         }
 
         ref<Future<bool>> write(ref<String> str) override
@@ -185,7 +185,7 @@ ref<Widget> Logger::cout(ref<Widget> child, option<Key> key)
     return Object::create<_Logger>(child, "", key);
 }
 
-ref<Widget> Logger::file(ref<String> path, ref<Widget> child, option<Key> key)
+ref<Widget> Logger::file(ref<Widget> child, ref<String> path, option<Key> key)
 {
     assert(path->isNotEmpty() && "path can't be empty");
     return Object::create<_Logger>(child, path, key);
