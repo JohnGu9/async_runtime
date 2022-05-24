@@ -94,7 +94,7 @@ namespace _async_runtime
     extern const char *error_logger_type;
 
     template <class... Args>
-    inline constexpr std::size_t variable_arguments_amount(Args &&...) { return sizeof...(Args); }
+    inline constexpr size_t variable_arguments_amount(Args &&...) { return sizeof...(Args); }
 
     inline std::stringstream &stringstream_setup(std::stringstream &ss)
     {

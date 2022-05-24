@@ -66,7 +66,6 @@ public:
 
     virtual ~File() {}
 
-    virtual ref<String> path() noexcept { return this->_path; }
     virtual int error() noexcept { return code; }
     virtual int flags() { throw NotImplementedError(); }
     virtual int mode() { throw NotImplementedError(); }

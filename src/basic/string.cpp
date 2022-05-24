@@ -21,60 +21,86 @@ bool operator!=(const option<String> &lhs, option<String> rhs)
     return !(lhs == rhs);
 }
 
+bool ref<String>::operator==(const char *const other) const
+{
+    const auto len = strlen(other);
+    if (len != (*this)->length())
+        return false;
+    return strncmp((*this)->data(), other, len) == 0;
+}
+
+bool ref<String>::operator==(const std::string &other) const
+{
+    if ((*this)->length() != other.length())
+        return false;
+    return std::equal((*this)->begin(), (*this)->end(), other.begin());
+}
+
+bool ref<String>::operator==(std::string &&other) const
+{
+    if ((*this)->length() != other.length())
+        return false;
+    return std::equal((*this)->begin(), (*this)->end(), other.begin());
+}
+
 bool ref<String>::operator==(const ref<String> &other) const
 {
-    if (this->get() == other.get())
+    if (this->get() == other.get()) // [[unlikely]]
         return true;
     if ((*this)->length() != other->length())
         return false;
     return std::equal((*this)->begin(), (*this)->end(), other->begin());
 }
 
-ref<String> ref<String>::operator+(const char c) const
+ref<String> operator+(const char c, ref<String> string)
 {
-    auto res = *(*this) + c;
-    return res;
+    return String::connect(c, string);
 }
 
-ref<String> ref<String>::operator+(const char *const str) const
+ref<String> operator+(const char *const str, ref<String> string)
 {
-    auto res = *(*this) + str;
-    return res;
+    return String::connect(str, string);
 }
 
-ref<String> ref<String>::operator+(const std::string &other) const
+ref<String> operator+(const std::string &str, ref<String> string)
 {
-    auto res = *(*this) + other;
-    return res;
+    return String::connect(str, string);
 }
 
-ref<String> ref<String>::operator+(std::string &&other) const
+ref<String> operator+(std::string &&str, ref<String> string)
 {
-    auto res = *(*this) + other;
-    return res;
+    return String::connect(str, string);
 }
 
-ref<String> ref<String>::operator+(const ref<String> &other) const
+size_t String::find(ref<String> pattern, size_t start) const
 {
-    auto res = *(*this) + *other;
-    return res;
+    return std::string::find(pattern->data(), start, pattern->length());
 }
 
-ref<String> ref<String>::operator+(ref<Object> object) const
+size_t String::find_first_of(ref<String> pattern, size_t start) const
 {
-    auto res = *(*this) + *(object->toString());
-    return res;
+    return std::string::find_first_of(pattern->data(), start, pattern->length());
 }
 
-size_t String::find(ref<String> pattern, size_t start) const { return std::string::find(*pattern, start); }
+size_t String::find_first_not_of(ref<String> pattern, size_t start) const
+{
+    return std::string::find_first_not_of(pattern->data(), start, pattern->length());
+}
 
-size_t String::find_first_of(ref<String> pattern, size_t start) const { return std::string::find_first_of(*pattern, start); }
+size_t String::find_last_of(ref<String> pattern, size_t start) const
+{
+    return std::string::find_last_of(pattern->data(), start, pattern->length());
+}
 
-size_t String::find_first_not_of(ref<String> pattern, size_t start) const { return std::string::find_first_not_of(*pattern, start); }
+size_t String::find_last_not_of(ref<String> pattern, size_t start) const
+{
+    return std::string::find_last_not_of(pattern->data(), start, pattern->length());
+}
 
-size_t String::find_last_of(ref<String> pattern, size_t start) const { return std::string::find_last_of(*pattern, start); }
-
-size_t String::find_last_not_of(ref<String> pattern, size_t start) const { return std::string::find_last_not_of(*pattern, start); }
+std::string String::toStdString() const
+{
+    return std::string(this->data(), this->length());
+}
 
 bool String::isEmpty() const
 {
@@ -109,15 +135,15 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
         auto index = this->find(pattern, lastIndex);
         if (index == String::npos)
         {
-            auto start = std::string::begin() + lastIndex;
-            auto end = std::string::end();
-            if (start != end)
-                list->emplace_back(std::string(start, end));
+            auto start = lastIndex;
+            auto length = this->length() - lastIndex;
+            if (length > 0)
+                list->emplace_back(this->substr(lastIndex, length));
             break;
         }
         else if (index != lastIndex)
         {
-            list->emplace_back(std::string(std::string::begin() + lastIndex, std::string::begin() + index));
+            list->emplace_back(this->substr(lastIndex, index - lastIndex));
         }
         lastIndex = index + pattern->length();
     }
@@ -126,34 +152,23 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
 
 ref<String> String::substr(size_t begin, size_t length) const
 {
-    return std::make_shared<String>(std::string::substr(begin, length));
+    auto self = Object::cast<>(const_cast<String *>(this));
+    return Object::create<String::View>(self, begin, std::min(length + begin, this->length()));
 }
 
 std::ostream &operator<<(std::ostream &os, const ref<String> &str)
 {
-    return os << *str;
+    return os.write(str->data(), str->length());
 }
 
 std::ostream &operator<<(std::ostream &os, ref<String> &&str)
 {
-    return os << *str;
+    return os.write(str->data(), str->length());
 }
 
-ref<String> getline(std::istream &is)
+ref<String> String::getline(std::istream &is)
 {
-    std::shared_ptr<String> ptr = std::make_shared<String>();
-    std::getline(is, *ptr);
-    return ref<String>(ptr);
-}
-
-ref<String> operator+(const char c, const ref<String> &string)
-{
-    auto res = std::to_string(c) + *string;
-    return res;
-}
-
-ref<String> operator+(const char *const str, const ref<String> &string)
-{
-    auto res = std::string(str) + *string;
-    return res;
+    std::string str;
+    std::getline(is, str);
+    return str;
 }
