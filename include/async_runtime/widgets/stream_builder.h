@@ -73,7 +73,11 @@ class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
         }
     }
 
-    void dispose() override { _subscription->cancel(); }
+    void dispose() override
+    {
+        _subscription->cancel();
+        super::dispose();
+    }
 
     ref<Widget> build(ref<BuildContext> context) override
     {

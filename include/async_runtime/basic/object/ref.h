@@ -5,6 +5,7 @@ template <typename T>
 class ref : public _async_runtime::RefImplement<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+
     template <typename X, typename Y>
     friend bool operator==(const ref<X> &object0, ref<Y> object1);
     template <typename X, typename Y>
