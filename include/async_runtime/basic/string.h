@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../object.h"
 #include "container.h"
-#include "ref.h"
+#include "object.h"
 #include <deque>
 #include <limits>
 #include <memory>
@@ -314,8 +313,8 @@ void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::os
         {
             if (str[index++] == '}')
             {
-                ss << std::string(&(str[lastIndex]), index - lastIndex - 2)
-                   << first;
+                ss.write(&(str[lastIndex]), index - lastIndex - 2)
+                    << first;
                 lastIndex = index;
                 _unwrapPackToCstr(str, lastIndex, ss, rest...);
                 return;
@@ -333,7 +332,7 @@ ref<String> String::formatFromString(std::stringstream &ss, const char *const st
 #endif
     String::_unwrapPackToCstr(str, lastIndex, ss, args...);
     if (str[lastIndex] != '\0')
-        ss << std::string(&(str[lastIndex]));
+        ss << &(str[lastIndex]);
     return ss.str();
 }
 
@@ -361,8 +360,9 @@ void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std
         {
             if (*(++index) == '}')
             {
-                ss << std::string(lastIndex, --index)
-                   << first;
+                --index;
+                ss.write(&(*lastIndex), index - lastIndex)
+                    << first;
                 lastIndex = index;
                 ++ ++lastIndex; // lastIndex = lastIndex + 2;
                 _unwrapPackToIterator(lastIndex, end, ss, rest...);
@@ -383,7 +383,7 @@ ref<String> String::formatFromIterator(std::stringstream &ss, const Iterator beg
 #endif
     String::_unwrapPackToIterator(lastIndex, end, ss, args...);
     if (lastIndex != end)
-        ss << std::string(lastIndex, end);
+        ss.write(&(*lastIndex), end - lastIndex);
     return ss.str();
 }
 
@@ -407,11 +407,7 @@ void String::_unwrapPack(size_t &lastIndex, std::ostream &ss, const First &first
 #endif
         return;
     }
-    ss << std::string::substr(lastIndex, index - lastIndex)
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-       << std::boolalpha
-#endif
-       << first;
+    ss.write(this->data() + lastIndex, index - lastIndex) << first;
     lastIndex = index + 2;
     _unwrapPack(lastIndex, ss, rest...);
 }
@@ -426,6 +422,9 @@ template <typename... Args>
 ref<String> String::format(Args &&...args)
 {
     std::stringstream ss;
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+    ss << std::boolalpha;
+#endif
     size_t lastIndex = 0;
     _unwrapPack(lastIndex, ss, args...);
     if (lastIndex < this->length())
@@ -437,36 +436,3 @@ template <>
 bool operator==(const option<String> &object0, option<String> object1);
 template <>
 bool operator!=(const option<String> &object0, option<String> object1);
-
-namespace std
-{
-    template <>
-    struct hash<::ref<String>>
-    {
-        std::size_t operator()(const ::ref<String> &other) const
-        {
-            static const auto hs = hash<std::string>();
-            return hs(static_cast<std::string>(*other));
-        }
-    };
-
-    template <>
-    struct hash<::option<String>>
-    {
-        std::size_t operator()(const ::option<String> &other) const
-        {
-            lateref<String> str;
-            if (other.isNotNull(str))
-            {
-                static const auto hs = hash<::ref<String>>();
-                return hs(str);
-            }
-            else
-            {
-                static const auto result = hash<std::shared_ptr<String>>()(nullptr);
-                return result;
-            }
-        }
-    };
-
-};

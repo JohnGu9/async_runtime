@@ -1,0 +1,83 @@
+/**
+ * @brief
+ * The mechanism of nullsafety system
+ * Implement base on std::shared_ptr and std::weak_ptr (don't be confused by std::ref)
+ * Thread safe and memory safe
+ *
+ *
+ * inherits layout:
+ *
+ * std::shared_ptr
+ *       ^
+ *       |
+ *  _async_runtime::OptionImplement
+ *       ^
+ *       |
+ *  option
+ *
+ *
+ * std::shared_ptr
+ *       ^
+ *       |
+ *  _async_runtime::RefImplent
+ *       ^
+ *       |
+ *  ref
+ *       ^
+ *       |
+ *  lateref
+ *
+ *
+ *  std::weak_ptr
+ *       ^
+ *       |
+ *  weakref
+ *
+ *
+ * @example
+ * ref<Object> object = Object::create<Object>(); // create a object through Object::create
+ * ref<Object> refOfObject = object; // another ref of object
+ *
+ * option<Object> opt = object; // nullable ref and lock the object resource
+ * opt = nullptr; // release ref and unlock the resource
+ *
+ * weakref<Object> wr = object; // weak ref that point toward a ref that doesn't lock the resource
+ *
+ * refOfObject->function(); // only ref call directly call member. option and weakref can not.
+ * // only way option and weakref call member is to change option and weakref to ref
+ *
+ *
+ * // change option(/weakref) to ref through ToRefMixin api
+ * object = opt.assertNotNull(); // assert is not a good option change that may cause error
+ *
+ * if (opt.isNotNull(object)) { // null check is a good option
+ *     // object is not null here
+ * }
+ *
+ * object = opt.isNotNullElse([]() ->ref<Object> { return Object::create<Object>(); }) // if opt is not null change opt to ref, otherwise create a new Object
+ * object = opt.isNotNullElse(Object::create<Object>); another syntax
+ *
+ */
+
+#pragma once
+#include "object/declare.h"
+
+#include "object/option_implement.h"
+#include "object/ref_implement.h"
+
+#include "object/lateref.h"
+#include "object/ref.h"
+
+#include "object/object.h"
+
+#include "container.h"
+#include "function.h"
+#include "string.h"
+
+#include "object/option.h"
+#include "object/weak_ref.h"
+
+#include "object/hash.h"
+
+#include "object/cross_implement.h"
+#include "object/operators.h"

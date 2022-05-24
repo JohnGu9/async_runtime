@@ -1,7 +1,7 @@
 #pragma once
 
 #include <thread>
-#include "../object.h"
+#include "../basic/object.h"
 
 using Thread = std::thread;
 

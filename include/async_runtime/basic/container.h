@@ -1,6 +1,7 @@
 #pragma once
 
 #include "function.h"
+#include "object.h"
 
 template <typename T>
 class Iterable : public virtual Object
@@ -26,5 +27,5 @@ public:
 };
 
 #include "container/list.h"
-#include "container/set.h"
 #include "container/map.h"
+#include "container/set.h"

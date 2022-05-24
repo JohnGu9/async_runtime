@@ -2,20 +2,13 @@
 
 ref<Lock> ThreadPool::_lock = Object::create<Lock>();
 ref<Set<ref<String>>> ThreadPool::_namePool = Object::create<Set<ref<String>>>();
+static finalref<String> prefix = "ThreadPool<";
 
-ThreadPool::ThreadPool(size_t threads, option<String> name) : _name(""), _stop(false)
+ThreadPool::ThreadPool(size_t threads, option<String> name)
+    : _name(name.isNotNullElse([this]
+                               { return String::connect(prefix, size_t(this), ">"); })),
+      _stop(false)
 {
-    lateref<String> n;
-    if (name.isNotNull(n))
-    {
-        this->_name = n;
-    }
-    else
-    {
-        static finalref<String> prefix = "ThreadPool<";
-        this->_name = prefix + size_t(this) + ">";
-    }
-
     {
         assert(this->_name->isNotEmpty());
         option<Lock::UniqueLock> lk = _lock->uniqueLock();
@@ -46,8 +39,7 @@ ThreadPool::~ThreadPool()
 
 std::function<void()> ThreadPool::workerBuilder(size_t threadId)
 {
-    return [this, threadId] //
-    {                       //
+    return [this, threadId] { //
         ThreadUnit::setThreadName(this->childrenThreadName(threadId));
 #ifndef NDEBUG
         const std::string debugThreadName = ThreadUnit::threadName->toStdString();

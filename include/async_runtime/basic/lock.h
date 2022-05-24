@@ -8,7 +8,7 @@
  */
 
 #pragma once
-#include "../object.h"
+#include "object.h"
 #include <condition_variable>
 
 /**

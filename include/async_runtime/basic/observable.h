@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../object.h"
+#include "object.h"
 
 template <typename T>
 class observable : public option<T>

@@ -1,22 +1,9 @@
 #pragma once
 
-#include "../object.h"
+#include "object.h"
 #include <functional>
 #include <memory>
 #include <type_traits>
-/**
- * @brief Function object in Async Runtime
- *
- *
- * @tparam T
- * the function format
- *
- * @example
- * Function<void()> fn = []() -> void {};
- *
- */
-template <typename T = std::nullptr_t>
-class Fn;
 
 template <>
 class Fn<std::nullptr_t> : public virtual Object
@@ -26,15 +13,16 @@ class Fn<std::nullptr_t> : public virtual Object
 template <typename ReturnType, class... Args>
 class Fn<ReturnType(Args...)> : public Fn<std::nullptr_t>, protected std::function<ReturnType(Args...)>
 {
-    static_assert(std::is_constructible<std::function<ReturnType(Args...)>, ReturnType(Args...)>::value, "Can't construct object in function");
+    using super = std::function<ReturnType(Args...)>;
+    static_assert(std::is_constructible<super, ReturnType(Args...)>::value, "Can't construct object in function");
 
 public:
     Fn(std::nullptr_t) = delete;
     template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
-    Fn(Lambda lambda) : std::function<ReturnType(Args...)>(lambda) {}
+    Fn(Lambda lambda) : super(lambda) {}
 
-    ReturnType operator()(Args... args) const { return std::function<ReturnType(Args...)>::operator()(std::forward<Args>(args)...); }
-    const std::function<ReturnType(Args...)> &toStdFunction() const { return *this; }
+    ReturnType operator()(Args &&...args) const { return super::operator()(std::forward<Args>(args)...); }
+    const super &toStdFunction() const { return *this; }
 };
 
 template <typename ReturnType, class... Args>
@@ -62,9 +50,6 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(other) {}
 };
-
-template <typename T>
-using Function = ref<Fn<T>>;
 
 template <typename ReturnType, class... Args>
 class lateref<Fn<ReturnType(Args...)>> : public ref<Fn<ReturnType(Args...)>>

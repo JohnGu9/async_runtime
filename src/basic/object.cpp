@@ -1,6 +1,10 @@
+#include "async_runtime/basic/object.h"
 #include <typeinfo>
 
-#include "async_runtime/object.h"
+ref<Object> Object::shared_from_this()
+{
+    return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this());
+}
 
 Object::RuntimeType Object::runtimeType()
 {
