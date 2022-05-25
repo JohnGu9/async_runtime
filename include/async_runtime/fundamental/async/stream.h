@@ -32,7 +32,7 @@ class Stream : public Stream<std::nullptr_t>
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
     static finalref<Fn<void(ref<StreamSubscription<T>>)>> _useless;
-    static finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>>)>> _extraceListeners;
+    static finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>> &)>> _extractListeners;
 
 public:
     Stream(option<EventLoopGetterMixin> getter = nullptr)
@@ -83,7 +83,7 @@ template <typename T>
 finalref<Fn<void(ref<StreamSubscription<T>>)>> Stream<T>::_useless = [](ref<StreamSubscription<T>>) {};
 
 template <typename T>
-finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>>)>> Stream<T>::_extraceListeners =
+finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>> &)>> Stream<T>::_extractListeners =
     [](const ref<StreamSubscription<T>> &subscription) { //
         return subscription->_listener;
     };
@@ -139,7 +139,7 @@ void Stream<T>::sink(T value)
     assert(!_isClosed);
     if (!this->_active->empty())
     {
-        auto copy = this->_active->map<Function<void(const T &)>>(_extraceListeners);
+        auto copy = this->_active->map<Function<void(const T &)>>(_extractListeners);
         for (const auto &listener : copy)
             listener(value);
     }

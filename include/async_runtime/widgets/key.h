@@ -40,6 +40,8 @@ protected:
 };
 
 class Widget;
+
+template <class State, class Widget>
 class GlobalKey : public Key
 {
 public:
@@ -61,13 +63,52 @@ public:
 
     virtual option<Widget> getCurrentWidget();
     virtual option<BuildContext> getCurrentContext();
-    virtual option<State<StatefulWidget>> getCurrentState();
+    virtual option<State> getCurrentState();
 
 protected:
     weakref<Element> _element;
 };
 
-class GlobalObjectKey : public GlobalKey
+template <class State, class Widget>
+void GlobalKey<State, Widget>::setElement(ref<Element> element)
+{
+    assert(this->_element.toOption() == nullptr && "One [GlobalKey] instance can't mount more than one element. ");
+    this->_element = element;
+}
+
+template <class State, class Widget>
+void GlobalKey<State, Widget>::dispose()
+{
+    this->_element = nullptr;
+}
+
+template <class State, class Widget>
+option<Widget> GlobalKey<State, Widget>::getCurrentWidget()
+{
+    lateref<Element> element;
+    if (this->_element.isNotNull(element))
+        return element->getWidget();
+    return nullptr;
+}
+
+template <class State, class Widget>
+option<BuildContext> GlobalKey<State, Widget>::getCurrentContext() { return this->_element.toOption(); }
+
+template <class State, class Widget>
+option<State> GlobalKey<State, Widget>::getCurrentState()
+{
+    lateref<Element> element;
+    if (this->_element.isNotNull(element))
+    {
+        lateref<StatefulElement> statefulElement;
+        if (element->cast<StatefulElement>().isNotNull(statefulElement))
+            return statefulElement->_state;
+    }
+    return nullptr;
+}
+
+template <class State, class Widget>
+class GlobalObjectKey : public GlobalKey<State, Widget>
 {
 public:
     GlobalObjectKey(option<Object> object) : _object(object){};

@@ -21,7 +21,7 @@ public:
     template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
     Fn(Lambda lambda) : super(lambda) {}
 
-    ReturnType operator()(Args &&...args) const { return super::operator()(std::forward<Args>(args)...); }
+    ReturnType operator()(Args... args) const { return super::operator()(std::forward<Args>(args)...); }
     const super &toStdFunction() const { return *this; }
 };
 
