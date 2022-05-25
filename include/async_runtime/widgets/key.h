@@ -41,7 +41,7 @@ protected:
 
 class Widget;
 
-template <class State, class Widget>
+template <class TargetWidget = StatefulWidget, class TargetState = State<StatefulWidget>>
 class GlobalKey : public Key
 {
 public:
@@ -61,54 +61,56 @@ public:
     void setElement(ref<Element> element) override;
     void dispose() override;
 
-    virtual option<Widget> getCurrentWidget();
+    virtual option<TargetWidget> getCurrentWidget();
     virtual option<BuildContext> getCurrentContext();
-    virtual option<State> getCurrentState();
+    virtual option<TargetState> getCurrentState();
 
 protected:
     weakref<Element> _element;
 };
 
-template <class State, class Widget>
-void GlobalKey<State, Widget>::setElement(ref<Element> element)
+// [GlobalKey] is the [Key] only can be bind one widget at one time
+// but you can access target widget, context and state (if widget is StatefulWidget)
+template <class TargetWidget, class TargetState>
+void GlobalKey<TargetWidget, TargetState>::setElement(ref<Element> element)
 {
     assert(this->_element.toOption() == nullptr && "One [GlobalKey] instance can't mount more than one element. ");
     this->_element = element;
 }
 
-template <class State, class Widget>
-void GlobalKey<State, Widget>::dispose()
+template <class TargetWidget, class TargetState>
+void GlobalKey<TargetWidget, TargetState>::dispose()
 {
     this->_element = nullptr;
 }
 
-template <class State, class Widget>
-option<Widget> GlobalKey<State, Widget>::getCurrentWidget()
+template <class TargetWidget, class TargetState>
+option<TargetWidget> GlobalKey<TargetWidget, TargetState>::getCurrentWidget()
 {
     lateref<Element> element;
     if (this->_element.isNotNull(element))
-        return element->getWidget();
+        return element->getWidget()->template covariant<TargetWidget>();
     return nullptr;
 }
 
-template <class State, class Widget>
-option<BuildContext> GlobalKey<State, Widget>::getCurrentContext() { return this->_element.toOption(); }
+template <class TargetWidget, class TargetState>
+option<BuildContext> GlobalKey<TargetWidget, TargetState>::getCurrentContext() { return this->_element.toOption(); }
 
-template <class State, class Widget>
-option<State> GlobalKey<State, Widget>::getCurrentState()
+template <class TargetWidget, class TargetState>
+option<TargetState> GlobalKey<TargetWidget, TargetState>::getCurrentState()
 {
     lateref<Element> element;
     if (this->_element.isNotNull(element))
     {
         lateref<StatefulElement> statefulElement;
         if (element->cast<StatefulElement>().isNotNull(statefulElement))
-            return statefulElement->_state;
+            return statefulElement->_state->template covariant<TargetState>();
     }
     return nullptr;
 }
 
-template <class State, class Widget>
-class GlobalObjectKey : public GlobalKey<State, Widget>
+template <class TargetWidget = StatefulWidget, class TargetState = State<StatefulWidget>>
+class GlobalObjectKey : public GlobalKey<TargetWidget, TargetState>
 {
 public:
     GlobalObjectKey(option<Object> object) : _object(object){};
@@ -117,8 +119,8 @@ public:
         lateref<Key> nonNullOther;
         if (other.isNotNull(nonNullOther))
         {
-            lateref<GlobalObjectKey> castedPointer;
-            if (nonNullOther->cast<GlobalObjectKey>().isNotNull(castedPointer))
+            lateref<GlobalObjectKey<TargetWidget, TargetState>> castedPointer;
+            if (nonNullOther->cast<GlobalObjectKey<TargetWidget, TargetState>>().isNotNull(castedPointer))
                 return Object::identical<>(this->_object, castedPointer->_object);
         }
         return false;

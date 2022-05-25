@@ -15,6 +15,7 @@
 #include "async_runtime/widgets/builder.h"
 #include "async_runtime/widgets/future_builder.h"
 #include "async_runtime/widgets/inherited_widget.h"
+#include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/leaf_widget.h"
 #include "async_runtime/widgets/logger_widget.h"
 #include "async_runtime/widgets/multi_child_widget.h"
@@ -106,7 +107,7 @@ namespace _async_runtime
         localtime_r(&t, &timebuf);
 #endif
         ss << std::put_time(&timebuf, ASYNC_RUNTIME_TIMESTAMP_FORMAT);
-        
+
         return ss;
     }
 }
