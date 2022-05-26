@@ -21,7 +21,7 @@ message(STATUS "Async Runtime using ThreadLibrary: ${THREAD_LIBRARY_NAME}")
 
 # libuv setup
 message(STATUS "Libuv: ")
-add_subdirectory(vendor/libuv)
+add_subdirectory(vendor/libuv) # @TODO: ignore compile warning from libuv
 message(STATUS "Libuv end")
 
 # build target
@@ -34,26 +34,32 @@ set(INCLUDE_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/include 
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/libuv/include
 )
-
 include_directories(${INCLUDE_DIR})
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src src)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/basic basic_src)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/contexts contexts_src)
+# object
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/object object_src)
+add_library(async_runtime_object ${object_src})
+
+# utilities
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/utilities utilities_src)
+add_library(async_runtime_utilities ${utilities_src})
+target_link_libraries(async_runtime_utilities async_runtime_object)
+
+# fundamental
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/fundamental fundamental_src)
+option(ASYNC_RUNTIME_WITH_IO "build async runtime lib with io components" OFF)# async_runtime optional library
+if(ASYNC_RUNTIME_WITH_IO)
+    aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/io io_src)
+    message(STATUS "Async runtime io components ENABLE")
+    set(fundamental_src ${fundamental_src} ${io_src})
+endif()
+add_library(async_runtime_fundamental ${fundamental_src})
+target_link_libraries(async_runtime_fundamental async_runtime_utilities uv_a)
+
+# async_runtime
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/elements elements_src)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/widgets widgets_src)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/io io_src)
-
-set(async_runtime_src ${src} ${basic_src} ${fundamental_src} ${contexts_src} ${elements_src} ${widgets_src})
-
-# async_runtime optional library
-option(ASYNC_RUNTIME_WITH_IO "build async runtime lib with io components" OFF)
-if(ASYNC_RUNTIME_WITH_IO)
-    message(STATUS "Async runtime io components ENABLE")
-    set(async_runtime_src ${async_runtime_src} ${io_src})
-endif()
-
+set(async_runtime_src ${elements_src} ${widgets_src})
 if(WIN32)
     add_library(async_runtime ${async_runtime_src}) # in Windows, async_runtime not support shared library mode
     add_library(async_runtime_a ${async_runtime_src})
@@ -61,8 +67,4 @@ else()
     add_library(async_runtime SHARED ${async_runtime_src})
     add_library(async_runtime_a ${async_runtime_src})
 endif()
-
-target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} uv_a)
-target_compile_options(async_runtime PRIVATE
-     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall>
-     $<$<CXX_COMPILER_ID:MSVC>:/wd4100 /wd4458>)
+target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} async_runtime_fundamental)

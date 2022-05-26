@@ -2,7 +2,7 @@
 #include "declare.h"
 
 template <typename T>
-class weakref : public std::weak_ptr<T>, public _async_runtime::ToRefMixin<T>
+class weakref : protected std::weak_ptr<T>, public _async_runtime::ToRefMixin<T>
 {
 public:
     weakref() {}
@@ -12,9 +12,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     weakref(const ref<R> &other) : std::weak_ptr<T>(other) {}
 
-    std::weak_ptr<T> lock() const = delete;
+    bool isNotNull(ref<T> &object) const noexcept override;
+    ref<T> isNotNullElse(Function<ref<T>()> fn) const noexcept override;
     ref<T> assertNotNull() const override;
-    ref<T> isNotNullElse(Function<ref<T>()> fn) const override;
-    bool isNotNull(ref<T> &object) const override;
-    option<T> toOption() const;
+    option<T> toOption() const noexcept;
 };

@@ -5,7 +5,7 @@ extern "C"
 #include <uv.h>
 }
 
-#include "async_runtime/basic/lock.h"
+#include "async_runtime/utilities/lock.h"
 #include "async_runtime/fundamental/event_loop.h"
 #include "async_runtime/fundamental/thread.h"
 

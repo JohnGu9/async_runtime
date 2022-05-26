@@ -1,6 +1,6 @@
 #pragma once
 
-#include "object.h"
+#include "../object/object.h"
 
 // abstract class
 class Listenable : public virtual Object

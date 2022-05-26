@@ -19,7 +19,7 @@
  * std::shared_ptr
  *       ^
  *       |
- *  _async_runtime::RefImplent
+ *  _async_runtime::RefImplement
  *       ^
  *       |
  *  ref

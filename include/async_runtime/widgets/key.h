@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../basic/object.h"
+#include "../object/object.h"
 #include "state.h"
 
 class Element;

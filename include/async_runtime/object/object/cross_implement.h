@@ -15,7 +15,7 @@ template <typename First, typename... Args>
 option<T>::option(const First &first, Args &&...args) : _async_runtime::OptionImplement<T>(ref<T>(first, std::forward<Args>(args)...)) {}
 
 template <typename T>
-bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const
+bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const noexcept
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
@@ -28,7 +28,7 @@ bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const
 }
 
 template <typename T>
-ref<T> _async_runtime::OptionImplement<T>::isNotNullElse(Function<ref<T>()> fn) const
+ref<T> _async_runtime::OptionImplement<T>::isNotNullElse(Function<ref<T>()> fn) const noexcept
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
@@ -48,27 +48,7 @@ ref<T> _async_runtime::OptionImplement<T>::assertNotNull() const
 }
 
 template <typename T>
-ref<T> weakref<T>::assertNotNull() const
-{
-    const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
-    if (ptr != nullptr)
-        return ref<T>(ptr);
-    else
-        throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
-}
-
-template <typename T>
-ref<T> weakref<T>::isNotNullElse(Function<ref<T>()> fn) const
-{
-    const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
-    if (ptr != nullptr)
-        return ref<T>(ptr);
-    else
-        return fn();
-}
-
-template <typename T>
-bool weakref<T>::isNotNull(ref<T> &object) const
+bool weakref<T>::isNotNull(ref<T> &object) const noexcept
 {
     const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
     if (ptr != nullptr)
@@ -81,7 +61,27 @@ bool weakref<T>::isNotNull(ref<T> &object) const
 }
 
 template <typename T>
-option<T> weakref<T>::toOption() const
+ref<T> weakref<T>::isNotNullElse(Function<ref<T>()> fn) const noexcept
+{
+    const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
+    if (ptr != nullptr)
+        return ref<T>(ptr);
+    else
+        return fn();
+}
+
+template <typename T>
+ref<T> weakref<T>::assertNotNull() const
+{
+    const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
+    if (ptr != nullptr)
+        return ref<T>(ptr);
+    else
+        throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
+}
+
+template <typename T>
+option<T> weakref<T>::toOption() const noexcept
 {
     return option<T>(std::weak_ptr<T>::lock());
 }

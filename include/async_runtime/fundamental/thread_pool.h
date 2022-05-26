@@ -7,7 +7,7 @@
 #include <queue>
 #include <vector>
 
-#include "../basic/lock.h"
+#include "../utilities/lock.h"
 #include "thread.h"
 
 /**

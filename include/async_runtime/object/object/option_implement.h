@@ -7,8 +7,8 @@ class _async_runtime::OptionImplement : protected std::shared_ptr<T>, public _as
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 public:
-    bool isNotNull(ref<T> &) const override;
-    ref<T> isNotNullElse(Function<ref<T>()>) const override;
+    bool isNotNull(ref<T> &) const noexcept override;
+    ref<T> isNotNullElse(Function<ref<T>()>) const noexcept override;
     ref<T> assertNotNull() const override;
     size_t hashCode() const
     {

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "../basic/duration.h"
-#include "../basic/object.h"
+#include "../utilities/duration.h"
+#include "../object/object.h"
 
 #include "event_loop.h"
 
 // Forward define
 // All async components are not thread safe
 // You need to handle multi-threading issue by your own
-// You can checkout [basic/lock.h] for some ease thread-locker
+// You can checkout [utilities/lock.h] for some ease thread-locker
 
 template <typename T = std::nullptr_t>
 class Future;

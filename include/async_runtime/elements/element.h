@@ -26,7 +26,7 @@ public:
 };
 
 #ifndef NDEBUG
-#include "../basic/console_format.h"
+#include "../utilities/console_format.h"
 #endif
 
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>

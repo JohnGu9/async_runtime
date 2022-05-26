@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../basic/duration.h"
+#include "../utilities/duration.h"
 #include "event_loop.h"
 #include <atomic>
 

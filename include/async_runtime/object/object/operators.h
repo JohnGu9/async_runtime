@@ -6,19 +6,18 @@
  * @brief ref
  *
  */
-
-template <typename T>
-template <typename R>
-bool ref<T>::operator==(const option<R> &object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
-template <typename T>
-template <typename R>
-bool ref<T>::operator==(option<R> &&object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T>
 template <typename R>
 bool ref<T>::operator==(const ref<R> &object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
 template <typename T>
 template <typename R>
 bool ref<T>::operator==(ref<R> &&object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
+template <typename T>
+template <typename R>
+bool ref<T>::operator==(const option<R> &object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
+template <typename T>
+template <typename R>
+bool ref<T>::operator==(option<R> &&object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
 
 /**
  * @brief option
@@ -73,7 +72,7 @@ bool option<T>::operator==(ref<R> &&object1) const
 }
 
 /**
- * @brief ref<Fu>
+ * @brief ref<Fn<ReturnType(Args...)>>
  *
  */
 
@@ -83,7 +82,6 @@ bool ref<Fn<ReturnType(Args...)>>::operator==(const ref<R> &object1) const { ret
 template <typename ReturnType, class... Args>
 template <typename R>
 bool ref<Fn<ReturnType(Args...)>>::operator==(ref<R> &&object1) const { return static_cast<const std::shared_ptr<Fn<ReturnType(Args...)>> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
-
 template <typename ReturnType, class... Args>
 template <typename R>
 bool ref<Fn<ReturnType(Args...)>>::operator==(const option<R> &object1) const { return static_cast<const std::shared_ptr<Fn<ReturnType(Args...)>> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
@@ -97,14 +95,46 @@ bool ref<Fn<ReturnType(Args...)>>::operator==(option<R> &&object1) const { retur
  */
 
 template <typename R>
-bool ref<String>::operator==(const ref<R> &object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool ref<String>::operator==(const ref<R> &object1) const
+{
+    auto other = object1.get();
+    if (String *string = dynamic_cast<String *>(other))
+    {
+        return this->operator==(Object::cast<>(string));
+    }
+    return false;
+}
 template <typename R>
-bool ref<String>::operator==(ref<R> &&object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool ref<String>::operator==(ref<R> &&object1) const
+{
+    auto other = object1.get();
+    if (String *string = dynamic_cast<String *>(other))
+    {
+        return this->operator==(Object::cast<>(string));
+    }
+    return false;
+}
 
 template <typename R>
-bool ref<String>::operator==(const option<R> &object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool ref<String>::operator==(const option<R> &object1) const
+{
+    auto other = object1.get();
+    if (String *string = dynamic_cast<String *>(other))
+    {
+        return this->operator==(Object::cast<>(string));
+    }
+    return false;
+}
 template <typename R>
-bool ref<String>::operator==(option<R> &&object1) const { return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(object1); }
+bool ref<String>::operator==(option<R> &&object1) const
+{
+    auto other = object1.get();
+    if (String *string = dynamic_cast<String *>(other))
+    {
+        return this->operator==(Object::cast<>(string));
+    }
+    return false;
+}
 
 /**
  * @brief Object
