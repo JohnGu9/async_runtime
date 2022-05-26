@@ -30,6 +30,3 @@ bool operator!=(const option<T> &object0, ref<R> object1);
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const ref<T> &);
-
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const ref<T> &object);
