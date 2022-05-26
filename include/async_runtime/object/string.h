@@ -197,7 +197,6 @@ public:
     template <>
     bool operator!=<String>(ref<String> &&other) const { return !operator==(std::move(other)); }
 
-
     template <typename T>
     ref<String> operator+(const T &value) const { return String::connect(*this, value); }
 

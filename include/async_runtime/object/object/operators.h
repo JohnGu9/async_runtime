@@ -32,7 +32,7 @@ bool option<T>::operator==(const option<R> &object1) const
     auto other = object1.get();
     if (self != nullptr && other != nullptr)
     {
-        return self->shared_from_this() == other->shared_from_this();
+        return Object::cast<>(self) == Object::cast<>(other);
     }
     return self == nullptr && other == nullptr;
 }
@@ -44,7 +44,7 @@ bool option<T>::operator==(option<R> &&object1) const
     auto other = object1.get();
     if (self != nullptr && other != nullptr)
     {
-        return self->shared_from_this() == other->shared_from_this();
+        return Object::cast<>(self) == Object::cast<>(other);
     }
     return self == nullptr && other == nullptr;
 }
@@ -55,7 +55,7 @@ bool option<T>::operator==(const ref<R> &object1) const
     auto self = get();
     if (self != nullptr)
     {
-        return self->shared_from_this() == object1;
+        return Object::cast<>(self) == object1;
     }
     return false;
 }
@@ -66,7 +66,7 @@ bool option<T>::operator==(ref<R> &&object1) const
     auto self = get();
     if (self != nullptr)
     {
-        return self->shared_from_this() == object1;
+        return Object::cast<>(self) == object1;
     }
     return false;
 }
@@ -132,6 +132,48 @@ bool ref<String>::operator==(option<R> &&object1) const
     if (String *string = dynamic_cast<String *>(other))
     {
         return this->operator==(Object::cast<>(string));
+    }
+    return false;
+}
+
+template <>
+inline bool ref<String>::operator==<String>(const ref<String> &other) const
+{
+    if (this->get() == other.get()) // [[unlikely]]
+        return true;
+    if ((*this)->length() != other->length())
+        return false;
+    return std::equal((*this)->begin(), (*this)->end(), other->begin());
+}
+
+template <>
+inline bool ref<String>::operator==<String>(ref<String> &&other) const
+{
+    if (this->get() == other.get()) // [[unlikely]]
+        return true;
+    if ((*this)->length() != other->length())
+        return false;
+    return std::equal((*this)->begin(), (*this)->end(), other->begin());
+}
+
+template <>
+inline bool ref<String>::operator==<String>(const option<String> &other) const
+{
+    lateref<String> o;
+    if (other.isNotNull(o))
+    {
+        return operator==(o);
+    }
+    return false;
+}
+
+template <>
+inline bool ref<String>::operator==<String>(option<String> &&other) const
+{
+    lateref<String> o;
+    if (other.isNotNull(o))
+    {
+        return operator==(o);
     }
     return false;
 }

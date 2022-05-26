@@ -22,48 +22,6 @@ bool ref<String>::operator==(std::string &&other) const
     return std::equal((*this)->begin(), (*this)->end(), other.begin());
 }
 
-template <>
-bool ref<String>::operator==<String>(const ref<String> &other) const
-{
-    if (this->get() == other.get()) // [[unlikely]]
-        return true;
-    if ((*this)->length() != other->length())
-        return false;
-    return std::equal((*this)->begin(), (*this)->end(), other->begin());
-}
-
-template <>
-bool ref<String>::operator==<String>(ref<String> &&other) const
-{
-    if (this->get() == other.get()) // [[unlikely]]
-        return true;
-    if ((*this)->length() != other->length())
-        return false;
-    return std::equal((*this)->begin(), (*this)->end(), other->begin());
-}
-
-template <>
-bool ref<String>::operator==<String>(const option<String> &other) const
-{
-    lateref<String> o;
-    if (other.isNotNull(o))
-    {
-        return operator==(o);
-    }
-    return false;
-}
-
-template <>
-bool ref<String>::operator==<String>(option<String> &&other) const
-{
-    lateref<String> o;
-    if (other.isNotNull(o))
-    {
-        return operator==(o);
-    }
-    return false;
-}
-
 ref<String> operator+(const char c, ref<String> string)
 {
     return String::connect(c, string);
