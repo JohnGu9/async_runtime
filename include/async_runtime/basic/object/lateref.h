@@ -13,4 +13,7 @@ public:
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<T>(other) {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    lateref(ref<R> &&other) : ref<T>(std::move(other)) {}
 };

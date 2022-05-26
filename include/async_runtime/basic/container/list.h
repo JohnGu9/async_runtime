@@ -60,7 +60,8 @@ public:
 
     void toStringStream(std::ostream &os) override
     {
-        os << "List { ";
+        this->Object::toStringStream(os);
+        os << " { ";
         for (const auto &element : *this)
             os << element << ", ";
         os << "}";

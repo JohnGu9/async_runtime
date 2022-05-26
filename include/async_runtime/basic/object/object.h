@@ -18,6 +18,8 @@
  */
 class Object : public std::enable_shared_from_this<Object>
 {
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
+
     ref<Object> shared_from_this();
 
 public:

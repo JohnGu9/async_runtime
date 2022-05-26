@@ -1,26 +1,5 @@
 #include "async_runtime/basic/object.h"
 
-template <>
-bool operator==(const option<String> &lhs, option<String> rhs)
-{
-    lateref<String> lh;
-    if (lhs.isNotNull(lh))
-    {
-        lateref<String> rh;
-        if (rhs.isNotNull(rh))
-            return lh == rh;
-        return false;
-    }
-    else
-        return rhs == nullptr;
-}
-
-template <>
-bool operator!=(const option<String> &lhs, option<String> rhs)
-{
-    return !(lhs == rhs);
-}
-
 bool ref<String>::operator==(const char *const other) const
 {
     const auto len = strlen(other);
@@ -43,13 +22,46 @@ bool ref<String>::operator==(std::string &&other) const
     return std::equal((*this)->begin(), (*this)->end(), other.begin());
 }
 
-bool ref<String>::operator==(const ref<String> &other) const
+template <>
+bool ref<String>::operator==<String>(const ref<String> &other) const
 {
     if (this->get() == other.get()) // [[unlikely]]
         return true;
     if ((*this)->length() != other->length())
         return false;
     return std::equal((*this)->begin(), (*this)->end(), other->begin());
+}
+
+template <>
+bool ref<String>::operator==<String>(ref<String> &&other) const
+{
+    if (this->get() == other.get()) // [[unlikely]]
+        return true;
+    if ((*this)->length() != other->length())
+        return false;
+    return std::equal((*this)->begin(), (*this)->end(), other->begin());
+}
+
+template <>
+bool ref<String>::operator==<String>(const option<String> &other) const
+{
+    lateref<String> o;
+    if (other.isNotNull(o))
+    {
+        return operator==(o);
+    }
+    return false;
+}
+
+template <>
+bool ref<String>::operator==<String>(option<String> &&other) const
+{
+    lateref<String> o;
+    if (other.isNotNull(o))
+    {
+        return operator==(o);
+    }
+    return false;
 }
 
 ref<String> operator+(const char c, ref<String> string)

@@ -7,26 +7,6 @@ class option : public _async_runtime::OptionImplement<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
-    template <typename R>
-    friend bool operator==(const option<R> &opt, std::nullptr_t);
-    template <typename R>
-    friend bool operator!=(const option<R> &opt, std::nullptr_t);
-
-    template <typename X, typename Y>
-    friend bool operator==(const option<X> &object0, option<Y> object1);
-    template <typename X, typename Y>
-    friend bool operator!=(const option<X> &object0, option<Y> object1);
-
-    template <typename X, typename Y>
-    friend bool operator==(const option<X> &object0, ref<Y> object1);
-    template <typename X, typename Y>
-    friend bool operator!=(const option<X> &object0, ref<Y> object1);
-
-    template <typename X, typename Y>
-    friend bool operator==(const ref<X> &object0, option<Y> object1);
-    template <typename X, typename Y>
-    friend bool operator!=(const ref<X> &object0, option<Y> object1);
-
 public:
     option() {}
     option(std::nullptr_t) : _async_runtime::OptionImplement<T>(nullptr) {}
@@ -51,4 +31,25 @@ public:
      */
     template <typename First, typename... Args>
     option(const First &first, Args &&...args);
+
+    template <typename R>
+    bool operator==(const ref<R> &object1) const;
+    template <typename R>
+    bool operator!=(const ref<R> &other) const { return !this->operator==(other); }
+    template <typename R>
+    bool operator==(ref<R> &&object1) const;
+    template <typename R>
+    bool operator!=(ref<R> &&other) const { return !this->operator==(std::move(other)); }
+
+    template <typename R>
+    bool operator==(const option<R> &object1) const;
+    template <typename R>
+    bool operator!=(const option<R> &other) const { return !this->operator==(other); }
+    template <typename R>
+    bool operator==(option<R> &&object1) const;
+    template <typename R>
+    bool operator!=(option<R> &&other) const { return !this->operator==(std::move(other)); }
+
+    bool operator==(std::nullptr_t) { return static_cast<const std::shared_ptr<T> &>(*this) == nullptr; }
+    bool operator!=(std::nullptr_t) { return !this->operator==(nullptr); }
 };

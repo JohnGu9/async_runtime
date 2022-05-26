@@ -30,9 +30,6 @@ class ref<Fn<ReturnType(Args...)>> : public _async_runtime::RefImplement<Fn<Retu
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
-    template <typename X, typename Y>
-    friend bool operator==(const ref<X> &object0, ref<Y> object1);
-
 public:
     ref(std::nullptr_t) = delete;
 
@@ -43,6 +40,24 @@ public:
     ref(Lambda lambda) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(std::make_shared<Fn<ReturnType(Args...)>>(lambda)) {}
 
     ReturnType operator()(Args... args) const { return (*this)->operator()(std::forward<Args>(args)...); }
+
+    template <typename R>
+    bool operator==(const ref<R> &object1) const;
+    template <typename R>
+    bool operator!=(const ref<R> &other) const { return !this->operator==(other); }
+    template <typename R>
+    bool operator==(ref<R> &&object1) const;
+    template <typename R>
+    bool operator!=(ref<R> &&other) const { return !this->operator==(std::move(other)); }
+
+    template <typename R>
+    bool operator==(const option<R> &object1) const;
+    template <typename R>
+    bool operator!=(const option<R> &other) const { return !this->operator==(other); }
+    template <typename R>
+    bool operator==(option<R> &&object1) const;
+    template <typename R>
+    bool operator!=(option<R> &&other) const { return !this->operator==(std::move(other)); }
 
 protected:
     ref() {}

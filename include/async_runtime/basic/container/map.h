@@ -62,7 +62,8 @@ public:
 
     void toStringStream(std::ostream &os) override
     {
-        os << "Set { ";
+        this->Object::toStringStream(os);
+        os << " { ";
         for (const std::pair<Key, Value> &element : *this)
             os << '{' << element.first << " : " << element.second << "}, ";
         os << "}";
