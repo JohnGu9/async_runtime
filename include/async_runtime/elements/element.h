@@ -5,6 +5,9 @@
 class Widget;
 class Element : public BuildContext
 {
+    void initKey(ref<Widget>);
+    static void disposeKey(ref<Widget>);
+
 public:
     Element(ref<Widget> widget);
     weakref<Element> parent;

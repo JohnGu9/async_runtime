@@ -74,17 +74,17 @@ public:
     static ref<String> getline(std::istream &os);
 
     template <typename... Args>
-    static ref<String> connect(std::stringstream &ss, Args &&...args);
+    static void connect(std::ostream &ss, Args &&...args);
     template <typename... Args>
     static ref<String> connect(Args &&...args);
 
     template <typename... Args>
-    static ref<String> formatFromString(std::stringstream &ss, const char *const str, Args &&...args);
+    static void formatFromString(std::ostream &ss, const char *const str, Args &&...args);
     template <typename... Args>
     static ref<String> formatFromString(const char *const str, Args &&...args);
 
     template <typename Iterator, typename... Args>
-    static ref<String> formatFromIterator(std::stringstream &ss, const Iterator begin, const Iterator end, Args &&...args);
+    static void formatFromIterator(std::ostream &ss, const Iterator begin, const Iterator end, Args &&...args);
     template <typename Iterator, typename... Args>
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
@@ -278,20 +278,20 @@ void String::_connect(std::ostream &ss, const First &first, const Rest &...rest)
 }
 
 template <typename... Args>
-ref<String> String::connect(std::stringstream &ss, Args &&...args)
+void String::connect(std::ostream &ss, Args &&...args)
 {
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
     ss << std::boolalpha;
 #endif
     String::_connect(ss, args...);
-    return ss.str();
 }
 
 template <typename... Args>
 ref<String> String::connect(Args &&...args)
 {
     std::stringstream ss;
-    return String::connect(ss, std::forward<Args>(args)...);
+    String::connect(ss, std::forward<Args>(args)...);
+    return ss.str();
 }
 
 template <class First, class... Rest>
@@ -324,7 +324,7 @@ void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::os
 }
 
 template <typename... Args>
-ref<String> String::formatFromString(std::stringstream &ss, const char *const str, Args &&...args)
+void String::formatFromString(std::ostream &ss, const char *const str, Args &&...args)
 {
     size_t lastIndex = 0;
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
@@ -333,14 +333,14 @@ ref<String> String::formatFromString(std::stringstream &ss, const char *const st
     String::_unwrapPackToCstr(str, lastIndex, ss, args...);
     if (str[lastIndex] != '\0')
         ss << &(str[lastIndex]);
-    return ss.str();
 }
 
 template <typename... Args>
 ref<String> String::formatFromString(const char *const str, Args &&...args)
 {
     std::stringstream ss;
-    return String::formatFromString(ss, str, std::forward<Args>(args)...);
+    String::formatFromString(ss, str, std::forward<Args>(args)...);
+    return ss.str();
 }
 
 template <typename Iterator, class First, class... Rest>
@@ -375,7 +375,7 @@ void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std
 }
 
 template <typename Iterator, typename... Args>
-ref<String> String::formatFromIterator(std::stringstream &ss, const Iterator begin, const Iterator end, Args &&...args)
+void String::formatFromIterator(std::ostream &ss, const Iterator begin, const Iterator end, Args &&...args)
 {
     Iterator lastIndex = begin;
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
@@ -384,14 +384,14 @@ ref<String> String::formatFromIterator(std::stringstream &ss, const Iterator beg
     String::_unwrapPackToIterator(lastIndex, end, ss, args...);
     if (lastIndex != end)
         ss.write(&(*lastIndex), end - lastIndex);
-    return ss.str();
 }
 
 template <typename Iterator, typename... Args>
 ref<String> String::formatFromIterator(const Iterator begin, const Iterator end, Args &&...args)
 {
     std::stringstream ss;
-    return String::formatFromIterator(ss, begin, end, std::forward<Args>(args)...);
+    String::formatFromIterator(ss, begin, end, std::forward<Args>(args)...);
+    return ss.str();
 }
 
 template <class First, class... Rest>
