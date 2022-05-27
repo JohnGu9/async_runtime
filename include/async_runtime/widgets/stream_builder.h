@@ -28,7 +28,7 @@ class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
     Function<void(const T &)> _listener = [this](const T &value) { //
         _snapshot = AsyncSnapshot<T>::hasData(
             value,
-            widget->stream->isClosed()
+            this->widget->stream->isClosed()
                 ? AsyncSnapshot<>::ConnectionState::done
                 : AsyncSnapshot<>::ConnectionState::active);
         this->setState([] {});
@@ -37,14 +37,14 @@ class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
 
     void _subscribe()
     {
-        if (widget->stream->isClosed())
+        if (this->widget->stream->isClosed())
         {
             _snapshot = AsyncSnapshot<T>::noData(AsyncSnapshot<>::ConnectionState::none);
         }
         else
         {
             _snapshot = AsyncSnapshot<T>::noData(AsyncSnapshot<>::ConnectionState::active);
-            auto stream = widget->stream;
+            auto stream = this->widget->stream;
             _subscription = stream->listen(_listener);
             stream->asFuture()->then([this, stream] { //
                 if (this->mounted && this->_snapshot->state != AsyncSnapshot<>::ConnectionState::done)
@@ -66,7 +66,7 @@ class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
     void didWidgetUpdated(ref<StreamBuilder<T>> oldWidget) override
     {
         super::didWidgetUpdated(oldWidget);
-        if (oldWidget->stream != widget->stream)
+        if (oldWidget->stream != this->widget->stream)
         {
             _subscription->cancel();
             _subscribe();
@@ -81,7 +81,7 @@ class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
 
     ref<Widget> build(ref<BuildContext> context) override
     {
-        return widget->builder(context, this->_snapshot);
+        return this->widget->builder(context, this->_snapshot);
     }
 };
 

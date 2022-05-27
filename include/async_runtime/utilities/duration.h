@@ -30,7 +30,7 @@
  * @brief Duration for a peroid of time in Async Runtime
  *
  * @alarm native copyable type that don't not need ref
- * 
+ *
  */
 class Duration
 {
@@ -142,11 +142,11 @@ public:
      */
     constexpr bool operator>=(Duration other) const { return this->_duration >= other._duration; }
 
-    constexpr Duration abs() const;
-
     constexpr DataType toSeconds() const { return _duration / microsecondsPerSecond; }
     constexpr DataType toMilliseconds() const { return _duration / microsecondsPerMillisecond; }
     constexpr DataType toMicroseconds() const { return _duration; }
+
+    Duration abs() const;
 
 protected:
     const DataType _duration;
@@ -197,7 +197,7 @@ constexpr inline Duration Duration::fromDays(DataType days)
     return Duration(millisecondsPerDay * days);
 }
 
-constexpr inline Duration Duration::abs() const
+inline Duration Duration::abs() const // in Linux system, std::abs is not constexpr
 {
     return Duration(std::abs(this->_duration));
 }

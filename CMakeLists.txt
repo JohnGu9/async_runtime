@@ -19,6 +19,10 @@ set(THREAD_LIBRARY_NAME "HP thread")
 endif()
 message(STATUS "Async Runtime using ThreadLibrary: ${THREAD_LIBRARY_NAME}")
 
+if(UNIX)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) # thread_local require PIC
+endif()
+
 # libuv setup
 message(STATUS "Libuv: ")
 add_subdirectory(vendor/libuv) # @TODO: ignore compile warning from libuv
@@ -47,7 +51,7 @@ target_link_libraries(async_runtime_utilities async_runtime_object)
 
 # fundamental
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/fundamental fundamental_src)
-option(ASYNC_RUNTIME_WITH_IO "build async runtime lib with io components" OFF)# async_runtime optional library
+option(ASYNC_RUNTIME_WITH_IO "build async runtime lib with io components" OFF) # async_runtime optional library
 if(ASYNC_RUNTIME_WITH_IO)
     aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/io io_src)
     message(STATUS "Async runtime io components ENABLE")
@@ -68,3 +72,4 @@ else()
     add_library(async_runtime_a ${async_runtime_src})
 endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} async_runtime_fundamental)
+

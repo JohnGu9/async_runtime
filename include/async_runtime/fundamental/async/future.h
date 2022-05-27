@@ -54,6 +54,7 @@ class Future : public Future<std::nullptr_t>
     static ref<List<Function<void(const T &)>>> dummy;
 
 public:
+    using DataType = T;
     static ref<Future<T>> async(Function<T()> fn);
     static ref<Future<T>> toEventLoop(Function<T()> fn, ref<EventLoop> eventLoop);
 
@@ -91,23 +92,27 @@ class Future<>::Package : public virtual Object, public std::tuple<ref<Future<_A
     using super = std::tuple<ref<Future<_Args>>...>;
 
 public:
-    Package(ref<Future<_Args>>... __args)
-        : super(__args...) {}
+    template <std::size_t Index>
+    using FutureType = typename std::tuple_element<Index, super>::type;
+    template <std::size_t Index>
+    using DataType = typename std::tuple_element<Index, std::tuple<_Args...>>::type;
 
-    template <size_t Index>
-    const auto &getFuture()
+    Package(ref<Future<_Args>>... __args) : super(__args...) {}
+
+    template <std::size_t Index>
+    const FutureType<Index> &getFuture() const
     {
-        return std::get<Index>(static_cast<super &>(*this));
+        return std::get<Index>(static_cast<const super &>(*this));
     }
 
-    template <size_t Index>
-    const auto &getValue()
+    template <std::size_t Index>
+    const DataType<Index> &getValue() const
     {
         return this->template getFuture<Index>()->_data;
     }
 
-    template <size_t Index>
-    bool completed()
+    template <std::size_t Index>
+    bool completed() const
     {
         return this->template getFuture<Index>()->completed();
     }
@@ -154,7 +159,7 @@ template <typename T>
 ref<Future<T>> Future<T>::async(Function<T()> fn)
 {
     auto loop = EventLoopGetterMixin::ensureEventLoop(nullptr);
-    auto future = Object::create<Completer<T>>(getter);
+    auto future = Object::create<Completer<T>>(loop);
     loop->callSoon([future, fn]
                    { future->complete(fn()); });
     return future;
@@ -227,7 +232,7 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
         lateref<Future<ReturnType>> resultFuture;
         if (result._future.isNotNull(resultFuture))
         {
-            return resultFuture;
+            return std::move(resultFuture);
         }
         ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
         future->complete(result._value);

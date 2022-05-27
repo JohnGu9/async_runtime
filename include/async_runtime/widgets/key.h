@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../object/object.h"
-#include "state.h"
 
 class Element;
 class BuildContext;
@@ -39,7 +38,7 @@ protected:
     T _value;
 };
 
-class Widget;
+#include "stateful_widget.h"
 
 template <class TargetWidget = StatefulWidget, class TargetState = State<StatefulWidget>>
 class GlobalKey : public Key
@@ -83,6 +82,8 @@ void GlobalKey<TargetWidget, TargetState>::dispose()
 {
     this->_element = nullptr;
 }
+
+#include "../elements/stateful_element.h"
 
 template <class TargetWidget, class TargetState>
 option<TargetWidget> GlobalKey<TargetWidget, TargetState>::getCurrentWidget()

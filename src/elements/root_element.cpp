@@ -68,7 +68,7 @@ public:
     void dispose() override {}
 };
 
-static ref<LoggerHandler> coutLoggerBuilder()
+ref<LoggerHandler> RootElement::coutLoggerBuilder()
 {
     static finalref<LoggerHandler> singleton = Object::create<RootElement::StdoutLoggerHandler>();
     return singleton;
@@ -82,7 +82,7 @@ static ref<LoggerHandler> coutLoggerBuilder()
 RootElement::RootElement(ref<Widget> widget, Function<void()> exit)
     : SingleChildElement(widget),
       exit(exit),
-      cout(coutLoggerBuilder()),
+      cout(RootElement::coutLoggerBuilder()),
       _child(Object::create<RootWrapper>(widget, this)) {}
 
 void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }

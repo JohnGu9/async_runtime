@@ -1,4 +1,5 @@
 #include "async_runtime/object/object.h"
+#include <cstring>
 
 class String::View : public String
 {
@@ -89,7 +90,7 @@ ref<String> String::View::substr(size_t begin, size_t length) const
 
 bool ref<String>::operator==(const char *const other) const
 {
-    const auto len = strlen(other);
+    const auto len = std::strlen(other);
     if (len != (*this)->length())
         return false;
     return strncmp((*this)->data(), other, len) == 0;

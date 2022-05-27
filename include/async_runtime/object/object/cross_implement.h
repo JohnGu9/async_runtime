@@ -129,7 +129,7 @@ ref<T> Object::cast(R *other)
 #ifndef NDEBUG
     assert(other != nullptr);
 #endif
-    return std::shared_ptr<T>(other->std::enable_shared_from_this<Object>::shared_from_this(), static_cast<T *>(other));
+    return std::shared_ptr<T>(static_cast<std::enable_shared_from_this<Object> *>(other)->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
@@ -138,7 +138,7 @@ ref<T> Object::cast(T *other)
 #ifndef NDEBUG
     assert(other != nullptr);
 #endif
-    return std::shared_ptr<T>(other->std::enable_shared_from_this<Object>::shared_from_this(), other);
+    return std::shared_ptr<T>(static_cast<std::enable_shared_from_this<Object> *>(other)->shared_from_this(), other);
 }
 
 template <typename T>

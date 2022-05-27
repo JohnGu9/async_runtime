@@ -4,6 +4,9 @@ extern "C"
 {
 #include <uv.h>
 }
+#ifndef _WIN32
+#define ULONG size_t
+#endif
 
 class Udp::_Udp : public Udp
 {

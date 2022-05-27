@@ -18,7 +18,7 @@
  */
 class Object : public std::enable_shared_from_this<Object>
 {
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
+    _ASYNC_RUNTIME_FRIEND_FAMILY_WITHOUT_OBJECT;
 
 public:
     using RuntimeType = size_t;

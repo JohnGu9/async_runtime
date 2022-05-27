@@ -127,28 +127,28 @@ namespace _async_runtime
         _async_runtime::stringstream_setup(__stringstream__)                                                       \
             << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT \
             << __format__ << std::endl;                                                                            \
-        Logger::of(context)->write(String::formatFromString(__stringstream__.str().c_str(), __VA_ARGS__));         \
+        Logger::of(context)->write(String::formatFromString(__stringstream__.str().c_str(), ##__VA_ARGS__));         \
     }
 #endif
 
 #ifndef LogDebug
 #ifndef NDEBUG
-#define LogDebug(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::debug_logger_type, __format__, __VA_ARGS__)
+#define LogDebug(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::debug_logger_type, __format__, ##__VA_ARGS__)
 #else
 #define LogDebug(__format__, ...) ((void)0)
 #endif
 #endif
 
 #ifndef LogInfo
-#define LogInfo(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::info_logger_type, __format__, __VA_ARGS__)
+#define LogInfo(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::info_logger_type, __format__, ##__VA_ARGS__)
 #endif
 
 #ifndef LogWarning
-#define LogWarning(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::warning_logger_type, __format__, __VA_ARGS__)
+#define LogWarning(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::warning_logger_type, __format__, ##__VA_ARGS__)
 #endif
 
 #ifndef LogError
-#define LogError(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::error_logger_type, __format__, __VA_ARGS__)
+#define LogError(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::error_logger_type, __format__, ##__VA_ARGS__)
 #endif
 
-#endif ASYNC_RUNTIME_NO_EXPORT_WIDGETS
+#endif // ASYNC_RUNTIME_NO_EXPORT_WIDGETS

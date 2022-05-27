@@ -11,7 +11,7 @@ class RootElement : public SingleChildElement
     class RootWrapper;
     class StdoutLoggerHandler;
 
-    friend ref<LoggerHandler> coutLoggerBuilder();
+    static ref<LoggerHandler> coutLoggerBuilder();
 
 public:
     finalref<Fn<void()>> exit;

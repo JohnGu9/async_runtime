@@ -139,7 +139,7 @@ void Stream<T>::sink(T value)
     assert(!_isClosed);
     if (!this->_active->empty())
     {
-        auto copy = this->_active->map<Function<void(const T &)>>(_extractListeners);
+        auto copy = this->_active->template map<Function<void(const T &)>>(_extractListeners);
         for (const auto &listener : copy)
             listener(value);
     }
