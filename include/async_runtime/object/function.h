@@ -41,24 +41,6 @@ public:
 
     ReturnType operator()(Args... args) const { return (*this)->operator()(std::forward<Args>(args)...); }
 
-    template <typename R>
-    bool operator==(const ref<R> &object1) const;
-    template <typename R>
-    bool operator!=(const ref<R> &other) const { return !this->operator==(other); }
-    template <typename R>
-    bool operator==(ref<R> &&object1) const;
-    template <typename R>
-    bool operator!=(ref<R> &&other) const { return !this->operator==(std::move(other)); }
-
-    template <typename R>
-    bool operator==(const option<R> &object1) const;
-    template <typename R>
-    bool operator!=(const option<R> &other) const { return !this->operator==(other); }
-    template <typename R>
-    bool operator==(option<R> &&object1) const;
-    template <typename R>
-    bool operator!=(option<R> &&other) const { return !this->operator==(std::move(other)); }
-
 protected:
     ref() {}
 

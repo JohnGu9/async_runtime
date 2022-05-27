@@ -16,11 +16,9 @@
  * ref<YourClass> yourClass = Object::create<YourClass>();
  *
  */
-class Object : public std::enable_shared_from_this<Object>
+class Object : protected std::enable_shared_from_this<Object>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
-
-    ref<Object> shared_from_this();
 
 public:
     using RuntimeType = size_t;
@@ -47,6 +45,7 @@ public:
     template <typename T>
     ref<T> covariant(); // unsafely cast
 
+    virtual bool operator==(const ref<Object> &other);
     virtual ref<String> toString();
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();

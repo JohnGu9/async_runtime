@@ -12,24 +12,6 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : _async_runtime::RefImplement<T>(other) {}
 
-    template <typename R>
-    bool operator==(const ref<R> &object1) const;
-    template <typename R>
-    bool operator!=(const ref<R> &other) const { return !this->operator==(other); }
-    template <typename R>
-    bool operator==(ref<R> &&object1) const;
-    template <typename R>
-    bool operator!=(ref<R> &&other) const { return !this->operator==(std::move(other)); }
-
-    template <typename R>
-    bool operator==(const option<R> &object1) const;
-    template <typename R>
-    bool operator!=(const option<R> &other) const { return !this->operator==(other); }
-    template <typename R>
-    bool operator==(option<R> &&object1) const;
-    template <typename R>
-    bool operator!=(option<R> &&other) const { return !this->operator==(std::move(other)); }
-
 protected:
     ref() {} // reserve for lateref
 

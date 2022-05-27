@@ -1,9 +1,9 @@
 #include "async_runtime/object/object.h"
 #include <typeinfo>
 
-ref<Object> Object::shared_from_this()
+bool Object::operator==(const ref<Object> &other)
 {
-    return ref<Object>(std::enable_shared_from_this<Object>::shared_from_this());
+    return (size_t)this == (size_t)(other.get());
 }
 
 Object::RuntimeType Object::runtimeType()

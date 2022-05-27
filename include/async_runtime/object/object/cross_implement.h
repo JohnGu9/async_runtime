@@ -108,8 +108,7 @@ ref<T> Object::create(_Args &&...__args)
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 void Object::detach(ref<T> &object)
 {
-    std::shared_ptr<T> &obj = object;
-    obj = nullptr;
+    static_cast<std::shared_ptr<T> &>(object) = nullptr;
 }
 
 template <typename T0, typename T1>
@@ -127,21 +126,25 @@ bool Object::identical(const ref<T0> &lhs, const ref<T1> &rhs)
 template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 ref<T> Object::cast(R *other)
 {
+#ifndef NDEBUG
     assert(other != nullptr);
+#endif
     return std::shared_ptr<T>(other->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 ref<T> Object::cast(T *other)
 {
+#ifndef NDEBUG
     assert(other != nullptr);
+#endif
     return std::shared_ptr<T>(other->shared_from_this(), other);
 }
 
 template <typename T>
 option<T> Object::cast()
 {
-    return std::dynamic_pointer_cast<T>(this->shared_from_this());
+    return std::dynamic_pointer_cast<T>(std::enable_shared_from_this<Object>::shared_from_this());
 }
 
 template <typename T>

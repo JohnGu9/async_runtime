@@ -106,6 +106,9 @@ public:
 #endif
     }
 
+    bool operator==(const ref<Object> &other) override;
+    virtual bool operator==(const ref<String> &other);
+
     // new interface
     std::string toStdString() const;
     virtual bool isEmpty() const;
@@ -171,33 +174,6 @@ public:
     bool operator!=(const char *const other) const { return !operator==(other); }
     bool operator!=(const std::string &other) const { return !operator==(other); }
     bool operator!=(std::string &&other) const { return !operator==(std::move(other)); }
-
-    template <typename R>
-    bool operator==(const ref<R> &object1) const;
-    template <typename R>
-    bool operator!=(const ref<R> &other) const { return !this->operator==(other); }
-    template <typename R>
-    bool operator==(ref<R> &&object1) const;
-    template <typename R>
-    bool operator!=(ref<R> &&other) const { return !this->operator==(std::move(other)); }
-
-    template <typename R>
-    bool operator==(const option<R> &object1) const;
-    template <typename R>
-    bool operator!=(const option<R> &other) const { return !this->operator==(other); }
-    template <typename R>
-    bool operator==(option<R> &&object1) const;
-    template <typename R>
-    bool operator!=(option<R> &&other) const { return !this->operator==(std::move(other)); }
-
-    template <>
-    bool operator==<String>(const ref<String> &other) const;
-    template <>
-    bool operator!=<String>(const ref<String> &other) const { return !operator==(other); }
-    template <>
-    bool operator==<String>(ref<String> &&other) const;
-    template <>
-    bool operator!=<String>(ref<String> &&other) const { return !operator==(std::move(other)); }
 
     template <typename T>
     ref<String> operator+(const T &value) const { return String::connect(*this, value); }

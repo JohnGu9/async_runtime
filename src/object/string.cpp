@@ -22,6 +22,25 @@ bool ref<String>::operator==(std::string &&other) const
     return std::equal((*this)->begin(), (*this)->end(), other.begin());
 }
 
+bool String::operator==(const ref<Object> &other)
+{
+    auto ptr = other.get();
+    if (String *string = dynamic_cast<String *>(ptr))
+    {
+        if (this->length() != string->length())
+            return false;
+        return std::equal(this->begin(), this->end(), string->begin());
+    }
+    return false;
+}
+
+bool String::operator==(const ref<String> &string)
+{
+    if (this->length() != string->length())
+        return false;
+    return std::equal(this->begin(), this->end(), string->begin());
+}
+
 ref<String> operator+(const char c, ref<String> string)
 {
     return String::connect(c, string);
