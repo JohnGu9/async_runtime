@@ -61,6 +61,7 @@ class String : public virtual Object, protected std::string
 
 protected:
     String() {}
+    virtual bool isNative() { return true; }
 
 public:
     using iterator = std::string::const_iterator;
@@ -112,6 +113,7 @@ public:
     virtual bool startsWith(ref<String>) const;
     virtual bool endsWith(ref<String>) const;
     virtual ref<List<ref<String>>> split(ref<String> pattern) const;
+    virtual ref<String> trim() const;
 
     template <typename... Args>
     ref<String> format(Args &&...args);
@@ -223,14 +225,9 @@ class String::View : public String
     using super = String;
 
 public:
-    View(ref<String> parent, size_t begin, size_t end)
-        : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
-    {
-#ifndef NDEBUG
-        auto parentLength = _parent->length();
-        assert(parentLength >= _begin && parentLength >= _end);
-#endif
-    }
+    View(ref<String> parent, size_t begin, size_t end);
+
+    bool isNative() override { return false; }
 
     const char *const c_str() const override { return _parent->c_str() + _begin; }
     const char *const data() const override { return _parent->data() + _begin; }

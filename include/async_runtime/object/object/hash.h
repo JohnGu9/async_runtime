@@ -21,6 +21,20 @@ namespace std
     };
 } // namespace std
 
+namespace _async_runtime
+{
+    inline size_t hash_c_string(const char *p, size_t s)
+    {
+        static const size_t prime = 31;
+        size_t result = 0;
+        for (size_t i = 0; i < s; ++i)
+        {
+            result = p[i] + (result * prime);
+        }
+        return result;
+    }
+}
+
 namespace std
 {
     template <>
@@ -28,8 +42,7 @@ namespace std
     {
         std::size_t operator()(const ::ref<String> &other) const
         {
-            static const auto hs = hash<std::string>();
-            return hs(static_cast<std::string>(*other));
+            return ::_async_runtime::hash_c_string(other->data(), other->length());
         }
     };
 

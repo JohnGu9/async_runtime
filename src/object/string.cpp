@@ -120,6 +120,13 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
     return list;
 }
 
+ref<String> String::trim() const
+{
+    auto begin = this->find_first_not_of(' ');
+    auto end = this->find_last_not_of(' ') + 1;
+    return this->substr(begin, end - begin);
+}
+
 ref<String> String::substr(size_t begin, size_t length) const
 {
     auto self = Object::cast<>(const_cast<String *>(this));
@@ -141,4 +148,21 @@ ref<String> String::getline(std::istream &is)
     std::string str;
     std::getline(is, str);
     return str;
+}
+
+String::View::View(ref<String> parent, size_t begin, size_t end)
+    : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
+{
+    if (!parent->isNative()) // [[unlikely]]
+    {
+        auto view = parent->covariant<String::View>();
+        const_cast<ref<String> &>(this->_parent) = view->_parent;
+        const_cast<size_t &>(this->_begin) = view->_begin + begin;
+        const_cast<size_t &>(this->_end) = this->_begin + _length;
+    }
+
+#ifndef NDEBUG
+    auto parentLength = _parent->length();
+    assert(parentLength >= _begin && parentLength >= _end);
+#endif
 }
