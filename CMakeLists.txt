@@ -19,7 +19,9 @@ set(THREAD_LIBRARY_NAME "HP thread")
 endif()
 message(STATUS "Async Runtime using ThreadLibrary: ${THREAD_LIBRARY_NAME}")
 
-if(UNIX)
+if(WIN32)
+# windows only build static library, no need PIC
+else()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # thread_local require PIC
 endif()
 

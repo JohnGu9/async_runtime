@@ -23,7 +23,7 @@ template <typename T>
 class Containable
 {
 public:
-    virtual bool contain(T) = 0;
+    virtual bool contain(T) const = 0;
 };
 
 #include "container/list.h"

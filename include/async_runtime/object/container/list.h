@@ -7,7 +7,7 @@
 #include "../container.h"
 
 template <typename T>
-class List : public std::deque<T>, public Iterable<T>, public Removable<size_t>
+class List : public std::deque<T>, public Iterable<T>, public Removable<size_t>, public Containable<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -48,6 +48,11 @@ public:
     {
         for (const auto &iter : *this)
             fn(iter);
+    }
+
+    bool contain(T v) const override
+    {
+        return std::find(this->begin(), this->end(), v) != this->end();
     }
 
     bool remove(size_t index) override

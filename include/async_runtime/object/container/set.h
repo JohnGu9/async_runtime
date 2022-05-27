@@ -6,7 +6,7 @@
 #include <unordered_set>
 
 template <typename T>
-class Set : public std::unordered_set<T>, public Iterable<T>, public Removable<T>
+class Set : public std::unordered_set<T>, public Iterable<T>, public Removable<T>, public Containable<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -47,6 +47,11 @@ public:
     {
         for (const auto &iter : *this)
             fn(iter);
+    }
+
+    bool contain(T v) const override
+    {
+        return this->find(v) != this->end();
     }
 
     bool remove(T v) override
