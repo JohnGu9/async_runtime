@@ -16,7 +16,7 @@
  * ref<YourClass> yourClass = Object::create<YourClass>();
  *
  */
-class Object : protected std::enable_shared_from_this<Object>
+class Object : public std::enable_shared_from_this<Object>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -39,6 +39,10 @@ public:
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     static ref<T> cast(T *);
 
+    Object() {}
+    // @mustCallSuper
+    virtual void init() {}
+
     // dynamic cast
     template <typename T>
     option<T> cast(); // safely cast
@@ -51,11 +55,6 @@ public:
     virtual RuntimeType runtimeType();
     virtual ~Object() {}
 
-protected:
-    Object() {}
     Object(const Object &) = delete;
     Object &operator=(const Object &) = delete;
-
-    // @mustCallSuper
-    virtual void init() {}
 };

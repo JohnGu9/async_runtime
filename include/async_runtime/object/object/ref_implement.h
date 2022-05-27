@@ -48,4 +48,6 @@ protected:
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(other) {}
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    RefImplement(std::shared_ptr<R> &&other) : std::shared_ptr<T>(other) {}
 };

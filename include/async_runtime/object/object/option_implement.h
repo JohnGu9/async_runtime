@@ -26,4 +26,6 @@ protected:
     OptionImplement(std::nullptr_t) : std::shared_ptr<T>(nullptr) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     OptionImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(other){};
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    OptionImplement(std::shared_ptr<R> &&other) : std::shared_ptr<T>(other){};
 };

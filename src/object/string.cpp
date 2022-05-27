@@ -1,5 +1,92 @@
 #include "async_runtime/object/object.h"
 
+class String::View : public String
+{
+    const ref<String> _parent;
+    const size_t _begin;
+    const size_t _end;
+    const size_t _length;
+
+    using super = String;
+
+public:
+    View(ref<String> parent, size_t begin, size_t end);
+
+    bool isNative() override { return false; }
+
+    const char *const c_str() const override { return _parent->c_str() + _begin; }
+    const char *const data() const override { return _parent->data() + _begin; }
+    size_t length() const override { return _length; }
+    size_t size() const override { return _length; }
+
+    const char &operator[](size_t index) const override
+    {
+        if (index >= _end)
+            throw std::range_error("String::View::operator[] access out of range memory");
+        return _parent[index + _begin];
+    }
+    const_iterator begin() const override { return _parent->begin() + _begin; }
+    const_iterator end() const override { return _parent->begin() + _end; }
+    const_reverse_iterator rbegin() const override { return _parent->rbegin() + (_parent->length() - _end); }
+    const_reverse_iterator rend() const override { return _parent->rbegin() + (_parent->length() - _begin); }
+
+    size_t find(ref<String> pattern, size_t start = 0) const override
+    {
+        size_t result = _parent->find(pattern, start + _begin);
+        if (result >= _end)
+            return super::npos;
+        return result - _begin;
+    }
+    size_t find_first_of(ref<String> pattern, size_t start = 0) const override
+    {
+        size_t result = _parent->find_first_of(pattern, start + _begin);
+        if (result >= _end)
+            return super::npos;
+        return result - _begin;
+    }
+    size_t find_first_not_of(ref<String> pattern, size_t start = 0) const override
+    {
+        size_t result = _parent->find_first_not_of(pattern, start + _begin);
+        if (result >= _end)
+            return super::npos;
+        return result - _begin;
+    }
+    size_t find_last_of(ref<String> pattern, size_t start = SIZE_MAX) const override
+    {
+        start = start == SIZE_MAX ? SIZE_MAX : start - (_parent->length() - _end);
+        size_t result = _parent->find_last_of(pattern, start);
+        if (result < _begin)
+            return super::npos;
+        return result - _begin;
+    }
+    size_t find_last_not_of(ref<String> pattern, size_t start = SIZE_MAX) const override
+    {
+        start = start == SIZE_MAX ? SIZE_MAX : start - (_parent->length() - _end);
+        size_t result = _parent->find_last_not_of(pattern, start);
+        if (result < _begin)
+            return super::npos;
+        return result - _begin;
+    }
+
+    ref<String> substr(size_t begin = 0, size_t length = SIZE_MAX) const override;
+};
+
+String::View::View(ref<String> parent, size_t begin, size_t end)
+    : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
+{
+#ifndef NDEBUG
+    assert(_parent->isNative());
+    auto parentLength = _parent->length();
+    assert(parentLength >= _begin && parentLength >= _end);
+#endif
+}
+
+ref<String> String::View::substr(size_t begin, size_t length) const
+{
+    begin = begin + this->_begin;
+    return Object::create<String::View>(this->_parent, begin, std::min(length + begin, this->length() + this->_begin));
+}
+
 bool ref<String>::operator==(const char *const other) const
 {
     const auto len = strlen(other);
@@ -167,21 +254,4 @@ ref<String> String::getline(std::istream &is)
     std::string str;
     std::getline(is, str);
     return str;
-}
-
-String::View::View(ref<String> parent, size_t begin, size_t end)
-    : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
-{
-    if (!parent->isNative()) // [[unlikely]]
-    {
-        auto view = parent->covariant<String::View>();
-        const_cast<ref<String> &>(this->_parent) = view->_parent;
-        const_cast<size_t &>(this->_begin) = view->_begin + begin;
-        const_cast<size_t &>(this->_end) = this->_begin + _length;
-    }
-
-#ifndef NDEBUG
-    auto parentLength = _parent->length();
-    assert(parentLength >= _begin && parentLength >= _end);
-#endif
 }
