@@ -77,7 +77,6 @@
 #include "object/option.h"
 #include "object/weak_ref.h"
 
-#include "object/hash.h"
-
 #include "object/cross_implement.h"
+#include "object/hash.h"
 #include "object/operators.h"

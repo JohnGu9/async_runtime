@@ -26,12 +26,28 @@ public:
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
-    static void detach(ref<T> &);
+    static void detach(ref<T> &) noexcept;
 
     template <typename T0, typename T1>
-    static bool identical(const option<T0> &, const option<T1> &);
+    static bool identical(const option<T0> &, const option<T1> &) noexcept;
     template <typename T0, typename T1>
-    static bool identical(const ref<T0> &, const ref<T1> &);
+    static bool identical(const ref<T0> &, const ref<T1> &) noexcept;
+    template <typename T0, typename T1>
+    static bool identical(const ref<T0> &, const option<T1> &) noexcept;
+    template <typename T0, typename T1>
+    static bool identical(const option<T0> &, const ref<T1> &) noexcept;
+
+    template <typename T0, typename T1>
+    static bool equal(const option<T0> &, const option<T1> &);
+    template <typename T0, typename T1>
+    static bool equal(const ref<T0> &, const ref<T1> &);
+    template <typename T0, typename T1>
+    static bool equal(const ref<T0> &, const option<T1> &);
+    template <typename T0, typename T1>
+    static bool equal(const option<T0> &, const ref<T1> &);
+
+    template <typename T>
+    static bool isNull(const option<T> &) noexcept;
 
     // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -45,11 +61,11 @@ public:
 
     // dynamic cast
     template <typename T>
-    option<T> cast(); // safely cast
+    option<T> cast() noexcept; // safely cast
     template <typename T>
-    ref<T> covariant(); // unsafely cast
+    ref<T> covariant() noexcept(false); // unsafely cast
 
-    virtual bool operator==(const ref<Object> &other);
+    virtual bool operator==(ref<Object> other);
     virtual ref<String> toString();
     virtual void toStringStream(std::ostream &);
     virtual RuntimeType runtimeType();

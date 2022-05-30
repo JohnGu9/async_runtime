@@ -1,9 +1,9 @@
 #include "async_runtime/object/object.h"
 #include <typeinfo>
 
-bool Object::operator==(const ref<Object> &other)
+bool Object::operator==(ref<Object> other)
 {
-    return (size_t)this == (size_t)(other.get());
+    return false;
 }
 
 Object::RuntimeType Object::runtimeType()

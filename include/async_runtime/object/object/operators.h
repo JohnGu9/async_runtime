@@ -1,4 +1,6 @@
 #pragma once
+#include "cross_implement.h"
+#include "object.h"
 #include "option.h"
 #include "ref.h"
 
@@ -12,19 +14,14 @@
         return !(object0 == object1); \
     }
 
-#define _REF_TO_REF                                \
-    {                                              \
-        return object0.get()->operator==(object1); \
-    }
-
 template <typename T, typename R>
-bool operator==(const ref<T> &object0, const ref<R> &object1) _REF_TO_REF;
+bool operator==(const ref<T> &object0, const ref<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(const ref<T> &object0, ref<R> &&object1) _REF_TO_REF;
+bool operator==(const ref<T> &object0, ref<R> &&object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(ref<T> &&object0, const ref<R> &object1) _REF_TO_REF;
+bool operator==(ref<T> &&object0, const ref<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(ref<T> &&object0, ref<R> &&object1) _REF_TO_REF;
+bool operator==(ref<T> &&object0, ref<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
 bool operator!=(const ref<T> &object0, const ref<R> &object1) _REVERSE;
@@ -35,23 +32,17 @@ bool operator!=(ref<T> &&object0, const ref<R> &object1) _REVERSE;
 template <typename T, typename R>
 bool operator!=(ref<T> &&object0, ref<R> &&object1) _REVERSE;
 
-#define _REF_TO_OPTION                                      \
-    {                                                       \
-        if (R *ptr = object1.get())                         \
-        {                                                   \
-            object0.get()->operator==(Object::cast<>(ptr)); \
-        }                                                   \
-        return false;                                       \
-    }
-
 template <typename T, typename R>
-bool operator==(const ref<T> &object0, const option<R> &object1) _REF_TO_OPTION;
+bool operator==(const ref<T> &object0, const option<R> &object1)
+{
+    return Object::equal<>(object0, object1);
+}
 template <typename T, typename R>
-bool operator==(const ref<T> &object0, option<R> &&object1) _REF_TO_OPTION;
+bool operator==(const ref<T> &object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(ref<T> &&object0, const option<R> &object1) _REF_TO_OPTION;
+bool operator==(ref<T> &&object0, const option<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(ref<T> &&object0, option<R> &&object1) _REF_TO_OPTION;
+bool operator==(ref<T> &&object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
 bool operator!=(const ref<T> &object0, const option<R> &object1) _REVERSE;
@@ -62,19 +53,17 @@ bool operator!=(ref<T> &&object0, const option<R> &object1) _REVERSE;
 template <typename T, typename R>
 bool operator!=(ref<T> &&object0, option<R> &&object1) _REVERSE;
 
-#define _OPTION_TO_REF             \
-    {                              \
-        return object1 == object0; \
-    }
-
 template <typename T, typename R>
-bool operator==(const option<T> &object0, const ref<R> &object1) _OPTION_TO_REF;
+bool operator==(const option<T> &object0, const ref<R> &object1)
+{
+    return Object::equal<>(object0, object1);
+}
 template <typename T, typename R>
-bool operator==(const option<T> &object0, ref<R> &&object1) _OPTION_TO_REF;
+bool operator==(const option<T> &object0, ref<R> &&object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(option<T> &&object0, const ref<R> &object1) _OPTION_TO_REF;
+bool operator==(option<T> &&object0, const ref<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(option<T> &&object0, ref<R> &&object1) _OPTION_TO_REF;
+bool operator==(option<T> &&object0, ref<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
 bool operator!=(const option<T> &object0, const ref<R> &object1) _REVERSE;
@@ -85,25 +74,17 @@ bool operator!=(option<T> &&object0, const ref<R> &object1) _REVERSE;
 template <typename T, typename R>
 bool operator!=(option<T> &&object0, ref<R> &&object1) _REVERSE;
 
-#define _OPTION_TO_OPTION                                        \
-    {                                                            \
-        T *ptr0;                                                 \
-        R *ptr1;                                                 \
-        if ((ptr0 = object0.get()) && (ptr1 = object1.get()))    \
-        {                                                        \
-            return Object::cast<>(ptr0) == Object::cast<>(ptr1); \
-        }                                                        \
-        return false;                                            \
-    }
-
 template <typename T, typename R>
-bool operator==(const option<T> &object0, const option<R> &object1) _OPTION_TO_OPTION;
+bool operator==(const option<T> &object0, const option<R> &object1)
+{
+    return Object::equal<>(object0, object1);
+}
 template <typename T, typename R>
-bool operator==(const option<T> &object0, option<R> &&object1) _OPTION_TO_OPTION;
+bool operator==(const option<T> &object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(option<T> &&object0, const option<R> &object1) _OPTION_TO_OPTION;
+bool operator==(option<T> &&object0, const option<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
-bool operator==(option<T> &&object0, option<R> &&object1) _OPTION_TO_OPTION;
+bool operator==(option<T> &&object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
 bool operator!=(const option<T> &object0, const option<R> &object1) _REVERSE;
@@ -115,21 +96,28 @@ template <typename T, typename R>
 bool operator!=(option<T> &&object0, option<R> &&object1) _REVERSE;
 
 template <typename T>
-bool operator==(const option<T> &object0, std::nullptr_t) { return object0.get() == nullptr; }
+bool operator==(const option<T> &object0, std::nullptr_t) { return Object::isNull<>(object0); }
 template <typename T>
-bool operator==(option<T> &&object0, std::nullptr_t) { return object0.get() == nullptr; }
+bool operator==(option<T> &&object0, std::nullptr_t) { return Object::isNull<>(object0); }
 template <typename T>
-bool operator!=(const option<T> &object0, std::nullptr_t) { return object0.get() != nullptr; }
+bool operator!=(const option<T> &object0, std::nullptr_t) { return !Object::isNull<>(object0); }
 template <typename T>
-bool operator!=(option<T> &&object0, std::nullptr_t) { return object0.get() != nullptr; }
+bool operator!=(option<T> &&object0, std::nullptr_t) { return !Object::isNull<>(object0); }
 
 /**
- * @brief Object
+ * @brief operator<<
  *
  */
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const ref<T> &object)
+{
+    object->toStringStream(os);
+    return os;
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, ref<T> &&object)
 {
     object->toStringStream(os);
     return os;

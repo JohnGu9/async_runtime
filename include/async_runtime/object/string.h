@@ -29,7 +29,7 @@ class ref<String>;
  * if (newString == "This is a non-null String object") { / *** / } // compare with const char* const
  *
  * ref<String> withTrueString = string + true; // append any type that support ostream &operator<<(std::ostream &out, T b)
- * ref<String> withTrueString = string + 1.023;
+ * ref<String> withNumberString = string + 1.023;
  *
  */
 class String : public virtual Object, protected std::string
@@ -38,9 +38,6 @@ class String : public virtual Object, protected std::string
 
     template <typename T>
     friend struct std::hash;
-
-    String &operator=(const std::string &other) = delete;
-    String &operator=(std::string &&other) = delete;
 
     template <class First, class... Rest>
     static void _unwrapPackToCstr(const char *const str, size_t &lastIndex, std::ostream &ss, const First &first, const Rest &...rest);
@@ -58,6 +55,8 @@ class String : public virtual Object, protected std::string
     template <class First, class... Rest>
     static void _connect(std::ostream &ss, const First &first, const Rest &...rest);
     static void _connect(std::ostream &ss) {}
+
+    using super = std::string;
 
 protected:
     class View;
@@ -106,11 +105,20 @@ public:
 #endif
     }
 
-    bool operator==(const ref<Object> &other) override;
+    String &operator=(const char other) = delete;
+    String &operator=(const char *const other) = delete;
+    String &operator=(const std::string &other) = delete;
+    String &operator=(std::string &&other) = delete;
+
     virtual bool operator==(const ref<String> &other);
 
+    // override from Object
+    bool operator==(ref<Object> other) override;
+    void toStringStream(std::ostream &) override;
+    ref<String> toString() override;
+
     // new interface
-    std::string toStdString() const;
+    virtual std::string toStdString() const;
     virtual bool isEmpty() const;
     virtual bool isNotEmpty() const;
     virtual bool startsWith(ref<String>) const;
@@ -209,9 +217,6 @@ void String::_connect(std::ostream &ss, const First &first, const Rest &...rest)
 template <typename... Args>
 void String::connectToStream(std::ostream &ss, Args &&...args)
 {
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-    ss << std::boolalpha;
-#endif
     String::_connect(ss, args...);
 }
 
@@ -219,6 +224,9 @@ template <typename... Args>
 ref<String> String::connect(Args &&...args)
 {
     std::stringstream ss;
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+    ss << std::boolalpha;
+#endif
     String::connectToStream(ss, std::forward<Args>(args)...);
     return ss.str();
 }
@@ -256,9 +264,6 @@ template <typename... Args>
 void String::formatFromStringToStream(std::ostream &ss, const char *const str, Args &&...args)
 {
     size_t lastIndex = 0;
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-    ss << std::boolalpha;
-#endif
     String::_unwrapPackToCstr(str, lastIndex, ss, args...);
     if (str[lastIndex] != '\0')
         ss << &(str[lastIndex]);
@@ -268,6 +273,9 @@ template <typename... Args>
 ref<String> String::formatFromString(const char *const str, Args &&...args)
 {
     std::stringstream ss;
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+    ss << std::boolalpha;
+#endif
     String::formatFromStringToStream(ss, str, std::forward<Args>(args)...);
     return ss.str();
 }
@@ -307,9 +315,6 @@ template <typename Iterator, typename... Args>
 void String::formatFromIteratorToStream(std::ostream &ss, const Iterator begin, const Iterator end, Args &&...args)
 {
     Iterator lastIndex = begin;
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-    ss << std::boolalpha;
-#endif
     String::_unwrapPackToIterator(lastIndex, end, ss, args...);
     if (lastIndex != end)
         ss.write(&(*lastIndex), end - lastIndex);
@@ -319,6 +324,9 @@ template <typename Iterator, typename... Args>
 ref<String> String::formatFromIterator(const Iterator begin, const Iterator end, Args &&...args)
 {
     std::stringstream ss;
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+    ss << std::boolalpha;
+#endif
     String::formatFromIteratorToStream(ss, begin, end, std::forward<Args>(args)...);
     return ss.str();
 }

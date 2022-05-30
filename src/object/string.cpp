@@ -110,7 +110,7 @@ bool ref<String>::operator==(std::string &&other) const
     return std::equal((*this)->begin(), (*this)->end(), other.begin());
 }
 
-bool String::operator==(const ref<Object> &other)
+bool String::operator==(ref<Object> other)
 {
     auto ptr = other.get();
     if (String *string = dynamic_cast<String *>(ptr))
@@ -127,6 +127,16 @@ bool String::operator==(const ref<String> &string)
     if (this->length() != string->length())
         return false;
     return std::equal(this->begin(), this->end(), string->begin());
+}
+
+void String::toStringStream(std::ostream &os)
+{
+    os.write(this->data(), this->length());
+}
+
+ref<String> String::toString()
+{
+    return self();
 }
 
 ref<String> operator+(const char c, ref<String> string)

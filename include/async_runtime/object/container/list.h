@@ -52,7 +52,8 @@ public:
 
     bool contain(T v) const override
     {
-        return std::find(this->begin(), this->end(), v) != this->end();
+        return this->any([&v](const T &value)
+                         { return value == v; });
     }
 
     bool remove(size_t index) override

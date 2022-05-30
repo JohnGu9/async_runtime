@@ -106,21 +106,97 @@ ref<T> Object::create(_Args &&...__args)
  * @param object the ref need to force to release
  */
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
-void Object::detach(ref<T> &object)
+void Object::detach(ref<T> &object) noexcept
 {
     static_cast<std::shared_ptr<T> &>(object) = nullptr;
 }
 
+/**
+ * @brief Object::identical
+ *
+ * @alarm use operator==(const std::std::shared_ptr&, const std::std::shared_ptr&) to make pointer check correctly
+ * if using own raw pointer compare, the result maybe vary depending on platforms
+ * on much platforms, object raw pointer value depending on current casted type
+ *
+ */
 template <typename T0, typename T1>
-bool Object::identical(const option<T0> &lhs, const option<T1> &rhs)
+bool Object::identical(const option<T0> &lhs, const option<T1> &rhs) noexcept
 {
-    return (size_t)(lhs.get()) == (size_t)(rhs.get());
+    return static_cast<const std::shared_ptr<T0> &>(lhs) ==
+           static_cast<const std::shared_ptr<T1> &>(rhs);
 }
 
 template <typename T0, typename T1>
-bool Object::identical(const ref<T0> &lhs, const ref<T1> &rhs)
+bool Object::identical(const ref<T0> &lhs, const ref<T1> &rhs) noexcept
 {
-    return (size_t)(lhs.get()) == (size_t)(rhs.get());
+    return static_cast<const std::shared_ptr<T0> &>(lhs) ==
+           static_cast<const std::shared_ptr<T1> &>(rhs);
+}
+
+template <typename T0, typename T1>
+bool Object::identical(const ref<T0> &lhs, const option<T1> &rhs) noexcept
+{
+    return static_cast<const std::shared_ptr<T0> &>(lhs) ==
+           static_cast<const std::shared_ptr<T1> &>(rhs);
+}
+
+template <typename T0, typename T1>
+bool Object::identical(const option<T0> &lhs, const ref<T1> &rhs) noexcept
+{
+    return static_cast<const std::shared_ptr<T0> &>(lhs) ==
+           static_cast<const std::shared_ptr<T1> &>(rhs);
+}
+
+/**
+ * @brief Object::equal
+ *
+ */
+template <typename T0, typename T1>
+bool Object::equal(const option<T0> &lhs, const option<T1> &rhs)
+{
+    if (Object::identical<>(lhs, rhs))
+        return true;
+    else if (!Object::isNull<>(lhs) && !Object::isNull<>(rhs))
+        return lhs.get()->operator==(Object::cast<Object>(rhs.get()));
+    return false;
+}
+
+template <typename T0, typename T1>
+bool Object::equal(const ref<T0> &lhs, const ref<T1> &rhs)
+{
+    if (Object::identical<>(lhs, rhs))
+        return true;
+    return lhs.get()->operator==(rhs);
+}
+
+template <typename T0, typename T1>
+bool Object::equal(const ref<T0> &lhs, const option<T1> &rhs)
+{
+    if (Object::identical<>(lhs, rhs))
+        return true;
+    else if (Object::isNull<>(rhs))
+        return false;
+    return lhs.get()->operator==(Object::cast<>(rhs.get()));
+}
+
+template <typename T0, typename T1>
+bool Object::equal(const option<T0> &lhs, const ref<T1> &rhs)
+{
+    if (Object::identical<>(lhs, rhs))
+        return true;
+    else if (Object::isNull<>(lhs))
+        return false;
+    return lhs.get()->operator==(rhs);
+}
+
+/**
+ * @brief Object::isNull
+ *
+ */
+template <typename T>
+bool Object::isNull(const option<T> &object) noexcept
+{
+    return static_cast<const std::shared_ptr<T> &>(object) == nullptr;
 }
 
 template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
@@ -142,13 +218,13 @@ ref<T> Object::cast(T *other)
 }
 
 template <typename T>
-option<T> Object::cast()
+option<T> Object::cast() noexcept
 {
-    return std::dynamic_pointer_cast<T>(std::enable_shared_from_this<Object>::shared_from_this());
+    return std::dynamic_pointer_cast<T>(this->std::enable_shared_from_this<Object>::shared_from_this());
 }
 
 template <typename T>
-ref<T> Object::covariant()
+ref<T> Object::covariant() noexcept(false)
 {
     if (T *castedPointer = dynamic_cast<T *>(this))
         return Object::cast<>(castedPointer);
