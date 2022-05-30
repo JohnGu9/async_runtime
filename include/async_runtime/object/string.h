@@ -2,9 +2,8 @@
 
 #include "container.h"
 #include "object.h"
-#include <deque>
+#include <cstring>
 #include <limits>
-#include <memory>
 #include <sstream>
 #include <string>
 
@@ -39,22 +38,11 @@ class String : public virtual Object, protected std::string
     template <typename T>
     friend struct std::hash;
 
-    template <class First, class... Rest>
-    static void _unwrapPackToCstr(const char *const str, size_t &lastIndex, std::ostream &ss, const First &first, const Rest &...rest);
-    static void _unwrapPackToCstr(const char *const str, size_t &lastIndex, std::ostream &ss) {}
+    template <typename T>
+    static bool _formatFromStringToStream(std::ostream &os, const char *&start, const char *end, const T &element);
 
-    template <typename Iterator, class First, class... Rest>
-    static void _unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std::ostream &ss, const First &first, const Rest &...rest);
-    template <typename Iterator>
-    static void _unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std::ostream &ss) {}
-
-    template <class First, class... Rest>
-    void _unwrapPack(size_t &lastIndex, std::ostream &ss, const First &first, const Rest &...rest);
-    void _unwrapPack(size_t &lastIndex, std::ostream &ss) {}
-
-    template <class First, class... Rest>
-    static void _connect(std::ostream &ss, const First &first, const Rest &...rest);
-    static void _connect(std::ostream &ss) {}
+    template <typename Iterator, typename T>
+    static bool _formatFromIteratorToStream(std::ostream &os, Iterator &start, const Iterator &end, const T &element);
 
     using super = std::string;
 
@@ -79,12 +67,12 @@ public:
     static ref<String> connect(Args &&...args);
 
     template <typename... Args>
-    static void formatFromStringToStream(std::ostream &ss, const char *const str, Args &&...args);
+    static void formatFromStringToStream(std::ostream &os, const char *const str, size_t len, Args &&...args);
     template <typename... Args>
     static ref<String> formatFromString(const char *const str, Args &&...args);
 
     template <typename Iterator, typename... Args>
-    static void formatFromIteratorToStream(std::ostream &ss, const Iterator begin, const Iterator end, Args &&...args);
+    static void formatFromIteratorToStream(std::ostream &os, const Iterator begin, const Iterator end, Args &&...args);
     template <typename Iterator, typename... Args>
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
@@ -199,25 +187,11 @@ public:
     }
 };
 
-ref<String> operator+(const char c, ref<String> string);
-ref<String> operator+(const char *const str, ref<String> string);
-ref<String> operator+(const std::string &str, ref<String> string);
-ref<String> operator+(std::string &&str, ref<String> string);
-
-std::ostream &operator<<(std::ostream &os, const ref<String> &str);
-std::ostream &operator<<(std::ostream &os, ref<String> &&str);
-
-template <class First, class... Rest>
-void String::_connect(std::ostream &ss, const First &first, const Rest &...rest)
-{
-    ss << first;
-    String::_connect(ss, rest...);
-}
-
 template <typename... Args>
-void String::connectToStream(std::ostream &ss, Args &&...args)
+void String::connectToStream(std::ostream &os, Args &&...args)
 {
-    String::_connect(ss, args...);
+    using expander = bool[]; // on Windows platform, must use redefine
+    (void)expander{true, (void(os << args), true)...};
 }
 
 template <typename... Args>
@@ -227,46 +201,50 @@ ref<String> String::connect(Args &&...args)
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
     ss << std::boolalpha;
 #endif
-    String::connectToStream(ss, std::forward<Args>(args)...);
+    String::connectToStream<>(ss, std::forward<Args>(args)...);
     return ss.str();
 }
 
-template <class First, class... Rest>
-void String::_unwrapPackToCstr(const char *const str, size_t &lastIndex, std::ostream &ss, const First &first, const Rest &...rest)
+template <typename T>
+bool String::_formatFromStringToStream(std::ostream &os, const char *&start, const char *end, const T &element)
 {
-    size_t index = lastIndex;
-    while (true)
+    const auto originStart = start;
+    const auto endPosition = end - 1;
+    for (; start < endPosition; start++)
     {
-        if (str[index] == '\0')
+        if (std::strncmp(start, "{}", 2) == 0)
         {
-#ifndef NDEBUG
-            std::stringstream debugInfo;
-            debugInfo << "String::format arguments overflow when handle \"" << str << "\"" << std::endl;
-            std::cout << debugInfo.str();
-#endif
-            return;
-        }
-        if (str[index++] == '{')
-        {
-            if (str[index++] == '}')
-            {
-                ss.write(&(str[lastIndex]), index - lastIndex - 2)
-                    << first;
-                lastIndex = index;
-                _unwrapPackToCstr(str, lastIndex, ss, rest...);
-                return;
-            }
+            os.write(originStart, start - originStart);
+            os << element;
+            start += 2;
+            return true;
         }
     }
+    // [[unlikely]]
+    os.write(originStart, start - originStart);
+    return false;
 }
 
 template <typename... Args>
-void String::formatFromStringToStream(std::ostream &ss, const char *const str, Args &&...args)
+void String::formatFromStringToStream(std::ostream &os, const char *const str, size_t len, Args &&...args)
 {
-    size_t lastIndex = 0;
-    String::_unwrapPackToCstr(str, lastIndex, ss, args...);
-    if (str[lastIndex] != '\0')
-        ss << &(str[lastIndex]);
+    const char *start = str;
+    const char *end = start + len;
+
+    using expander = bool[]; // on Windows platform, must use redefine
+#if !defined(NDEBUG) && !defined(ASYNC_RUNTIME_STRING_NO_WARNING)
+    bool result[] = {true, String::_formatFromStringToStream<>(os, start, end, args)...};
+    if (result[sizeof(result) - 1] == false) //[[unlikely]]
+    {
+        std::cout << "Warning: String format \"" << str << "\" with arguments(" << sizeof...(args) << ") ";
+        (void)expander{true, (void(std::cout << '[' << args << "] "), true)...};
+        std::cout << "overflow" << std::endl;
+    }
+#else
+    (void)expander{true, String::_formatFromStringToStream<>(os, start, end, args)...};
+#endif
+
+    os.write(start, end - start);
 }
 
 template <typename... Args>
@@ -276,48 +254,51 @@ ref<String> String::formatFromString(const char *const str, Args &&...args)
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
     ss << std::boolalpha;
 #endif
-    String::formatFromStringToStream(ss, str, std::forward<Args>(args)...);
+    auto len = std::strlen(str);
+    String::formatFromStringToStream<>(ss, str, len, std::forward<Args>(args)...);
     return ss.str();
 }
 
-template <typename Iterator, class First, class... Rest>
-void String::_unwrapPackToIterator(Iterator &lastIndex, const Iterator &end, std::ostream &ss, const First &first, const Rest &...rest)
+template <typename Iterator, typename T>
+bool String::_formatFromIteratorToStream(std::ostream &os, Iterator &start, const Iterator &end, const T &element)
 {
-    Iterator index = lastIndex;
-    while (true)
+    while (start != end)
     {
-        if (index == end)
+        if (*start == '{')
         {
-#ifndef NDEBUG
-            std::cout << "String::format arguments overflow" << std::endl;
-#endif
-            return;
-        }
-        if (*index == '{')
-        {
-            if (*(++index) == '}')
+            auto next = start + 1;
+            if (next != end && *next == '}')
             {
-                --index;
-                ss.write(&(*lastIndex), index - lastIndex)
-                    << first;
-                lastIndex = index;
-                ++ ++lastIndex; // lastIndex = lastIndex + 2;
-                _unwrapPackToIterator(lastIndex, end, ss, rest...);
-                return;
+                os << element;
+                start = next + 1;
+                return true;
             }
         }
-        else
-            ++index;
+        os << *start;
+        start++;
     }
+    // [[unlikely]]
+    return false;
 }
 
 template <typename Iterator, typename... Args>
-void String::formatFromIteratorToStream(std::ostream &ss, const Iterator begin, const Iterator end, Args &&...args)
+void String::formatFromIteratorToStream(std::ostream &os, const Iterator begin, const Iterator end, Args &&...args)
 {
-    Iterator lastIndex = begin;
-    String::_unwrapPackToIterator(lastIndex, end, ss, args...);
-    if (lastIndex != end)
-        ss.write(&(*lastIndex), end - lastIndex);
+    Iterator start = begin;
+    using expander = bool[]; // on Windows platform, must use redefine
+#if !defined(NDEBUG) && !defined(ASYNC_RUNTIME_STRING_NO_WARNING)
+    bool result[] = {true, String::_formatFromIteratorToStream<>(os, start, end, args)...};
+    if (result[sizeof(result) - 1] == false) //[[unlikely]]
+    {
+        std::cout << "Warning: String format \"" << std::string(begin, end) << "\" with arguments(" << sizeof...(args) << ") ";
+        (void)expander{true, (void(std::cout << '[' << args << "] "), true)...};
+        std::cout << "overflow" << std::endl;
+    }
+#else
+    (void)expander{true, String::_formatFromIteratorToStream<>(os, start, end, args)...};
+#endif
+    for (; start != end; start++)
+        os << *start;
 }
 
 template <typename Iterator, typename... Args>
@@ -327,26 +308,8 @@ ref<String> String::formatFromIterator(const Iterator begin, const Iterator end,
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
     ss << std::boolalpha;
 #endif
-    String::formatFromIteratorToStream(ss, begin, end, std::forward<Args>(args)...);
+    String::formatFromIteratorToStream<>(ss, begin, end, std::forward<Args>(args)...);
     return ss.str();
-}
-
-template <class First, class... Rest>
-void String::_unwrapPack(size_t &lastIndex, std::ostream &ss, const First &first, const Rest &...rest)
-{
-    auto index = this->find("{}", lastIndex);
-    if (lastIndex >= this->length() || index == String::npos)
-    {
-#ifndef NDEBUG
-        std::stringstream debugInfo;
-        debugInfo << "String::format arguments overflow when handle \"" << *this << "\"" << std::endl;
-        std::cout << debugInfo.str();
-#endif
-        return;
-    }
-    ss.write(this->data() + lastIndex, index - lastIndex) << first;
-    lastIndex = index + 2;
-    _unwrapPack(lastIndex, ss, rest...);
 }
 
 template <>
@@ -362,9 +325,14 @@ ref<String> String::format(Args &&...args)
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
     ss << std::boolalpha;
 #endif
-    size_t lastIndex = 0;
-    _unwrapPack(lastIndex, ss, args...);
-    if (lastIndex < this->length())
-        ss << std::string::substr(lastIndex, this->length());
+    String::formatFromStringToStream<>(ss, this->data(), this->length(), std::forward<Args>(args)...);
     return ss.str();
 }
+
+ref<String> operator+(const char c, ref<String> string);
+ref<String> operator+(const char *const str, ref<String> string);
+ref<String> operator+(const std::string &str, ref<String> string);
+ref<String> operator+(std::string &&str, ref<String> string);
+
+std::ostream &operator<<(std::ostream &os, const ref<String> &str);
+std::ostream &operator<<(std::ostream &os, ref<String> &&str);
