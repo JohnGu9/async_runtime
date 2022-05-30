@@ -157,7 +157,7 @@ bool Object::equal(const option<T0> &lhs, const option<T1> &rhs)
     if (Object::identical<>(lhs, rhs))
         return true;
     else if (!Object::isNull<>(lhs) && !Object::isNull<>(rhs))
-        return lhs.get()->operator==(Object::cast<Object>(rhs.get()));
+        return lhs.get()->operator==(Object::cast<>(rhs.get()));
     return false;
 }
 

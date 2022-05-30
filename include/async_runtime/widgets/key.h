@@ -8,7 +8,7 @@ class BuildContext;
 class Key : public virtual Object
 {
 public:
-    virtual bool equal(option<Key> other) = 0;
+    virtual bool isEqual(option<Key> other) = 0;
     virtual void setElement(ref<Element> element) {}
     virtual void dispose() {}
 };
@@ -20,7 +20,7 @@ public:
     ValueKey(const T &value) : _value(value) {}
     ValueKey(T &&value) : _value(std::move(value)) {}
 
-    bool equal(option<Key> other) override
+    bool isEqual(option<Key> other) override
     {
         lateref<Key> nonNullOther;
         if (other.isNotNull(nonNullOther))
@@ -44,7 +44,7 @@ template <class TargetWidget = StatefulWidget, class TargetState = State<Statefu
 class GlobalKey : public Key
 {
 public:
-    bool equal(option<Key> other) override
+    bool isEqual(option<Key> other) override
     {
         lateref<Key> key;
         if (other.isNotNull(key))
@@ -115,7 +115,7 @@ class GlobalObjectKey : public GlobalKey<TargetWidget, TargetState>
 {
 public:
     GlobalObjectKey(option<Object> object) : _object(object){};
-    bool equal(option<Key> other) override
+    bool isEqual(option<Key> other) override
     {
         lateref<Key> nonNullOther;
         if (other.isNotNull(nonNullOther))
