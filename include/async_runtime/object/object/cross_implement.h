@@ -5,6 +5,12 @@
 #include "ref.h"
 #include "weak_ref.h"
 
+inline void _async_runtime::Else::ifElse(Function<void()> fn) const
+{
+    if (!this->_state)
+        fn();
+}
+
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 option<T>::option(const ref<R> &other)
@@ -14,6 +20,10 @@ template <typename T>
 template <typename First, typename... Args>
 option<T>::option(const First &first, Args &&...args) : _async_runtime::OptionImplement<T>(ref<T>(first, std::forward<Args>(args)...)) {}
 
+/**
+ * @brief
+ * @deprecated
+ */
 template <typename T>
 bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const noexcept
 {
@@ -27,8 +37,35 @@ bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const noexcep
         return false;
 }
 
+/**
+ * @brief
+ * @deprecated
+ */
 template <typename T>
 ref<T> _async_runtime::OptionImplement<T>::isNotNullElse(Function<ref<T>()> fn) const noexcept
+{
+    const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
+    if (ptr != nullptr)
+        return ref<T>(ptr);
+    else
+        return fn();
+}
+
+template <typename T>
+_async_runtime::Else _async_runtime::OptionImplement<T>::ifNotNull(Function<void(ref<T>)> fn) const noexcept
+{
+    const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
+    if (ptr != nullptr)
+    {
+        fn(ref<T>(ptr));
+        return Else(true);
+    }
+    else
+        return Else(false);
+}
+
+template <typename T>
+ref<T> _async_runtime::OptionImplement<T>::ifNotNullElse(Function<ref<T>()> fn) const noexcept
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     if (ptr != nullptr)
@@ -64,6 +101,29 @@ template <typename T>
 ref<T> weakref<T>::isNotNullElse(Function<ref<T>()> fn) const noexcept
 {
     const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
+    if (ptr != nullptr)
+        return ref<T>(ptr);
+    else
+        return fn();
+}
+
+template <typename T>
+_async_runtime::Else weakref<T>::ifNotNull(Function<void(ref<T>)> fn) const noexcept
+{
+    const auto ptr = std::weak_ptr<T>::lock();
+    if (ptr != nullptr)
+    {
+        fn(ref<T>(ptr));
+        return _async_runtime::Else(true);
+    }
+    else
+        return _async_runtime::Else(false);
+}
+
+template <typename T>
+ref<T> weakref<T>::ifNotNullElse(Function<ref<T>()> fn) const noexcept
+{
+    const auto ptr = std::weak_ptr<T>::lock();
     if (ptr != nullptr)
         return ref<T>(ptr);
     else

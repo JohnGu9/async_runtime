@@ -14,6 +14,9 @@ public:
 
     bool isNotNull(ref<T> &object) const noexcept override;
     ref<T> isNotNullElse(Function<ref<T>()> fn) const noexcept override;
+
+    _async_runtime::Else ifNotNull(Function<void(ref<T>)> fn) const noexcept override;
+    ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept override;
     ref<T> assertNotNull() const override;
     option<T> toOption() const noexcept;
 };

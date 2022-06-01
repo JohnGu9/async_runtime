@@ -6,16 +6,17 @@ Element::Element(ref<Widget> widget) : BuildContext(widget) {}
 
 void Element::initKey(ref<Widget> widget)
 {
-    lateref<Key> key;
-    if (widget->key.isNotNull(key))
+    widget->key.ifNotNull([&](ref<Key> key) { //
         key->setElement(self());
+    });
 }
 
 void Element::disposeKey(ref<Widget> widget)
 {
-    lateref<Key> key;
-    if (widget->key.isNotNull(key))
+    static Function<void(ref<Key>)> fn = [](ref<Key> key) { // cache fn
         key->dispose();
+    };
+    widget->key.ifNotNull(fn);
 }
 
 void Element::attach()

@@ -230,31 +230,30 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
     {
         FutureOr<ReturnType> result = fn(_data);
         lateref<Future<ReturnType>> resultFuture;
-        if (result._future.isNotNull(resultFuture))
-        {
-            return std::move(resultFuture);
-        }
-        ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
-        future->complete(result._value);
-        return future;
+        result._future
+            .ifNotNull([&](ref<Future<ReturnType>> future) { //
+                resultFuture = future;
+            })
+            .ifElse([&] { //
+                resultFuture = Object::create<Completer<ReturnType>>(self());
+                resultFuture->complete(result._value);
+            });
+        return resultFuture;
     }
     else
     {
         ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
         this->_callbackList->emplace_back([future, fn](const T &value) { //
             FutureOr<ReturnType> result = fn(value);
-            lateref<Future<ReturnType>> resultFuture;
-            if (result._future.isNotNull(resultFuture))
-            {
-                resultFuture->template then<int>([future](const ReturnType &value) { //
-                    future->complete(value);
-                    return 0;
+            result._future
+                .ifNotNull([&, future](ref<Future<ReturnType>> resultFuture) { //
+                    resultFuture->then([future](const ReturnType &v) {         //
+                        future->complete(v);
+                    });
+                })
+                .ifElse([&] { //
+                    future->complete(result._value);
                 });
-            }
-            else
-            {
-                future->complete(result._value);
-            }
         });
         return future;
     }
@@ -317,6 +316,7 @@ class FutureOr
     friend class Future;
 
 public:
+    FutureOr() {}
     FutureOr(T directlyReturn) : _value(directlyReturn) {}
     FutureOr(ref<Future<T>> asyncReturn) : _future(asyncReturn) {}
 

@@ -36,22 +36,21 @@ option<T> BuildContext::dependOnInheritedWidgetOfExactType()
     if (iter == this->_inheritances.end())
     {
 #ifndef NDEBUG
-        lateref<Element> element;
-        if (option<Element>(this->cast<Element>()).isNotNull(element))
-        {
-            std::stringstream ss;
-            ss << " > " << element->widget->toString() << std::endl;
-            auto list = Object::create<List<ref<Widget>>>();
-            element->visitAncestor([&list](ref<Element> element) { //
-                list->emplace_back(element->widget);
-                return false;
+        this->cast<Element>()
+            .ifNotNull([&](ref<Element> element) { //
+                std::stringstream ss;
+                ss << " > " << element->widget->toString() << std::endl;
+                auto list = Object::create<List<ref<Widget>>>();
+                element->visitAncestor([&list](ref<Element> element) { //
+                    list->emplace_back(element->widget);
+                    return false;
+                });
+                list->pop_back();
+                list->forEach([&ss](ref<Widget> widget)
+                              { ss << " > " << widget->toString() << std::endl; });
+                debug_print("Can't find InheritedWidget [" << typeid(T).name() << "] from context: " << std::endl
+                                                           << ss.rdbuf());
             });
-            list->pop_back();
-            list->forEach([&ss](ref<Widget> widget)
-                          { ss << " > " << widget->toString() << std::endl; });
-            debug_print("Can't find InheritedWidget [" << typeid(T).name() << "] from context: " << std::endl
-                                                       << ss.rdbuf());
-        }
 #endif
         return nullptr;
     }

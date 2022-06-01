@@ -122,3 +122,27 @@ std::ostream &operator<<(std::ostream &os, ref<T> &&object)
     object->toStringStream(os);
     return os;
 }
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const option<T> &object)
+{
+    object.ifNotNull([&](ref<T> object) { //
+              os << object;
+          })
+        .ifElse([&] { //
+            os << "[NULL]";
+        });
+    return os;
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, option<T> &&object)
+{
+    object.ifNotNull([&](ref<T> object) { //
+              os << object;
+          })
+        .ifElse([&] { //
+            os << "[NULL]";
+        });
+    return os;
+}

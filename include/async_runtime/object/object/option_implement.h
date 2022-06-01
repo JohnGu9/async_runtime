@@ -9,6 +9,9 @@ class _async_runtime::OptionImplement : protected std::shared_ptr<T>, public _as
 public:
     bool isNotNull(ref<T> &) const noexcept override;
     ref<T> isNotNullElse(Function<ref<T>()>) const noexcept override;
+
+    Else ifNotNull(Function<void(ref<T>)> fn) const noexcept override;
+    ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept override;
     ref<T> assertNotNull() const override;
     size_t hashCode() const
     {

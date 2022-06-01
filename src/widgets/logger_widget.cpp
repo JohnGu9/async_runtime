@@ -61,12 +61,12 @@ public:
         _FileLoggerHandler(ref<String> path, Function<void(ref<File::Error>)> onError, ref<EventLoopGetterMixin> getter)
             : _file(File::fromPath(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR, getter))
         {
-            _file->then([onError](ref<File> file) //
-                        {                         //
-                            lateref<File::Error> error;
-                            if (file->cast<File::Error>().isNotNull(error))
-                                onError(error);
-                        });
+            _file->then([onError](ref<File> file) { //
+                file->cast<File::Error>()
+                    .ifNotNull([&](ref<File::Error> error) { //
+                        onError(error);
+                    });
+            });
         }
 
         ref<Future<bool>> write(ref<String> str) override
@@ -114,24 +114,23 @@ public:
 
     void updateHandler()
     {
-        lateref<String> path;
-        if (this->widget->path.isNotNull(path))
-        {
-            if (path->isEmpty())
-                this->_handler = RootWidget::of(context)->cout;
-            else
-                this->_handler = Object::create<_FileLoggerHandler>(
-                    path,
-                    [this, path](ref<File::Error> error) //
-                    {                                    //
-                        std::stringstream message("");
-                        message << "Logger::file open file [" << path << "] failed with code " << error->error() << std::endl;
-                        Logger::of(context)->writeLine(message.str());
-                    },
-                    self());
-        }
-        else
-            this->_handler = Object::create<_LoggerBlocker>(self());
+        this->widget->path
+            .ifNotNull([&](ref<String> path) { //
+                if (path->isEmpty())
+                    this->_handler = RootWidget::of(context)->cout;
+                else
+                    this->_handler = Object::create<_FileLoggerHandler>(
+                        path,
+                        [this, path](ref<File::Error> error) { //
+                            std::stringstream message("");
+                            message << "Logger::file open file [" << path << "] failed with code " << error->error() << std::endl;
+                            Logger::of(context)->writeLine(message.str());
+                        },
+                        self());
+            })
+            .ifElse([&] { //
+                this->_handler = Object::create<_LoggerBlocker>(self());
+            });
     }
 
     void didDependenceChanged() override
