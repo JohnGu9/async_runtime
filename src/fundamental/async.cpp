@@ -22,7 +22,7 @@ ref<String> AsyncSnapshot<>::ConnectionState::toString(AsyncSnapshot<>::Connecti
     case AsyncSnapshot<>::ConnectionState::done:
         return "AsyncSnapshot<>::ConnectionState::done";
     default:
-        assert(false && "The enum doesn't exists. ");
+        RUNTIME_ASSERT(false, "The enum doesn't exists. ");
         return "The enum doesn't exists";
     }
 }

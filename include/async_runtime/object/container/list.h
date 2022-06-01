@@ -58,7 +58,7 @@ public:
 
     bool remove(size_t index) override
     {
-        assert(index < this->size());
+        RUNTIME_ASSERT(index < this->size(), "Index overflow");
         auto iter = this->begin() + index;
         this->erase(iter);
         return true;

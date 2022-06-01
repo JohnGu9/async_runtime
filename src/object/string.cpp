@@ -74,11 +74,9 @@ public:
 String::View::View(ref<String> parent, size_t begin, size_t end)
     : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
 {
-#ifndef NDEBUG
-    assert(_parent->isNative());
+    DEBUG_ASSERT(_parent->isNative());
     auto parentLength = _parent->length();
-    assert(parentLength >= _begin && parentLength >= _end);
-#endif
+    DEBUG_ASSERT(_parent->length() >= _begin && _parent->length() >= _end);
 }
 
 ref<String> String::View::substr(size_t begin, size_t length) const

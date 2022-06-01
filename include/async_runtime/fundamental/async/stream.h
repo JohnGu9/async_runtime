@@ -22,7 +22,7 @@ public:
 
     virtual ~Stream()
     {
-        assert(_isClosed && "Stream must be closed before dispose");
+        DEBUG_ASSERT(_isClosed && "Stream must be closed before dispose");
     }
 };
 
@@ -106,7 +106,7 @@ void Stream<T>::rawClose()
 template <typename T>
 ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
 {
-    assert(!_isClosed);
+    RUNTIME_ASSERT(!_isClosed, "Listen on a closed Stream");
     ref<Stream<T>> self = self();
     auto subscription = Object::create<StreamSubscription<T>>(fn);
     subscription->_resume = this->_resume;
@@ -136,7 +136,7 @@ ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
 template <typename T>
 void Stream<T>::sink(T value)
 {
-    assert(!_isClosed);
+    RUNTIME_ASSERT(!_isClosed, "Sink on a closed Stream");
     if (!this->_active->empty())
     {
         auto copy = this->_active->template map<Function<void(const T &)>>(_extractListeners);

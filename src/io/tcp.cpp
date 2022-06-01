@@ -32,7 +32,7 @@ public:
 
     virtual ~_Connection()
     {
-        assert(_isClosed);
+        DEBUG_ASSERT(_isClosed);
         if (_tcp == nullptr)
             delete _handle;
     }
@@ -57,7 +57,7 @@ public:
 
     ref<Future<int>> shutdown() override
     {
-        assert(!_isClosed);
+        DEBUG_ASSERT(!_isClosed);
         _isClosed = true;
 
         stopRead();
@@ -80,7 +80,7 @@ public:
 
     ref<Future<int>> closeReset() override
     {
-        assert(!_isClosed);
+        DEBUG_ASSERT(!_isClosed);
         _isClosed = true;
 
         stopRead();
@@ -105,11 +105,7 @@ public:
         buffer->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
         buf->base = const_cast<char *>(buffer->c_str());
         buf->len = static_cast<ULONG>(suggested_size);
-
-#ifndef NDEBUG
-        assert(data->_buffer == nullptr);
-#endif
-
+        DEBUG_ASSERT(data->_buffer == nullptr);
         data->_buffer = buffer;
     }
 
@@ -129,7 +125,7 @@ public:
 
     ref<Stream<ref<String>>> startRead() override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "startRead on a closed Tcp");
         if (_read->isClosed())
         {
             _read = Object::create<StreamController<ref<String>>>();
@@ -166,8 +162,7 @@ public:
 
     ref<Future<int>> write(ref<String> message) override
     {
-        assert(!_isClosed);
-
+        RUNTIME_ASSERT(!_isClosed, "keepalive on a closed Tcp");
         auto data = new _write_data{Object::create<Completer<int>>()};
         auto req = new uv_write_t;
         req->data = data;
@@ -194,12 +189,12 @@ public:
 
     virtual ~_Tcp()
     {
-        assert(_isClosed);
+        DEBUG_ASSERT(_isClosed);
     }
 
     int bind(const struct sockaddr *addr, unsigned int flags) override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "keepalive on a closed Tcp");
         return uv_tcp_bind(&_handle, addr, flags);
     }
 
@@ -228,7 +223,7 @@ public:
 
     ref<Future<ref<Connection>>> connect(const struct sockaddr *addr) override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "keepalive on a closed Tcp");
         _isClosed = true; // if connect success, uv_tcp_t's ownship will transform to Tcp::Connection
         // And Tcp's no longer available otherwise connect failed
 
@@ -267,7 +262,7 @@ public:
 
     ref<Stream<ref<Connection>>> listen(int backlog) override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "listen on a closed Tcp");
         uv_listen(reinterpret_cast<uv_stream_t *>(&_handle), backlog, _on_listen);
         return _listen;
     }
@@ -293,13 +288,13 @@ public:
 
     int nodelay(int enable) override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "nodelay on a closed Tcp");
         return uv_tcp_nodelay(&_handle, enable);
     }
 
     int keepalive(int enable, Duration delay) override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "keepalive on a closed Tcp");
         return uv_tcp_keepalive(&_handle, enable, static_cast<unsigned int>(delay.toSeconds()));
     }
 };
@@ -308,6 +303,6 @@ ref<Tcp> Tcp::from(const struct sockaddr *bind, unsigned int bindFlags, option<E
 {
     auto tcp = Object::create<Tcp::_Tcp>(EventLoopGetterMixin::ensureEventLoop(getter));
     if (bind != nullptr)
-        assert(tcp->bind(bind, bindFlags) == 0);
+        RUNTIME_ASSERT(tcp->bind(bind, bindFlags) == 0, "Tcp bind failed");
     return tcp;
 }

@@ -23,7 +23,7 @@ public:
     StreamSubscription(Function<void(const T &)> listener) : _listener(listener) {}
     void resume() override
     {
-        assert(_canceled == false && "StreamSubscription already canceled that can not resume any more. ");
+        RUNTIME_ASSERT(_canceled == false, "StreamSubscription already canceled that can not resume any more. ");
         _alive = true;
         _resume(self());
     }

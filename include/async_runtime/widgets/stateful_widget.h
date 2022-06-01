@@ -49,9 +49,7 @@ public:
               _setStateCallbacks(List<Function<void()>>::create()) {}
     ~State()
     {
-#ifndef NDEBUG
-        assert(_mounted == false && "[dispose] must to call super::dispose");
-#endif
+        DEBUG_ASSERT(_mounted == false && "[dispose] must to call super::dispose");
     }
 };
 

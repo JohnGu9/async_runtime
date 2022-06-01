@@ -78,10 +78,8 @@ template <typename T>
 ref<T> _async_runtime::OptionImplement<T>::assertNotNull() const
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
-    if (ptr != nullptr)
-        return ref<T>(ptr);
-    else
-        throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
+    RUNTIME_ASSERT(ptr != nullptr, std::string(typeid(*this).name()) + " assert not null on a null ref. ");
+    return ref<T>(ptr);
 }
 
 template <typename T>
@@ -134,10 +132,8 @@ template <typename T>
 ref<T> weakref<T>::assertNotNull() const
 {
     const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
-    if (ptr != nullptr)
-        return ref<T>(ptr);
-    else
-        throw std::runtime_error(std::string(typeid(*this).name()) + " assert not null on a null ref. ");
+    RUNTIME_ASSERT(ptr != nullptr, std::string(typeid(*this).name()) + " assert not null on a null ref. ");
+    return ref<T>(ptr);
 }
 
 template <typename T>
@@ -262,18 +258,14 @@ bool Object::isNull(const option<T> &object) noexcept
 template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 ref<T> Object::cast(R *other)
 {
-#ifndef NDEBUG
-    assert(other != nullptr);
-#endif
+    DEBUG_ASSERT(other != nullptr && "Object::cast on a nullptr pointer");
     return std::shared_ptr<T>(static_cast<std::enable_shared_from_this<Object> *>(other)->shared_from_this(), static_cast<T *>(other));
 }
 
 template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 ref<T> Object::cast(T *other)
 {
-#ifndef NDEBUG
-    assert(other != nullptr);
-#endif
+    DEBUG_ASSERT(other != nullptr && "Object::cast on a nullptr pointer");
     return std::shared_ptr<T>(static_cast<std::enable_shared_from_this<Object> *>(other)->shared_from_this(), other);
 }
 

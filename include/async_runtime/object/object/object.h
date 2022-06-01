@@ -1,10 +1,7 @@
 #pragma once
 
-#include <assert.h>
-#include <exception>
-#include <sstream>
-
 #include "declare.h"
+#include <sstream>
 
 /**
  * @brief

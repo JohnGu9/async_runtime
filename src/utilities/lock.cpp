@@ -3,7 +3,7 @@
 Lock::~Lock()
 {
     std::unique_lock<std::mutex> lock(this->_mutex);
-    assert(this->_sharedCounter == 0 && this->_unique == nullptr);
+    DEBUG_ASSERT(this->_sharedCounter == 0 && this->_unique == nullptr);
 }
 
 option<Lock::SharedLock> Lock::sharedLock()
@@ -27,7 +27,7 @@ Lock::SharedLock::~SharedLock()
 {
     {
         std::unique_lock<std::mutex> ul(_lock._mutex);
-        assert(_lock._sharedCounter > 0);
+        DEBUG_ASSERT(_lock._sharedCounter > 0);
         _lock._sharedCounter--;
     }
     _lock._condition.notify_one();
@@ -45,7 +45,7 @@ Lock::UniqueLock::~UniqueLock()
 {
     {
         std::unique_lock<std::mutex> ul(_lock._mutex);
-        assert(_lock._sharedCounter == 0);
+        DEBUG_ASSERT(_lock._sharedCounter == 0);
         _lock._unique = nullptr;
     }
     _lock._condition.notify_all();

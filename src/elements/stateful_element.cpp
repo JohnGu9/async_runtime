@@ -37,7 +37,7 @@ ref<String> StatefulElement::LifeCycle::toString(StatefulElement::LifeCycle::Val
     case StatefulElement::LifeCycle::unmount:
         return "StatefulElement::LifeCycle::unmount";
     default:
-        assert(false && "The enum doesn't exists. ");
+        RUNTIME_ASSERT(false, "The enum doesn't exists. ");
         return "The enum doesn't exists";
     }
 }

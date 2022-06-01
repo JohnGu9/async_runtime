@@ -73,7 +73,7 @@ protected:
 template <class TargetWidget, class TargetState>
 void GlobalKey<TargetWidget, TargetState>::setElement(ref<Element> element)
 {
-    assert(this->_element.toOption() == nullptr && "One [GlobalKey] instance can't mount more than one element. ");
+    RUNTIME_ASSERT(this->_element.toOption() == nullptr, "One [GlobalKey] instance can't mount more than one element. ");
     this->_element = element;
 }
 

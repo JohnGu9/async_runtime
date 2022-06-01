@@ -238,7 +238,7 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
                 resultFuture = Object::create<Completer<ReturnType>>(self());
                 resultFuture->complete(result._value);
             });
-        return resultFuture;
+        return std::move(resultFuture);
     }
     else
     {

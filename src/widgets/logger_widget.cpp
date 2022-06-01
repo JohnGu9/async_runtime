@@ -186,7 +186,7 @@ ref<Widget> Logger::cout(ref<Widget> child, option<Key> key)
 
 ref<Widget> Logger::file(ref<Widget> child, ref<String> path, option<Key> key)
 {
-    assert(path->isNotEmpty() && "path can't be empty");
+    RUNTIME_ASSERT(path->isNotEmpty(), "path can't be empty");
     return Object::create<_Logger>(child, path, key);
 }
 

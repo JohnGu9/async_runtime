@@ -85,9 +85,9 @@ RootElement::RootElement(ref<Widget> widget, Function<void()> exit)
       cout(RootElement::coutLoggerBuilder()),
       _child(Object::create<RootWrapper>(widget, this)) {}
 
-void RootElement::update(ref<Widget> newWidget) { assert(false && "RootElement should never change. "); }
+void RootElement::update(ref<Widget> newWidget) { DEBUG_ASSERT(false && "RootElement should never change. "); }
 
-void RootElement::notify(ref<Widget> newWidget) { assert(false && "RootElement dependence would never change. "); }
+void RootElement::notify(ref<Widget> newWidget) { DEBUG_ASSERT(false && "RootElement dependence would never change. "); }
 
 void RootElement::attach()
 {

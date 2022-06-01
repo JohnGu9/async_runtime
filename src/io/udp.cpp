@@ -70,24 +70,24 @@ public:
     };
     ~_Udp()
     {
-        assert(_isClosed);
+        DEBUG_ASSERT(_isClosed);
     }
 
     int bind(const struct sockaddr *addr, unsigned int flags) override
     {
-        assert(!_isClosed);
+        DEBUG_ASSERT(!_isClosed);
         return uv_udp_bind(&_handle, addr, flags);
     }
 
     int connect(const struct sockaddr *addr) override
     {
-        assert(!_isClosed);
+        DEBUG_ASSERT(!_isClosed);
         return uv_udp_connect(&_handle, addr);
     }
 
     ref<Future<int>> send(ref<String> message, const struct sockaddr *addr) override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "send on a closed Udp");
         auto data = new _send_data{Object::create<Completer<int>>(self()), message};
         uv_udp_send_t *req = new uv_udp_send_t;
         req->data = data;
@@ -98,7 +98,7 @@ public:
 
     ref<Stream<ref<RecvMessage>>> startRecv() override
     {
-        assert(!_isClosed);
+        RUNTIME_ASSERT(!_isClosed, "startRecv on a closed Udp");
         if (_recv->isClosed())
         {
             _recv = Object::create<StreamController<ref<RecvMessage>>>(_loop);
@@ -147,8 +147,8 @@ ref<Udp> Udp::from(const struct sockaddr *bind, unsigned int bindFlags, const st
 {
     auto udp = Object::create<Udp::_Udp>(EventLoopGetterMixin::ensureEventLoop(getter));
     if (bind != nullptr)
-        assert(udp->bind(bind, bindFlags) == 0);
+        RUNTIME_ASSERT(udp->bind(bind, bindFlags) == 0, "Udp bind address failed");
     if (connect != nullptr)
-        assert(udp->connect(connect) == 0);
+        RUNTIME_ASSERT(udp->connect(connect) == 0, "Udp set connect host failed");
     return udp;
 }

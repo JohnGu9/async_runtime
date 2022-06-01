@@ -10,9 +10,9 @@ ThreadPool::ThreadPool(size_t threads, option<String> name)
       _stop(false)
 {
     {
-        assert(this->_name->isNotEmpty());
+        DEBUG_ASSERT(this->_name->isNotEmpty());
         option<Lock::UniqueLock> lk = _lock->uniqueLock();
-        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
+        DEBUG_ASSERT(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
         ThreadPool::_namePool->insert(this->_name);
     }
     _workers.reserve(threads);
@@ -24,11 +24,11 @@ ThreadPool::~ThreadPool()
 {
     {
         option<Lock::UniqueLock> lock = _lock->uniqueLock();
-        assert(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
+        DEBUG_ASSERT(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
     }
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
-        assert(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
+        DEBUG_ASSERT(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
     }
 }
 #else
@@ -96,7 +96,7 @@ void ThreadPool::dispose()
         std::unique_lock<std::mutex> lock(_queueMutex);
         if (_stop)
         {
-            assert(false && "ThreadPool call [dispose] that already is disposed. ");
+            RUNTIME_ASSERT(false, "ThreadPool call [dispose] that already is disposed. ");
             return;
         }
         _stop = true;

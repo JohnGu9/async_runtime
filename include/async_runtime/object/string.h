@@ -82,15 +82,11 @@ public:
 
     String(const char *const str) : std::string(str)
     {
-#ifndef NDEBUG
-        assert(str);
-#endif
+        DEBUG_ASSERT(str);
     }
     String(const char *const str, size_t length) : std::string(str, length)
     {
-#ifndef NDEBUG
-        assert(str);
-#endif
+        DEBUG_ASSERT(str);
     }
 
     String &operator=(const char other) = delete;

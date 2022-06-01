@@ -7,7 +7,7 @@ class SingleChildElement::InvalidWidget : public StatelessWidget
 public:
     ref<Widget> build(ref<BuildContext>) final
     {
-        assert(false);
+        DEBUG_ASSERT(false);
         throw std::runtime_error("AsyncRuntime Internal Error");
     }
     ref<Element> createElement() final { return StatelessWidget::createElement(); }
