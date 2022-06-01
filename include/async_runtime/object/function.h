@@ -47,18 +47,3 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(other) {}
 };
-
-template <typename ReturnType, class... Args>
-class lateref<Fn<ReturnType(Args...)>> : public ref<Fn<ReturnType(Args...)>>
-{
-public:
-    explicit lateref() {}
-
-    lateref(std::nullptr_t) = delete;
-
-    template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
-    lateref(const ref<R> &other) : ref<Fn<ReturnType(Args...)>>(other) {}
-
-    template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
-    lateref(Lambda lambda) : ref<Fn<ReturnType(Args...)>>(std::make_shared<Fn<ReturnType(Args...)>>(lambda)) {}
-};

@@ -80,14 +80,8 @@ public:
     String(const std::string &str) : std::string(str) {}
     String(std::string &&str) : std::string(std::move(str)) {}
 
-    String(const char *const str) : std::string(str)
-    {
-        DEBUG_ASSERT(str);
-    }
-    String(const char *const str, size_t length) : std::string(str, length)
-    {
-        DEBUG_ASSERT(str);
-    }
+    String(const char *const str) : std::string(str) { DEBUG_ASSERT(str != nullptr); }
+    String(const char *const str, size_t length) : std::string(str, length) { DEBUG_ASSERT(str != nullptr); }
 
     String &operator=(const char other) = delete;
     String &operator=(const char *const other) = delete;
@@ -138,10 +132,6 @@ class ref<String> : public _async_runtime::RefImplement<String>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     friend class String;
-    friend ref<String> operator+(const char c, const ref<String> &string);
-    friend ref<String> operator+(const char *const str, const ref<String> &string);
-    friend std::ostream &operator<<(std::ostream &os, const ref<String> &dt);
-    friend std::ostream &operator<<(std::ostream &os, ref<String> &&dt);
 
     using const_iterator = String::const_iterator;
     using const_reverse_iterator = String::const_reverse_iterator;
@@ -167,20 +157,12 @@ public:
     bool operator!=(const std::string &other) const { return !operator==(other); }
     bool operator!=(std::string &&other) const { return !operator==(std::move(other)); }
 
+    const char &operator[](size_t index) const { return this->get()->operator[](index); }
+    const_iterator begin() const { return (*this)->begin(); }
+    const_iterator end() const { return (*this)->end(); }
+
     template <typename T>
     ref<String> operator+(const T &value) const { return String::connect(*this, value); }
-
-    const char &operator[](size_t index) const { return (*(this->get()))[index]; }
-
-    const_iterator begin() const
-    {
-        return (*this)->begin();
-    }
-
-    const_iterator end() const
-    {
-        return (*this)->end();
-    }
 };
 
 template <typename... Args>

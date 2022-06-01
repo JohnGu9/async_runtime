@@ -99,25 +99,11 @@ public:
     ref(std::initializer_list<R> &&list)
         : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(list)) {}
 
-    iterator begin()
-    {
-        return (*this)->begin();
-    }
+    iterator begin() { return (*this)->begin(); }
+    const_iterator begin() const { return (*this)->begin(); }
 
-    const_iterator begin() const
-    {
-        return (*this)->begin();
-    }
-
-    iterator end()
-    {
-        return (*this)->end();
-    }
-
-    const_iterator end() const
-    {
-        return (*this)->end();
-    }
+    iterator end() { return (*this)->end(); }
+    const_iterator end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -147,32 +133,3 @@ ref<Set<R>> Set<T>::map(Function<R(const T &)> fn) const
         mapped->insert(fn(element));
     return mapped;
 }
-
-template <typename T>
-class lateref<Set<T>> : public ref<Set<T>>
-{
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
-
-public:
-    using iterator = typename Set<T>::iterator;
-    using const_iterator = typename Set<T>::const_iterator;
-
-    explicit lateref() : ref<Set<T>>() {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
-    lateref(const ref<R> &other) : ref<Set<T>>(other) {}
-
-    lateref(const std::initializer_list<T> &list)
-        : ref<Set<T>>(list) {}
-
-    lateref(std::initializer_list<T> &&list)
-        : ref<Set<T>>(std::move(list)) {}
-
-    template <typename R>
-    lateref(const std::initializer_list<R> &list)
-        : ref<Set<T>>(list) {}
-
-    template <typename R>
-    lateref(std::initializer_list<R> &&list)
-        : ref<Set<T>>(std::move(list)) {}
-};

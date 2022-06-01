@@ -102,25 +102,11 @@ public:
 
     T &operator[](size_t index) const { return (*this)->operator[](index); }
 
-    iterator begin()
-    {
-        return (*this)->begin();
-    }
+    iterator begin() { return (*this)->begin(); }
+    const_iterator begin() const { return (*this)->begin(); }
 
-    const_iterator begin() const
-    {
-        return (*this)->begin();
-    }
-
-    iterator end()
-    {
-        return (*this)->end();
-    }
-
-    const_iterator end() const
-    {
-        return (*this)->end();
-    }
+    iterator end() { return (*this)->end(); }
+    const_iterator end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -150,32 +136,3 @@ ref<List<R>> List<T>::map(Function<R(const T &)> fn) const
         mapped->emplace_back(fn(element));
     return mapped;
 }
-
-template <typename T>
-class lateref<List<T>> : public ref<List<T>>
-{
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
-
-public:
-    using iterator = typename List<T>::iterator;
-    using const_iterator = typename List<T>::const_iterator;
-
-    explicit lateref() : ref<List<T>>() {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
-    lateref(const ref<R> &other) : ref<List<T>>(other) {}
-
-    lateref(const std::initializer_list<T> &list)
-        : ref<List<T>>(list) {}
-
-    lateref(std::initializer_list<T> &&list)
-        : ref<List<T>>(std::move(list)) {}
-
-    template <typename R>
-    lateref(const std::initializer_list<R> &list)
-        : ref<List<T>>(list) {}
-
-    template <typename R>
-    lateref(std::initializer_list<R> &&list)
-        : ref<List<T>>(std::move(list)) {}
-};

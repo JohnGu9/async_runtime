@@ -155,33 +155,3 @@ ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Value &)> fn) const
         mapped[pair.first] = fn(pair.second);
     return mapped;
 }
-
-template <typename Key, typename Value>
-class lateref<Map<Key, Value>> : public ref<Map<Key, Value>>
-{
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
-
-public:
-    using iterator = typename Map<Key, Value>::iterator;
-    using const_iterator = typename Map<Key, Value>::const_iterator;
-    using value_type = typename Map<Key, Value>::value_type;
-
-    explicit lateref() : ref<Map<Key, Value>>() {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
-    lateref(const ref<R> &other) : ref<Map<Key, Value>>(other) {}
-
-    lateref(const std::initializer_list<value_type> &list)
-        : ref<Map<Key, Value>>(list) {}
-
-    lateref(std::initializer_list<value_type> &&list)
-        : ref<Map<Key, Value>>(std::move(list)) {}
-
-    template <typename R>
-    lateref(const std::initializer_list<R> &list)
-        : ref<Map<Key, Value>>(list) {}
-
-    template <typename R>
-    lateref(std::initializer_list<R> &&list)
-        : ref<Map<Key, Value>>(std::move(list)) {}
-};
