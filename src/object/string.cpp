@@ -23,7 +23,7 @@ public:
 
     const char &operator[](size_t index) const override
     {
-        if (index >= _end)
+        if (index >= _length)
             throw std::range_error("String::View::operator[] access out of range memory");
         return _parent[index + _begin];
     }

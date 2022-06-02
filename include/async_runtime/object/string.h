@@ -227,7 +227,7 @@ void String::formatFromStringToStream(std::ostream &os, const char *const str, s
     using expander = bool[]; // on Windows platform, must use redefine
 #if !defined(NDEBUG) && !defined(ASYNC_RUNTIME_STRING_NO_WARNING)
     bool result[] = {true, String::_formatFromStringToStream<>(os, start, end, args)...};
-    if (result[sizeof(result) - 1] == false) //[[unlikely]]
+    if (result[sizeof(result) - 1] == false) // [[unlikely]]
     {
         std::cout << "Warning: String format \"" << str << "\" with arguments(" << sizeof...(args) << ") ";
         (void)expander{true, (void(std::cout << '[' << args << "] "), true)...};
@@ -281,7 +281,7 @@ void String::formatFromIteratorToStream(std::ostream &os, const Iterator begin, 
     using expander = bool[]; // on Windows platform, must use redefine
 #if !defined(NDEBUG) && !defined(ASYNC_RUNTIME_STRING_NO_WARNING)
     bool result[] = {true, String::_formatFromIteratorToStream<>(os, start, end, args)...};
-    if (result[sizeof(result) - 1] == false) //[[unlikely]]
+    if (result[sizeof(result) - 1] == false) // [[unlikely]]
     {
         std::cout << "Warning: String format \"" << std::string(begin, end) << "\" with arguments(" << sizeof...(args) << ") ";
         (void)expander{true, (void(std::cout << '[' << args << "] "), true)...};
@@ -306,10 +306,7 @@ ref<String> String::formatFromIterator(const Iterator begin, const Iterator end,
 }
 
 template <>
-inline ref<String> String::format()
-{
-    return self();
-}
+inline ref<String> String::format() { return self(); }
 
 template <typename... Args>
 ref<String> String::format(Args &&...args)

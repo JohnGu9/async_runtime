@@ -103,7 +103,7 @@ public:
         auto data = reinterpret_cast<_Connection *>(handle->data);
         auto buffer = new std::string;
         buffer->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
-        buf->base = const_cast<char *>(buffer->c_str());
+        buf->base = const_cast<char *>(buffer->data());
         buf->len = static_cast<ULONG>(suggested_size);
         DEBUG_ASSERT(data->_buffer == nullptr);
         data->_buffer = buffer;
@@ -166,7 +166,7 @@ public:
         auto data = new _write_data{Object::create<Completer<int>>()};
         auto req = new uv_write_t;
         req->data = data;
-        auto buf = uv_buf_init(const_cast<char *>(message->c_str()), static_cast<unsigned int>(message->length()));
+        auto buf = uv_buf_init(const_cast<char *>(message->data()), static_cast<unsigned int>(message->length()));
         uv_write(req, _connection, &buf, 1, _on_write);
         return data->completer;
     }

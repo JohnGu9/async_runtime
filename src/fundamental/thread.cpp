@@ -15,13 +15,13 @@ void ThreadUnit::setThreadName(ref<String> name)
 #ifdef _WIN32
     wchar_t *wtext = new wchar_t[name->length() + 1];
     size_t outputSize;
-    mbstowcs_s(&outputSize, wtext, name->length() + 1, name->c_str(), name->length());
+    mbstowcs_s(&outputSize, wtext, name->length() + 1, name->data(), name->length());
     SetThreadDescription(GetCurrentThread(), wtext);
     delete[] wtext;
 #elif __APPLE__
-    pthread_setname_np(name->c_str());
+    pthread_setname_np(name->data());
 #elif __linux__
-    pthread_setname_np(pthread_self(), name->c_str());
+    pthread_setname_np(pthread_self(), name->data());
 #endif
 
     _threadName = name;

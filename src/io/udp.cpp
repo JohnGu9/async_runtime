@@ -35,7 +35,7 @@ public:
         auto data = reinterpret_cast<_Udp *>(handle->data);
         auto buffer = new std::string;
         buffer->resize(suggested_size, 0); // @TODO: maybe we can allocate less memory
-        buf->base = const_cast<char *>(buffer->c_str());
+        buf->base = const_cast<char *>(buffer->data());
         buf->len = static_cast<ULONG>(suggested_size);
         data->_buffer = buffer;
     }
@@ -91,7 +91,7 @@ public:
         auto data = new _send_data{Object::create<Completer<int>>(self()), message};
         uv_udp_send_t *req = new uv_udp_send_t;
         req->data = data;
-        uv_buf_t buf = uv_buf_init(const_cast<char *>(message->c_str()), static_cast<unsigned int>(message->length()));
+        uv_buf_t buf = uv_buf_init(const_cast<char *>(message->data()), static_cast<unsigned int>(message->length()));
         uv_udp_send(req, &_handle, &buf, 1, addr, _send_cb);
         return data->completer;
     }

@@ -109,7 +109,7 @@ public:
         auto request = new uv_fs_t;
         auto data = new _write_data(Object::create<Completer<int>>(_loop), str);
         request->data = data;
-        uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->c_str()), static_cast<unsigned int>(str->length()));
+        uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->data()), static_cast<unsigned int>(str->length()));
         uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), &buffer, 1, 0, _on_write);
         return data->completer;
     }
@@ -140,7 +140,7 @@ public:
         for (auto i = 0; i < length; i++)
         {
             auto &value = str[i];
-            buffers[i] = uv_buf_init(const_cast<char *>(value->c_str()), static_cast<unsigned int>(value->length()));
+            buffers[i] = uv_buf_init(const_cast<char *>(value->data()), static_cast<unsigned int>(value->length()));
         }
         uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), buffers, static_cast<unsigned int>(length), -1, _on_write_all);
         delete[] buffers;
@@ -321,7 +321,7 @@ ref<Future<ref<File>>> File::fromPath(ref<String> path, OpenFlags flags, OpenMod
     auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
     uv_fs_t *request = new uv_fs_t;
     request->data = new File::_File::_open_data{path, completer};
-    uv_fs_open(handle, request, path->c_str(), flags, mode, _on_open);
+    uv_fs_open(handle, request, const_cast<const char *>(path->data()), flags, mode, _on_open);
     return completer;
 }
 
@@ -341,6 +341,6 @@ ref<Future<int>> File::unlink(ref<String> path, option<EventLoopGetterMixin> get
     auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
     uv_fs_t *request = new uv_fs_t;
     request->data = new File::_File::_unlink_data{path, completer};
-    uv_fs_unlink(handle, request, path->c_str(), _on_unlink);
+    uv_fs_unlink(handle, request, const_cast<const char *>(path->data()), _on_unlink);
     return completer;
 }
