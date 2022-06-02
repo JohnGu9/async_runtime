@@ -48,7 +48,7 @@ public:
             fn(iter);
     }
 
-    bool remove(const T& v) override
+    bool remove(const T &v) override
     {
         auto iter = this->find(v);
         if (iter == this->end())
@@ -71,27 +71,20 @@ template <typename T>
 class ref<Set<T>> : public _async_runtime::RefImplement<Set<T>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = _async_runtime::RefImplement<Set<T>>;
 
 public:
     using iterator = typename Set<T>::iterator;
     using const_iterator = typename Set<T>::const_iterator;
 
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : _async_runtime::RefImplement<Set<T>>(other) {}
+    ref(const ref<R> &other) : super(other) {}
 
-    ref(const std::initializer_list<T> &list)
-        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(list)) {}
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    ref(ref<R> &&other) : super(other) {}
 
-    ref(std::initializer_list<T> &&list)
-        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(std::move(list))) {}
-
-    template <typename R>
-    ref(const std::initializer_list<R> &list)
-        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(list)) {}
-
-    template <typename R>
-    ref(std::initializer_list<R> &&list)
-        : _async_runtime::RefImplement<Set<T>>(std::make_shared<Set<T>>(list)) {}
+    ref(const std::initializer_list<T> &list) : super(std::make_shared<Set<T>>(list)) {}
+    ref(std::initializer_list<T> &&list) : super(std::make_shared<Set<T>>(std::move(list))) {}
 
     iterator begin() { return (*this)->begin(); }
     const_iterator begin() const { return (*this)->begin(); }
@@ -145,9 +138,6 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     lateref(ref<R> &&other) : ref<Set<T>>(std::move(other)) {}
 
-    // enhanced
-
     lateref(const std::initializer_list<T> &list) : ref<Set<T>>(list) {}
-
     lateref(std::initializer_list<T> &&list) : ref<Set<T>>(std::move(list)) {}
 };

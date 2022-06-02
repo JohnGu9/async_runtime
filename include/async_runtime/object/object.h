@@ -54,8 +54,8 @@
  *     // object is not null here
  * }
  *
- * object = opt.isNotNullElse([]() ->ref<Object> { return Object::create<Object>(); }) // if opt is not null change opt to ref, otherwise create a new Object
- * object = opt.isNotNullElse(Object::create<Object>); another syntax
+ * object = opt.ifNotNullElse([]() ->ref<Object> { return Object::create<Object>(); }) // if opt is not null change opt to ref, otherwise create a new Object
+ * object = opt.ifNotNullElse(Object::create<Object>); another syntax
  *
  */
 

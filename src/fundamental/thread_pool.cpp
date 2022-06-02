@@ -5,7 +5,7 @@ ref<Set<ref<String>>> ThreadPool::_namePool = Object::create<Set<ref<String>>>()
 static finalref<String> prefix = "ThreadPool<";
 
 ThreadPool::ThreadPool(size_t threads, option<String> name)
-    : _name(name.isNotNullElse([this]
+    : _name(name.ifNotNullElse([this]
                                { return String::connect(prefix, size_t(this), ">"); })),
       _stop(false)
 {

@@ -82,7 +82,7 @@ class Lock::WithLockMixin
     ref<Lock> _lock;
 
 public:
-    WithLockMixin(option<Lock> lock = nullptr) : _lock(lock.isNotNullElse(Object::create<Lock>)) {}
+    WithLockMixin(option<Lock> lock = nullptr) : _lock(lock.ifNotNullElse(Object::create<Lock>)) {}
     WithLockMixin(const WithLockMixin &other) : _lock(other.lock) {}
 
     const ref<Lock> &lock = _lock;

@@ -149,19 +149,20 @@ class ref<String> : public _async_runtime::RefImplement<String>
 
     using const_iterator = String::const_iterator;
     using const_reverse_iterator = String::const_reverse_iterator;
+    using super = _async_runtime::RefImplement<String>;
 
 protected:
     ref() {}
-    ref(const std::shared_ptr<String> &other) : _async_runtime::RefImplement<String>(other) {}
+    ref(const std::shared_ptr<String> &other) : super(other) {}
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : _async_runtime::RefImplement<String>(other) {}
+    ref(const ref<R> &other) : super(other) {}
 
-    ref(const std::string &str) : _async_runtime::RefImplement<String>(std::make_shared<String>(str)) {}
-    ref(std::string &&str) : _async_runtime::RefImplement<String>(std::make_shared<String>(std::move(str))) {}
-    ref(const char *const str) : _async_runtime::RefImplement<String>(std::make_shared<String>(str)) {}
-    ref(const char c) : _async_runtime::RefImplement<String>(std::make_shared<String>(c)) {}
+    ref(const std::string &str) : super(std::make_shared<String>(str)) {}
+    ref(std::string &&str) : super(std::make_shared<String>(std::move(str))) {}
+    ref(const char *const str) : super(std::make_shared<String>(str)) {}
+    ref(const char c) : super(std::make_shared<String>(c)) {}
 
     bool operator==(const char *const other) const;
     bool operator==(const std::string &other) const;

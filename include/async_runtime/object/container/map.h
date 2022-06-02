@@ -80,6 +80,7 @@ template <typename Key, typename Value>
 class ref<Map<Key, Value>> : public _async_runtime::RefImplement<Map<Key, Value>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = _async_runtime::RefImplement<Map<Key, Value>>;
 
 public:
     using iterator = typename Map<Key, Value>::iterator;
@@ -87,21 +88,13 @@ public:
     using value_type = typename Map<Key, Value>::value_type;
 
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : _async_runtime::RefImplement<Map<Key, Value>>(other) {}
+    ref(const ref<R> &other) : super(other) {}
 
-    ref(const std::initializer_list<value_type> &list)
-        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(list)) {}
+    template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
+    ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(std::initializer_list<value_type> &&list)
-        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(std::move(list))) {}
-
-    template <typename R>
-    ref(const std::initializer_list<R> &list)
-        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(list)) {}
-
-    template <typename R>
-    ref(std::initializer_list<R> &&list)
-        : _async_runtime::RefImplement<Map<Key, Value>>(std::make_shared<Map<Key, Value>>(list)) {}
+    ref(const std::initializer_list<value_type> &list) : super(std::make_shared<Map<Key, Value>>(list)) {}
+    ref(std::initializer_list<value_type> &&list) : super(std::make_shared<Map<Key, Value>>(std::move(list))) {}
 
     template <typename... Args>
     Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
@@ -172,9 +165,6 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     lateref(ref<R> &&other) : ref<Map<Key, Value>>(std::move(other)) {}
 
-    // enhanced
-
     lateref(const std::initializer_list<value_type> &list) : ref<Map<Key, Value>>(list) {}
-
     lateref(std::initializer_list<value_type> &&list) : ref<Map<Key, Value>>(std::move(list)) {}
 };

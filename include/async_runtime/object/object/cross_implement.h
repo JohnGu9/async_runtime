@@ -13,8 +13,11 @@ inline void _async_runtime::Else::ifElse(Function<void()> fn) const
 
 template <typename T>
 template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
-option<T>::option(const ref<R> &other)
-    : _async_runtime::OptionImplement<T>(other) {}
+option<T>::option(const ref<R> &other) : super(other) {}
+
+template <typename T>
+template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
+option<T>::option(ref<R> &&other) : super(std::move(other)) {}
 
 template <typename T>
 template <typename First, typename... Args>
@@ -79,7 +82,7 @@ ref<T> _async_runtime::OptionImplement<T>::ifNotNullElse(Function<ref<T>()> fn) 
 }
 
 template <typename T>
-ref<T> _async_runtime::OptionImplement<T>::assertNotNull() const
+ref<T> _async_runtime::OptionImplement<T>::assertNotNull() const noexcept(false)
 {
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     RUNTIME_ASSERT(ptr != nullptr, std::string(typeid(*this).name()) + " assert not null on a null ref. ");
@@ -133,7 +136,7 @@ ref<T> weakref<T>::ifNotNullElse(Function<ref<T>()> fn) const noexcept
 }
 
 template <typename T>
-ref<T> weakref<T>::assertNotNull() const
+ref<T> weakref<T>::assertNotNull() const noexcept(false)
 {
     const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
     RUNTIME_ASSERT(ptr != nullptr, std::string(typeid(*this).name()) + " assert not null on a null ref. ");

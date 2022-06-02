@@ -6,16 +6,26 @@ template <typename T>
 class option : public _async_runtime::OptionImplement<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = _async_runtime::OptionImplement<T>;
 
 public:
     option() {}
-    option(std::nullptr_t) : _async_runtime::OptionImplement<T>(nullptr) {}
+    option(std::nullptr_t) : super(nullptr) {}
+
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const ref<R> &other);
+
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const option<R> &other) : _async_runtime::OptionImplement<T>(other) {}
+    option(ref<R> &&other);
+
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) : _async_runtime::OptionImplement<T>(other){};
+    option(option<R> &&other) : super(std::move(other)) {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    option(const std::shared_ptr<R> &other) : super(other){};
+
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    option(std::shared_ptr<R> &&other) : super(std::move(other)){};
 
     /**
      * @brief Construct a new option object

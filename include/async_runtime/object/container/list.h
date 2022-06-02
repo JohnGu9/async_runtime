@@ -70,27 +70,20 @@ template <typename T>
 class ref<List<T>> : public _async_runtime::RefImplement<List<T>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = _async_runtime::RefImplement<List<T>>;
 
 public:
     using iterator = typename List<T>::iterator;
     using const_iterator = typename List<T>::const_iterator;
 
     template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : _async_runtime::RefImplement<List<T>>(other) {}
+    ref(const ref<R> &other) : super(other) {}
 
-    ref(const std::initializer_list<T> &list)
-        : _async_runtime::RefImplement<List<T>>(std::make_shared<List<T>>(list)) {}
+    template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
+    ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(std::initializer_list<T> &&list)
-        : _async_runtime::RefImplement<List<T>>(std::make_shared<List<T>>(std::move(list))) {}
-
-    template <typename R>
-    ref(const std::initializer_list<R> &list)
-        : _async_runtime::RefImplement<List<T>>(std::make_shared<List<T>>(list)) {}
-
-    template <typename R>
-    ref(std::initializer_list<R> &&list)
-        : _async_runtime::RefImplement<List<T>>(std::make_shared<List<T>>(list)) {}
+    ref(const std::initializer_list<T> &list) : super(std::make_shared<List<T>>(list)) {}
+    ref(std::initializer_list<T> &&list) : super(std::make_shared<List<T>>(std::move(list))) {}
 
     T &operator[](size_t index) const { return (*this)->operator[](index); }
 
@@ -146,9 +139,6 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
     lateref(ref<R> &&other) : ref<List<T>>(std::move(other)) {}
 
-    // enhanced
-
     lateref(const std::initializer_list<T> &list) : ref<List<T>>(list) {}
-
     lateref(std::initializer_list<T> &&list) : ref<List<T>>(std::move(list)) {}
 };

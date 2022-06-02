@@ -17,6 +17,6 @@ public:
 
     _async_runtime::Else ifNotNull(Function<void(ref<T>)> fn) const noexcept override;
     ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept override;
-    ref<T> assertNotNull() const override;
+    ref<T> assertNotNull() const noexcept(false) override;
     option<T> toOption() const noexcept;
 };

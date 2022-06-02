@@ -51,17 +51,13 @@ namespace std
     {
         std::size_t operator()(const ::option<String> &other) const
         {
-            static const auto hs = hash<::ref<String>>();
             static const auto nullResult = hash<std::shared_ptr<String>>()(nullptr);
-
-            std::size_t result;
-            other.ifNotNull([&](::ref<String> str) { //
-                     result = hs(str);
-                 })
-                .ifElse([&]() { //
-                    result = nullResult;
-                });
-            return result;
+            auto ptr = other.get();
+            if (ptr != nullptr)
+            {
+                return ::_async_runtime::hash_c_string(ptr->data(), ptr->length());
+            }
+            return nullResult;
         }
     };
 } // namespace std

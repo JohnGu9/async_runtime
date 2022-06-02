@@ -15,19 +15,19 @@ public:
 
     T &operator*() const
     {
-        DEBUG_ASSERT(std::shared_ptr<T>::get() && "lateref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
+        DEBUG_ASSERT(std::shared_ptr<T>::get() && "ref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
         return std::shared_ptr<T>::operator*();
     }
 
     T *operator->() const
     {
-        DEBUG_ASSERT(std::shared_ptr<T>::get() && "lateref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
+        DEBUG_ASSERT(std::shared_ptr<T>::get() && "ref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
         return std::shared_ptr<T>::operator->();
     }
 
     T *get() const
     {
-        DEBUG_ASSERT(std::shared_ptr<T>::get() && "lateref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
+        DEBUG_ASSERT(std::shared_ptr<T>::get() && "ref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
         return std::shared_ptr<T>::get();
     }
 
