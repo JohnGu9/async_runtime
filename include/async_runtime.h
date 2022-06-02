@@ -7,8 +7,6 @@
 #include "async_runtime/fundamental/thread_pool.h"
 #include "async_runtime/fundamental/timer.h"
 
-#include <iostream>
-
 // maybe you like to include widgets by your own
 #ifndef ASYNC_RUNTIME_NO_EXPORT_WIDGETS
 
@@ -97,7 +95,7 @@ namespace _async_runtime
     template <class... Args>
     inline constexpr size_t variable_arguments_amount(Args &&...) { return sizeof...(Args); }
 
-    inline std::stringstream &stringstream_setup(std::stringstream &ss)
+    inline std::stringstream &logger_stringstream_setup(std::stringstream &ss)
     {
         struct tm timebuf;
         time_t t = time(nullptr);
@@ -108,26 +106,26 @@ namespace _async_runtime
 #endif
         ss << std::put_time(&timebuf, ASYNC_RUNTIME_TIMESTAMP_FORMAT);
 
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+        ss << std::boolalpha;
+#endif
+
         return ss;
     }
 }
 
 #ifndef ASYNC_RUNTIME_OSTREAM_REDIRECT
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-#define ASYNC_RUNTIME_OSTREAM_REDIRECT << std::boolalpha
-#else
 #define ASYNC_RUNTIME_OSTREAM_REDIRECT
-#endif
 #endif
 
 #ifndef ASYNC_RUNTIME_LOG_FORMAT
 #define ASYNC_RUNTIME_LOG_FORMAT(__type__, __format__, ...)                                                        \
     {                                                                                                              \
         std::stringstream __stringstream__("");                                                                    \
-        _async_runtime::stringstream_setup(__stringstream__)                                                       \
+        _async_runtime::logger_stringstream_setup(__stringstream__)                                                \
             << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT \
             << __format__ << std::endl;                                                                            \
-        Logger::of(context)->write(String::formatFromString(__stringstream__.str().c_str(), ##__VA_ARGS__));         \
+        Logger::of(context)->write(Object::create<String>(__stringstream__.str())->format<>(__VA_ARGS__));         \
     }
 #endif
 

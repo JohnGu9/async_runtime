@@ -139,6 +139,28 @@ ref<String> String::toString()
     return self();
 }
 
+bool String::any(Function<bool(const char &)> fn) const
+{
+    for (const auto &iter : *this)
+        if (fn(iter))
+            return true;
+    return false;
+}
+
+bool String::every(Function<bool(const char &)> fn) const
+{
+    for (const auto &iter : *this)
+        if (!fn(iter))
+            return false;
+    return true;
+}
+
+void String::forEach(Function<void(const char &)> fn) const
+{
+    for (const auto &iter : *this)
+        fn(iter);
+}
+
 ref<String> operator+(const char c, ref<String> string)
 {
     return String::connect(c, string);
@@ -161,27 +183,27 @@ ref<String> operator+(std::string &&str, ref<String> string)
 
 size_t String::find(ref<String> pattern, size_t start) const
 {
-    return std::string::find(pattern->data(), start, pattern->length());
+    return super::find(pattern->data(), start, pattern->length());
 }
 
 size_t String::findFirstOf(ref<String> pattern, size_t start) const
 {
-    return std::string::find_first_of(pattern->data(), start, pattern->length());
+    return super::find_first_of(pattern->data(), start, pattern->length());
 }
 
 size_t String::findFirstNotOf(ref<String> pattern, size_t start) const
 {
-    return std::string::find_first_not_of(pattern->data(), start, pattern->length());
+    return super::find_first_not_of(pattern->data(), start, pattern->length());
 }
 
 size_t String::findLastOf(ref<String> pattern, size_t start) const
 {
-    return std::string::find_last_of(pattern->data(), start, pattern->length());
+    return super::find_last_of(pattern->data(), start, pattern->length());
 }
 
 size_t String::findLastNotOf(ref<String> pattern, size_t start) const
 {
-    return std::string::find_last_not_of(pattern->data(), start, pattern->length());
+    return super::find_last_not_of(pattern->data(), start, pattern->length());
 }
 
 std::string String::toStdString() const
@@ -201,14 +223,14 @@ bool String::isNotEmpty() const
 
 bool String::startsWith(ref<String> prefix) const
 {
-    if (prefix->size() > this->size())
+    if (prefix->length() > this->length())
         return false;
     return std::equal(prefix->begin(), prefix->end(), this->begin());
 }
 
 bool String::endsWith(ref<String> suffix) const
 {
-    if (suffix->size() > this->size())
+    if (suffix->length() > this->length())
         return false;
     return std::equal(suffix->rbegin(), suffix->rend(), this->rbegin());
 }
@@ -254,16 +276,18 @@ ref<String> String::trim(ref<String> pattern) const
 ref<String> String::toLowerCase() const
 {
     std::string result;
-    result.resize(this->size());
-    std::transform(begin(), end(), result.begin(), std::tolower);
+    result.resize(this->length());
+    std::transform(begin(), end(), result.begin(), [](unsigned char c)
+                   { return std::tolower(c); });
     return std::move(result);
 }
 
 ref<String> String::toUpperCase() const
 {
     std::string result;
-    result.resize(this->size());
-    std::transform(begin(), end(), result.begin(), std::toupper);
+    result.resize(this->length());
+    std::transform(begin(), end(), result.begin(), [](unsigned char c)
+                   { return std::toupper(c); });
     return std::move(result);
 }
 

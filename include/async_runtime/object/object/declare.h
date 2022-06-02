@@ -1,9 +1,6 @@
 #pragma once
 
-#include <assert.h>
-#include <exception>
 #include <functional>
-#include <initializer_list>
 #include <memory>
 
 #include "declare/basic.h"
@@ -22,6 +19,7 @@
 #ifdef NDEBUG
 #define DEBUG_ASSERT(...) void(0)
 #else
+#include <assert.h>
 #define DEBUG_ASSERT(...) assert(__VA_ARGS__)
 #endif
 

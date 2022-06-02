@@ -2,11 +2,10 @@
 
 #include "../container.h"
 #include <initializer_list>
-#include <memory>
 #include <unordered_set>
 
 template <typename T>
-class Set : public std::unordered_set<T>, public Iterable<T>, public Removable<T>, public Containable<T>
+class Set : public std::unordered_set<T>, public Iterable<T>, public RemovableMixin<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -49,12 +48,7 @@ public:
             fn(iter);
     }
 
-    bool contain(T v) const override
-    {
-        return this->find(v) != this->end();
-    }
-
-    bool remove(T v) override
+    bool remove(const T& v) override
     {
         auto iter = this->find(v);
         if (iter == this->end())

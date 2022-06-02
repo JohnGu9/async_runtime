@@ -3,7 +3,7 @@
 #include "container.h"
 #include "object.h"
 #include <cstring>
-#include <limits>
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -31,7 +31,7 @@ class ref<String>;
  * ref<String> withNumberString = string + 1.023;
  *
  */
-class String : public virtual Object, protected std::string
+class String : public Iterable<char>, protected std::string
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -52,12 +52,12 @@ protected:
     virtual bool isNative() { return true; }
 
 public:
-    using iterator = std::string::const_iterator;
-    using reverse_iterator = std::string::const_reverse_iterator;
-    using const_iterator = std::string::const_iterator;
-    using const_reverse_iterator = std::string::const_reverse_iterator;
+    using iterator = super::const_iterator;
+    using reverse_iterator = super::const_reverse_iterator;
+    using const_iterator = super::const_iterator;
+    using const_reverse_iterator = super::const_reverse_iterator;
 
-    static const size_t npos = std::string::npos;
+    static const size_t npos = super::npos;
 
     static ref<String> getline(std::istream &os);
 
@@ -76,12 +76,12 @@ public:
     template <typename Iterator, typename... Args>
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
-    String(const char c) : std::string{c} {}
-    String(const std::string &str) : std::string(str) {}
-    String(std::string &&str) : std::string(std::move(str)) {}
+    String(const char c) : super{c} {}
+    String(const std::string &str) : super(str) {}
+    String(std::string &&str) : super(std::move(str)) {}
 
-    String(const char *const str) : std::string(str) { DEBUG_ASSERT(str != nullptr); }
-    String(const char *const str, size_t length) : std::string(str, length) { DEBUG_ASSERT(str != nullptr); }
+    String(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }
+    String(const char *const str, size_t length) : super(str, length) { DEBUG_ASSERT(str != nullptr); }
 
     String &operator=(const char other) = delete;
     String &operator=(const char *const other) = delete;
@@ -99,6 +99,11 @@ public:
     bool operator==(ref<Object> other) override;
     void toStringStream(std::ostream &) override;
     ref<String> toString() override;
+
+    // override from Iterable
+    bool any(Function<bool(const char &)>) const override;
+    bool every(Function<bool(const char &)>) const override;
+    void forEach(Function<void(const char &)>) const override;
 
     // new interface
     virtual std::string toStdString() const;
@@ -123,16 +128,17 @@ public:
     virtual ref<String> substr(size_t begin = 0, size_t length = npos) const;
 
     // inherited interface
-    virtual const char *const c_str() const { return std::string::c_str(); }
-    virtual const char *const data() const { return std::string::data(); }
-    virtual size_t length() const { return std::string::length(); }
-    virtual size_t size() const { return std::string::size(); }
+    virtual const char *const c_str() const { return super::c_str(); } // will be remove in the future
+    virtual size_t size() const { return super::size(); }              // will be remove in the future
 
-    virtual const char &operator[](size_t index) const { return std::string::operator[](index); }
-    virtual const_iterator begin() const { return std::string::begin(); }
-    virtual const_iterator end() const { return std::string::end(); }
-    virtual const_reverse_iterator rbegin() const { return std::string::rbegin(); }
-    virtual const_reverse_iterator rend() const { return std::string::rend(); }
+    virtual const char *const data() const { return super::data(); }
+    virtual size_t length() const { return super::length(); }
+
+    virtual const char &operator[](size_t index) const { return super::operator[](index); }
+    virtual const_iterator begin() const { return super::begin(); }
+    virtual const_iterator end() const { return super::end(); }
+    virtual const_reverse_iterator rbegin() const { return super::rbegin(); }
+    virtual const_reverse_iterator rend() const { return super::rend(); }
 };
 
 template <>

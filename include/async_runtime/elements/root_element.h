@@ -2,7 +2,6 @@
 
 #include "../fundamental/async.h"
 #include "single_child_element.h"
-#include <atomic>
 
 class LoggerHandler;
 class RootElement : public SingleChildElement

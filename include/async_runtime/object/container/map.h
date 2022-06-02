@@ -1,16 +1,14 @@
 #pragma once
 
-#include <initializer_list>
-#include <memory>
-#include <unordered_map>
-
 #include "../container.h"
+#include <initializer_list>
+#include <unordered_map>
 
 template <typename Key, typename Value>
 class Map : public std::unordered_map<Key, Value>,
             public Iterable<typename std::unordered_map<Key, Value>::value_type>,
-            public Removable<Key>,
-            public Containable<Key>
+            public RemovableMixin<Key>,
+            public virtual ContainableMixin<Key>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -54,18 +52,18 @@ public:
             fn(iter);
     }
 
-    bool contain(Key v) const override
-    {
-        return this->find(v) != this->end();
-    }
-
-    bool remove(Key v) override
+    bool remove(const Key &v) override
     {
         auto iter = this->find(v);
         if (iter == this->end())
             return false;
         this->erase(iter);
         return true;
+    }
+
+    bool contain(const Key &other) const
+    {
+        return this->find(other) != this->end();
     }
 
     void toStringStream(std::ostream &os) override

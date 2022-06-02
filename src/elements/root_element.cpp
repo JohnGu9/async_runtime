@@ -5,8 +5,6 @@
 #include "async_runtime/widgets/logger_widget.h"
 #include "async_runtime/widgets/root_widget.h"
 
-#include <iostream>
-
 class RootElement::RootWrapper : public StatelessWidget
 {
     ref<Widget> child;

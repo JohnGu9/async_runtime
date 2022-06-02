@@ -1,7 +1,6 @@
 #pragma once
 #include "basic.h"
-#include <iostream>
-#include <sstream>
+#include <ostream>
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const ref<T> &);

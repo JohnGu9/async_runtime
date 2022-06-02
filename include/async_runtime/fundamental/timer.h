@@ -2,7 +2,6 @@
 
 #include "../utilities/duration.h"
 #include "event_loop.h"
-#include <atomic>
 
 class Timer : public virtual Object, public EventLoopGetterMixin
 {

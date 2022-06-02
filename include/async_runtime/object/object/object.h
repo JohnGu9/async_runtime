@@ -1,7 +1,7 @@
 #pragma once
 
 #include "declare.h"
-#include <sstream>
+#include <ostream>
 
 /**
  * @brief

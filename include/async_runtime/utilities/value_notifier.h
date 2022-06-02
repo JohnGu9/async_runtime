@@ -1,8 +1,6 @@
 #pragma once
 
 #include "value_listenable.h"
-#include <assert.h>
-#include <utility>
 
 template <typename T = std::nullptr_t>
 class ValueNotifier;

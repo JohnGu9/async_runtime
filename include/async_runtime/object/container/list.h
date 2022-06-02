@@ -1,13 +1,11 @@
 #pragma once
 
+#include "../container.h"
 #include <deque>
 #include <initializer_list>
-#include <memory>
-
-#include "../container.h"
 
 template <typename T>
-class List : public std::deque<T>, public Iterable<T>, public Removable<size_t>, public Containable<T>
+class List : public std::deque<T>, public Iterable<T>, public RemovableMixin<size_t>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -50,13 +48,7 @@ public:
             fn(iter);
     }
 
-    bool contain(T v) const override
-    {
-        return this->any([&v](const T &value)
-                         { return value == v; });
-    }
-
-    bool remove(size_t index) override
+    bool remove(const size_t &index) override
     {
         RUNTIME_ASSERT(index < this->size(), "Index overflow");
         auto iter = this->begin() + index;
