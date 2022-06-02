@@ -3,7 +3,7 @@
 
 bool Object::operator==(ref<Object> other)
 {
-    return false;
+    return false; // if this function be called, the [other] must be the 'another' Object
 }
 
 Object::RuntimeType Object::runtimeType()

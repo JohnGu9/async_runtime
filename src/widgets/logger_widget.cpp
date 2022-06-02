@@ -2,7 +2,6 @@
 #include "async_runtime/fundamental/async.h"
 #include "async_runtime/fundamental/file.h"
 #include "async_runtime/widgets/root_widget.h"
-#include <sstream>
 
 static ref<String> endOfLine()
 {

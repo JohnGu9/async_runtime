@@ -2,7 +2,6 @@
 
 #include "object.h"
 #include <functional>
-#include <memory>
 #include <type_traits>
 
 template <>
@@ -35,6 +34,9 @@ public:
 
     template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(other) {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
+    ref(ref<R> &&other) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(other) {}
 
     template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
     ref(Lambda lambda) : _async_runtime::RefImplement<Fn<ReturnType(Args...)>>(std::make_shared<Fn<ReturnType(Args...)>>(lambda)) {}

@@ -20,6 +20,10 @@ template <typename T>
 template <typename First, typename... Args>
 option<T>::option(const First &first, Args &&...args) : _async_runtime::OptionImplement<T>(ref<T>(first, std::forward<Args>(args)...)) {}
 
+template <typename T>
+template <typename First, typename... Args>
+lateref<T>::lateref(const First &first, Args &&...args) : ref<T>(first, std::forward<Args>(args)...) {}
+
 /**
  * @brief
  * @deprecated
