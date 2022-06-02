@@ -22,6 +22,8 @@ template <typename T>
 class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
 {
     using super = State<StreamBuilder<T>>;
+
+public:
     lateref<StreamSubscription<T>> _subscription;
     lateref<AsyncSnapshot<T>> _snapshot;
 
@@ -32,7 +34,6 @@ class StreamBuilder<T>::_State : public State<StreamBuilder<T>>
                 ? AsyncSnapshot<>::ConnectionState::done
                 : AsyncSnapshot<>::ConnectionState::active);
         this->setState([] {});
-
     };
 
     void _subscribe()

@@ -88,6 +88,11 @@ public:
     String &operator=(const std::string &other) = delete;
     String &operator=(std::string &&other) = delete;
 
+    size_t find_first_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
+    size_t find_first_not_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
+    size_t find_last_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
+    size_t find_last_not_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
+
     virtual bool operator==(const ref<String> &other);
 
     // override from Object
@@ -103,9 +108,19 @@ public:
     virtual bool endsWith(ref<String>) const;
     virtual ref<List<ref<String>>> split(ref<String> pattern) const;
     virtual ref<String> trim() const;
+    virtual ref<String> trim(ref<String> pattern) const;
+    virtual ref<String> toLowerCase() const;
+    virtual ref<String> toUpperCase() const;
 
     template <typename... Args>
     ref<String> format(Args &&...args);
+
+    virtual size_t find(ref<String> pattern, size_t start = 0) const;
+    virtual size_t findFirstOf(ref<String> pattern, size_t start = 0) const;
+    virtual size_t findFirstNotOf(ref<String> pattern, size_t start = 0) const;
+    virtual size_t findLastOf(ref<String> pattern, size_t start = npos) const;
+    virtual size_t findLastNotOf(ref<String> pattern, size_t start = npos) const;
+    virtual ref<String> substr(size_t begin = 0, size_t length = npos) const;
 
     // inherited interface
     virtual const char *const c_str() const { return std::string::c_str(); }
@@ -118,13 +133,6 @@ public:
     virtual const_iterator end() const { return std::string::end(); }
     virtual const_reverse_iterator rbegin() const { return std::string::rbegin(); }
     virtual const_reverse_iterator rend() const { return std::string::rend(); }
-
-    virtual size_t find(ref<String> pattern, size_t start = 0) const;
-    virtual size_t find_first_of(ref<String> pattern, size_t start = 0) const;
-    virtual size_t find_first_not_of(ref<String> pattern, size_t start = 0) const;
-    virtual size_t find_last_of(ref<String> pattern, size_t start = SIZE_MAX) const;
-    virtual size_t find_last_not_of(ref<String> pattern, size_t start = SIZE_MAX) const;
-    virtual ref<String> substr(size_t begin = 0, size_t length = SIZE_MAX) const;
 };
 
 template <>

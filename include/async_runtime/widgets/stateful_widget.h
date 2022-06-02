@@ -37,20 +37,27 @@ class State<StatefulWidget> : public virtual Object, public EventLoopGetterMixin
     virtual void callDidWidgetUpdated(ref<StatefulWidget> oldWidget) = 0;
     virtual ref<Widget> build(ref<BuildContext> context) = 0;
 
+/**
+ * @brief If your compiler can't gather the protected member in lambda
+ * you can enable this flag [ASYNC_RUNTIME_STATE_API_PUBLIC] to make api public when compile the codes
+ *
+ */
+#ifdef ASYNC_RUNTIME_STATE_API_PUBLIC
+public:
+#else
 protected:
+#endif
+
     const bool &mounted = _mounted;
     const ref<BuildContext> &context = _context;
-
     void setState(Function<void()> fn);
-    ref<EventLoop> eventLoop() override { return this->_loop; }
 
 public:
     State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)),
               _setStateCallbacks(List<Function<void()>>::create()) {}
-    ~State()
-    {
-        DEBUG_ASSERT(_mounted == false && "[dispose] must to call super::dispose");
-    }
+    ~State() { DEBUG_ASSERT(_mounted == false && "[dispose] must to call super::dispose"); }
+
+    ref<EventLoop> eventLoop() override { return this->_loop; }
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
@@ -59,7 +66,12 @@ class State : public State<StatefulWidget>
     using super = State<StatefulWidget>;
     lateref<T> _widget;
 
+#ifdef ASYNC_RUNTIME_STATE_API_PUBLIC
+public:
+#else
 protected:
+#endif
+
     /**
      * @brief mustCallSuper
      * [the hook invoke when widget mounting]

@@ -39,7 +39,7 @@ public:
 template <typename T>
 void ValueNotifier<T>::setValue(const T &value)
 {
-    RUNTIME_ASSERT(!this->_isDisposed, "Can't access [setValue] after [dispose]");
+    RUNTIME_ASSERT(!this->_isDisposed, "ValueNotifier can't access [setValue] after [dispose]");
     if (value != this->_value)
     {
         this->_value = value;
@@ -50,7 +50,7 @@ void ValueNotifier<T>::setValue(const T &value)
 template <typename T>
 void ValueNotifier<T>::setValue(T &&value)
 {
-    RUNTIME_ASSERT(!this->_isDisposed, "Can't access [setValue] after [dispose]");
+    RUNTIME_ASSERT(!this->_isDisposed, "ValueNotifier can't access [setValue] after [dispose]");
     if (value != this->_value)
     {
         this->_value = std::forward<T>(value);
@@ -61,13 +61,13 @@ void ValueNotifier<T>::setValue(T &&value)
 template <typename T>
 T &ValueNotifier<T>::getValue()
 {
-    RUNTIME_ASSERT(!this->_isDisposed, "Can't access [getValue] after [dispose]");
+    RUNTIME_ASSERT(!this->_isDisposed, "ValueNotifier can't access [getValue] after [dispose]");
     return this->_value;
 }
 
 template <typename T>
 const T &ValueNotifier<T>::getValue() const
 {
-    RUNTIME_ASSERT(!this->_isDisposed, "Can't access [getValue] after [dispose]");
+    RUNTIME_ASSERT(!this->_isDisposed, "ValueNotifier can't access [getValue] after [dispose]");
     return this->_value;
 }

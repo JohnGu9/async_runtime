@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <exception>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 
 #include "declare/basic.h"

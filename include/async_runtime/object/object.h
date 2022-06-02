@@ -65,7 +65,6 @@
 #include "object/option_implement.h"
 #include "object/ref_implement.h"
 
-#include "object/lateref.h"
 #include "object/ref.h"
 
 #include "object/object.h"
@@ -74,6 +73,7 @@
 #include "function.h"
 #include "string.h"
 
+#include "object/lateref.h"
 #include "object/option.h"
 #include "object/weak_ref.h"
 

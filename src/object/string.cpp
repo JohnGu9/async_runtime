@@ -1,4 +1,6 @@
 #include "async_runtime/object/object.h"
+#include <algorithm>
+#include <cctype>
 
 class String::View : public String
 {
@@ -37,32 +39,34 @@ public:
             return super::npos;
         return result - _begin;
     }
-    size_t find_first_of(ref<String> pattern, size_t start = 0) const override
+    size_t findFirstOf(ref<String> pattern, size_t start = 0) const override
     {
-        size_t result = _parent->find_first_of(pattern, start + _begin);
+        size_t result = _parent->findFirstOf(pattern, start + _begin);
         if (result >= _end)
             return super::npos;
         return result - _begin;
     }
-    size_t find_first_not_of(ref<String> pattern, size_t start = 0) const override
+    size_t findFirstNotOf(ref<String> pattern, size_t start = 0) const override
     {
-        size_t result = _parent->find_first_not_of(pattern, start + _begin);
+        size_t result = _parent->findFirstNotOf(pattern, start + _begin);
         if (result >= _end)
             return super::npos;
         return result - _begin;
     }
-    size_t find_last_of(ref<String> pattern, size_t start = SIZE_MAX) const override
+    size_t findLastOf(ref<String> pattern, size_t start = npos) const override
     {
-        start = start == SIZE_MAX ? SIZE_MAX : start - (_parent->length() - _end);
-        size_t result = _parent->find_last_of(pattern, start);
+        const auto max = std::max(_begin, _end - 1);
+        start = start == npos ? max : std::min(start + _begin, max);
+        size_t result = _parent->findLastOf(pattern, start);
         if (result < _begin)
             return super::npos;
         return result - _begin;
     }
-    size_t find_last_not_of(ref<String> pattern, size_t start = SIZE_MAX) const override
+    size_t findLastNotOf(ref<String> pattern, size_t start = npos) const override
     {
-        start = start == SIZE_MAX ? SIZE_MAX : start - (_parent->length() - _end);
-        size_t result = _parent->find_last_not_of(pattern, start);
+        const auto max = std::max(_begin, _end - 1);
+        start = start == npos ? max : std::min(start + _begin, max);
+        size_t result = _parent->findLastNotOf(pattern, start);
         if (result < _begin)
             return super::npos;
         return result - _begin;
@@ -75,7 +79,6 @@ String::View::View(ref<String> parent, size_t begin, size_t end)
     : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
 {
     DEBUG_ASSERT(_parent->isNative());
-    auto parentLength = _parent->length();
     DEBUG_ASSERT(_parent->length() >= _begin && _parent->length() >= _end);
 }
 
@@ -161,22 +164,22 @@ size_t String::find(ref<String> pattern, size_t start) const
     return std::string::find(pattern->data(), start, pattern->length());
 }
 
-size_t String::find_first_of(ref<String> pattern, size_t start) const
+size_t String::findFirstOf(ref<String> pattern, size_t start) const
 {
     return std::string::find_first_of(pattern->data(), start, pattern->length());
 }
 
-size_t String::find_first_not_of(ref<String> pattern, size_t start) const
+size_t String::findFirstNotOf(ref<String> pattern, size_t start) const
 {
     return std::string::find_first_not_of(pattern->data(), start, pattern->length());
 }
 
-size_t String::find_last_of(ref<String> pattern, size_t start) const
+size_t String::findLastOf(ref<String> pattern, size_t start) const
 {
     return std::string::find_last_of(pattern->data(), start, pattern->length());
 }
 
-size_t String::find_last_not_of(ref<String> pattern, size_t start) const
+size_t String::findLastNotOf(ref<String> pattern, size_t start) const
 {
     return std::string::find_last_not_of(pattern->data(), start, pattern->length());
 }
@@ -236,9 +239,32 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
 
 ref<String> String::trim() const
 {
-    auto begin = this->find_first_not_of(' ');
-    auto end = this->find_last_not_of(' ') + 1;
+    auto begin = this->findFirstNotOf(' ');
+    auto end = this->findLastNotOf(' ') + 1;
     return this->substr(begin, end - begin);
+}
+
+ref<String> String::trim(ref<String> pattern) const
+{
+    auto begin = this->findFirstNotOf(pattern);
+    auto end = this->findLastNotOf(pattern) + 1;
+    return this->substr(begin, end - begin);
+}
+
+ref<String> String::toLowerCase() const
+{
+    std::string result;
+    result.resize(this->size());
+    std::transform(begin(), end(), result.begin(), std::tolower);
+    return std::move(result);
+}
+
+ref<String> String::toUpperCase() const
+{
+    std::string result;
+    result.resize(this->size());
+    std::transform(begin(), end(), result.begin(), std::toupper);
+    return std::move(result);
 }
 
 ref<String> String::substr(size_t begin, size_t length) const

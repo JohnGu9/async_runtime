@@ -24,8 +24,9 @@ protected:
 template <typename T>
 class ValueListenableBuilder<T>::_State : public State<ValueListenableBuilder<T>>
 {
-public:
     using super = State<ValueListenableBuilder<T>>;
+
+public:
     lateref<ValueListenable<T>> _valueListenable;
 
     Function<void()> _listener = [this]

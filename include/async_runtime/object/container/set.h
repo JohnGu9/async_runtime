@@ -133,3 +133,27 @@ ref<Set<R>> Set<T>::map(Function<R(const T &)> fn) const
         mapped->insert(fn(element));
     return mapped;
 }
+
+template <typename T>
+class lateref<Set<T>> : public ref<Set<T>>
+{
+    _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = ref<Set<T>>;
+    using iterator = typename super::iterator;
+    using const_iterator = typename super::const_iterator;
+
+public:
+    explicit lateref() : ref<Set<T>>() {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    lateref(const ref<R> &other) : ref<Set<T>>(other) {}
+
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    lateref(ref<R> &&other) : ref<Set<T>>(std::move(other)) {}
+
+    // enhanced
+
+    lateref(const std::initializer_list<T> &list) : ref<Set<T>>(list) {}
+
+    lateref(std::initializer_list<T> &&list) : ref<Set<T>>(std::move(list)) {}
+};
