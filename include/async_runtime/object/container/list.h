@@ -58,11 +58,10 @@ public:
 
     void toStringStream(std::ostream &os) override
     {
-        this->Object::toStringStream(os);
-        os << " { ";
+        os << '<' << typeid(T).name() << ">[ ";
         for (const auto &element : *this)
             os << element << ", ";
-        os << "}";
+        os << "]";
     }
 };
 

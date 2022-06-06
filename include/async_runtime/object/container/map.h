@@ -68,8 +68,7 @@ public:
 
     void toStringStream(std::ostream &os) override
     {
-        this->Object::toStringStream(os);
-        os << " { ";
+        os << '<' << typeid(Key).name() << ", " << typeid(Value).name() << ">{ ";
         for (const std::pair<Key, Value> &element : *this)
             os << '{' << element.first << " : " << element.second << "}, ";
         os << "}";
