@@ -61,7 +61,7 @@ public:
         return true;
     }
 
-    bool contain(const Key &other) const
+    bool contain(const Key &other) const override
     {
         return this->find(other) != this->end();
     }

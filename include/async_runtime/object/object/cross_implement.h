@@ -214,7 +214,9 @@ bool Object::identical(const option<T0> &lhs, const ref<T1> &rhs) noexcept
  * @brief Object::equal
  *
  */
-template <typename T0, typename T1>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const option<T0> &lhs, const option<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))
@@ -224,7 +226,9 @@ bool Object::equal(const option<T0> &lhs, const option<T1> &rhs)
     return false;
 }
 
-template <typename T0, typename T1>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const ref<T0> &lhs, const ref<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))
@@ -232,7 +236,9 @@ bool Object::equal(const ref<T0> &lhs, const ref<T1> &rhs)
     return lhs.get()->operator==(rhs);
 }
 
-template <typename T0, typename T1>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const ref<T0> &lhs, const option<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))
@@ -242,7 +248,9 @@ bool Object::equal(const ref<T0> &lhs, const option<T1> &rhs)
     return lhs.get()->operator==(Object::cast<>(rhs.get()));
 }
 
-template <typename T0, typename T1>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const option<T0> &lhs, const ref<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))

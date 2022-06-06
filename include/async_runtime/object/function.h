@@ -22,6 +22,9 @@ public:
 
     ReturnType operator()(Args... args) const { return super::operator()(std::forward<Args>(args)...); }
     const super &toStdFunction() const { return *this; }
+
+    /* Apple clang compile bug patch. And this is useless code can be removed if apple fix the bug */
+    bool operator==(ref<Object> other) override { return this->Object::operator==(other); };
 };
 
 template <typename ReturnType, class... Args>

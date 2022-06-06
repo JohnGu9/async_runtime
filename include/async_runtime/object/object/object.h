@@ -34,13 +34,21 @@ public:
     template <typename T0, typename T1>
     static bool identical(const option<T0> &, const ref<T1> &) noexcept;
 
-    template <typename T0, typename T1>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const option<T0> &, const option<T1> &);
-    template <typename T0, typename T1>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const ref<T0> &, const ref<T1> &);
-    template <typename T0, typename T1>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const ref<T0> &, const option<T1> &);
-    template <typename T0, typename T1>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const option<T0> &, const ref<T1> &);
 
     template <typename T>

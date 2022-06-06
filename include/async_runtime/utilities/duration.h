@@ -11,13 +11,7 @@
 
 #pragma once
 
-#if __APPLE__
-// apple <cmath> include bug
-#include <cstdlib>
-#else
 #include <cmath>
-#endif
-
 /**
  * @brief Duration for a peroid of time in Async Runtime
  *
