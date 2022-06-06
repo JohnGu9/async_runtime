@@ -79,4 +79,5 @@
 
 #include "object/cross_implement.h"
 #include "object/hash.h"
+#include "object/less.h"
 #include "object/operators.h"

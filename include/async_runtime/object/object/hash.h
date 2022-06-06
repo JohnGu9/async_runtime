@@ -35,6 +35,8 @@ namespace _async_runtime
     }
 }
 
+#include "../string.h"
+
 namespace std
 {
     template <>
