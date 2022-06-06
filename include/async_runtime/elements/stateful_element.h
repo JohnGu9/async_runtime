@@ -5,7 +5,7 @@
 
 class StatefulElement : public SingleChildElement
 {
-    template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
+    template <typename T, typename Object::Base<StatefulWidget>::isBaseOf<T>::type *>
     friend class State;
 
     class InvalidWidget;
