@@ -20,7 +20,7 @@ class State<StatefulWidget> : public virtual Object, public EventLoopGetterMixin
 {
     friend class StatefulElement;
 
-    template <typename T, typename Object::Base<StatefulWidget>::isBaseOf<T>::type *>
+    template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
     friend class State;
 
     bool _mounted = false;
@@ -60,7 +60,7 @@ public:
     ref<EventLoop> eventLoop() override { return this->_loop; }
 };
 
-template <typename T, typename Object::Base<StatefulWidget>::isBaseOf<T>::type *>
+template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>
 class State : public State<StatefulWidget>
 {
     using super = State<StatefulWidget>;

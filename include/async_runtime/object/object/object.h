@@ -20,51 +20,9 @@ class Object : public std::enable_shared_from_this<Object>
 public:
     using RuntimeType = size_t;
 
-    template <typename T>
-    class If
-    {
-    public:
-        template <typename Base>
-        using isDerivedOf = typename std::enable_if<std::is_base_of<Base, T>::value>;
-        template <typename Derived>
-        using isBaseOf = typename std::enable_if<std::is_base_of<T, Derived>::value>;
-    };
-
-    template <typename T>
-    class Derived
-    {
-    public:
-        template <typename Base>
-        using isDerivedOf = typename std::enable_if<std::is_base_of<Base, T>::value>;
-    };
-
-    template <typename T>
-    class Base
-    {
-    public:
-        template <typename Derived>
-        using isBaseOf = typename std::enable_if<std::is_base_of<T, Derived>::value>;
-    };
-
-    /**
-     * @brief enable template function that the template [T] is base of Object
-     *
-     * @usage typename isBaseOf<T>::type * = nullptr
-     *
-     * @equal If<T>::isDerivedOf<Object>
-     * @equal If<Object>::isBaseOf<T>
-     * @equal Base<Object>::isBaseOf<T>
-     * @equal Derived<T>::isDerivedOf<Object>
-     * @equal std::enable_if<std::is_base_of<Object T>::value>
-     *
-     * @tparam T
-     */
-    template <typename T>
-    using isBaseOf = typename Base<Object>::isBaseOf<T>;
-
-    template <typename T, typename isBaseOf<T>::type * = nullptr, class... _Args>
+    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
     static ref<T> create(_Args &&...);
-    template <typename T, typename isBaseOf<T>::type * = nullptr>
+    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     static void detach(ref<T> &) noexcept;
 
     template <typename T0, typename T1>
@@ -76,22 +34,30 @@ public:
     template <typename T0, typename T1>
     static bool identical(const option<T0> &, const ref<T1> &) noexcept;
 
-    template <typename T0, typename T1, typename Object::isBaseOf<T0>::type * = nullptr, typename Object::isBaseOf<T1>::type * = nullptr>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const option<T0> &, const option<T1> &);
-    template <typename T0, typename T1, typename Object::isBaseOf<T0>::type * = nullptr, typename Object::isBaseOf<T1>::type * = nullptr>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const ref<T0> &, const ref<T1> &);
-    template <typename T0, typename T1, typename Object::isBaseOf<T0>::type * = nullptr, typename Object::isBaseOf<T1>::type * = nullptr>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const ref<T0> &, const option<T1> &);
-    template <typename T0, typename T1, typename Object::isBaseOf<T0>::type * = nullptr, typename Object::isBaseOf<T1>::type * = nullptr>
+    template <typename T0, typename T1,
+              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
+              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
     static bool equal(const option<T0> &, const ref<T1> &);
 
     template <typename T>
     static bool isNull(const option<T> &) noexcept;
 
     // static cast
-    template <typename T, typename R, typename Base<T>::template isBaseOf<R>::type * = nullptr>
+    template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     static ref<T> cast(R *);
-    template <typename T, typename isBaseOf<T>::type * = nullptr>
+    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     static ref<T> cast(T *);
 
     Object() {}

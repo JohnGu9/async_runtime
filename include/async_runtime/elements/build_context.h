@@ -12,6 +12,6 @@ protected:
 public:
     BuildContext(ref<Widget> widget) : widget(widget) {}
 
-    template <typename T, typename Object::Base<InheritedWidget>::isBaseOf<T>::type * = nullptr>
+    template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type * = nullptr>
     option<T> dependOnInheritedWidgetOfExactType();
 };

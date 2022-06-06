@@ -151,7 +151,7 @@ option<T> weakref<T>::toOption() const noexcept
 
 // Object implement
 
-template <typename T, typename Object::isBaseOf<T>::type *, class... _Args>
+template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, class... _Args>
 ref<T> Object::create(_Args &&...__args)
 {
     finalref<T> object = std::make_shared<T>(std::forward<_Args>(__args)...);
@@ -168,7 +168,7 @@ ref<T> Object::create(_Args &&...__args)
  * @tparam *
  * @param object the ref need to force to release
  */
-template <typename T, typename Object::isBaseOf<T>::type *>
+template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 void Object::detach(ref<T> &object) noexcept
 {
     static_cast<std::shared_ptr<T> &>(object) = nullptr;
@@ -214,7 +214,9 @@ bool Object::identical(const option<T0> &lhs, const ref<T1> &rhs) noexcept
  * @brief Object::equal
  *
  */
-template <typename T0, typename T1, typename Object::isBaseOf<T0>::type *, typename Object::isBaseOf<T1>::type *>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const option<T0> &lhs, const option<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))
@@ -224,7 +226,9 @@ bool Object::equal(const option<T0> &lhs, const option<T1> &rhs)
     return false;
 }
 
-template <typename T0, typename T1, typename Object::isBaseOf<T0>::type *, typename Object::isBaseOf<T1>::type *>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const ref<T0> &lhs, const ref<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))
@@ -232,7 +236,9 @@ bool Object::equal(const ref<T0> &lhs, const ref<T1> &rhs)
     return lhs.get()->operator==(rhs);
 }
 
-template <typename T0, typename T1, typename Object::isBaseOf<T0>::type *, typename Object::isBaseOf<T1>::type *>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const ref<T0> &lhs, const option<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))
@@ -242,7 +248,9 @@ bool Object::equal(const ref<T0> &lhs, const option<T1> &rhs)
     return lhs.get()->operator==(Object::cast<>(rhs.get()));
 }
 
-template <typename T0, typename T1, typename Object::isBaseOf<T0>::type *, typename Object::isBaseOf<T1>::type *>
+template <typename T0, typename T1,
+          typename std::enable_if<std::is_base_of<Object, T0>::value>::type *,
+          typename std::enable_if<std::is_base_of<Object, T1>::value>::type *>
 bool Object::equal(const option<T0> &lhs, const ref<T1> &rhs)
 {
     if (Object::identical<>(lhs, rhs))
@@ -262,14 +270,14 @@ bool Object::isNull(const option<T> &object) noexcept
     return static_cast<const std::shared_ptr<T> &>(object) == nullptr;
 }
 
-template <typename T, typename R, typename Object::Base<T>::template isBaseOf<R>::type *>
+template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
 ref<T> Object::cast(R *other)
 {
     DEBUG_ASSERT(other != nullptr && "Object::cast on a nullptr pointer");
     return std::shared_ptr<T>(static_cast<std::enable_shared_from_this<Object> *>(other)->shared_from_this(), static_cast<T *>(other));
 }
 
-template <typename T, typename Object::isBaseOf<T>::type *>
+template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
 ref<T> Object::cast(T *other)
 {
     DEBUG_ASSERT(other != nullptr && "Object::cast on a nullptr pointer");

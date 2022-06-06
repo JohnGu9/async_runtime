@@ -29,7 +29,7 @@ public:
 #include "../utilities/console_format.h"
 #endif
 
-template <typename T, typename Object::Base<InheritedWidget>::isBaseOf<T>::type *>
+template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
 option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
     auto iter = this->_inheritances->find(typeid(T).hash_code());

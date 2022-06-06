@@ -8,7 +8,7 @@ public:
     virtual void dispatch(ref<BuildContext> context);
 };
 
-template <typename T = Notification, typename Object::Base<Notification>::isBaseOf<T>::type * = nullptr>
+template <typename T = Notification, typename std::enable_if<std::is_base_of<Notification, T>::value>::type * = nullptr>
 class NotificationListener;
 
 template <>
@@ -25,18 +25,18 @@ protected:
     Function<bool(ref<Notification> notification)> _onNotification;
 };
 
-template <typename T, typename Object::Base<Notification>::isBaseOf<T>::type *>
+template <typename T, typename std::enable_if<std::is_base_of<Notification, T>::value>::type *>
 class NotificationListener : public NotificationListener<Notification>
 {
 public:
     NotificationListener(ref<Widget> child, Function<bool(ref<T> notification)> onNotification, option<Key> key = nullptr)
         : NotificationListener<Notification>(
-              child, [onNotification](ref<Notification> notification) -> bool
-              {
+              child, [onNotification](ref<Notification> notification) -> bool {
                   lateref<T> n;
                   if (notification->cast<T>().isNotNull(n))
                       return onNotification(n);
-                  return false; },
+                  return false;
+              },
               key)
     {
     }
