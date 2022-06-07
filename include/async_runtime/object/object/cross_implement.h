@@ -146,7 +146,7 @@ ref<T> weakref<T>::assertNotNull() const noexcept(false)
 template <typename T>
 option<T> weakref<T>::toOption() const noexcept
 {
-    return option<T>(std::weak_ptr<T>::lock());
+    return std::weak_ptr<T>::lock();
 }
 
 // Object implement

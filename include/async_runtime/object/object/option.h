@@ -14,16 +14,16 @@ public:
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const ref<R> &other);
-
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(ref<R> &&other);
 
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    option(const option<R> &other) : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(option<R> &&other) : super(std::move(other)) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const std::shared_ptr<R> &other) : super(other){};
-
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(std::shared_ptr<R> &&other) : super(std::move(other)){};
 
