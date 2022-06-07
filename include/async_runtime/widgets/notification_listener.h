@@ -24,20 +24,26 @@ protected:
     finalref<Widget> _child;
     Function<bool(ref<Notification> notification)> _onNotification;
 };
-
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4573)
+#endif
 template <typename T, typename std::enable_if<std::is_base_of<Notification, T>::value>::type *>
 class NotificationListener : public NotificationListener<Notification>
 {
 public:
     NotificationListener(ref<Widget> child, Function<bool(ref<T> notification)> onNotification, option<Key> key = nullptr)
         : NotificationListener<Notification>(
-              child, [onNotification](ref<Notification> notification) -> bool {
-                  lateref<T> n;
-                  if (notification->cast<T>().isNotNull(n))
-                      return onNotification(n);
-                  return false;
+              child, [onNotification](ref<Notification> notification) -> bool { //
+                  option<T> n = notification->cast<T>();
+                  if_not_null(n) return onNotification(n);
+                  else_end() return false;
+                  end_if()
               },
               key)
     {
     }
 };
+#ifdef _WIN32
+#pragma warning(pop)
+#endif

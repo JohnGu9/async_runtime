@@ -26,25 +26,27 @@ class Logger::_Logger::_State : public State<Logger::_Logger>
 {
     static bool checkFileAndWrite(ref<File> file, ref<String> str)
     {
-        lateref<File::Error> error;
-        if (file->cast<File::Error>().isNotNull(error))
+        option<File::Error> error = file->cast<File::Error>();
+        if_not_null(error) return false;
+        else_end()
         {
-            return false;
+            file->write(str);
+            return true;
         }
-        file->write(str);
-        return true;
+        end_if()
     }
 
     static bool checkFileAndWriteLine(ref<File> file, ref<String> str)
     {
         static finalref<String> endl = endOfLine();
-        lateref<File::Error> error;
-        if (file->cast<File::Error>().isNotNull(error))
+        option<File::Error> error = file->cast<File::Error>();
+        if_not_null(error) return false;
+        else_end()
         {
-            return false;
+            file->writeAll({str, endl});
+            return true;
         }
-        file->writeAll({str, endl});
-        return true;
+        end_if();
     }
 
 public:

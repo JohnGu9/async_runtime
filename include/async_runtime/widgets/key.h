@@ -22,14 +22,9 @@ public:
 
     bool isEqual(option<Key> other) override
     {
-        lateref<Key> nonNullOther;
-        if (other.isNotNull(nonNullOther))
+        if (auto ptr = dynamic_cast<ValueKey<T> *>(other.get()))
         {
-            lateref<ValueKey<T>> castedPointer;
-            if (nonNullOther->cast<ValueKey<T>>().isNotNull(castedPointer))
-            {
-                return this->_value == castedPointer->_value;
-            }
+            return this->_value == ptr->_value;
         }
         return false;
     }
@@ -46,15 +41,7 @@ class GlobalKey : public Key
 public:
     bool isEqual(option<Key> other) override
     {
-        lateref<Key> key;
-        if (other.isNotNull(key))
-        {
-            return Object::identical<>(self(), key);
-        }
-        else
-        {
-            return false;
-        }
+        return Object::identical<>(self(), other);
     }
 
     void setElement(ref<Element> element) override;
@@ -88,10 +75,9 @@ void GlobalKey<TargetWidget, TargetState>::dispose()
 template <class TargetWidget, class TargetState>
 option<TargetWidget> GlobalKey<TargetWidget, TargetState>::getCurrentWidget()
 {
-    lateref<Element> element;
-    if (this->_element.isNotNull(element))
-        return element->getWidget()->template covariant<TargetWidget>();
-    return nullptr;
+    option<Element> element = this->_element.toOption();
+    if_not_null(element) return element->getWidget()->template covariant<TargetWidget>();
+    end_if() return nullptr;
 }
 
 template <class TargetWidget, class TargetState>
@@ -100,13 +86,14 @@ option<BuildContext> GlobalKey<TargetWidget, TargetState>::getCurrentContext() {
 template <class TargetWidget, class TargetState>
 option<TargetState> GlobalKey<TargetWidget, TargetState>::getCurrentState()
 {
-    lateref<Element> element;
-    if (this->_element.isNotNull(element))
+    option<Element> element = this->_element.toOption();
+    if_not_null(element)
     {
-        lateref<StatefulElement> statefulElement;
-        if (element->cast<StatefulElement>().isNotNull(statefulElement))
-            return statefulElement->_state->template covariant<TargetState>();
+        option<StatefulElement> statefulElement = element->cast<StatefulElement>();
+        if_not_null(statefulElement) return statefulElement->_state->template covariant<TargetState>();
+        end_if()
     }
+    end_if();
     return nullptr;
 }
 
@@ -117,12 +104,9 @@ public:
     GlobalObjectKey(option<Object> object) : _object(object){};
     bool isEqual(option<Key> other) override
     {
-        lateref<Key> nonNullOther;
-        if (other.isNotNull(nonNullOther))
+        if (auto ptr = dynamic_cast<GlobalObjectKey<TargetWidget, TargetState> *>(other.get()))
         {
-            lateref<GlobalObjectKey<TargetWidget, TargetState>> castedPointer;
-            if (nonNullOther->cast<GlobalObjectKey<TargetWidget, TargetState>>().isNotNull(castedPointer))
-                return Object::identical<>(this->_object, castedPointer->_object);
+            return this->_object == ptr->_object;
         }
         return false;
     }

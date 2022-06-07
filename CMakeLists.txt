@@ -28,6 +28,11 @@ endif()
 # libuv setup
 message(STATUS "Libuv: ")
 add_subdirectory(vendor/libuv) # @TODO: ignore compile warning from libuv
+if(WIN32)
+# disable libuv useless warnings on windows platform
+target_compile_options(uv PRIVATE /wd4244 /wd4245 /wd4267 /wd4701 /wd4702)
+target_compile_options(uv_a PRIVATE /wd4244 /wd4245 /wd4267 /wd4701 /wd4702)
+endif()
 message(STATUS "Libuv end")
 
 # build target
@@ -74,4 +79,3 @@ else()
     add_library(async_runtime_a ${async_runtime_src})
 endif()
 target_link_libraries(async_runtime ${CMAKE_THREAD_LIBS_INIT} async_runtime_fundamental)
-

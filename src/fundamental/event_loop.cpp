@@ -5,9 +5,9 @@ extern "C"
 #include <uv.h>
 }
 
-#include "async_runtime/utilities/lock.h"
 #include "async_runtime/fundamental/event_loop.h"
 #include "async_runtime/fundamental/thread.h"
+#include "async_runtime/utilities/lock.h"
 
 static void useless_cb(uv_async_t *handle)
 {
@@ -156,22 +156,24 @@ thread_local bool EventLoop::isRunning = false;
 
 ref<EventLoop> EventLoopGetterMixin::ensureEventLoop(option<EventLoopGetterMixin> getter)
 {
-    lateref<EventLoopGetterMixin> notNull;
-    if (getter.isNotNull(notNull))
+    if (auto ptr = getter.get())
     {
-        return notNull->eventLoop();
+        return ptr->eventLoop();
     }
     return EventLoop::runningEventLoop.assertNotNull();
 }
 
 ref<EventLoop> EventLoop::ensure() noexcept
 {
-    lateref<EventLoop> loop;
-    if (!runningEventLoop.isNotNull(loop) || !loop->alive())
+    if_not_null(runningEventLoop) if (runningEventLoop->alive())
     {
-        runningEventLoop = loop = Object::create<_EventLoop>();
+        return runningEventLoop;
     }
-    return loop;
+    end_if();
+
+    auto newLoop = Object::create<_EventLoop>();
+    runningEventLoop = newLoop;
+    return newLoop;
 }
 
 static void event_loop_main(uv_async_t *handler)

@@ -221,7 +221,10 @@ ref<Future<T>> Future<T>::value(T &&value, option<EventLoopGetterMixin> getter)
     future->complete(std::move(value));
     return future;
 }
-
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4573)
+#endif
 template <typename T>
 template <typename ReturnType>
 ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)> fn)
@@ -229,35 +232,43 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
     if (this->_completed)
     {
         FutureOr<ReturnType> result = fn(_data);
-        lateref<Future<ReturnType>> resultFuture;
-        result._future
-            .ifNotNull([&](ref<Future<ReturnType>> future) { //
-                resultFuture = future;
-            })
-            .ifElse([&] { //
-                resultFuture = Object::create<Completer<ReturnType>>(self());
-                resultFuture->complete(result._value);
-            });
-        return std::move(resultFuture);
+        auto &future = result._future;
+        if_not_null(future)
+        {
+            return future;
+        }
+        else_end()
+        {
+            auto future = Object::create<Completer<ReturnType>>(self());
+            future->complete(result._value);
+            return future;
+        }
+        end_if();
     }
     else
     {
         ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
         this->_callbackList->emplace_back([future, fn](const T &value) { //
             FutureOr<ReturnType> result = fn(value);
-            result._future
-                .ifNotNull([&, future](ref<Future<ReturnType>> resultFuture) { //
-                    resultFuture->then([future](const ReturnType &v) {         //
-                        future->complete(v);
-                    });
-                })
-                .ifElse([&] { //
-                    future->complete(result._value);
+            auto &resultFuture = result._future;
+            if_not_null(resultFuture)
+            {
+                resultFuture->then([future](const ReturnType &v) { //
+                    future->complete(v);
                 });
+            }
+            else_end()
+            {
+                future->complete(result._value);
+            }
+            end_if();
         });
         return future;
     }
 }
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
 
 template <typename T>
 template <typename ReturnType>
