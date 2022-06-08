@@ -126,6 +126,7 @@ public:
     virtual size_t findLastOf(ref<String> pattern, size_t start = npos) const;
     virtual size_t findLastNotOf(ref<String> pattern, size_t start = npos) const;
     virtual ref<String> substr(size_t begin = 0, size_t length = npos) const;
+    virtual ref<String> replace(size_t begin, size_t length, ref<String> other) const;
 
     // inherited interface
     virtual const char *const c_str() const { return super::c_str(); } // will be remove in the future

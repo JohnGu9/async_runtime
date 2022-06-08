@@ -85,7 +85,7 @@ String::View::View(ref<String> parent, size_t begin, size_t end)
 ref<String> String::View::substr(size_t begin, size_t length) const
 {
     begin = begin + this->_begin;
-    return Object::create<String::View>(this->_parent, begin, std::min(length + begin, this->length() + this->_begin));
+    return Object::create<String::View>(this->_parent, begin, length == npos ? this->length() + begin : length + begin);
 }
 
 bool ref<String>::operator==(const char *const other) const
@@ -294,7 +294,12 @@ ref<String> String::toUpperCase() const
 ref<String> String::substr(size_t begin, size_t length) const
 {
     auto self = Object::cast<>(const_cast<String *>(this));
-    return Object::create<String::View>(self, begin, std::min(length + begin, this->length()));
+    return Object::create<String::View>(self, begin, length == npos ? this->length() : (length + begin));
+}
+
+ref<String> String::replace(size_t begin, size_t length, ref<String> other) const
+{
+    return String::connect(this->substr(0, begin), other, this->substr(begin + length));
 }
 
 std::ostream &operator<<(std::ostream &os, const ref<String> &str)
