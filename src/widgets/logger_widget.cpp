@@ -64,7 +64,7 @@ public:
         {
             _file->then([onError](ref<File> file) { //
                 file->cast<File::Error>()
-                    .ifNotNull([&](ref<File::Error> error) { //
+                    .ifNotNull([onError](ref<File::Error> error) { //
                         onError(error);
                     });
             });

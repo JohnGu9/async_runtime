@@ -33,12 +33,5 @@ namespace _async_runtime
         virtual Else ifNotNull(Function<void(ref<T>)> fn) const noexcept = 0;
         virtual ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept = 0; // if self it not null, return self ref; otherwise return the value come from fn
         virtual ref<T> assertNotNull() const noexcept(false) = 0;               // if self is null, api will throw a std::runtime_error
-        virtual bool isNotNull(ref<T> &other) const noexcept = 0;               // if self is not null, change the [other] to ref self, and return [true]; otherwise just return false
-
-        /**
-         * @brief
-         * @deprecated
-         */
-        virtual ref<T> isNotNullElse(Function<ref<T>()> fn) const noexcept = 0;
     };
 };

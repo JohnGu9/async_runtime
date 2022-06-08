@@ -50,8 +50,8 @@
  * // change option(/weakref) to ref through ToRefMixin api
  * object = opt.assertNotNull(); // assert is not a good option change that may cause error
  *
- * if (opt.isNotNull(object)) { // null check is a good option
- *     // object is not null here
+ * if_not_null (opt) { // null check is a good option
+ *     // [opt] is not null here
  * }
  *
  * object = opt.ifNotNullElse([]() ->ref<Object> { return Object::create<Object>(); }) // if opt is not null change opt to ref, otherwise create a new Object

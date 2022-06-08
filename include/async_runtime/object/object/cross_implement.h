@@ -27,37 +27,6 @@ template <typename T>
 template <typename First, typename... Args>
 lateref<T>::lateref(const First &first, Args &&...args) : ref<T>(first, std::forward<Args>(args)...) {}
 
-/**
- * @brief
- * @deprecated
- */
-template <typename T>
-bool _async_runtime::OptionImplement<T>::isNotNull(ref<T> &object) const noexcept
-{
-    const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
-    if (ptr != nullptr)
-    {
-        object = ptr;
-        return true;
-    }
-    else
-        return false;
-}
-
-/**
- * @brief
- * @deprecated
- */
-template <typename T>
-ref<T> _async_runtime::OptionImplement<T>::isNotNullElse(Function<ref<T>()> fn) const noexcept
-{
-    const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
-    if (ptr != nullptr)
-        return ref<T>(ptr);
-    else
-        return fn();
-}
-
 template <typename T>
 _async_runtime::Else _async_runtime::OptionImplement<T>::ifNotNull(Function<void(ref<T>)> fn) const noexcept
 {
@@ -87,29 +56,6 @@ ref<T> _async_runtime::OptionImplement<T>::assertNotNull() const noexcept(false)
     const auto ptr = static_cast<const std::shared_ptr<T> &>(*this);
     RUNTIME_ASSERT(ptr != nullptr, std::string(typeid(*this).name()) + " assert not null on a null ref. ");
     return ref<T>(ptr);
-}
-
-template <typename T>
-bool weakref<T>::isNotNull(ref<T> &object) const noexcept
-{
-    const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
-    if (ptr != nullptr)
-    {
-        object = ptr;
-        return true;
-    }
-    else
-        return false;
-}
-
-template <typename T>
-ref<T> weakref<T>::isNotNullElse(Function<ref<T>()> fn) const noexcept
-{
-    const std::shared_ptr<T> ptr = std::weak_ptr<T>::lock();
-    if (ptr != nullptr)
-        return ref<T>(ptr);
-    else
-        return fn();
 }
 
 template <typename T>
