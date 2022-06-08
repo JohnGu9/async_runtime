@@ -49,7 +49,13 @@ class String : public Iterable<char>, protected std::string
 protected:
     class View;
     String() {}
-    virtual bool isNative() { return true; }
+
+#ifndef NDEBUG
+    virtual bool isNative()
+    {
+        return true;
+    }
+#endif
 
 public:
     using iterator = super::const_iterator;
@@ -57,7 +63,7 @@ public:
     using const_iterator = super::const_iterator;
     using const_reverse_iterator = super::const_reverse_iterator;
 
-    static const size_t npos = super::npos;
+    static constexpr const size_t npos = super::npos;
 
     static ref<String> getline(std::istream &os);
 
@@ -127,6 +133,7 @@ public:
     virtual size_t findLastNotOf(ref<String> pattern, size_t start = npos) const;
     virtual ref<String> substr(size_t begin = 0, size_t length = npos) const;
     virtual ref<String> replace(size_t begin, size_t length, ref<String> other) const;
+    virtual ref<String> reverse() const;
 
     // inherited interface
     virtual const char *const c_str() const { return super::c_str(); } // will be remove in the future

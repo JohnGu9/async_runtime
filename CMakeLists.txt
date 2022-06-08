@@ -27,7 +27,7 @@ endif()
 
 # libuv setup
 message(STATUS "Libuv: ")
-add_subdirectory(vendor/libuv) # @TODO: ignore compile warning from libuv
+add_subdirectory(vendor/libuv)
 if(WIN32)
 # disable libuv useless warnings on windows platform
 target_compile_options(uv PRIVATE /wd4244 /wd4245 /wd4267 /wd4701 /wd4702)

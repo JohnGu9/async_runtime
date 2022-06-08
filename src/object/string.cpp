@@ -11,10 +11,16 @@ class String::View : public String
 
     using super = String;
 
+protected:
+#ifndef NDEBUG
+    bool isNative() override
+    {
+        return false;
+    }
+#endif
+
 public:
     View(ref<String> parent, size_t begin, size_t end);
-
-    bool isNative() override { return false; }
 
     const char *const c_str() const override { return _parent->c_str() + _begin; }
     const char *const data() const override { return _parent->data() + _begin; }
@@ -300,6 +306,16 @@ ref<String> String::substr(size_t begin, size_t length) const
 ref<String> String::replace(size_t begin, size_t length, ref<String> other) const
 {
     return String::connect(this->substr(0, begin), other, this->substr(begin + length));
+}
+
+ref<String> String::reverse() const
+{
+    std::string buffer;
+    buffer.resize(this->length());
+    for (size_t i = 0, r = this->length() - 1;
+         i != this->length(); i++, r--)
+        buffer[i] = this->operator[](r);
+    return std::move(buffer);
 }
 
 std::ostream &operator<<(std::ostream &os, const ref<String> &str)
