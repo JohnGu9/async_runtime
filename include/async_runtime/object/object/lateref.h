@@ -6,15 +6,16 @@ template <typename T>
 class lateref : public ref<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = ref<T>;
 
 public:
-    explicit lateref() : ref<T>() {}
+    explicit lateref() : super() {}
     lateref(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    lateref(const ref<R> &other) : ref<T>(other) {}
+    lateref(const ref<R> &other) : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    lateref(ref<R> &&other) : ref<T>(std::move(other)) {}
+    lateref(ref<R> &&other) : super(std::move(other)) {}
 
     /**
      * @brief Construct a new option object

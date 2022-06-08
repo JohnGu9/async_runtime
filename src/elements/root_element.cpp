@@ -24,12 +24,12 @@ public:
 
 class RootElement::StdoutLoggerHandler : public LoggerHandler
 {
+public:
     ref<EventLoop> _loop;
     ref<Future<bool>> _future;
 
     ref<Future<bool>> _write(ref<String> str, bool wrap)
     {
-        lateref<EventLoop> current;
         if (EventLoop::runningEventLoop == _loop)
         {
             // call on one event loop
@@ -68,7 +68,12 @@ public:
 
 ref<LoggerHandler> RootElement::coutLoggerBuilder()
 {
-    static finalref<LoggerHandler> singleton = Object::create<RootElement::StdoutLoggerHandler>();
+    static finalref<RootElement::StdoutLoggerHandler> singleton = Object::create<RootElement::StdoutLoggerHandler>();
+    if (!singleton->_loop->alive())
+    {
+        singleton->_loop = EventLoop::runningEventLoop.assertNotNull();
+        singleton->_future = Future<bool>::value(true, singleton->_loop);
+    }
     return singleton;
 }
 

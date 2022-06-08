@@ -53,6 +53,8 @@ public:
 
     template <typename T>
     static bool isNull(const option<T> &) noexcept;
+    template <typename T>
+    static bool isNull(option<T> &&) noexcept;
 
     // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -70,10 +72,44 @@ public:
     template <typename T>
     ref<T> covariant() noexcept(false); // unsafely cast
 
+    /**
+     * @brief the function call by operator==(...) and Object::equal
+     * override this function to custom your object compare
+     *
+     * @param other
+     * @return true = consider [other] is equal to self
+     * @return false = consider [other] is not equal to self
+     */
     virtual bool operator==(ref<Object> other);
+
+    /**
+     * @brief the operator<<(os, object) underlay implement
+     * not recommend to override the function
+     * this function depend on Object::toStringStream
+     * consider to override Object::toStringStream first
+     *
+     * @return ref<String>
+     */
     virtual ref<String> toString();
+
+    /**
+     * @brief the Object::toString underlay implement
+     */
     virtual void toStringStream(std::ostream &);
+
+    /**
+     * @brief get current object runtime type information
+     * not recommend to override the function
+     *
+     * @return RuntimeType
+     */
     virtual RuntimeType runtimeType();
+
+    /**
+     * @brief Destroy the Object object
+     * under oop system, this's not recommend to custom the destructor
+     * just only recommend use it under debug mode to do some resources-checking
+     */
     virtual ~Object() {}
 
     Object(const Object &) = delete;

@@ -3,7 +3,7 @@
 #include "key.h"
 #include "stateful_widget.h"
 
-template <class TargetWidget = StatefulWidget, class TargetState = State<TargetWidget>>
+template <class TargetState = State<StatefulWidget>>
 class GlobalKey : public Key
 {
 public:
@@ -15,7 +15,7 @@ public:
     void setElement(ref<Element> element) override;
     void dispose() override;
 
-    virtual option<TargetWidget> getCurrentWidget();
+    virtual option<Widget> getCurrentWidget();
     virtual option<BuildContext> getCurrentContext();
     virtual option<TargetState> getCurrentState();
 
@@ -25,34 +25,34 @@ protected:
 
 // [GlobalKey] is the [Key] only can be bind one widget at one time
 // but you can access target widget, context and state (if widget is StatefulWidget)
-template <class TargetWidget, class TargetState>
-void GlobalKey<TargetWidget, TargetState>::setElement(ref<Element> element)
+template <class TargetState>
+void GlobalKey<TargetState>::setElement(ref<Element> element)
 {
     RUNTIME_ASSERT(this->_element.toOption() == nullptr, "One [GlobalKey] instance can't mount more than one element. ");
     this->_element = element;
 }
 
-template <class TargetWidget, class TargetState>
-void GlobalKey<TargetWidget, TargetState>::dispose()
+template <class TargetState>
+void GlobalKey<TargetState>::dispose()
 {
     this->_element = nullptr;
 }
 
 #include "../elements/stateful_element.h"
 
-template <class TargetWidget, class TargetState>
-option<TargetWidget> GlobalKey<TargetWidget, TargetState>::getCurrentWidget()
+template <class TargetState>
+option<Widget> GlobalKey<TargetState>::getCurrentWidget()
 {
     option<Element> element = this->_element.toOption();
-    if_not_null(element) return element->getWidget()->template covariant<TargetWidget>();
+    if_not_null(element) return element->getWidget();
     end_if() return nullptr;
 }
 
-template <class TargetWidget, class TargetState>
-option<BuildContext> GlobalKey<TargetWidget, TargetState>::getCurrentContext() { return this->_element.toOption(); }
+template <class TargetState>
+option<BuildContext> GlobalKey<TargetState>::getCurrentContext() { return this->_element.toOption(); }
 
-template <class TargetWidget, class TargetState>
-option<TargetState> GlobalKey<TargetWidget, TargetState>::getCurrentState()
+template <class TargetState>
+option<TargetState> GlobalKey<TargetState>::getCurrentState()
 {
     option<Element> element = this->_element.toOption();
     if_not_null(element)
@@ -65,8 +65,8 @@ option<TargetState> GlobalKey<TargetWidget, TargetState>::getCurrentState()
     return nullptr;
 }
 
-template <class TargetWidget = StatefulWidget, class TargetState = State<TargetWidget>>
-class GlobalObjectKey : public GlobalKey<TargetWidget, TargetState>
+template <class TargetState = State<StatefulWidget>>
+class GlobalObjectKey : public GlobalKey<TargetState>
 {
 public:
     GlobalObjectKey(option<Object> object) : _object(object){};

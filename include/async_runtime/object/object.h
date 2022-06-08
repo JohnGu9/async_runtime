@@ -53,6 +53,7 @@
  * if_not_null (opt) { // null check is a good option
  *     // [opt] is not null here
  * }
+ * end_if()
  *
  * object = opt.ifNotNullElse([]() ->ref<Object> { return Object::create<Object>(); }) // if opt is not null change opt to ref, otherwise create a new Object
  * object = opt.ifNotNullElse(Object::create<Object>); another syntax
