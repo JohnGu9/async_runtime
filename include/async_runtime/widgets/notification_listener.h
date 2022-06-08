@@ -24,6 +24,7 @@ protected:
     finalref<Widget> _child;
     Function<bool(ref<Notification> notification)> _onNotification;
 };
+
 #ifdef _WIN32
 #pragma warning(push)
 #pragma warning(disable : 4573)

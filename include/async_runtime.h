@@ -12,6 +12,7 @@
 
 #include "async_runtime/widgets/builder.h"
 #include "async_runtime/widgets/future_builder.h"
+#include "async_runtime/widgets/global_key.h"
 #include "async_runtime/widgets/inherited_widget.h"
 #include "async_runtime/widgets/key.h"
 #include "async_runtime/widgets/leaf_widget.h"
@@ -93,9 +94,9 @@ namespace _async_runtime
     extern const char *error_logger_type;
 
     template <class... Args>
-    inline constexpr size_t variable_arguments_amount(Args &&...) { return sizeof...(Args); }
+    inline constexpr size_t variableArgumentsAmount(Args &&...) { return sizeof...(Args); }
 
-    inline std::stringstream &logger_stringstream_setup(std::stringstream &ss)
+    inline std::stringstream &loggerTime(std::stringstream &ss)
     {
         struct tm timebuf;
         time_t t = time(nullptr);
@@ -119,13 +120,13 @@ namespace _async_runtime
 #endif
 
 #ifndef ASYNC_RUNTIME_LOG_FORMAT
-#define ASYNC_RUNTIME_LOG_FORMAT(__type__, __format__, ...)                                                        \
-    {                                                                                                              \
-        std::stringstream __stringstream__("");                                                                    \
-        _async_runtime::logger_stringstream_setup(__stringstream__)                                                \
-            << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT \
-            << __format__ << std::endl;                                                                            \
-        Logger::of(context)->write(Object::create<String>(__stringstream__.str())->format<>(__VA_ARGS__));         \
+#define ASYNC_RUNTIME_LOG_FORMAT(__type__, __format__, ...)                                                                                    \
+    {                                                                                                                                          \
+        ::std::stringstream __stringstream__("");                                                                                              \
+        ::_async_runtime::loggerTime(__stringstream__)                                                                                         \
+            << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT << __format__ << std::endl; \
+        ::Logger::of(context)                                                                                                                  \
+            ->write(::Object::create<::String>(__stringstream__.str())->format<>(__VA_ARGS__));                                                \
     }
 #endif
 

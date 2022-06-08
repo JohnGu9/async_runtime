@@ -221,6 +221,7 @@ ref<Future<T>> Future<T>::value(T &&value, option<EventLoopGetterMixin> getter)
     future->complete(std::move(value));
     return future;
 }
+
 #ifdef _WIN32
 #pragma warning(push)
 #pragma warning(disable : 4573)
