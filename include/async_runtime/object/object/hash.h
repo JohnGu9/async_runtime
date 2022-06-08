@@ -13,11 +13,7 @@ namespace std
     template <typename T>
     struct hash<::ref<T>>
     {
-        std::size_t operator()(const ::ref<T> &other) const
-        {
-            static const auto hs = hash<::option<T>>();
-            return hs(static_cast<const ::option<T> &>(other));
-        }
+        std::size_t operator()(const ::ref<T> &other) const { return other.hashCode(); }
     };
 } // namespace std
 
@@ -28,9 +24,7 @@ namespace _async_runtime
         static const size_t prime = 31;
         size_t result = 0;
         for (size_t i = 0; i < s; ++i)
-        {
             result = p[i] + (result * prime);
-        }
         return result;
     }
 }
@@ -56,9 +50,7 @@ namespace std
             static const auto nullResult = hash<std::shared_ptr<String>>()(nullptr);
             auto ptr = other.get();
             if (ptr != nullptr)
-            {
                 return ::_async_runtime::hash_c_string(ptr->data(), ptr->length());
-            }
             return nullResult;
         }
     };

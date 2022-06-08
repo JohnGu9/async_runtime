@@ -5,30 +5,31 @@ template <typename T>
 class _async_runtime::RefImplement : protected std::shared_ptr<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = std::shared_ptr<T>;
 
 public:
     size_t hashCode() const
     {
-        static const auto hs = std::hash<std::shared_ptr<T>>();
-        return hs(static_cast<const std::shared_ptr<T> &>(*this));
+        static const auto hs = std::hash<super>();
+        return hs(static_cast<const super &>(*this));
     }
 
     T &operator*() const
     {
-        DEBUG_ASSERT(std::shared_ptr<T>::get() && "ref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
-        return std::shared_ptr<T>::operator*();
+        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
+        return super::operator*();
     }
 
     T *operator->() const
     {
-        DEBUG_ASSERT(std::shared_ptr<T>::get() && "ref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
-        return std::shared_ptr<T>::operator->();
+        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
+        return super::operator->();
     }
 
     T *get() const
     {
-        DEBUG_ASSERT(std::shared_ptr<T>::get() && "ref Uninitiated NullReference Error! By default this error cause by lateref that use before assgin a non-null reference. ");
-        return std::shared_ptr<T>::get();
+        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
+        return super::get();
     }
 
     std::shared_ptr<T> &operator=(std::nullptr_t) = delete;
@@ -41,7 +42,7 @@ protected:
     RefImplement(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(other) {}
+    RefImplement(const std::shared_ptr<R> &other) : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement(std::shared_ptr<R> &&other) : std::shared_ptr<T>(other) {}
+    RefImplement(std::shared_ptr<R> &&other) : super(other) {}
 };

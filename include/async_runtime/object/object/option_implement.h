@@ -5,6 +5,7 @@ template <typename T>
 class _async_runtime::OptionImplement : protected std::shared_ptr<T>, public _async_runtime::ToRefMixin<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using super = std::shared_ptr<T>;
 
 public:
     Else ifNotNull(Function<void(ref<T>)> fn) const noexcept override;
@@ -12,20 +13,20 @@ public:
     ref<T> assertNotNull() const noexcept(false) override;
     size_t hashCode() const
     {
-        static const auto hs = std::hash<std::shared_ptr<T>>();
-        return hs(static_cast<const std::shared_ptr<T> &>(*this));
+        static const auto hs = std::hash<super>();
+        return hs(static_cast<const super &>(*this));
     }
 
-    T *get() const { return std::shared_ptr<T>::get(); }
+    T *get() const { return super::get(); }
     T *operator->() const = delete;
     T &operator*() const = delete;
     operator bool() const = delete;
 
 protected:
     OptionImplement() {}
-    OptionImplement(std::nullptr_t) : std::shared_ptr<T>(nullptr) {}
+    OptionImplement(std::nullptr_t) : super(nullptr) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    OptionImplement(const std::shared_ptr<R> &other) : std::shared_ptr<T>(other){};
+    OptionImplement(const std::shared_ptr<R> &other) : super(other){};
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    OptionImplement(std::shared_ptr<R> &&other) : std::shared_ptr<T>(other){};
+    OptionImplement(std::shared_ptr<R> &&other) : super(other){};
 };
