@@ -72,7 +72,7 @@ public:
     GlobalObjectKey(option<Object> object) : _object(object){};
     bool isEqual(option<Key> other) override
     {
-        if (auto ptr = dynamic_cast<GlobalObjectKey<TargetWidget, TargetState> *>(other.get()))
+        if (auto ptr = dynamic_cast<GlobalObjectKey<TargetState> *>(other.get()))
         {
             return this->_object == ptr->_object;
         }
