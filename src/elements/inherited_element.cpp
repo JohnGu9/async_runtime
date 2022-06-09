@@ -43,9 +43,8 @@ void InheritedElement::update(ref<Widget> newWidget)
 
 void InheritedElement::notify(ref<Widget> newWidget)
 {
-    auto inheritances = this->_inheritances; // protect [_inheritances] be change by super's function call
     Element::notify(newWidget);
-    this->_inheritances = inheritances;
+    this->_inheritances = this->_inheritances->copy();
     this->_inheritances[this->_inheritWidget->runtimeType()] = this->_inheritWidget;
     this->_inheritWidget = newWidget->covariant<InheritedWidget>();
 

@@ -56,25 +56,24 @@ public:
     template <typename T>
     static bool isNull(option<T> &&) noexcept;
 
-    // static cast
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    static ref<T> cast(R *);
+    static ref<T> cast(R *); // safely cast (in release mode)
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
-    static ref<T> cast(T *);
+    static ref<T> cast(T *); // safely cast (in release mode)
 
     Object() {}
+
     // @mustCallSuper
     virtual void init() {}
 
-    // dynamic cast
     template <typename T>
     option<T> cast() noexcept; // safely cast
     template <typename T>
     ref<T> covariant() noexcept(false); // unsafely cast
 
     /**
-     * @brief the function call by operator==(...) and Object::equal
-     * override this function to custom your object compare
+     * @brief the function call by operator==(...) and Object::equal,
+     * override this function to custom your object compare.
      *
      * @param other
      * @return true = consider [other] is equal to self
@@ -83,10 +82,10 @@ public:
     virtual bool operator==(ref<Object> other);
 
     /**
-     * @brief the operator<<(os, object) underlay implement
-     * not recommend to override the function
-     * this function depend on Object::toStringStream
-     * consider to override Object::toStringStream first
+     * @brief the operator<<(os, object) underlay implement,
+     * not recommend to override the function,
+     * this function depend on Object::toStringStream,
+     * consider to override Object::toStringStream first.
      *
      * @return ref<String>
      */
@@ -98,17 +97,17 @@ public:
     virtual void toStringStream(std::ostream &);
 
     /**
-     * @brief get current object runtime type information
-     * not recommend to override the function
+     * @brief get current object runtime type information,
+     * not recommend to override the function.
      *
      * @return RuntimeType
      */
     virtual RuntimeType runtimeType();
 
     /**
-     * @brief Destroy the Object object
-     * under oop system, this's not recommend to custom the destructor
-     * just only recommend use it under debug mode to do some resources-checking
+     * @brief Destroy the Object object,
+     * under oop system, this's not recommend to custom the destructor,
+     * just only recommend use it under debug mode to do some resources-checking.
      */
     virtual ~Object() {}
 

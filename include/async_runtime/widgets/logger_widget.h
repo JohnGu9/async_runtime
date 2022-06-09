@@ -31,6 +31,7 @@
  *  Use Logger macros [LogDebug, LogInfo, LogWarning, LogError] (define in file async_runtime.h)
  *  macro support two format [printf style] [istream style]
  *  [printf style]: LogDebug("Omg {}! {}.", "args", 26); // the "{}" will be filled with arguments
+ *  [istream style]: LogDebug("Omg " << "args" << "! " << 26 << ".");
  *
  *  both output same stuff
  *
