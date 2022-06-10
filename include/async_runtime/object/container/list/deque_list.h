@@ -97,14 +97,11 @@ public:
         return true;
     }
 
-    bool remove(const size_t &index) override
+    void removeAt(const size_t index) override
     {
         RUNTIME_ASSERT(index < this->size(), "Index overflow");
         auto iter = _container.begin() + index;
-        if (iter == _container.end())
-            return false;
         _container.erase(iter);
-        return true;
     }
 
     void clear() override { _container.clear(); }

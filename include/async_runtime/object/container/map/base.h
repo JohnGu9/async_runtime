@@ -22,6 +22,7 @@ public:
 
     virtual ref<Iterator<T>> find(const Key &) = 0;
     virtual ref<Iterator<T>> find(Key &&key) { return this->find(static_cast<const Key &>(key)); }
+
     virtual ref<ConstIterator<T>> find(const Key &) const = 0;
     virtual ref<ConstIterator<T>> find(Key &&key) const { return this->find(static_cast<const Key &>(key)); }
 

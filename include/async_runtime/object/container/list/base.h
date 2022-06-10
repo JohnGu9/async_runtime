@@ -4,7 +4,6 @@
 
 template <typename T>
 class List : public MutableIterable<T>,
-             public RemovableMixin<size_t>,
              public IndexableMixin<size_t, T>,
              public InsertMixin<T>
 {
@@ -21,13 +20,16 @@ public:
     template <typename R>
     ref<List<R>> map(Function<R(const T &)>) const;
 
-    void emplaceBack(const T &value) { this->emplace(value); }
-    void emplaceBack(T &&value) { this->emplace(std::move(value)); }
-    void popBack()
+    virtual void removeAt(const size_t index) = 0;
+
+    virtual void emplaceBack(const T &value) { this->emplace(value); }
+    virtual void emplaceBack(T &&value) { this->emplace(std::move(value)); }
+
+    virtual void popBack()
     {
         auto index = this->size();
         if (index > 0)
-            static_cast<RemovableMixin<size_t> *>(this)->remove(index - 1);
+            this->removeAt(index - 1);
     }
 
     void toStringStream(std::ostream &os) override
