@@ -3,7 +3,7 @@
 
 // MultiChild Element
 MultiChildElement::MultiChildElement(ref<MultiChildWidget> widget)
-    : Element(widget), _multiChildWidget(widget), _childrenElements(Object::create<List<ref<Element>>>()) {}
+    : Element(widget), _multiChildWidget(widget), _childrenElements(List<ref<Element>>::create()) {}
 
 void MultiChildElement::attach()
 {
@@ -12,7 +12,7 @@ void MultiChildElement::attach()
     for (size_t i = 0; i < children->size(); i++)
     {
         ref<Widget> &widget = children[i];
-        this->_childrenElements->emplace_back(widget->createElement());
+        this->_childrenElements->emplaceBack(widget->createElement());
         ref<Element> &childElement = this->_childrenElements[i];
         childElement->parent = self();
         childElement->attach();
@@ -42,7 +42,7 @@ void MultiChildElement::build()
         }
         else // append widget
         {
-            this->_childrenElements->emplace_back(widget->createElement());
+            this->_childrenElements->emplaceBack(widget->createElement());
             ref<Element> &childElement = this->_childrenElements[i];
             childElement->parent = self();
             childElement->attach();
@@ -53,10 +53,9 @@ void MultiChildElement::build()
         size_t redundant = this->_childrenElements->size() - children->size();
         for (size_t i = 0; i < redundant; i++)
         {
-            auto iter = this->_childrenElements->rbegin();
-            ref<Element> element = *iter;
+            ref<Element> element = this->_childrenElements[this->_childrenElements->size() - 1];
             element->detach();
-            this->_childrenElements->pop_back();
+            this->_childrenElements->popBack();
         }
     }
 }
@@ -93,7 +92,7 @@ void MultiChildElement::notify(ref<Widget> newWidget)
         }
         else // append widget
         {
-            this->_childrenElements->emplace_back(widget->createElement());
+            this->_childrenElements->emplaceBack(widget->createElement());
             ref<Element> &childElement = this->_childrenElements[i];
             childElement->parent = self();
             childElement->attach();
@@ -104,9 +103,9 @@ void MultiChildElement::notify(ref<Widget> newWidget)
         size_t redundant = this->_childrenElements->size() - children->size();
         for (size_t i = 0; i < redundant; i++)
         {
-            auto iter = _childrenElements->rbegin();
-            (*iter)->detach();
-            this->_childrenElements->pop_back();
+            ref<Element> element = this->_childrenElements[_childrenElements->size()];
+            element->detach();
+            this->_childrenElements->popBack();
         }
     }
 }

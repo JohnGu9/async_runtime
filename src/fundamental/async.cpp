@@ -4,7 +4,7 @@
  * @brief AsyncSnapshot implement
  *
  */
-const List<AsyncSnapshot<>::ConnectionState::Value>
+const ref<List<AsyncSnapshot<>::ConnectionState::Value>>
     AsyncSnapshot<>::ConnectionState::values = {
         AsyncSnapshot<>::ConnectionState::none,
         AsyncSnapshot<>::ConnectionState::active,

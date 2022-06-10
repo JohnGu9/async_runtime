@@ -17,7 +17,7 @@ class StatefulElement::InvalidWidget::_State : public State<StatefulElement::Inv
 
 ref<State<StatefulWidget>> StatefulElement::InvalidWidget::createState() { return Object::create<StatefulElement::InvalidWidget::_State>(); }
 
-const List<StatefulElement::LifeCycle::Value>
+const ref<List<StatefulElement::LifeCycle::Value>>
     StatefulElement::LifeCycle::values = {
         StatefulElement::LifeCycle::uninitialized,
         StatefulElement::LifeCycle::mounted,

@@ -44,12 +44,12 @@ protected:
     virtual void sink(T value);
     virtual void close() noexcept;
 
-    finalref<List<T>> _cache = Object::create<List<T>>();
-    finalref<Set<ref<StreamSubscription<T>>>> _listeners = Object::create<Set<ref<StreamSubscription<T>>>>();
-    finalref<Set<ref<StreamSubscription<T>>>> _active = Object::create<Set<ref<StreamSubscription<T>>>>();
+    finalref<List<T>> _cache = List<T>::create();
+    finalref<Set<ref<StreamSubscription<T>>>> _listeners = Set<ref<StreamSubscription<T>>>::create();
+    finalref<Set<ref<StreamSubscription<T>>>> _active = Set<ref<StreamSubscription<T>>>::create();
 
     Function<void(ref<StreamSubscription<T>>)> _resume = [this](ref<StreamSubscription<T>> subscription) { //
-        this->_active->insert(subscription);
+        this->_active->emplace(subscription);
     };
 
     Function<void(ref<StreamSubscription<T>>)> _pause = [this](ref<StreamSubscription<T>> subscription) { //
@@ -112,12 +112,12 @@ ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
     subscription->_resume = this->_resume;
     subscription->_pause = this->_pause;
     subscription->_cancel = this->_cancel;
-    _active->insert(subscription);
-    _listeners->insert(subscription);
+    _active->emplace(subscription);
+    _listeners->emplace(subscription);
     _loop->callSoon([this, self] { //
         for (auto iter = this->_cache->begin(); iter != this->_cache->end();)
         {
-            if (!this->_active->empty())
+            if (!this->_active->isEmpty())
             {
                 auto copy = this->_active->copy();
                 for (auto &listener : copy)
@@ -127,7 +127,7 @@ ref<StreamSubscription<T>> Stream<T>::listen(Function<void(const T &)> fn)
             else
                 break;
         }
-        if (this->_isClosed && _cache->empty() && !this->_onClose->completed())
+        if (this->_isClosed && _cache->isEmpty() && !this->_onClose->completed())
             this->rawClose();
     });
     return subscription;
@@ -137,14 +137,14 @@ template <typename T>
 void Stream<T>::sink(T value)
 {
     RUNTIME_ASSERT(!_isClosed, "Sink on a closed Stream");
-    if (!this->_active->empty())
+    if (!this->_active->isEmpty())
     {
         auto copy = this->_active->template map<Function<void(const T &)>>(_extractListeners);
         for (const auto &listener : copy)
             listener(value);
     }
     else
-        this->_cache->emplace_back(std::move(value));
+        this->_cache->emplaceBack(std::move(value));
 }
 
 template <typename T>
@@ -153,7 +153,7 @@ void Stream<T>::close() noexcept
     if (!_isClosed)
     {
         _isClosed = true;
-        if (_cache->empty() && !this->_onClose->completed())
+        if (_cache->isEmpty() && !this->_onClose->completed())
             this->rawClose();
     }
 }

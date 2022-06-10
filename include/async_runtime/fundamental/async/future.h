@@ -66,7 +66,7 @@ public:
 
     Future(option<EventLoopGetterMixin> getter = nullptr)
         : Future<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)), _data(),
-          _callbackList(Object::create<List<Function<void(const T &)>>>()) {}
+          _callbackList(List<Function<void(const T &)>>::create()) {}
 
     template <typename ReturnType = std::nullptr_t>
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>(const T &)>);
@@ -153,7 +153,7 @@ ref<Future<ref<Future<>::Package<T, _Args...>>>> Future<>::race(ref<Future<T>> f
 }
 
 template <typename T>
-ref<List<Function<void(const T &)>>> Future<T>::dummy = Object::create<List<Function<void(const T &)>>>();
+ref<List<Function<void(const T &)>>> Future<T>::dummy = List<Function<void(const T &)>>::create();
 
 template <typename T>
 ref<Future<T>> Future<T>::async(Function<T()> fn)
@@ -249,7 +249,7 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
     else
     {
         ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
-        this->_callbackList->emplace_back([future, fn](const T &value) { //
+        this->_callbackList->emplaceBack([future, fn](const T &value) { //
             FutureOr<ReturnType> result = fn(value);
             auto &resultFuture = result._future;
             if_not_null(resultFuture)
@@ -288,8 +288,7 @@ ref<Future<T>> Future<T>::then(Function<void(const T &)> fn)
     }
     else
     {
-        this->_callbackList
-            ->emplace_back(fn);
+        this->_callbackList->emplaceBack(fn);
     }
     return self();
 }
@@ -303,9 +302,8 @@ ref<Future<T>> Future<T>::then(Function<void()> fn)
     }
     else
     {
-        this->_callbackList
-            ->emplace_back([fn](const T &value)
-                           { fn(); });
+        this->_callbackList->emplaceBack([fn](const T &value)
+                                         { fn(); });
     }
     return self();
 }

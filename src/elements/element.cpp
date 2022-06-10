@@ -30,7 +30,7 @@ void Element::attach()
 void Element::detach()
 {
     disposeKey(this->widget);
-    static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> _empty = Object::create<Map<Object::RuntimeType, lateref<InheritedWidget>>>();
+    static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> _empty = Map<Object::RuntimeType, lateref<InheritedWidget>>::create();
     this->_inheritances = _empty; // release map reference
 }
 

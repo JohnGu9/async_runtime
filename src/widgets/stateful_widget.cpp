@@ -29,9 +29,9 @@ void State<StatefulWidget>::setState(Function<void()> fn)
     DEBUG_ASSERT(this->_element->_lifeCycle == StatefulElement::LifeCycle::mounted && "[setState] can't not call in widget lifecycle hooker. ");
 
     auto self = self();
-    this->_setStateCallbacks->emplace_back(fn); // mark state dirty
+    this->_setStateCallbacks->emplaceBack(fn); // mark state dirty
     this->_loop->callSoon([this, self] {        //
-        if (!this->_setStateCallbacks->empty()) // if state is dirty, rebuild the tree
+        if (!this->_setStateCallbacks->isEmpty()) // if state is dirty, rebuild the tree
             this->_element->build();
     });
 }

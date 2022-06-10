@@ -33,19 +33,19 @@ template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T
 option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
     auto iter = this->_inheritances->find(typeid(T).hash_code());
-    if (iter == this->_inheritances.end())
+    if (iter == this->_inheritances->end())
     {
 #ifndef NDEBUG
         this->cast<Element>()
             .ifNotNull([&](ref<Element> element) { //
                 std::stringstream ss;
                 ss << " > " << element->widget->toString() << std::endl;
-                auto list = Object::create<List<ref<Widget>>>();
+                auto list = List<ref<Widget>>::create();
                 element->visitAncestor([&list](ref<Element> element) { //
-                    list->emplace_back(element->widget);
+                    list->emplaceBack(element->widget);
                     return false;
                 });
-                list->pop_back();
+                list->popBack();
                 list->forEach([&ss](ref<Widget> widget)
                               { ss << " > " << widget->toString() << std::endl; });
                 debug_print("Can't find InheritedWidget [" << typeid(T).name() << "] from context: " << std::endl
@@ -54,5 +54,5 @@ option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 #endif
         return nullptr;
     }
-    return iter->second->cast<T>();
+    return (*iter).second->cast<T>();
 }

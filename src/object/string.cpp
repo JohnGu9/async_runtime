@@ -243,7 +243,7 @@ bool String::endsWith(ref<String> suffix) const
 
 ref<List<ref<String>>> String::split(ref<String> pattern) const
 {
-    ref<List<ref<String>>> list = Object::create<List<ref<String>>>();
+    auto list = List<ref<String>>::create();
     size_t lastIndex = 0;
     while (true)
     {
@@ -253,12 +253,12 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
             auto start = lastIndex;
             auto length = this->length() - lastIndex;
             if (length > 0)
-                list->emplace_back(this->substr(lastIndex, length));
+                list->emplace(this->substr(lastIndex, length));
             break;
         }
         else if (index != lastIndex)
         {
-            list->emplace_back(this->substr(lastIndex, index - lastIndex));
+            list->emplace(this->substr(lastIndex, index - lastIndex));
         }
         lastIndex = index + pattern->length();
     }

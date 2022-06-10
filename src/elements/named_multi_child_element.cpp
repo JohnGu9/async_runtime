@@ -2,7 +2,7 @@
 #include "async_runtime/widgets/named_multi_child_widget.h"
 
 NamedMultiChildElement::NamedMultiChildElement(ref<NamedMultiChildWidget> widget)
-    : Element(widget), _namedMultiChildWidget(widget), _childrenElements(Object::create<Map<ref<String>, lateref<Element>>>()) {}
+    : Element(widget), _namedMultiChildWidget(widget), _childrenElements(Map<ref<String>, lateref<Element>>::create()) {}
 
 void NamedMultiChildElement::attach()
 {
@@ -31,9 +31,9 @@ void NamedMultiChildElement::build()
     finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
-        if (children->find(iter->first) == children->end())
+        if (children->find((*iter).first) == children->end())
         {
-            iter->second->detach();
+            (*iter).second->detach();
             iter = this->_childrenElements->erase(iter);
         }
         else
@@ -57,7 +57,7 @@ void NamedMultiChildElement::build()
         }
         else
         {
-            ref<Element> &element = elementIterator->second;
+            ref<Element> &element = (*elementIterator).second;
             finalref<Widget> &oldWidget = element->getWidget();
             if (Object::identical(widget, oldWidget))
                 continue;
@@ -67,9 +67,9 @@ void NamedMultiChildElement::build()
             {
                 element->detach();
                 ref<Element> newElement = widget->createElement();
-                elementIterator->second = newElement;
-                elementIterator->second->parent = self();
-                elementIterator->second->attach();
+                (*elementIterator).second = newElement;
+                (*elementIterator).second->parent = self();
+                (*elementIterator).second->attach();
             }
         }
     }
@@ -89,9 +89,9 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
-        if (children->find(iter->first) == children->end())
+        if (children->find((*iter).first) == children->end())
         {
-            iter->second->detach();
+            (*iter).second->detach();
             iter = this->_childrenElements->erase(iter);
         }
         else
@@ -115,7 +115,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
         }
         else
         {
-            ref<Element> &element = elementIterator->second;
+            ref<Element> &element = (*elementIterator).second;
             finalref<Widget> &oldWidget = element->getWidget();
             if (widget->canUpdate(oldWidget))
                 element->notify(widget);
@@ -123,9 +123,9 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
             {
                 element->detach();
                 ref<Element> newElement = widget->createElement();
-                elementIterator->second = newElement;
-                elementIterator->second->parent = self();
-                elementIterator->second->attach();
+                (*elementIterator).second = newElement;
+                (*elementIterator).second->parent = self();
+                (*elementIterator).second->attach();
             }
         }
     }

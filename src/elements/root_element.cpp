@@ -94,7 +94,7 @@ void RootElement::notify(ref<Widget> newWidget) { DEBUG_ASSERT(false && "RootEle
 
 void RootElement::attach()
 {
-    static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> empty = Object::create<Map<Object::RuntimeType, lateref<InheritedWidget>>>();
+    static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> empty = Map<Object::RuntimeType, lateref<InheritedWidget>>::create();
     this->_inheritances = empty;
     this->attachElement(this->_child->createElement());
 }

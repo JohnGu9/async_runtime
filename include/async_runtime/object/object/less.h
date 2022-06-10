@@ -22,7 +22,7 @@ namespace std
         bool operator()(const ::ref<String> &lhs, const ::ref<String> &rhs) const
         {
             static const auto ls = std::less<String>();
-            return ls(*lhs, *rhs);
+            return ls(*lhs.get(), *rhs.get());
         }
     };
 

@@ -1,7 +1,7 @@
 #include "async_runtime/fundamental/thread_pool.h"
 
 ref<Lock> ThreadPool::_lock = Object::create<Lock>();
-ref<Set<ref<String>>> ThreadPool::_namePool = Object::create<Set<ref<String>>>();
+ref<Set<ref<String>>> ThreadPool::_namePool = Set<ref<String>>::create();
 static finalref<String> prefix = "ThreadPool<";
 
 ThreadPool::ThreadPool(size_t threads, option<String> name)
@@ -13,7 +13,7 @@ ThreadPool::ThreadPool(size_t threads, option<String> name)
         DEBUG_ASSERT(this->_name->isNotEmpty());
         option<Lock::UniqueLock> lk = _lock->uniqueLock();
         DEBUG_ASSERT(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
-        ThreadPool::_namePool->insert(this->_name);
+        ThreadPool::_namePool->emplace(this->_name);
     }
     _workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)

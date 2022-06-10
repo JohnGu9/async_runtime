@@ -15,7 +15,7 @@ public:
             active,
             done
         };
-        static const List<Value> values;
+        static const ref<List<Value>> values;
         static ref<String> toString(Value value);
     };
 

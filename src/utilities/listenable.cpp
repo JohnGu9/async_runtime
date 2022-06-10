@@ -1,11 +1,11 @@
 #include "async_runtime/utilities/listenable.h"
 
-Listenable::Listenable() : _listeners(Object::create<Set<Function<void()>>>()), _isDisposed(false) {}
+Listenable::Listenable() : _listeners(Set<Function<void()>>::create()), _isDisposed(false) {}
 
 void Listenable::addListener(Function<void()> fn)
 {
     RUNTIME_ASSERT(!this->_isDisposed, "addListener on a disposed Listenable");
-    this->_listeners->insert(fn);
+    this->_listeners->emplace(fn);
 }
 
 void Listenable::removeListener(Function<void()> fn)

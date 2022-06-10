@@ -27,7 +27,7 @@ protected:
             building,
             unmount,
         };
-        static const List<Value> values;
+        static const ref<List<Value>> values;
         static ref<String> toString(Value value);
     };
 

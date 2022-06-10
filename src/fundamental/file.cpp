@@ -75,7 +75,7 @@ public:
         auto data = reinterpret_cast<_stat_data *>(req->data);
         auto stat = Object::create<Stat>();
         data->completer->complete(stat);
-        copy(*stat, req->statbuf);
+        copy(*stat.get(), req->statbuf);
         uv_fs_req_cleanup(req);
         delete data;
         delete req;

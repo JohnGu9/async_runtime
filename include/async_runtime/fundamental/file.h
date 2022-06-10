@@ -9,7 +9,6 @@
  */
 
 #include "../utilities/duration.h"
-#include "../utilities/not_implemented_error.h"
 #include "../fundamental/async.h"
 #include <fcntl.h>
 
