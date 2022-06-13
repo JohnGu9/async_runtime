@@ -99,11 +99,6 @@ public:
 
     size_t size() const override { return _container.size(); }
 
-    bool contain(const T &other) const override
-    {
-        return _container.find(other) != _container.end();
-    }
-
     bool add(const T &v) override
     {
         _container.insert(v);
@@ -136,11 +131,11 @@ public:
 template <typename T>
 bool HashSet<T>::HashSetConstIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<HashSet<T>::HashSetIterator *>(other.get()))
+    if (auto ptr = dynamic_cast<HashSet<T>::HashSetConstIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<HashSet<T>::HashSetConstIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<HashSet<T>::HashSetIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }
@@ -150,11 +145,11 @@ bool HashSet<T>::HashSetConstIterator::operator==(ref<Object> other)
 template <typename T>
 bool HashSet<T>::HashSetIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<HashSet<T>::HashSetConstIterator *>(other.get()))
+    if (auto ptr = dynamic_cast<HashSet<T>::HashSetIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<HashSet<T>::HashSetIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<HashSet<T>::HashSetConstIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }

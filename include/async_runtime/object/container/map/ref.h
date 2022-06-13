@@ -23,15 +23,8 @@ public:
     template <typename... Args>
     Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
 
-    ref<ConstIterator<value_type>> begin() const
-    {
-        return (*this)->begin();
-    }
-
-    ref<ConstIterator<value_type>> end() const
-    {
-        return (*this)->end();
-    }
+    ref<Iterator<value_type>> begin() const { return (*this)->begin(); }
+    ref<Iterator<value_type>> end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -41,16 +34,13 @@ protected:
 };
 
 template <typename Key, typename Value>
-ref<Map<Key, Value>> Map<Key, Value>::create()
-{
-    return Object::create<HashMap<Key, Value>>();
-}
+ref<Map<Key, Value>> Map<Key, Value>::create() { return Object::create<HashMap<Key, Value>>(); }
 
 template <typename Key, typename Value>
 template <typename R>
 ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Value &)> fn) const
 {
-    ref<Map<Key, R>> mapped = Object::create<HashMap<Key, R>>();
+    auto mapped = HashMap<Key, R>::create();
     for (const auto &pair : *this)
     {
         mapped[pair.first] = fn(pair.second);

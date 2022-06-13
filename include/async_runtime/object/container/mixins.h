@@ -1,5 +1,14 @@
 #pragma once
 
+#include "iterator.h"
+
+template <typename T>
+class ReverseIterableMixin
+{
+    virtual ref<ConstIterator<T>> rbegin() const = 0;
+    virtual ref<ConstIterator<T>> rend() const = 0;
+};
+
 template <typename T>
 class ContainableMixin
 {
@@ -30,18 +39,22 @@ public:
     virtual bool removeAll(T &&v) { return this->removeAll(static_cast<const T &>(v)); }
 };
 
-class SizeMixin
+template <typename Key, typename Value>
+class ConstIndexableMixin
 {
 public:
-    virtual size_t size() const = 0;
+    virtual const Value &operator[](const Key &) const = 0;
+    virtual const Value &operator[](Key &&key) const { return this->operator[](static_cast<const Key &>(key)); }
 };
 
 template <typename Key, typename Value>
-class IndexableMixin
+class IndexableMixin : public ConstIndexableMixin<Key, Value>
 {
 public:
     virtual Value &operator[](const Key &) = 0;
     virtual Value &operator[](Key &&key) { return this->operator[](static_cast<const Key &>(key)); }
+
+    const Value &operator[](const Key &key) const override { return const_cast<IndexableMixin *>(this)->operator[](key); }
 };
 
 template <typename T>

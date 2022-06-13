@@ -3,9 +3,6 @@
 #include "../container.h"
 
 template <typename T>
-class Iterator;
-
-template <typename T>
 class ConstIterator : public virtual Object
 {
 public:

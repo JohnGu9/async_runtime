@@ -65,20 +65,6 @@ public:
         return other;
     }
 
-    bool contain(const T &other) const
-    {
-        auto it = _container.find(other.first);
-        if (it == _container.end())
-            return false;
-        return it->second == other.second;
-    }
-
-    bool contain(const Key &other) const
-    {
-        auto it = _container.find(other);
-        return it != _container.end();
-    }
-
     ref<Iterator<T>> find(const Key &key) override
     {
         return Object::create<HashMap<Key, Value>::HashMapIterator>(_container.find(key));
@@ -153,11 +139,11 @@ public:
 template <typename Key, typename Value>
 bool HashMap<Key, Value>::HashMapConstIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapIterator *>(other.get()))
+    if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapConstIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapConstIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }
@@ -167,11 +153,11 @@ bool HashMap<Key, Value>::HashMapConstIterator::operator==(ref<Object> other)
 template <typename Key, typename Value>
 bool HashMap<Key, Value>::HashMapIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapConstIterator *>(other.get()))
+    if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapConstIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }

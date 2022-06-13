@@ -19,8 +19,8 @@ public:
     ref(const std::initializer_list<T> &list) : super(std::make_shared<HashSet<T>>(list)) {}
     ref(std::initializer_list<T> &&list) : super(std::make_shared<HashSet<T>>(std::move(list))) {}
 
-    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<T>> end() const { return (*this)->end(); }
+    ref<Iterator<T>> begin() const { return (*this)->begin(); }
+    ref<Iterator<T>> end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -30,10 +30,7 @@ protected:
 };
 
 template <typename T>
-ref<Set<T>> Set<T>::create()
-{
-    return Object::create<HashSet<T>>();
-}
+ref<Set<T>> Set<T>::create() { return Object::create<HashSet<T>>(); }
 
 template <typename T>
 template <typename R>

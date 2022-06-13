@@ -11,14 +11,6 @@ class String::View : public String
 
     using super = String;
 
-protected:
-#ifndef NDEBUG
-    bool isNative() override
-    {
-        return false;
-    }
-#endif
-
 public:
     View(ref<String> parent, size_t begin, size_t end);
 
@@ -27,16 +19,16 @@ public:
     size_t length() const override { return _length; }
     size_t size() const override { return _length; }
 
-    const char &operator[](size_t index) const override
+    const char &operator[](const size_t &index) const override
     {
         if (index >= _length)
             throw std::range_error("String::View::operator[] access out of range memory");
         return _parent[index + _begin];
     }
-    const_iterator begin() const override { return _parent->begin() + _begin; }
-    const_iterator end() const override { return _parent->begin() + _end; }
-    const_reverse_iterator rbegin() const override { return _parent->rbegin() + (_parent->length() - _end); }
-    const_reverse_iterator rend() const override { return _parent->rbegin() + (_parent->length() - _begin); }
+    ref<ConstIterator<char>> begin() const override { return _parent->begin()->covariant<String::StringConstIterator>()->operator+(_begin); }
+    ref<ConstIterator<char>> end() const override { return _parent->begin()->covariant<String::StringConstIterator>()->operator+(_end); }
+    ref<ConstIterator<char>> rbegin() const override { return _parent->rbegin()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _end); }
+    ref<ConstIterator<char>> rend() const override { return _parent->rbegin()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _begin); }
 
     size_t find(ref<String> pattern, size_t start = 0) const override
     {
@@ -84,7 +76,7 @@ public:
 String::View::View(ref<String> parent, size_t begin, size_t end)
     : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
 {
-    DEBUG_ASSERT(_parent->isNative());
+    DEBUG_ASSERT(_parent->cast<String::View>() == nullptr);
     DEBUG_ASSERT(_parent->length() >= _begin && _parent->length() >= _end);
 }
 
@@ -106,14 +98,12 @@ bool ref<String>::operator==(const std::string &other) const
 {
     if ((*this)->length() != other.length())
         return false;
-    return std::equal((*this)->begin(), (*this)->end(), other.begin());
+    return std::strncmp((*this)->data(), other.data(), other.length()) == 0;
 }
 
 bool ref<String>::operator==(std::string &&other) const
 {
-    if ((*this)->length() != other.length())
-        return false;
-    return std::equal((*this)->begin(), (*this)->end(), other.begin());
+    return this->operator==(static_cast<const std::string &>(other));
 }
 
 bool String::operator==(ref<Object> other)
@@ -123,7 +113,7 @@ bool String::operator==(ref<Object> other)
     {
         if (this->length() != string->length())
             return false;
-        return std::equal(this->begin(), this->end(), string->begin());
+        return std::strncmp(this->data(), string->data(), string->length()) == 0;
     }
     return false;
 }
@@ -132,7 +122,7 @@ bool String::operator==(const ref<String> &string)
 {
     if (this->length() != string->length())
         return false;
-    return std::equal(this->begin(), this->end(), string->begin());
+    return std::strncmp(this->data(), string->data(), string->length()) == 0;
 }
 
 void String::toStringStream(std::ostream &os)
@@ -147,24 +137,24 @@ ref<String> String::toString()
 
 bool String::any(Function<bool(const char &)> fn) const
 {
-    for (const auto &iter : *this)
-        if (fn(iter))
+    for (size_t i = 0, len = this->length(); i < len; i++)
+        if (fn(this->operator[](i)))
             return true;
     return false;
 }
 
 bool String::every(Function<bool(const char &)> fn) const
 {
-    for (const auto &iter : *this)
-        if (!fn(iter))
+    for (size_t i = 0, len = this->length(); i < len; i++)
+        if (!fn(this->operator[](i)))
             return false;
     return true;
 }
 
 void String::forEach(Function<void(const char &)> fn) const
 {
-    for (const auto &iter : *this)
-        fn(iter);
+    for (size_t i = 0, len = this->length(); i < len; i++)
+        fn(this->operator[](i));
 }
 
 ref<String> operator+(const char c, ref<String> string)
@@ -222,23 +212,18 @@ bool String::isEmpty() const
     return this->empty();
 }
 
-bool String::isNotEmpty() const
-{
-    return !this->isEmpty();
-}
-
 bool String::startsWith(ref<String> prefix) const
 {
     if (prefix->length() > this->length())
         return false;
-    return std::equal(prefix->begin(), prefix->end(), this->begin());
+    return std::strncmp(this->data(), prefix->data(), prefix->length()) == 0;
 }
 
 bool String::endsWith(ref<String> suffix) const
 {
     if (suffix->length() > this->length())
         return false;
-    return std::equal(suffix->rbegin(), suffix->rend(), this->rbegin());
+    return std::strncmp((this->data() + this->length() - suffix->length()), suffix->data(), suffix->length()) == 0;
 }
 
 ref<List<ref<String>>> String::split(ref<String> pattern) const
@@ -283,8 +268,8 @@ ref<String> String::toLowerCase() const
 {
     std::string result;
     result.resize(this->length());
-    std::transform(begin(), end(), result.begin(), [](unsigned char c)
-                   { return std::tolower(c); });
+    for (size_t i = 0, len = this->length(); i < len; i++)
+        result[i] = std::tolower(this->operator[](i));
     return std::move(result);
 }
 
@@ -292,8 +277,8 @@ ref<String> String::toUpperCase() const
 {
     std::string result;
     result.resize(this->length());
-    std::transform(begin(), end(), result.begin(), [](unsigned char c)
-                   { return std::toupper(c); });
+    for (size_t i = 0, len = this->length(); i < len; i++)
+        result[i] = std::toupper(this->operator[](i));
     return std::move(result);
 }
 

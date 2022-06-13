@@ -20,8 +20,8 @@ public:
 
     T &operator[](size_t index) const { return (*this)->operator[](index); }
 
-    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<T>> end() const { return (*this)->end(); }
+    ref<Iterator<T>> begin() const { return (*this)->begin(); }
+    ref<Iterator<T>> end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -31,16 +31,13 @@ protected:
 };
 
 template <typename T>
-ref<List<T>> List<T>::create()
-{
-    return Object::create<DequeList<T>>();
-}
+ref<List<T>> List<T>::create() { return Object::create<DequeList<T>>(); }
 
 template <typename T>
 template <typename R>
 ref<List<R>> List<T>::map(Function<R(const T &)> fn) const
 {
-    auto mapped = Object::create<DequeList<R>>();
+    auto mapped = List<R>::create();
     this->forEach([&](const T &element)
                   { mapped->emplace(fn(element)); });
     return mapped;

@@ -31,7 +31,7 @@ class ref<String>;
  * ref<String> withNumberString = string + 1.023;
  *
  */
-class String : public Iterable<char>, protected std::string
+class String : public Iterable<char>, public ReverseIterableMixin<char>, public ConstIndexableMixin<size_t, char>, protected std::string
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -50,18 +50,70 @@ protected:
     class View;
     String() {}
 
-#ifndef NDEBUG
-    virtual bool isNative()
-    {
-        return true;
-    }
-#endif
-
 public:
-    using iterator = super::const_iterator;
-    using reverse_iterator = super::const_reverse_iterator;
-    using const_iterator = super::const_iterator;
-    using const_reverse_iterator = super::const_reverse_iterator;
+    class StringConstIterator : public ConstIterator<char>
+    {
+        using iterator = typename std::string::const_iterator;
+
+    public:
+        const iterator _it;
+
+        StringConstIterator(const iterator it) : _it(it) {}
+
+        ref<ConstIterator<char>> next() const override
+        {
+            auto copy = _it;
+            return Object::create<String::StringConstIterator>(std::move(++copy));
+        }
+
+        const char &value() const override { return *(this->_it); }
+
+        bool operator==(ref<Object> other) override
+        {
+            if (auto ptr = dynamic_cast<String::StringConstIterator *>(other.get()))
+            {
+                return this->_it == ptr->_it;
+            }
+            return false;
+        }
+
+        ref<ConstIterator<char>> operator+(size_t shift) const
+        {
+            return Object::create<String::StringConstIterator>(_it + shift);
+        }
+    };
+
+    class ReverseConstIterator : public ConstIterator<char>
+    {
+        using iterator = typename std::string::const_reverse_iterator;
+
+    public:
+        const iterator _it;
+
+        ReverseConstIterator(const iterator it) : _it(it) {}
+
+        ref<ConstIterator<char>> next() const override
+        {
+            auto copy = _it;
+            return Object::create<String::ReverseConstIterator>(std::move(++copy));
+        }
+
+        const char &value() const override { return *(this->_it); }
+
+        bool operator==(ref<Object> other) override
+        {
+            if (auto ptr = dynamic_cast<String::ReverseConstIterator *>(other.get()))
+            {
+                return this->_it == ptr->_it;
+            }
+            return false;
+        }
+
+        ref<ConstIterator<char>> operator+(size_t shift) const
+        {
+            return Object::create<String::ReverseConstIterator>(_it + shift);
+        }
+    };
 
     static constexpr const size_t npos = super::npos;
 
@@ -89,16 +141,6 @@ public:
     String(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }
     String(const char *const str, size_t length) : super(str, length) { DEBUG_ASSERT(str != nullptr); }
 
-    String &operator=(const char other) = delete;
-    String &operator=(const char *const other) = delete;
-    String &operator=(const std::string &other) = delete;
-    String &operator=(std::string &&other) = delete;
-
-    size_t find_first_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
-    size_t find_first_not_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
-    size_t find_last_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
-    size_t find_last_not_of(const char *_Ptr, size_t _Off, size_t _Count) const = delete;
-
     virtual bool operator==(const ref<String> &other);
 
     // override from Object
@@ -110,11 +152,10 @@ public:
     bool any(Function<bool(const char &)>) const override;
     bool every(Function<bool(const char &)>) const override;
     void forEach(Function<void(const char &)>) const override;
+    bool isEmpty() const override;
 
     // new interface
     virtual std::string toStdString() const;
-    virtual bool isEmpty() const;
-    virtual bool isNotEmpty() const;
     virtual bool startsWith(ref<String>) const;
     virtual bool endsWith(ref<String>) const;
     virtual ref<List<ref<String>>> split(ref<String> pattern) const;
@@ -122,10 +163,6 @@ public:
     virtual ref<String> trim(ref<String> pattern) const;
     virtual ref<String> toLowerCase() const;
     virtual ref<String> toUpperCase() const;
-
-    template <typename... Args>
-    ref<String> format(Args &&...args);
-
     virtual size_t find(ref<String> pattern, size_t start = 0) const;
     virtual size_t findFirstOf(ref<String> pattern, size_t start = 0) const;
     virtual size_t findFirstNotOf(ref<String> pattern, size_t start = 0) const;
@@ -135,18 +172,22 @@ public:
     virtual ref<String> replace(size_t begin, size_t length, ref<String> other) const;
     virtual ref<String> reverse() const;
 
+    template <typename... Args>
+    ref<String> format(Args &&...args);
+
     // inherited interface
     virtual const char *const c_str() const { return super::c_str(); } // will be remove in the future
-    virtual size_t size() const { return super::size(); }              // will be remove in the future
 
     virtual const char *const data() const { return super::data(); }
-    virtual size_t length() const { return super::length(); }
+    virtual size_t length() const { return this->size(); }
 
-    virtual const char &operator[](size_t index) const { return super::operator[](index); }
-    virtual const_iterator begin() const { return super::begin(); }
-    virtual const_iterator end() const { return super::end(); }
-    virtual const_reverse_iterator rbegin() const { return super::rbegin(); }
-    virtual const_reverse_iterator rend() const { return super::rend(); }
+    size_t size() const override { return super::size(); }
+
+    const char &operator[](const size_t &index) const override { return super::operator[](index); }
+    ref<ConstIterator<char>> begin() const override { return Object::create<StringConstIterator>(super::begin()); }
+    ref<ConstIterator<char>> end() const override { return Object::create<StringConstIterator>(super::end()); }
+    ref<ConstIterator<char>> rbegin() const override { return Object::create<ReverseConstIterator>(super::rbegin()); }
+    ref<ConstIterator<char>> rend() const override { return Object::create<ReverseConstIterator>(super::rend()); }
 };
 
 template <>
@@ -155,8 +196,6 @@ class ref<String> : public _async_runtime::RefImplement<String>
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     friend class String;
 
-    using const_iterator = String::const_iterator;
-    using const_reverse_iterator = String::const_reverse_iterator;
     using super = _async_runtime::RefImplement<String>;
 
 protected:
@@ -181,8 +220,8 @@ public:
     bool operator!=(std::string &&other) const { return !operator==(std::move(other)); }
 
     const char &operator[](size_t index) const { return this->get()->operator[](index); }
-    const_iterator begin() const { return (*this)->begin(); }
-    const_iterator end() const { return (*this)->end(); }
+    ref<ConstIterator<char>> begin() const { return (*this)->begin(); }
+    ref<ConstIterator<char>> end() const { return (*this)->end(); }
 
     template <typename T>
     ref<String> operator+(const T &value) const { return String::connect(*this, value); }

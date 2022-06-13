@@ -26,11 +26,19 @@ public:
     virtual ref<ConstIterator<T>> find(const Key &) const = 0;
     virtual ref<ConstIterator<T>> find(Key &&key) const { return this->find(static_cast<const Key &>(key)); }
 
-    virtual bool contain(const Key &other) const = 0;
-    virtual bool contain(Key &&other) const { return this->contain(static_cast<const Key &>(other)); }
-
     virtual bool remove(const Key &) = 0;
     virtual bool remove(Key &&v) { return this->remove(static_cast<const Key &>(v)); }
+
+    virtual bool contain(const Key &other) const { return this->find(other) != this->end(); }
+    virtual bool contain(Key &&other) const { return this->find(std::move(other)) != this->end(); }
+
+    bool contain(const T &other) const
+    {
+        auto it = this->find(other.first);
+        if (it == this->end())
+            return false;
+        return (*it).second == other.second;
+    }
 
     void toStringStream(std::ostream &os) override
     {

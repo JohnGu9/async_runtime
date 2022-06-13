@@ -24,6 +24,8 @@ public:
     virtual ref<ConstIterator<T>> find(const T &) const = 0;
     virtual ref<ConstIterator<T>> find(T &&key) const { return this->find(static_cast<const T &>(key)); }
 
+    bool contain(const T &other) const override { return this->find(other) != this->end(); }
+
     void toStringStream(std::ostream &os) override
     {
         os << '<' << typeid(T).name() << ">{ ";
