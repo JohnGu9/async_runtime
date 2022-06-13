@@ -6,7 +6,7 @@
 namespace _async_runtime
 {
     template <typename Key, typename Value>
-    using DefaultMap = typename HashMap<Key, Value>;
+    using DefaultMap = HashMap<Key, Value>;
 };
 #else
 ASYNC_RUNTIME_CUSTOM_MAP_CONSTRUCTOR

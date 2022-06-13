@@ -6,7 +6,7 @@
 namespace _async_runtime
 {
     template <typename T>
-    using DefaultList = typename DequeList<T>;
+    using DefaultList = DequeList<T>;
 };
 #else
 ASYNC_RUNTIME_CUSTOM_LIST_CONSTRUCTOR

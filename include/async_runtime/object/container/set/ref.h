@@ -6,7 +6,7 @@
 namespace _async_runtime
 {
     template <typename T>
-    using DefaultSet = typename HashSet<T>;
+    using DefaultSet = HashSet<T>;
 };
 #else
 ASYNC_RUNTIME_CUSTOM_SET_CONSTRUCTOR
