@@ -152,7 +152,19 @@ public:
     bool any(Function<bool(const char &)>) const override;
     bool every(Function<bool(const char &)>) const override;
     void forEach(Function<void(const char &)>) const override;
-    bool isEmpty() const override;
+    size_t size() const override { return super::size(); }
+    ref<ConstIterator<char>> begin() const override { return Object::create<StringConstIterator>(super::begin()); }
+    ref<ConstIterator<char>> end() const override { return Object::create<StringConstIterator>(super::end()); }
+    ref<ConstIterator<char>> rbegin() const override { return Object::create<ReverseConstIterator>(super::rbegin()); }
+    ref<ConstIterator<char>> rend() const override { return Object::create<ReverseConstIterator>(super::rend()); }
+
+    // inherited from ConstIndexableMixin
+    const char &operator[](const size_t &index) const override { return super::operator[](index); }
+
+    // inherited from std::string *
+    virtual const char *const c_str() const { return super::c_str(); } // will be remove in the future
+    virtual const char *const data() const { return super::data(); }
+    virtual size_t length() const { return this->size(); }
 
     // new interface
     virtual std::string toStdString() const;
@@ -174,20 +186,6 @@ public:
 
     template <typename... Args>
     ref<String> format(Args &&...args);
-
-    // inherited interface
-    virtual const char *const c_str() const { return super::c_str(); } // will be remove in the future
-
-    virtual const char *const data() const { return super::data(); }
-    virtual size_t length() const { return this->size(); }
-
-    size_t size() const override { return super::size(); }
-
-    const char &operator[](const size_t &index) const override { return super::operator[](index); }
-    ref<ConstIterator<char>> begin() const override { return Object::create<StringConstIterator>(super::begin()); }
-    ref<ConstIterator<char>> end() const override { return Object::create<StringConstIterator>(super::end()); }
-    ref<ConstIterator<char>> rbegin() const override { return Object::create<ReverseConstIterator>(super::rbegin()); }
-    ref<ConstIterator<char>> rend() const override { return Object::create<ReverseConstIterator>(super::rend()); }
 };
 
 template <>

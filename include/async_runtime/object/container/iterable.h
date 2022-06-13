@@ -5,7 +5,7 @@
 #include "mixins.h"
 
 template <typename T>
-class Iterable : public virtual Object, public virtual ContainableMixin<T>
+class Iterable : public virtual Object
 {
 public:
     virtual size_t size() const = 0;
@@ -37,10 +37,15 @@ public:
             fn(iter);
     }
 
-    bool contain(const T &other) const override
+    virtual bool contain(const T &other) const
     {
         return this->any([&](const T &value)
                          { return value == other; });
+    }
+
+    virtual bool contain(T &&other) const
+    {
+        return this->contain(static_cast<const T &>(other));
     }
 };
 

@@ -3,21 +3,6 @@
 #include "iterator.h"
 
 template <typename T>
-class ReverseIterableMixin
-{
-    virtual ref<ConstIterator<T>> rbegin() const = 0;
-    virtual ref<ConstIterator<T>> rend() const = 0;
-};
-
-template <typename T>
-class ContainableMixin
-{
-public:
-    virtual bool contain(const T &other) const = 0;
-    virtual bool contain(T &&other) const { return this->contain(static_cast<const T &>(other)); }
-};
-
-template <typename T>
 class AddableMixin
 {
 public:
@@ -55,12 +40,4 @@ public:
     virtual Value &operator[](Key &&key) { return this->operator[](static_cast<const Key &>(key)); }
 
     const Value &operator[](const Key &key) const override { return const_cast<IndexableMixin *>(this)->operator[](key); }
-};
-
-template <typename T>
-class InsertMixin
-{
-public:
-    virtual bool insert(size_t index, const T &value) { throw NotImplementedError(); }
-    virtual bool insert(size_t index, T &&value) { return this->insert(index, static_cast<const T &>(value)); }
 };

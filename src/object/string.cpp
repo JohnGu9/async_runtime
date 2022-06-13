@@ -207,11 +207,6 @@ std::string String::toStdString() const
     return std::string(this->data(), this->length());
 }
 
-bool String::isEmpty() const
-{
-    return this->empty();
-}
-
 bool String::startsWith(ref<String> prefix) const
 {
     if (prefix->length() > this->length())
