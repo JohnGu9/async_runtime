@@ -2,6 +2,16 @@
 
 #include "../list.h"
 
+#ifndef ASYNC_RUNTIME_CUSTOM_LIST_CONSTRUCTOR
+namespace _async_runtime
+{
+    template <typename T>
+    using DefaultList = typename DequeList<T>;
+};
+#else
+ASYNC_RUNTIME_CUSTOM_LIST_CONSTRUCTOR
+#endif
+
 template <typename T>
 class ref<List<T>> : public _async_runtime::RefImplement<List<T>>
 {
@@ -15,8 +25,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::initializer_list<T> &list) : super(std::make_shared<DequeList<T>>(list)) {}
-    ref(std::initializer_list<T> &&list) : super(std::make_shared<DequeList<T>>(std::move(list))) {}
+    ref(const std::initializer_list<T> &list) : super(std::make_shared<_async_runtime::DefaultList<T>>(list)) {}
+    ref(std::initializer_list<T> &&list) : super(std::make_shared<_async_runtime::DefaultList<T>>(std::move(list))) {}
 
     T &operator[](size_t index) const { return (*this)->operator[](index); }
 
@@ -31,7 +41,7 @@ protected:
 };
 
 template <typename T>
-ref<List<T>> List<T>::create() { return Object::create<DequeList<T>>(); }
+ref<List<T>> List<T>::create() { return Object::create<_async_runtime::DefaultList<T>>(); }
 
 template <typename T>
 template <typename R>

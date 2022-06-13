@@ -1,7 +1,16 @@
 #pragma once
 
 #include "../set.h"
-#include "hash_set.h"
+
+#ifndef ASYNC_RUNTIME_CUSTOM_SET_CONSTRUCTOR
+namespace _async_runtime
+{
+    template <typename T>
+    using DefaultSet = typename HashSet<T>;
+};
+#else
+ASYNC_RUNTIME_CUSTOM_SET_CONSTRUCTOR
+#endif
 
 template <typename T>
 class ref<Set<T>> : public _async_runtime::RefImplement<Set<T>>
@@ -16,8 +25,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(other) {}
 
-    ref(const std::initializer_list<T> &list) : super(std::make_shared<HashSet<T>>(list)) {}
-    ref(std::initializer_list<T> &&list) : super(std::make_shared<HashSet<T>>(std::move(list))) {}
+    ref(const std::initializer_list<T> &list) : super(std::make_shared<_async_runtime::DefaultSet<T>>(list)) {}
+    ref(std::initializer_list<T> &&list) : super(std::make_shared<_async_runtime::DefaultSet<T>>(std::move(list))) {}
 
     ref<Iterator<T>> begin() const { return (*this)->begin(); }
     ref<Iterator<T>> end() const { return (*this)->end(); }
@@ -30,7 +39,7 @@ protected:
 };
 
 template <typename T>
-ref<Set<T>> Set<T>::create() { return Object::create<HashSet<T>>(); }
+ref<Set<T>> Set<T>::create() { return Object::create<_async_runtime::DefaultSet<T>>(); }
 
 template <typename T>
 template <typename R>

@@ -2,6 +2,16 @@
 
 #include "../map.h"
 
+#ifndef ASYNC_RUNTIME_CUSTOM_MAP_CONSTRUCTOR
+namespace _async_runtime
+{
+    template <typename Key, typename Value>
+    using DefaultMap = typename HashMap<Key, Value>;
+};
+#else
+ASYNC_RUNTIME_CUSTOM_MAP_CONSTRUCTOR
+#endif
+
 template <typename Key, typename Value>
 class ref<Map<Key, Value>> : public _async_runtime::RefImplement<Map<Key, Value>>
 {
@@ -17,8 +27,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::initializer_list<value_type> &list) : super(std::make_shared<HashMap<Key, Value>>(list)) {}
-    ref(std::initializer_list<value_type> &&list) : super(std::make_shared<HashMap<Key, Value>>(std::move(list))) {}
+    ref(const std::initializer_list<value_type> &list) : super(std::make_shared<_async_runtime::DefaultMap<Key, Value>>(list)) {}
+    ref(std::initializer_list<value_type> &&list) : super(std::make_shared<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
 
     template <typename... Args>
     Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
@@ -34,7 +44,7 @@ protected:
 };
 
 template <typename Key, typename Value>
-ref<Map<Key, Value>> Map<Key, Value>::create() { return Object::create<HashMap<Key, Value>>(); }
+ref<Map<Key, Value>> Map<Key, Value>::create() { return Object::create<_async_runtime::DefaultMap<Key, Value>>(); }
 
 template <typename Key, typename Value>
 template <typename R>
