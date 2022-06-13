@@ -14,6 +14,7 @@ public:
     static ref<Set<T>> create();
 
     virtual ref<Set<T>> copy() const = 0;
+    virtual ref<List<T>> toList() const;
 
     template <typename R>
     ref<Set<R>> map(Function<R(const T &)>) const;

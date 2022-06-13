@@ -30,7 +30,7 @@ public:
 
 template <typename T>
 ReverseIterable<T>::ReverseIterable(ref<ReverseIterableMixin<T>> mixin)
-    : _origin(mixin->covariant<Iterable<T>>()), _mixin(mixin) {}
+    : _origin(mixin->template covariant<Iterable<T>>()), _mixin(mixin) {}
 
 template <typename T>
 ref<ConstIterator<T>> ReverseIterable<T>::begin() const { return _mixin->rbegin(); }

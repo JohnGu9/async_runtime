@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../object.h"
+#include "declare.h"
 #include "iterator.h"
 #include "mixins.h"
 
@@ -17,24 +18,24 @@ public:
 
     virtual bool any(Function<bool(const T &)> fn) const
     {
-        for (const T &iter : *this)
-            if (fn(iter))
+        for (const T &element : *this)
+            if (fn(element))
                 return true;
         return false;
     }
 
     virtual bool every(Function<bool(const T &)> fn) const
     {
-        for (const T &iter : *this)
-            if (!fn(iter))
+        for (const T &element : *this)
+            if (!fn(element))
                 return false;
         return true;
     }
 
     virtual void forEach(Function<void(const T &)> fn) const
     {
-        for (const T &iter : *this)
-            fn(iter);
+        for (const T &element : *this)
+            fn(element);
     }
 
     virtual bool contain(const T &other) const

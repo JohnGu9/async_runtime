@@ -13,10 +13,13 @@ protected:
     Map() {}
 
 public:
-    using T = typename std::map<Key, Value>::value_type;
+    using T = typename std::map<Key, Value>::value_type; // std::pair<Key, Value>
     static ref<Map<Key, Value>> create();
 
     virtual ref<Map<Key, Value>> copy() const = 0;
+    virtual ref<Iterable<Key>> keys() const;
+    virtual ref<Iterable<Value>> values() const;
+
     template <typename R>
     ref<Map<Key, R>> map(Function<R(const Value &)>) const;
 
@@ -43,7 +46,7 @@ public:
     void toStringStream(std::ostream &os) override
     {
         os << '<' << typeid(Key).name() << ", " << typeid(Value).name() << ">{ ";
-        for (const std::pair<Key, Value> &element : *this)
+        for (const T &element : *this)
             os << '{' << element.first << " : " << element.second << "}, ";
         os << "}";
     }

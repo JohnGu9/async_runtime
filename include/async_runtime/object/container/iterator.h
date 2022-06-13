@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../container.h"
+#include "../object.h"
+#include "declare.h"
 
 template <typename T>
 class ConstIterator : public virtual Object

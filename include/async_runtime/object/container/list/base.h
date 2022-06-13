@@ -15,6 +15,7 @@ public:
     static ref<List<T>> create();
 
     virtual ref<List<T>> copy() const = 0;
+    virtual ref<Set<T>> toSet() const;
 
     template <typename R>
     ref<List<R>> map(Function<R(const T &)>) const;
@@ -42,7 +43,7 @@ public:
     void toStringStream(std::ostream &os) override
     {
         os << '<' << typeid(T).name() << ">[ ";
-        for (const auto &element : *this)
+        for (const T &element : *this)
             os << element << ", ";
         os << "]";
     }
