@@ -13,7 +13,7 @@ protected:
     Map() {}
 
 public:
-    using T = typename std::map<Key, Value>::value_type; // std::pair<Key, Value>
+    using T = typename std::map<Key, Value>::value_type; // std::pair<const Key, Value>
     static ref<Map<Key, Value>> create();
 
     virtual ref<Map<Key, Value>> copy() const = 0;

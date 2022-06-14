@@ -28,8 +28,8 @@ public:
     ref(const std::initializer_list<T> &list) : super(std::make_shared<_async_runtime::DefaultSet<T>>(list)) {}
     ref(std::initializer_list<T> &&list) : super(std::make_shared<_async_runtime::DefaultSet<T>>(std::move(list))) {}
 
-    ref<Iterator<T>> begin() const { return (*this)->begin(); }
-    ref<Iterator<T>> end() const { return (*this)->end(); }
+    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
+    ref<ConstIterator<T>> end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -37,19 +37,6 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : super(other) {}
 };
-
-template <typename T>
-ref<Set<T>> Set<T>::create() { return Object::create<_async_runtime::DefaultSet<T>>(); }
-
-template <typename T>
-template <typename R>
-ref<Set<R>> Set<T>::map(Function<R(const T &)> fn) const
-{
-    auto mapped = Set<R>::create();
-    for (const auto &element : *this)
-        mapped->emplace(fn(element));
-    return mapped;
-}
 
 template <typename T>
 class lateref<Set<T>> : public ref<Set<T>>
@@ -71,3 +58,16 @@ public:
     lateref(const std::initializer_list<T> &list) : super(list) {}
     lateref(std::initializer_list<T> &&list) : super(std::move(list)) {}
 };
+
+template <typename T>
+ref<Set<T>> Set<T>::create() { return Object::create<_async_runtime::DefaultSet<T>>(); }
+
+template <typename T>
+template <typename R>
+ref<Set<R>> Set<T>::map(Function<R(const T &)> fn) const
+{
+    auto mapped = Set<R>::create();
+    for (const auto &element : *this)
+        mapped->emplace(fn(element));
+    return mapped;
+}

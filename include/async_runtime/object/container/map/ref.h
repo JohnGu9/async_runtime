@@ -44,21 +44,6 @@ protected:
 };
 
 template <typename Key, typename Value>
-ref<Map<Key, Value>> Map<Key, Value>::create() { return Object::create<_async_runtime::DefaultMap<Key, Value>>(); }
-
-template <typename Key, typename Value>
-template <typename R>
-ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Value &)> fn) const
-{
-    auto mapped = HashMap<Key, R>::create();
-    for (const auto &pair : *this)
-    {
-        mapped[pair.first] = fn(pair.second);
-    }
-    return mapped;
-}
-
-template <typename Key, typename Value>
 class lateref<Map<Key, Value>> : public ref<Map<Key, Value>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
@@ -77,3 +62,18 @@ public:
     lateref(const std::initializer_list<value_type> &list) : super(list) {}
     lateref(std::initializer_list<value_type> &&list) : super(std::move(list)) {}
 };
+
+template <typename Key, typename Value>
+ref<Map<Key, Value>> Map<Key, Value>::create() { return Object::create<_async_runtime::DefaultMap<Key, Value>>(); }
+
+template <typename Key, typename Value>
+template <typename R>
+ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Value &)> fn) const
+{
+    auto mapped = HashMap<Key, R>::create();
+    for (const auto &pair : *this)
+    {
+        mapped[pair.first] = fn(pair.second);
+    }
+    return mapped;
+}

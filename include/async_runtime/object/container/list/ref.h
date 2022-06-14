@@ -41,19 +41,6 @@ protected:
 };
 
 template <typename T>
-ref<List<T>> List<T>::create() { return Object::create<_async_runtime::DefaultList<T>>(); }
-
-template <typename T>
-template <typename R>
-ref<List<R>> List<T>::map(Function<R(const T &)> fn) const
-{
-    auto mapped = List<R>::create();
-    this->forEach([&](const T &element)
-                  { mapped->emplace(fn(element)); });
-    return mapped;
-}
-
-template <typename T>
 class lateref<List<T>> : public ref<List<T>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
@@ -71,3 +58,16 @@ public:
     lateref(const std::initializer_list<T> &list) : ref<List<T>>(list) {}
     lateref(std::initializer_list<T> &&list) : ref<List<T>>(std::move(list)) {}
 };
+
+template <typename T>
+ref<List<T>> List<T>::create() { return Object::create<_async_runtime::DefaultList<T>>(); }
+
+template <typename T>
+template <typename R>
+ref<List<R>> List<T>::map(Function<R(const T &)> fn) const
+{
+    auto mapped = List<R>::create();
+    this->forEach([&](const T &element)
+                  { mapped->emplace(fn(element)); });
+    return mapped;
+}

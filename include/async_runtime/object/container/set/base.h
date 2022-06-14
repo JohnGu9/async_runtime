@@ -3,7 +3,9 @@
 #include "../list.h"
 
 template <typename T>
-class Set : public MutableIterable<T>
+class Set : public Iterable<T>,
+            public AddableMixin<T>,
+            public RemovableMixin<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
@@ -19,13 +21,27 @@ public:
     template <typename R>
     ref<Set<R>> map(Function<R(const T &)>) const;
 
-    virtual ref<Iterator<T>> find(const T &) = 0;
-    virtual ref<Iterator<T>> find(T &&key) { return this->find(static_cast<const T &>(key)); }
-
     virtual ref<ConstIterator<T>> find(const T &) const = 0;
     virtual ref<ConstIterator<T>> find(T &&key) const { return this->find(static_cast<const T &>(key)); }
 
-    bool contains(const T &other) const override { return this->find(other) != this->end(); }
+    virtual ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) = 0;
+    virtual void clear() = 0;
+
+    bool contains(const T &other) const override
+    {
+        return this->find(other) != this->end();
+    }
+
+    bool remove(const T &value) override
+    {
+        auto it = this->find(value);
+        if (it != this->end())
+        {
+            this->erase(it);
+            return true;
+        }
+        return false;
+    }
 
     void toStringStream(std::ostream &os) override
     {

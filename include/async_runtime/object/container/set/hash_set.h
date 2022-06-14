@@ -11,7 +11,7 @@ class HashSet : public Set<T>
 public:
     class HashSetConstIterator : public ConstIterator<T>
     {
-        using iterator = typename std::unordered_set<T>::const_iterator;
+        using iterator = typename std::unordered_set<T>::iterator;
 
     public:
         const iterator _it;
@@ -28,30 +28,6 @@ public:
         bool operator==(ref<Object> other) override;
     };
 
-    class HashSetIterator : public Iterator<T>
-    {
-        using iterator = typename std::unordered_set<T>::iterator;
-
-    public:
-        const iterator _it;
-        HashSetIterator(const iterator it) : _it(it) {}
-
-        ref<Iterator<T>> next() const override
-        {
-            auto copy = _it;
-            return Object::create<HashSet<T>::HashSetIterator>(std::move(++copy));
-        }
-
-        T &value() const override { return const_cast<T &>(*(this->_it)); }
-
-        bool operator==(ref<Object> other) override;
-
-        ref<ConstIterator<T>> toConst() const override
-        {
-            return Object::create<HashSet<T>::HashSetConstIterator>(_it);
-        }
-    };
-
     static ref<Set<T>> create();
 
     HashSet() {}
@@ -64,6 +40,18 @@ public:
     HashSet(std::initializer_list<T> &&list) : _container(std::move(list)) {}
     HashSet(const std::initializer_list<T> &list) : _container(list) {}
 
+    ref<ConstIterator<T>> begin() const override
+    {
+        return Object::create<HashSet<T>::HashSetConstIterator>(
+            const_cast<std::unordered_set<T> &>(_container).begin());
+    }
+
+    ref<ConstIterator<T>> end() const override
+    {
+        return Object::create<HashSet<T>::HashSetConstIterator>(
+            const_cast<std::unordered_set<T> &>(_container).end());
+    }
+
     ref<Set<T>> copy() const override
     {
         auto other = Object::create<HashSet<T>>();
@@ -71,30 +59,16 @@ public:
         return other;
     }
 
-    ref<Iterator<T>> find(const T &key) override
-    {
-        return Object::create<HashSet<T>::HashSetIterator>(_container.find(key));
-    }
-
     ref<ConstIterator<T>> find(const T &key) const override
     {
-        return Object::create<HashSet<T>::HashSetConstIterator>(_container.find(key));
+        return Object::create<HashSet<T>::HashSetConstIterator>(
+            const_cast<std::unordered_set<T> &>(_container).find(key));
     }
 
-    ref<Iterator<T>> erase(ref<Iterator<T>> iter) override
+    ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) override
     {
-        auto iterator = iter->template covariant<HashSet<T>::HashSetIterator>();
-        return Object::create<HashSet<T>::HashSetIterator>(_container.erase(iterator->_it));
-    }
-
-    ref<Iterator<T>> begin() override
-    {
-        return Object::create<HashSet<T>::HashSetIterator>(_container.begin());
-    }
-
-    ref<Iterator<T>> end() override
-    {
-        return Object::create<HashSet<T>::HashSetIterator>(_container.end());
+        auto iterator = iter->template covariant<HashSet<T>::HashSetConstIterator>();
+        return Object::create<HashSet<T>::HashSetConstIterator>(_container.erase(iterator->_it));
     }
 
     size_t size() const override { return _container.size(); }
@@ -111,20 +85,6 @@ public:
         return true;
     }
 
-    bool remove(const T &v) override
-    {
-        auto iter = _container.find(v);
-        if (iter == _container.end())
-            return false;
-        _container.erase(iter);
-        return true;
-    }
-
-    bool removeAll(const T &value) override
-    {
-        return this->remove(value);
-    }
-
     void clear() override { _container.clear(); }
 };
 
@@ -132,24 +92,6 @@ template <typename T>
 bool HashSet<T>::HashSetConstIterator::operator==(ref<Object> other)
 {
     if (auto ptr = dynamic_cast<HashSet<T>::HashSetConstIterator *>(other.get())) // [[likely]]
-    {
-        return this->_it == ptr->_it;
-    }
-    else if (auto ptr = dynamic_cast<HashSet<T>::HashSetIterator *>(other.get()))
-    {
-        return this->_it == ptr->_it;
-    }
-    return false;
-}
-
-template <typename T>
-bool HashSet<T>::HashSetIterator::operator==(ref<Object> other)
-{
-    if (auto ptr = dynamic_cast<HashSet<T>::HashSetIterator *>(other.get())) // [[likely]]
-    {
-        return this->_it == ptr->_it;
-    }
-    else if (auto ptr = dynamic_cast<HashSet<T>::HashSetConstIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }
