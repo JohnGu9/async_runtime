@@ -1,7 +1,6 @@
 #pragma once
 #include "iterable.h"
 
-// @TODO: fix linux memory access bug
 template <typename From, typename To>
 class MapIterable : public Iterable<To>
 {

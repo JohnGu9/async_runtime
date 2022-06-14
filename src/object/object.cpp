@@ -28,3 +28,8 @@ void Object::toStringStream(std::ostream &os)
 #endif
        << ">[" << (size_t)this << ']';
 }
+
+namespace _async_runtime
+{
+    size_t ostreamStackDepth = 0;
+};

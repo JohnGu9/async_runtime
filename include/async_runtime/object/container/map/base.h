@@ -3,6 +3,12 @@
 #include "../map.h"
 #include <map>
 
+template <class F, class S>
+std::ostream &operator<<(std::ostream &os, const std::pair<F, S> &out)
+{
+    return os << '{' << out.first << " : " << out.second << '}';
+}
+
 template <typename Key, typename Value>
 class Map : public Iterable<std::pair<const Key, Value>>,
             public IndexableMixin<Key, Value>
@@ -42,7 +48,7 @@ public:
     {
         os << '<' << typeid(Key).name() << ", " << typeid(Value).name() << ">{ ";
         for (const T &element : *this)
-            os << '{' << element.first << " : " << element.second << "}, ";
+            os << element << ", ";
         os << "}";
     }
 };

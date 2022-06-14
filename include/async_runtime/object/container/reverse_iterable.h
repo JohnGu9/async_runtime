@@ -4,36 +4,76 @@
 #include "iterator.h"
 
 template <typename T>
-class ReverseIterableMixin;
+class ReverseAbleIterable;
 
 template <typename T>
-class ReverseIterable : public Iterable<T>
-{
-    ref<Iterable<T>> _origin;
-    ref<ReverseIterableMixin<T>> _mixin;
-
-public:
-    ReverseIterable(ref<ReverseIterableMixin<T>> mixin);
-    size_t size() const override { return _origin->size(); }
-    ref<ConstIterator<T>> begin() const override;
-    ref<ConstIterator<T>> end() const override;
-};
+class ReverseIterable;
 
 template <typename T>
-class ReverseIterableMixin : public virtual Object
+class ReverseAbleIterable : public virtual Iterable<T>
 {
 public:
     virtual ref<ConstIterator<T>> rbegin() const = 0;
     virtual ref<ConstIterator<T>> rend() const = 0;
-    virtual ref<ReverseIterable<T>> toReserve() const { return Object::create<ReverseIterable<T>>(Object::cast<>(const_cast<ReverseIterableMixin *>(this))); }
+    virtual ref<ReverseAbleIterable<T>> toReserve() const;
 };
 
 template <typename T>
-ReverseIterable<T>::ReverseIterable(ref<ReverseIterableMixin<T>> mixin)
-    : _origin(mixin->template covariant<Iterable<T>>()), _mixin(mixin) {}
+class ReverseAbleMuteIterable : public virtual ReverseAbleIterable<T>, public virtual MutableIterable<T>
+{
+public:
+    virtual ref<Iterator<T>> rbegin() = 0;
+    virtual ref<Iterator<T>> rend() = 0;
+    virtual ref<ReverseAbleMuteIterable<T>> toReserve();
+};
 
 template <typename T>
-ref<ConstIterator<T>> ReverseIterable<T>::begin() const { return _mixin->rbegin(); }
+class ReverseIterableWrapper : public virtual ReverseAbleIterable<T>
+{
+protected:
+    ref<ReverseAbleIterable<T>> _origin;
+
+public:
+    ReverseIterableWrapper(ref<ReverseAbleIterable<T>> origin) : _origin(origin) {}
+    size_t size() const override { return _origin->size(); }
+
+    ref<ConstIterator<T>> begin() const override { return _origin->rbegin(); }
+    ref<ConstIterator<T>> end() const override { return _origin->rend(); }
+    ref<ConstIterator<T>> rbegin() const override { return _origin->begin(); }
+    ref<ConstIterator<T>> rend() const override { return _origin->end(); }
+    ref<ReverseAbleIterable<T>> toReserve() const override { return _origin; }
+};
 
 template <typename T>
-ref<ConstIterator<T>> ReverseIterable<T>::end() const { return _mixin->rend(); }
+class ReverseMuteIterableWrapper : public virtual ReverseAbleMuteIterable<T>
+{
+protected:
+    ref<ReverseAbleMuteIterable<T>> _origin;
+
+public:
+    ReverseMuteIterableWrapper(ref<ReverseAbleMuteIterable<T>> origin) : _origin(origin) {}
+
+    ref<ConstIterator<T>> begin() const override { return _origin->rbegin(); }
+    ref<ConstIterator<T>> end() const override { return _origin->rend(); }
+    ref<ConstIterator<T>> rbegin() const override { return _origin->begin(); }
+    ref<ConstIterator<T>> rend() const override { return _origin->end(); }
+    ref<ReverseAbleIterable<T>> toReserve() const override { return _origin; }
+
+    ref<Iterator<T>> begin() override { return _origin->rbegin(); }
+    ref<Iterator<T>> end() override { return _origin->rend(); }
+    ref<Iterator<T>> rbegin() override { return _origin->begin(); }
+    ref<Iterator<T>> rend() override { return _origin->end(); }
+    ref<ReverseAbleMuteIterable<T>> toReserve() override { return _origin; }
+};
+
+template <typename T>
+ref<ReverseAbleIterable<T>> ReverseAbleIterable<T>::toReserve() const
+{
+    return Object::create<ReverseIterableWrapper<T>>(Object::cast<>(const_cast<ReverseAbleIterable<T> *>(this)));
+}
+
+template <typename T>
+ref<ReverseAbleMuteIterable<T>> ReverseAbleMuteIterable<T>::toReserve()
+{
+    return Object::create<ReverseMuteIterableWrapper<T>>(Object::cast<>(const_cast<ReverseAbleMuteIterable<T> *>(this)));
+}

@@ -62,6 +62,14 @@ public:
     {
         return this->contains(static_cast<const T &>(other));
     }
+
+    void toStringStream(std::ostream &os) override
+    {
+        os << '<' << typeid(T).name() << ">[ ";
+        for (const T &element : *this)
+            os << element << ", ";
+        os << "]";
+    }
 };
 
 template <typename T>

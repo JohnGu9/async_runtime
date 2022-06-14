@@ -39,12 +39,4 @@ public:
         if (index > 0)
             this->removeAt(index - 1);
     }
-
-    void toStringStream(std::ostream &os) override
-    {
-        os << '<' << typeid(T).name() << ">[ ";
-        for (const T &element : *this)
-            os << element << ", ";
-        os << "]";
-    }
 };
