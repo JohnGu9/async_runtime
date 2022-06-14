@@ -6,7 +6,10 @@
 template <class F, class S>
 std::ostream &operator<<(std::ostream &os, const std::pair<F, S> &out)
 {
-    return os << '{' << out.first << " : " << out.second << '}';
+    ++_async_runtime::ostreamStackDepth;
+    os << '{' << out.first << " : " << out.second << '}';
+    --_async_runtime::ostreamStackDepth;
+    return os;
 }
 
 template <typename Key, typename Value>

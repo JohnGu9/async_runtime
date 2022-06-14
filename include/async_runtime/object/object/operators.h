@@ -112,14 +112,18 @@ bool operator!=(option<T> &&object0, std::nullptr_t) { return !Object::isNull<>(
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const ref<T> &object)
 {
+    ++_async_runtime::ostreamStackDepth;
     object->toStringStream(os);
+    --_async_runtime::ostreamStackDepth;
     return os;
 }
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, ref<T> &&object)
 {
+    ++_async_runtime::ostreamStackDepth;
     object->toStringStream(os);
+    --_async_runtime::ostreamStackDepth;
     return os;
 }
 

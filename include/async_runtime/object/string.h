@@ -368,6 +368,3 @@ ref<String> operator+(const char c, ref<String> string);
 ref<String> operator+(const char *const str, ref<String> string);
 ref<String> operator+(const std::string &str, ref<String> string);
 ref<String> operator+(std::string &&str, ref<String> string);
-
-std::ostream &operator<<(std::ostream &os, const ref<String> &str);
-std::ostream &operator<<(std::ostream &os, ref<String> &&str);

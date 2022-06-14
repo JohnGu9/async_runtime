@@ -127,7 +127,14 @@ bool String::operator==(const ref<String> &string)
 
 void String::toStringStream(std::ostream &os)
 {
-    os.write(this->data(), this->length());
+    if (_async_runtime::ostreamStackDepth == 1)
+        os.write(this->data(), this->length());
+    else
+    {
+        os << '"';
+        os.write(this->data(), this->length());
+        os << '"';
+    }
 }
 
 ref<String> String::toString()
@@ -296,16 +303,6 @@ ref<String> String::reverse() const
          i != this->length(); i++, r--)
         buffer[i] = this->operator[](r);
     return std::move(buffer);
-}
-
-std::ostream &operator<<(std::ostream &os, const ref<String> &str)
-{
-    return os.write(str->data(), str->length());
-}
-
-std::ostream &operator<<(std::ostream &os, ref<String> &&str)
-{
-    return os.write(str->data(), str->length());
 }
 
 ref<String> String::getline(std::istream &is)
