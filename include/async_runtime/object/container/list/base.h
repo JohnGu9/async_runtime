@@ -21,8 +21,9 @@ public:
     ref<List<R>> map(Function<R(const T &)>) const;
 
     virtual void removeAt(const size_t index) = 0;
+
     virtual bool insert(size_t index, const T &value) = 0;
-    virtual bool insert(size_t index, T &&value) { return this->insert(index, static_cast<const T &>(value)); }
+    virtual bool insert(size_t index, T &&value) = 0;
 
     virtual void emplaceBack(const T &value) { this->emplace(value); }
     virtual void emplaceBack(T &&value) { this->emplace(std::move(value)); }

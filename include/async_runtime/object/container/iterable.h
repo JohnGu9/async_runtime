@@ -100,10 +100,12 @@ public:
 
     bool removeAll(const T &value) override
     {
-        for (auto it = this->begin(); it != this->end(); ++it)
+        for (auto it = this->begin(); it != this->end();)
         {
             if (*it == value)
                 it = this->erase(it);
+            else
+                ++it;
         }
         return true;
     }
