@@ -38,15 +38,15 @@ public:
             fn(element);
     }
 
-    virtual bool contain(const T &other) const
+    virtual bool contains(const T &other) const
     {
         return this->any([&](const T &value)
                          { return value == other; });
     }
 
-    virtual bool contain(T &&other) const
+    virtual bool contains(T &&other) const
     {
-        return this->contain(static_cast<const T &>(other));
+        return this->contains(static_cast<const T &>(other));
     }
 };
 

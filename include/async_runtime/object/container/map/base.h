@@ -32,8 +32,8 @@ public:
     virtual bool remove(const Key &) = 0;
     virtual bool remove(Key &&v) { return this->remove(static_cast<const Key &>(v)); }
 
-    virtual bool contain(const Key &other) const { return this->find(other) != this->end(); }
-    virtual bool contain(Key &&other) const { return this->find(std::move(other)) != this->end(); }
+    virtual bool contains(const Key &other) const { return this->find(other) != this->end(); }
+    virtual bool contains(Key &&other) const { return this->find(std::move(other)) != this->end(); }
 
     bool contain(const T &other) const
     {
