@@ -21,9 +21,6 @@ public:
     template <typename R>
     ref<Set<R>> map(Function<R(const T &)>) const;
 
-    virtual ref<ConstIterator<T>> find(const T &) const = 0;
-    virtual ref<ConstIterator<T>> find(T &&key) const { return this->find(static_cast<const T &>(key)); }
-
     virtual ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) = 0;
     virtual void clear() = 0;
 

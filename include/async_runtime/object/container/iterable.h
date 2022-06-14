@@ -38,10 +38,24 @@ public:
             fn(element);
     }
 
+    virtual ref<ConstIterator<T>> find(const T &value) const
+    {
+        auto end = this->end(),
+             it = this->begin();
+        for (; it != end; ++it)
+            if (*it == value)
+                break;
+        return it;
+    }
+
+    virtual ref<ConstIterator<T>> find(T &&value) const
+    {
+        return this->find(static_cast<const T &>(value));
+    }
+
     virtual bool contains(const T &other) const
     {
-        return this->any([&](const T &value)
-                         { return value == other; });
+        return this->find(other) != this->end();
     }
 
     virtual bool contains(T &&other) const

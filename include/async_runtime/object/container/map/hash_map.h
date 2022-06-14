@@ -7,13 +7,14 @@ class HashMap : public Map<Key, Value>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     std::unordered_map<Key, Value> _container;
-    using super = std::map<Key, Value>;
-    using T = typename super::value_type;
+
+    using super = Map<Key, Value>;
+    using T = typename super::T;
 
 public:
     class HashMapConstIterator : public ConstIterator<T>
     {
-        using iterator = typename std::unordered_map<Key, Value>::const_iterator;
+        using iterator = typename std::unordered_map<Key, Value>::iterator;
 
     public:
         const iterator _it;
@@ -30,30 +31,6 @@ public:
         bool operator==(ref<Object> other) override;
     };
 
-    class HashMapIterator : public Iterator<T>
-    {
-        using iterator = typename std::unordered_map<Key, Value>::iterator;
-
-    public:
-        const iterator _it;
-        HashMapIterator(const iterator it) : _it(it) {}
-
-        ref<Iterator<T>> next() const override
-        {
-            auto copy = _it;
-            return Object::create<HashMap<Key, Value>::HashMapIterator>(std::move(++copy));
-        }
-
-        T &value() const override { return const_cast<T &>(*(this->_it)); }
-
-        bool operator==(ref<Object> other) override;
-
-        ref<ConstIterator<T>> toConst() const override
-        {
-            return Object::create<HashMap<Key, Value>::HashMapConstIterator>(_it);
-        }
-    };
-
     HashMap() {}
     HashMap(std::initializer_list<T> &&list) : _container(std::move(list)) {}
     HashMap(const std::initializer_list<T> &list) : _container(list) {}
@@ -65,66 +42,50 @@ public:
         return other;
     }
 
-    ref<Iterator<T>> find(const Key &key) override
+    ref<ConstIterator<T>> findKey(const Key &key) const override
     {
-        return Object::create<HashMap<Key, Value>::HashMapIterator>(_container.find(key));
+        return Object::create<HashMap<Key, Value>::HashMapConstIterator>(
+            const_cast<std::unordered_map<Key, Value> &>(_container).find(key));
     }
 
-    ref<ConstIterator<T>> find(const Key &key) const override
-    {
-        return Object::create<HashMap<Key, Value>::HashMapConstIterator>(_container.find(key));
-    }
-
-    Value &operator[](const Key &key)
+    Value &operator[](const Key &key) override
     {
         return _container[key];
     }
 
     size_t size() const override { return _container.size(); }
 
-    ref<Iterator<T>> begin() override
+    ref<ConstIterator<T>> begin() const override
     {
-        return Object::create<HashMap<Key, Value>::HashMapIterator>(_container.begin());
+        return Object::create<HashMap<Key, Value>::HashMapConstIterator>(
+            const_cast<std::unordered_map<Key, Value> &>(_container).begin());
     }
 
-    ref<Iterator<T>> end() override
+    ref<ConstIterator<T>> end() const override
     {
-        return Object::create<HashMap<Key, Value>::HashMapIterator>(_container.end());
+        return Object::create<HashMap<Key, Value>::HashMapConstIterator>(
+            const_cast<std::unordered_map<Key, Value> &>(_container).end());
     }
 
-    ref<Iterator<T>> erase(ref<Iterator<T>> it) override
+    ref<ConstIterator<T>> erase(ref<ConstIterator<T>> it) override
     {
-        auto iterator = it->template covariant<HashMap<Key, Value>::HashMapIterator>();
-        return Object::create<HashMap<Key, Value>::HashMapIterator>(_container.erase(iterator->_it));
+        auto iterator = it->template covariant<HashMap<Key, Value>::HashMapConstIterator>();
+        return Object::create<HashMap<Key, Value>::HashMapConstIterator>(_container.erase(iterator->_it));
     }
 
-    bool add(const T &value) override
+    bool emplace(const Key &key, const Value &value) override
     {
-        _container.emplace(value.first, value.second);
+        _container.emplace(key, value);
         return true;
     }
 
-    bool add(T &&value) override
+    bool emplace(Key &&key, Value &&value) override
     {
-        _container.emplace(std::move(value.first), std::move(value.second));
+        _container.emplace(std::move(key), std::move(value));
         return true;
     }
 
-    bool remove(const T &value) override
-    {
-        auto it = _container.find(value.first);
-        if (it == _container.end())
-            return false;
-        _container.erase(it);
-        return true;
-    }
-
-    bool removeAll(const T &value) override
-    {
-        return this->remove(value);
-    }
-
-    bool remove(const Key &key) override
+    bool removeKey(const Key &key) override
     {
         auto it = _container.find(key);
         if (it == _container.end())
@@ -140,24 +101,6 @@ template <typename Key, typename Value>
 bool HashMap<Key, Value>::HashMapConstIterator::operator==(ref<Object> other)
 {
     if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapConstIterator *>(other.get())) // [[likely]]
-    {
-        return this->_it == ptr->_it;
-    }
-    else if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapIterator *>(other.get()))
-    {
-        return this->_it == ptr->_it;
-    }
-    return false;
-}
-
-template <typename Key, typename Value>
-bool HashMap<Key, Value>::HashMapIterator::operator==(ref<Object> other)
-{
-    if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapIterator *>(other.get())) // [[likely]]
-    {
-        return this->_it == ptr->_it;
-    }
-    else if (auto ptr = dynamic_cast<HashMap<Key, Value>::HashMapConstIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }

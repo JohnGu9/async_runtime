@@ -15,13 +15,8 @@ public:
         Function<const To &(const From &)> _transform;
 
     public:
-        MapIterableIterator(ref<ConstIterator<From>> other, Function<To(const From &)> transform)
+        MapIterableIterator(ref<ConstIterator<From>> other, Function<const To &(const From &)> transform)
             : _other(other), _transform(transform) {}
-
-        ref<ConstIterator<From>> origin() const
-        {
-            return _other;
-        }
 
         ref<ConstIterator<To>> next() const override
         {
@@ -62,7 +57,7 @@ public:
 };
 
 template <typename From, typename To>
-ref<MapIterable<From, To>> from(ref<Iterable<From>> origin, Function<const To &(const From &)> transform)
+ref<MapIterable<From, To>> MapIterable<From, To>::from(ref<Iterable<From>> origin, Function<const To &(const From &)> transform)
 {
-    return Object::create(origin, transform);
+    return Object::create<MapIterable<From, To>>(origin, transform);
 }

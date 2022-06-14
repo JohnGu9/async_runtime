@@ -4,7 +4,7 @@
 #include <map>
 
 template <typename Key, typename Value>
-class Map : public MutableIterable<typename std::map<Key, Value>::value_type>,
+class Map : public Iterable<std::pair<const Key, Value>>,
             public IndexableMixin<Key, Value>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
@@ -13,7 +13,7 @@ protected:
     Map() {}
 
 public:
-    using T = typename std::map<Key, Value>::value_type; // std::pair<const Key, Value>
+    using T = std::pair<const Key, Value>;
     static ref<Map<Key, Value>> create();
 
     virtual ref<Map<Key, Value>> copy() const = 0;
@@ -23,25 +23,20 @@ public:
     template <typename R>
     ref<Map<Key, R>> map(Function<R(const Value &)>) const;
 
-    virtual ref<Iterator<T>> find(const Key &) = 0;
-    virtual ref<Iterator<T>> find(Key &&key) { return this->find(static_cast<const Key &>(key)); }
+    virtual ref<ConstIterator<T>> findKey(const Key &) const = 0;
+    virtual ref<ConstIterator<T>> findKey(Key &&key) const { return this->findKey(static_cast<const Key &>(key)); }
 
-    virtual ref<ConstIterator<T>> find(const Key &) const = 0;
-    virtual ref<ConstIterator<T>> find(Key &&key) const { return this->find(static_cast<const Key &>(key)); }
+    virtual bool containsKey(const Key &other) const { return this->findKey(other) != this->end(); }
+    virtual bool containsKey(Key &&other) const { return this->containsKey(static_cast<const Key &>(other)); }
 
-    virtual bool remove(const Key &) = 0;
-    virtual bool remove(Key &&v) { return this->remove(static_cast<const Key &>(v)); }
+    virtual bool removeKey(const Key &) = 0;
+    virtual bool removeKey(Key &&v) { return this->removeKey(static_cast<const Key &>(v)); }
 
-    virtual bool contains(const Key &other) const { return this->find(other) != this->end(); }
-    virtual bool contains(Key &&other) const { return this->find(std::move(other)) != this->end(); }
+    virtual ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) = 0;
+    virtual void clear() = 0;
 
-    bool contain(const T &other) const
-    {
-        auto it = this->find(other.first);
-        if (it == this->end())
-            return false;
-        return (*it).second == other.second;
-    }
+    virtual bool emplace(const Key &key, const Value &value) = 0;
+    virtual bool emplace(Key &&key, Value &&value) = 0;
 
     void toStringStream(std::ostream &os) override
     {

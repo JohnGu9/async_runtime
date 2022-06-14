@@ -5,19 +5,17 @@
 template <typename Key, typename Value>
 ref<Iterable<Key>> Map<Key, Value>::keys() const
 {
-    auto list = List<Key>::create();
-    for (const T &pair : *this)
-        list->emplace(pair.first);
-    return list;
+    return MapIterable<T, Key>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
+                                     [](const T &pair) -> const Key &
+                                     { return pair.first; });
 }
 
 template <typename Key, typename Value>
 ref<Iterable<Value>> Map<Key, Value>::values() const
 {
-    auto list = List<Value>::create();
-    for (const T &pair : *this)
-        list->emplace(pair.second);
-    return list;
+    return MapIterable<T, Value>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
+                                       [](const T &pair) -> const Value &
+                                       { return pair.second; });
 }
 
 template <typename T>
