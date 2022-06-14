@@ -32,7 +32,7 @@ public:
 template <typename T, typename std::enable_if<std::is_base_of<InheritedWidget, T>::value>::type *>
 option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 {
-    auto iter = this->_inheritances->find(typeid(T).hash_code());
+    auto iter = this->_inheritances->findKey(typeid(T).hash_code());
     if (iter == this->_inheritances->end())
     {
 #ifndef NDEBUG

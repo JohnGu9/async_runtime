@@ -33,8 +33,8 @@ public:
     template <typename... Args>
     Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
 
-    ref<Iterator<value_type>> begin() const { return (*this)->begin(); }
-    ref<Iterator<value_type>> end() const { return (*this)->end(); }
+    ref<ConstIterator<value_type>> begin() const { return (*this)->begin(); }
+    ref<ConstIterator<value_type>> end() const { return (*this)->end(); }
 
 protected:
     ref() {}
