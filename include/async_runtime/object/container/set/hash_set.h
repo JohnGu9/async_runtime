@@ -73,16 +73,14 @@ public:
 
     size_t size() const override { return _container.size(); }
 
-    bool add(const T &v) override
+    void emplace(const T &v) override
     {
         _container.insert(v);
-        return true;
     }
 
-    bool add(T &&v) override
+    void emplace(T &&v) override
     {
         _container.insert(std::move(v));
-        return true;
     }
 
     void clear() override { _container.clear(); }

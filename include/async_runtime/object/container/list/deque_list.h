@@ -85,16 +85,14 @@ public:
 
     size_t size() const override { return _container.size(); }
 
-    bool add(const T &v) override
+    void emplace(const T &v) override
     {
         _container.emplace_back(v);
-        return true;
     }
 
-    bool add(T &&v) override
+    void emplace(T &&v) override
     {
         _container.emplace_back(std::move(v));
-        return true;
     }
 
     void removeAt(const size_t index) override

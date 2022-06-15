@@ -4,7 +4,7 @@
 
 template <typename T>
 class Set : public Iterable<T>,
-            public AddableMixin<T>,
+            public EmplaceMixin<T>,
             public RemovableMixin<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
@@ -23,6 +23,9 @@ public:
 
     virtual ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) = 0;
     virtual void clear() = 0;
+
+    virtual void insert(const T &element) { this->emplace(element); }
+    virtual void insert(T &&element) { this->emplace(std::move(element)); }
 
     bool contains(const T &other) const override
     {

@@ -57,7 +57,7 @@ void NamedMultiChildElement::build()
         }
         else
         {
-            ref<Element> &element = this->_childrenElements[key];
+            ref<Element> &element = const_cast<std::pair<const ref<String>, lateref<Element>> &>(*elementIterator).second;
             finalref<Widget> &oldWidget = element->getWidget();
             if (Object::identical(widget, oldWidget))
                 continue;
@@ -115,7 +115,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
         }
         else
         {
-            ref<Element> &element = this->_childrenElements[key];
+            ref<Element> &element = const_cast<std::pair<const ref<String>, lateref<Element>> &>(*elementIterator).second;
             finalref<Widget> &oldWidget = element->getWidget();
             if (widget->canUpdate(oldWidget))
                 element->notify(widget);

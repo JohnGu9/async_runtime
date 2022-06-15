@@ -12,8 +12,8 @@ void MultiChildElement::attach()
     for (size_t i = 0; i < children->size(); i++)
     {
         ref<Widget> &widget = children[i];
-        this->_childrenElements->emplaceBack(widget->createElement());
-        ref<Element> &childElement = this->_childrenElements[i];
+        ref<Element> childElement = widget->createElement();
+        this->_childrenElements->emplaceBack(childElement);
         childElement->parent = self();
         childElement->attach();
     }
@@ -42,8 +42,8 @@ void MultiChildElement::build()
         }
         else // append widget
         {
-            this->_childrenElements->emplaceBack(widget->createElement());
-            ref<Element> &childElement = this->_childrenElements[i];
+            ref<Element> childElement = widget->createElement();
+            this->_childrenElements->emplaceBack(childElement);
             childElement->parent = self();
             childElement->attach();
         }
@@ -92,8 +92,8 @@ void MultiChildElement::notify(ref<Widget> newWidget)
         }
         else // append widget
         {
-            this->_childrenElements->emplaceBack(widget->createElement());
-            ref<Element> &childElement = this->_childrenElements[i];
+            ref<Element> childElement = widget->createElement();
+            this->_childrenElements->emplaceBack(childElement);
             childElement->parent = self();
             childElement->attach();
         }

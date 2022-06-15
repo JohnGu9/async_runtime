@@ -74,7 +74,7 @@ public:
 
 template <typename T>
 class MutableIterable : public virtual Iterable<T>,
-                        public virtual AddableMixin<T>,
+                        public virtual EmplaceMixin<T>,
                         public virtual RemovableMixin<T>
 {
 public:

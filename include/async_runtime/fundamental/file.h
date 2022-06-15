@@ -4,7 +4,7 @@
  * @file file.h
  * @brief file is an io-component, but I think it's a basic functional component, so I put in fundamental folder
  *
- * fundamental folder for more advanced io-components
+ * io folder for more advanced io-components
  *
  */
 

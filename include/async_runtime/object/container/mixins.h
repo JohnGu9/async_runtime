@@ -3,14 +3,11 @@
 #include "iterator.h"
 
 template <typename T>
-class AddableMixin
+class EmplaceMixin
 {
 public:
-    virtual bool add(const T &) = 0;
-    virtual bool add(T &&v) { return this->add(static_cast<const T &>(v)); }
-
-    virtual void emplace(const T &v) { this->add(v); }
-    virtual void emplace(T &&v) { this->add(std::move(v)); }
+    virtual void emplace(const T &v) = 0;
+    virtual void emplace(T &&v) = 0;
 };
 
 template <typename T>
