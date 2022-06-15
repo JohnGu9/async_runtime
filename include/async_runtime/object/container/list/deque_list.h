@@ -102,14 +102,14 @@ public:
         _container.erase(iter);
     }
 
-    bool insert(size_t index, const T &value) override
+    bool insertAt(size_t index, const T &value) override
     {
         auto start = _container.begin() + index;
         _container.insert(start, value);
         return true;
     }
 
-    bool insert(size_t index, T &&value) override
+    bool insertAt(size_t index, T &&value) override
     {
         auto start = _container.begin() + index;
         _container.insert(start, std::move(value));
