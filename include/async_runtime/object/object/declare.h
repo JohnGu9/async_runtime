@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex> // for string print
 
 #include "declare/basic.h"
 #include "declare/friend.h"

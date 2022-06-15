@@ -127,7 +127,7 @@ bool String::operator==(const ref<String> &string)
 
 void String::toStringStream(std::ostream &os)
 {
-    if (_async_runtime::ostreamStackDepth == 1)
+    if (_async_runtime::OstreamStack::depth == 1)
         os.write(this->data(), this->length());
     else
     {
@@ -314,5 +314,9 @@ ref<String> String::getline(std::istream &is)
 
 namespace _async_runtime
 {
-    size_t ostreamStackDepth = 0;
+    namespace OstreamStack
+    {
+        std::recursive_mutex mutex;
+        size_t depth(0);
+    };
 };

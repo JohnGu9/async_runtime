@@ -6,9 +6,10 @@
 template <class F, class S>
 std::ostream &operator<<(std::ostream &os, const std::pair<F, S> &out)
 {
-    ++_async_runtime::ostreamStackDepth;
+    std::lock_guard<std::recursive_mutex> lk(_async_runtime::OstreamStack::mutex);
+    ++_async_runtime::OstreamStack::depth;
     os << '{' << out.first << " : " << out.second << '}';
-    --_async_runtime::ostreamStackDepth;
+    --_async_runtime::OstreamStack::depth;
     return os;
 }
 
