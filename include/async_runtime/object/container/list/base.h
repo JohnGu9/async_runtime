@@ -20,7 +20,7 @@ public:
     template <typename R>
     ref<List<R>> map(Function<R(const T &)>) const;
 
-    virtual void removeAt(const size_t index) = 0;
+    virtual void removeAt(size_t index) = 0;
 
     virtual bool insertAt(size_t index, const T &value) = 0;
     virtual bool insertAt(size_t index, T &&value) = 0;
@@ -39,5 +39,13 @@ public:
         auto index = this->size();
         if (index > 0)
             this->removeAt(index - 1);
+    }
+
+    void toStringStream(std::ostream &os) override
+    {
+        os << '<' << typeid(T).name() << ">[ ";
+        for (const T &element : *this)
+            os << element << ", ";
+        os << "]";
     }
 };

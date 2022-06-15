@@ -73,7 +73,24 @@ ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Value &)> fn) const
     auto mapped = HashMap<Key, R>::create();
     for (const auto &pair : *this)
     {
-        mapped[pair.first] = fn(pair.second);
+        auto key = pair.first;
+        mapped->emplace(std::move(key), fn(pair.second));
     }
     return mapped;
+}
+
+template <typename Key, typename Value>
+void Map<Key, Value>::merge(ref<Map<Key, Value>> other)
+{
+    for (const T &pair : other)
+        this->emplace(pair.first, pair.second);
+}
+
+template <typename Key, typename Value>
+ref<Map<Key, Value>> Map<Key, Value>::merge(std::initializer_list<Map<Key, Value>> list)
+{
+    auto map = Map<Key, Value>::create();
+    for (const Map<Key, Value> &element : list)
+        map->merge(element);
+    return map;
 }

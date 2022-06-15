@@ -45,14 +45,6 @@ public:
     size_t size() const override { return _origin->size(); }
     ref<ConstIterator<To>> begin() const override { return Object::create<MapIterableIterator>(_origin->begin(), _transform); }
     ref<ConstIterator<To>> end() const override { return Object::create<MapIterableIterator>(_origin->end(), _transform); }
-
-    void toStringStream(std::ostream &os) override
-    {
-        os << '<' << typeid(From).name() << " -> " << typeid(To).name() << ">[ ";
-        for (const To &element : *this)
-            os << element << ", ";
-        os << "]";
-    }
 };
 
 template <typename From, typename To>

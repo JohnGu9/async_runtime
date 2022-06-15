@@ -75,13 +75,17 @@ public:
 
     bool emplace(const Key &key, const Value &value) override
     {
-        _container.emplace(key, value);
+        auto result = _container.emplace(key, value);
+        if (result.second == false)
+            result.first->second = value;
         return true;
     }
 
     bool emplace(Key &&key, Value &&value) override
     {
-        _container.emplace(std::move(key), std::move(value));
+        auto result = _container.emplace(std::move(key), std::move(value));
+        if (result.second == false)
+            result.first->second = value;
         return true;
     }
 

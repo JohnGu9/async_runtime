@@ -73,15 +73,8 @@ public:
 
     size_t size() const override { return _container.size(); }
 
-    void emplace(const T &v) override
-    {
-        _container.insert(v);
-    }
-
-    void emplace(T &&v) override
-    {
-        _container.insert(std::move(v));
-    }
+    void emplace(const T &v) override { _container.insert(v); }
+    void emplace(T &&v) override { _container.insert(std::move(v)); }
 
     void clear() override { _container.clear(); }
 };

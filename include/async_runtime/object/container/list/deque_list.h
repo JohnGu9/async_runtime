@@ -85,17 +85,10 @@ public:
 
     size_t size() const override { return _container.size(); }
 
-    void emplace(const T &v) override
-    {
-        _container.emplace_back(v);
-    }
+    void emplace(const T &v) override { _container.emplace_back(v); }
+    void emplace(T &&v) override { _container.emplace_back(std::move(v)); }
 
-    void emplace(T &&v) override
-    {
-        _container.emplace_back(std::move(v));
-    }
-
-    void removeAt(const size_t index) override
+    void removeAt(size_t index) override
     {
         RUNTIME_ASSERT(index < this->size(), "Index overflow");
         auto iter = _container.begin() + index;

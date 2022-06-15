@@ -25,6 +25,7 @@ protected:
 public:
     using T = std::pair<const Key, Value>;
     static ref<Map<Key, Value>> create();
+    static ref<Map<Key, Value>> merge(std::initializer_list<Map<Key, Value>>);
 
     virtual ref<Map<Key, Value>> copy() const = 0;
     virtual ref<Iterable<Key>> keys() const;
@@ -47,6 +48,11 @@ public:
 
     virtual bool emplace(const Key &key, const Value &value) = 0;
     virtual bool emplace(Key &&key, Value &&value) = 0;
+
+    virtual bool insert(const Key &key, const Value &value) { return this->emplace(key, value); }
+    virtual bool insert(Key &&key, Value &&value) { return this->emplace(std::move(key), std::move(value)); }
+
+    virtual void merge(ref<Map<Key, Value>> other);
 
     void toStringStream(std::ostream &os) override
     {
