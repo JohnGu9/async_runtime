@@ -96,23 +96,7 @@ namespace _async_runtime
     template <class... Args>
     inline constexpr size_t variableArgumentsAmount(Args &&...) { return sizeof...(Args); }
 
-    inline std::stringstream &loggerTime(std::stringstream &ss)
-    {
-        struct tm timebuf;
-        time_t t = time(nullptr);
-#ifdef _WIN32
-        localtime_s(&timebuf, &t);
-#else
-        localtime_r(&t, &timebuf);
-#endif
-        ss << std::put_time(&timebuf, ASYNC_RUNTIME_TIMESTAMP_FORMAT);
-
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-        ss << std::boolalpha;
-#endif
-
-        return ss;
-    }
+    std::stringstream &loggerTime(std::stringstream &ss);
 }
 
 #ifndef ASYNC_RUNTIME_OSTREAM_REDIRECT
@@ -126,7 +110,7 @@ namespace _async_runtime
         ::_async_runtime::loggerTime(__stringstream__)                                                                                         \
             << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT << __format__ << std::endl; \
         ::Logger::of(context)                                                                                                                  \
-            ->write(::Object::create<::String>(__stringstream__.str())->format<>(__VA_ARGS__));                                                \
+            ->write(::Object::create<::String>(__stringstream__.str())->template format<>(__VA_ARGS__));                                       \
     }
 #endif
 

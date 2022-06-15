@@ -311,3 +311,8 @@ ref<String> String::getline(std::istream &is)
     std::getline(is, str);
     return str;
 }
+
+namespace _async_runtime
+{
+    size_t ostreamStackDepth = 0;
+};
