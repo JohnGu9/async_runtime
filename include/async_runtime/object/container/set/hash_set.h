@@ -67,7 +67,7 @@ public:
 
     ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) override
     {
-        auto iterator = iter->template covariant<HashSet<T>::HashSetConstIterator>();
+        auto iterator = iter.get()->template covariant<HashSet<T>::HashSetConstIterator>();
         return Object::create<HashSet<T>::HashSetConstIterator>(_container.erase(iterator->_it));
     }
 

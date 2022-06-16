@@ -78,8 +78,8 @@ class MutableIterable : public virtual Iterable<T>,
                         public virtual RemovableMixin<T>
 {
 public:
-    ref<ConstIterator<T>> begin() const override { return const_cast<MutableIterable<T> *>(this)->begin()->toConst(); }
-    ref<ConstIterator<T>> end() const override { return const_cast<MutableIterable<T> *>(this)->end()->toConst(); }
+    ref<ConstIterator<T>> begin() const override { return const_cast<MutableIterable<T> *>(this)->begin().get()->toConst(); }
+    ref<ConstIterator<T>> end() const override { return const_cast<MutableIterable<T> *>(this)->end().get()->toConst(); }
 
     virtual ref<Iterator<T>> begin() = 0;
     virtual ref<Iterator<T>> end() = 0;

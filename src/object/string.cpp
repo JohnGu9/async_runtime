@@ -25,10 +25,10 @@ public:
             throw std::range_error("String::View::operator[] access out of range memory");
         return _parent[index + _begin];
     }
-    ref<ConstIterator<char>> begin() const override { return _parent->begin()->covariant<String::StringConstIterator>()->operator+(_begin); }
-    ref<ConstIterator<char>> end() const override { return _parent->begin()->covariant<String::StringConstIterator>()->operator+(_end); }
-    ref<ConstIterator<char>> rbegin() const override { return _parent->rbegin()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _end); }
-    ref<ConstIterator<char>> rend() const override { return _parent->rbegin()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _begin); }
+    ref<ConstIterator<char>> begin() const override { return _parent->begin().get()->covariant<String::StringConstIterator>()->operator+(_begin); }
+    ref<ConstIterator<char>> end() const override { return _parent->begin().get()->covariant<String::StringConstIterator>()->operator+(_end); }
+    ref<ConstIterator<char>> rbegin() const override { return _parent->rbegin().get()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _end); }
+    ref<ConstIterator<char>> rend() const override { return _parent->rbegin().get()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _begin); }
 
     size_t find(ref<String> pattern, size_t start = 0) const override
     {

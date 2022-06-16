@@ -7,6 +7,7 @@
 
 #include "container/map_iterable.h"
 #include "container/reverse_iterable.h"
+#include "container/chain_iterable.h"
 
 #include "container/list.h"
 #include "container/map.h"

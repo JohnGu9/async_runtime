@@ -77,8 +77,8 @@ public:
 
     ref<Iterator<T>> erase(ref<Iterator<T>> iter) override
     {
-        auto iterator = iter->template covariant<DequeList<T>::DequeListIterator>();
-        return Object::create<DequeList<T>::DequeListIterator>(_container.erase(iterator->_it));
+        auto iterator = iter.get()->template covariant<DequeList<T>::DequeListIterator>();
+        return Object::create<DequeList<T>::DequeListIterator>(_container.erase(iterator.get()->_it));
     }
 
     T &operator[](const size_t &index) override { return _container[index]; }

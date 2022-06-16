@@ -19,7 +19,7 @@ public:
 
         ref<ConstIterator<To>> next() const override
         {
-            return Object::create<MapIterableIterator>(_other->next(), _transform);
+            return Object::create<MapIterableIterator>(_other.get()->next(), _transform);
         }
 
         const To &value() const override

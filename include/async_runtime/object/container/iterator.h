@@ -21,22 +21,32 @@ public:
 };
 
 template <typename T>
-class ref<ConstIterator<T>> : public _async_runtime::RefImplement<ConstIterator<T>>
+class ref<ConstIterator<T>> : protected _async_runtime::RefImplement<ConstIterator<T>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     using super = _async_runtime::RefImplement<ConstIterator<T>>;
     using element_type = ConstIterator<T>;
 
 public:
+    using iterator_category = std::forward_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = const T;
+    using pointer = value_type *;
+    using reference = value_type &;
+
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : super(other) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(other) {}
 
+    element_type *get() const { return super::get(); }
+    pointer operator->() const { return &((this->get())->value()); }
+    reference operator*() const { return (this->get())->value(); }
+
     ref<element_type> &operator++()
     {
-        *this = (*this)->next();
+        *this = (this->get())->next();
         return *this;
     }
 
@@ -46,8 +56,6 @@ public:
         operator++();
         return other;
     }
-
-    const T &operator*() const { return (*this)->value(); }
 
 protected:
     ref() {}
@@ -57,22 +65,32 @@ protected:
 };
 
 template <typename T>
-class ref<Iterator<T>> : public _async_runtime::RefImplement<Iterator<T>>
+class ref<Iterator<T>> : protected _async_runtime::RefImplement<Iterator<T>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     using super = _async_runtime::RefImplement<Iterator<T>>;
     using element_type = Iterator<T>;
 
 public:
+    using iterator_category = std::forward_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = T;
+    using pointer = value_type *;
+    using reference = value_type &;
+
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : super(other) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(other) {}
 
+    element_type *get() const { return super::get(); }
+    pointer operator->() const { return &((this->get())->value()); }
+    reference operator*() const { return (this->get())->value(); }
+
     ref<element_type> &operator++()
     {
-        *this = (*this)->next();
+        *this = (this->get())->next();
         return *this;
     }
 
@@ -82,8 +100,6 @@ public:
         operator++();
         return other;
     }
-
-    T &operator*() const { return (*this)->value(); }
 
     operator ref<ConstIterator<T>>() const { return (*this)->toConst(); }
 

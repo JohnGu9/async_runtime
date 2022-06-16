@@ -69,8 +69,8 @@ public:
 
     ref<ConstIterator<T>> erase(ref<ConstIterator<T>> it) override
     {
-        auto iterator = it->template covariant<HashMap<Key, Value>::HashMapConstIterator>();
-        return Object::create<HashMap<Key, Value>::HashMapConstIterator>(_container.erase(iterator->_it));
+        auto iterator = it.get()->template covariant<HashMap<Key, Value>::HashMapConstIterator>();
+        return Object::create<HashMap<Key, Value>::HashMapConstIterator>(_container.erase(iterator.get()->_it));
     }
 
     bool emplace(const Key &key, const Value &value) override
