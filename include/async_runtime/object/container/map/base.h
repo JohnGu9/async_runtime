@@ -24,6 +24,8 @@ protected:
 
 public:
     using T = std::pair<const Key, Value>;
+    using Pair = T;
+
     static ref<Map<Key, Value>> create();
     static ref<Map<Key, Value>> merge(std::initializer_list<Map<Key, Value>>);
 
@@ -32,7 +34,7 @@ public:
     virtual ref<Iterable<Value>> values() const;
 
     template <typename R>
-    ref<Map<Key, R>> map(Function<R(const Value &)>) const;
+    ref<Map<Key, R>> map(Function<R(const T &)>) const;
 
     virtual ref<ConstIterator<T>> findKey(const Key &) const = 0;
     virtual ref<ConstIterator<T>> findKey(Key &&key) const { return this->findKey(static_cast<const Key &>(key)); }

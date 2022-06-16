@@ -68,13 +68,13 @@ ref<Map<Key, Value>> Map<Key, Value>::create() { return Object::create<_async_ru
 
 template <typename Key, typename Value>
 template <typename R>
-ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Value &)> fn) const
+ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const T &)> fn) const
 {
     auto mapped = HashMap<Key, R>::create();
     for (const auto &pair : *this)
     {
         auto key = pair.first;
-        mapped->emplace(std::move(key), fn(pair.second));
+        mapped->emplace(std::move(key), fn(pair));
     }
     return mapped;
 }
