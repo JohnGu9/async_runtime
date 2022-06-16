@@ -85,22 +85,35 @@ public:
     virtual ref<Iterator<T>> end() = 0;
     virtual ref<Iterator<T>> erase(ref<Iterator<T>>) = 0;
 
+    virtual ref<Iterator<T>> find(const T &value)
+    {
+        auto end = this->end(),
+             it = this->begin();
+        for (; it != end; ++it)
+            if (*it == value)
+                break;
+        return it;
+    }
+
+    virtual ref<Iterator<T>> find(T &&value)
+    {
+        return this->find(static_cast<const T &>(value));
+    }
+
     bool remove(const T &value) override
     {
-        for (auto it = this->begin(); it != this->end(); ++it)
+        auto it = this->find(value);
+        if (it != this->end())
         {
-            if (*it == value)
-            {
-                this->erase(it);
-                return true;
-            }
+            this->erase(it);
+            return true;
         }
         return false;
     }
 
     bool removeAll(const T &value) override
     {
-        for (auto it = this->begin(); it != this->end();)
+        for (auto it = this->begin(), end = this->end(); it != end;)
         {
             if (*it == value)
                 it = this->erase(it);

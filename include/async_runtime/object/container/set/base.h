@@ -27,11 +27,6 @@ public:
     virtual void insert(const T &element) { this->emplace(element); }
     virtual void insert(T &&element) { this->emplace(std::move(element)); }
 
-    bool contains(const T &other) const override
-    {
-        return this->find(other) != this->end();
-    }
-
     bool remove(const T &value) override
     {
         auto it = this->find(value);
