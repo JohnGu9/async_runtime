@@ -20,6 +20,9 @@ public:
     virtual ref<ConstIterator<T>> toConst() const = 0;
 };
 
+#include <cstddef>
+#include <iterator>
+
 template <typename T>
 class ref<ConstIterator<T>> : protected _async_runtime::RefImplement<ConstIterator<T>>
 {
