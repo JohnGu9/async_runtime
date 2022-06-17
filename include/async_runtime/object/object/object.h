@@ -105,6 +105,13 @@ public:
     virtual RuntimeType runtimeType();
 
     /**
+     * @brief get object hash code
+     *
+     * @return size_t
+     */
+    virtual size_t hashCode();
+
+    /**
      * @brief Destroy the Object object,
      * under oop system, this's not recommend to custom the destructor,
      * just only recommend use it under debug mode to do some resources-checking.

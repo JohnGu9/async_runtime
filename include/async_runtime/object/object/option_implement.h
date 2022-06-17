@@ -11,11 +11,6 @@ public:
     Else ifNotNull(Function<void(ref<T>)> fn) const noexcept override;
     ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept override;
     ref<T> assertNotNull() const noexcept(false) override;
-    size_t hashCode() const
-    {
-        static const auto hs = std::hash<super>();
-        return hs(static_cast<const super &>(*this));
-    }
 
     T *get() const { return super::get(); }
     T *operator->() const = delete;

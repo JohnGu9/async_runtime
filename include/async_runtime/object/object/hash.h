@@ -7,19 +7,27 @@ namespace std
     template <typename T>
     struct hash<::option<T>>
     {
-        std::size_t operator()(const ::option<T> &other) const { return other.hashCode(); }
+        std::size_t operator()(const ::option<T> &other) const
+        {
+            if_not_null(other)
+            {
+                return other->hashCode();
+            }
+            end_if();
+            return 0;
+        }
     };
 
     template <typename T>
     struct hash<::ref<T>>
     {
-        std::size_t operator()(const ::ref<T> &other) const { return other.hashCode(); }
+        std::size_t operator()(const ::ref<T> &other) const { return other->hashCode(); }
     };
 
     template <typename T>
     struct hash<::lateref<T>>
     {
-        std::size_t operator()(const ::lateref<T> &other) const { return other.hashCode(); }
+        std::size_t operator()(const ::lateref<T> &other) const { return other->hashCode(); }
     };
 } // namespace std
 
@@ -34,30 +42,3 @@ namespace _async_runtime
         return result;
     }
 }
-
-#include "../string.h"
-
-namespace std
-{
-    template <>
-    struct hash<::ref<String>>
-    {
-        std::size_t operator()(const ::ref<String> &other) const
-        {
-            return ::_async_runtime::hash_c_string(other->data(), other->length());
-        }
-    };
-
-    template <>
-    struct hash<::option<String>>
-    {
-        std::size_t operator()(const ::option<String> &other) const
-        {
-            static const auto nullResult = hash<std::shared_ptr<String>>()(nullptr);
-            auto ptr = other.get();
-            if (ptr != nullptr)
-                return ::_async_runtime::hash_c_string(ptr->data(), ptr->length());
-            return nullResult;
-        }
-    };
-} // namespace std

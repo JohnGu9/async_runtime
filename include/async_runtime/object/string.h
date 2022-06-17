@@ -147,6 +147,7 @@ public:
     bool operator==(ref<Object> other) override;
     void toStringStream(std::ostream &) override;
     ref<String> toString() override;
+    size_t hashCode() override;
 
     // override from Iterable
     bool any(Function<bool(const char &)>) const override;

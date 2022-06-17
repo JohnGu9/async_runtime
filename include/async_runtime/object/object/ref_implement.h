@@ -8,12 +8,6 @@ class _async_runtime::RefImplement : protected std::shared_ptr<T>
     using super = std::shared_ptr<T>;
 
 public:
-    size_t hashCode() const
-    {
-        static const auto hs = std::hash<super>();
-        return hs(static_cast<const super &>(*this));
-    }
-
     T &operator*() const
     {
         DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");

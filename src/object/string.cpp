@@ -142,6 +142,20 @@ ref<String> String::toString()
     return self();
 }
 
+static size_t hash_c_string(const char *p, size_t s)
+{
+    static const size_t prime = 31;
+    size_t result = 0;
+    for (size_t i = 0; i < s; ++i)
+        result = p[i] + (result * prime);
+    return result;
+}
+
+size_t String::hashCode()
+{
+    return hash_c_string(this->data(), this->length());
+}
+
 bool String::any(Function<bool(const char &)> fn) const
 {
     for (size_t i = 0, len = this->length(); i < len; i++)

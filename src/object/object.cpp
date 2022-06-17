@@ -28,3 +28,9 @@ void Object::toStringStream(std::ostream &os)
 #endif
        << ">[" << (size_t)this << ']';
 }
+
+static const auto hs = std::hash<std::shared_ptr<Object>>();
+size_t Object::hashCode()
+{
+    return hs(static_cast<std::enable_shared_from_this<Object> *>(this)->shared_from_this());
+}
