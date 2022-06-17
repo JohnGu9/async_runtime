@@ -31,4 +31,19 @@ public:
      */
     template <typename First, typename... Args>
     lateref(const First &first, Args &&...args);
+
+#ifndef NDEBUG
+
+    T &operator*() const
+    {
+        assert(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
+        return super::operator*();
+    }
+    T *operator->() const
+    {
+        assert(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
+        return super::operator->();
+    }
+
+#endif
 };
