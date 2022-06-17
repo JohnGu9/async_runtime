@@ -42,13 +42,13 @@ public:
 
     ref<ConstIterator<T>> begin() const override
     {
-        return Object::create<typename HashSet<T>::HashSetConstIterator>(
+        return Object::create<HashSetConstIterator>(
             container().begin());
     }
 
     ref<ConstIterator<T>> end() const override
     {
-        return Object::create<typename HashSet<T>::HashSetConstIterator>(
+        return Object::create<HashSetConstIterator>(
             container().end());
     }
 
@@ -61,14 +61,14 @@ public:
 
     ref<ConstIterator<T>> find(const T &key) const override
     {
-        return Object::create<typename HashSet<T>::HashSetConstIterator>(
+        return Object::create<HashSetConstIterator>(
             container().find(key));
     }
 
     ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) override
     {
-        auto iterator = iter.get()->template covariant<typename HashSet<T>::HashSetConstIterator>();
-        return Object::create<typename HashSet<T>::HashSetConstIterator>(_container.erase(iterator.get()->_it));
+        auto iterator = iter.get()->template covariant<HashSetConstIterator>();
+        return Object::create<HashSetConstIterator>(_container.erase(iterator.get()->_it));
     }
 
     size_t size() const override { return _container.size(); }

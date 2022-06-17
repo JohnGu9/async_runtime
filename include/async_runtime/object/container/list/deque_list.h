@@ -65,20 +65,30 @@ public:
         return other;
     }
 
+    ref<ConstIterator<T>> begin() const override
+    {
+        return Object::create<DequeListConstIterator>(_container.begin());
+    }
+
+    ref<ConstIterator<T>> end() const override
+    {
+        return Object::create<DequeListConstIterator>(_container.end());
+    }
+
     ref<Iterator<T>> begin() override
     {
-        return Object::create<typename DequeList<T>::DequeListIterator>(_container.begin());
+        return Object::create<DequeListIterator>(_container.begin());
     }
 
     ref<Iterator<T>> end() override
     {
-        return Object::create<typename DequeList<T>::DequeListIterator>(_container.end());
+        return Object::create<DequeListIterator>(_container.end());
     }
 
     ref<Iterator<T>> erase(ref<Iterator<T>> iter) override
     {
-        auto iterator = iter.get()->template covariant<typename DequeList<T>::DequeListIterator>();
-        return Object::create<typename DequeList<T>::DequeListIterator>(_container.erase(iterator.get()->_it));
+        auto iterator = iter.get()->template covariant<DequeListIterator>();
+        return Object::create<DequeListIterator>(_container.erase(iterator.get()->_it));
     }
 
     T &operator[](const size_t &index) override { return _container[index]; }

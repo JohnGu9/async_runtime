@@ -128,3 +128,5 @@ public:
 
     virtual void clear() = 0;
 };
+
+#include "ref.h"

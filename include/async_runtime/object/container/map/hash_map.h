@@ -50,9 +50,17 @@ public:
         return other;
     }
 
+    ref<ConstIterator<T>> find(const T &value) const override
+    {
+        auto it = const_cast<container_type &>(_container).find(value);
+        if (*it == value)
+            return Object::create<HashMapConstIterator>(it);
+        return this->end();
+    }
+
     ref<ConstIterator<T>> findKey(const Key &key) const override
     {
-        return Object::create<typename HashMap<Key, Value>::HashMapConstIterator>(
+        return Object::create<HashMapConstIterator>(
             const_cast<container_type &>(_container).find(super::keyOnlyPairBuilder(key)));
     }
 
@@ -72,20 +80,20 @@ public:
 
     ref<ConstIterator<T>> begin() const override
     {
-        return Object::create<typename HashMap<Key, Value>::HashMapConstIterator>(
+        return Object::create<HashMapConstIterator>(
             const_cast<container_type &>(_container).begin());
     }
 
     ref<ConstIterator<T>> end() const override
     {
-        return Object::create<typename HashMap<Key, Value>::HashMapConstIterator>(
+        return Object::create<HashMapConstIterator>(
             const_cast<container_type &>(_container).end());
     }
 
     ref<ConstIterator<T>> erase(ref<ConstIterator<T>> it) override
     {
-        auto iterator = it.get()->template covariant<typename HashMap<Key, Value>::HashMapConstIterator>();
-        return Object::create<typename HashMap<Key, Value>::HashMapConstIterator>(_container.erase(iterator.get()->_it));
+        auto iterator = it.get()->template covariant<HashMapConstIterator>();
+        return Object::create<HashMapConstIterator>(_container.erase(iterator.get()->_it));
     }
 
     bool emplace(const Key &key, const Value &value) override
