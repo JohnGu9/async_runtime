@@ -6,6 +6,7 @@
 #include "container/iterator.h"
 
 #include "container/chain_iterable.h"
+#include "container/iterator_wrapper_iterable.h"
 #include "container/map_iterable.h"
 #include "container/reverse_iterable.h"
 
