@@ -8,11 +8,11 @@ void NamedMultiChildElement::attach()
 {
     Element::attach();
     finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
-    for (auto &iter : children)
+    for (auto &pair : children)
     {
-        finalref<Widget> &widget = iter.second;
+        finalref<Widget> &widget = pair->second;
         ref<Element> element = widget->createElement();
-        this->_childrenElements[iter.first] = element;
+        this->_childrenElements[pair->first] = element;
         element->parent = self();
         element->attach();
     }
@@ -20,8 +20,8 @@ void NamedMultiChildElement::attach()
 
 void NamedMultiChildElement::detach()
 {
-    for (auto &iter : this->_childrenElements)
-        iter.second->detach();
+    for (auto &pair : this->_childrenElements)
+        pair->second->detach();
     this->_childrenElements->clear();
     Element::detach();
 }
@@ -31,9 +31,9 @@ void NamedMultiChildElement::build()
     finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
-        if (children->findKey((*iter).first) == children->end())
+        if (children->findKey((*iter)->first) == children->end())
         {
-            (*iter).second->detach();
+            (*iter)->second->detach();
             iter = this->_childrenElements->erase(iter);
         }
         else
@@ -42,10 +42,10 @@ void NamedMultiChildElement::build()
         }
     }
 
-    for (auto &iter : children)
+    for (auto &pair : children)
     {
-        finalref<String> &key = iter.first;
-        finalref<Widget> &widget = iter.second;
+        finalref<String> &key = pair->first;
+        finalref<Widget> &widget = pair->second;
         auto elementIterator = this->_childrenElements->findKey(key);
 
         if (elementIterator == this->_childrenElements->end())
@@ -57,7 +57,7 @@ void NamedMultiChildElement::build()
         }
         else
         {
-            ref<Element> &element = const_cast<std::pair<const ref<String>, lateref<Element>> &>(*elementIterator).second;
+            ref<Element> &element = (*elementIterator)->second;
             finalref<Widget> &oldWidget = element->getWidget();
             if (Object::identical(widget, oldWidget))
                 continue;
@@ -89,9 +89,9 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
     for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
     {
-        if (children->findKey((*iter).first) == children->end())
+        if (children->findKey((*iter)->first) == children->end())
         {
-            (*iter).second->detach();
+            (*iter)->second->detach();
             iter = this->_childrenElements->erase(iter);
         }
         else
@@ -100,10 +100,10 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
         }
     }
 
-    for (auto &iter : children)
+    for (auto &pair : children)
     {
-        finalref<String> &key = iter.first;
-        finalref<Widget> &widget = iter.second;
+        finalref<String> &key = pair->first;
+        finalref<Widget> &widget = pair->second;
         auto elementIterator = this->_childrenElements->findKey(key);
 
         if (elementIterator == this->_childrenElements->end())
@@ -115,7 +115,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
         }
         else
         {
-            ref<Element> &element = const_cast<std::pair<const ref<String>, lateref<Element>> &>(*elementIterator).second;
+            ref<Element> &element = (*elementIterator)->second;
             finalref<Widget> &oldWidget = element->getWidget();
             if (widget->canUpdate(oldWidget))
                 element->notify(widget);
@@ -133,9 +133,9 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
 
 void NamedMultiChildElement::visitDescendant(Function<bool(ref<Element>)> fn)
 {
-    for (auto &iter : this->_childrenElements)
+    for (auto &pair : this->_childrenElements)
     {
-        if (fn(iter.second) == false)
-            iter.second->visitDescendant(fn);
+        if (fn(pair->second) == false)
+            pair->second->visitDescendant(fn);
     }
 }

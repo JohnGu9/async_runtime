@@ -5,46 +5,6 @@
 #include "pair.h"
 #include <map>
 
-template <class F, class S>
-std::ostream &operator<<(std::ostream &os, const std::pair<F, S> &out)
-{
-    std::lock_guard<std::recursive_mutex> lk(_async_runtime::OstreamStack::mutex);
-    ++_async_runtime::OstreamStack::depth;
-    os << '{' << out.first << " : " << out.second << '}';
-    --_async_runtime::OstreamStack::depth;
-    return os;
-}
-
-namespace _async_runtime
-{
-    template <typename T>
-    class KeyHasher;
-
-    template <typename Key, typename Value>
-    class KeyHasher<ref<Pair<const Key, Value>>>
-    {
-    public:
-        using T = ref<Pair<const Key, Value>>;
-        size_t operator()(const T &pair) const noexcept
-        {
-            return std::hash<Key>()(pair->first); // map -0 to 0
-        }
-    };
-    template <typename T>
-    class KeyEqual;
-
-    template <typename Key, typename Value>
-    class KeyEqual<ref<Pair<const Key, Value>>>
-    {
-    public:
-        using T = ref<Pair<const Key, Value>>;
-        constexpr bool operator()(const T &left, const T &right) const
-        {
-            return std::equal_to<Key>()(left->first, right->first);
-        }
-    };
-};
-
 template <typename Key, typename Value>
 class Map : public Iterable<ref<Pair<const Key, Value>>>,
             public IndexableMixin<Key, Value>

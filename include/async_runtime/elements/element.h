@@ -54,5 +54,5 @@ option<T> BuildContext::dependOnInheritedWidgetOfExactType()
 #endif
         return nullptr;
     }
-    return (*iter).second->cast<T>();
+    return (*iter)->second->cast<T>();
 }
