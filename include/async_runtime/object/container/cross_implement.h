@@ -7,7 +7,7 @@ ref<Iterable<Key>> Map<Key, Value>::keys() const
 {
     return MapIterable<T, Key>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
                                      [](const T &pair) -> const Key &
-                                     { return pair.first; });
+                                     { return pair->first; });
 }
 
 template <typename Key, typename Value>
@@ -15,7 +15,7 @@ ref<Iterable<Value>> Map<Key, Value>::values() const
 {
     return MapIterable<T, Value>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
                                        [](const T &pair) -> const Value &
-                                       { return pair.second; });
+                                       { return pair->second; });
 }
 
 template <typename T>

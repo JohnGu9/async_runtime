@@ -2,16 +2,22 @@
 #include "base.h"
 #include <unordered_set>
 
-template <typename T>
+template <typename T, typename Hasher = std::hash<T>, typename Equal = std::equal_to<T>>
 class HashSet : public Set<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
-    std::unordered_set<T> _container;
+    using container_type = std::unordered_set<T, Hasher, Equal>;
+    container_type _container;
+
+    container_type &container() const
+    {
+        return const_cast<container_type &>(_container);
+    }
 
 public:
     class HashSetConstIterator : public ConstIterator<T>
     {
-        using iterator = typename std::unordered_set<T>::iterator;
+        using iterator = typename container_type::iterator;
 
     public:
         const iterator _it;
@@ -20,7 +26,7 @@ public:
         ref<ConstIterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<HashSet<T>::HashSetConstIterator>(std::move(++copy));
+            return Object::create<typename HashSet<T>::HashSetConstIterator>(std::move(++copy));
         }
 
         const T &value() const override { return *(this->_it); }
@@ -42,14 +48,14 @@ public:
 
     ref<ConstIterator<T>> begin() const override
     {
-        return Object::create<HashSet<T>::HashSetConstIterator>(
-            const_cast<std::unordered_set<T> &>(_container).begin());
+        return Object::create<typename HashSet<T>::HashSetConstIterator>(
+            container().begin());
     }
 
     ref<ConstIterator<T>> end() const override
     {
-        return Object::create<HashSet<T>::HashSetConstIterator>(
-            const_cast<std::unordered_set<T> &>(_container).end());
+        return Object::create<typename HashSet<T>::HashSetConstIterator>(
+            container().end());
     }
 
     ref<Set<T>> copy() const override
@@ -61,14 +67,14 @@ public:
 
     ref<ConstIterator<T>> find(const T &key) const override
     {
-        return Object::create<HashSet<T>::HashSetConstIterator>(
-            const_cast<std::unordered_set<T> &>(_container).find(key));
+        return Object::create<typename HashSet<T>::HashSetConstIterator>(
+            container().find(key));
     }
 
     ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) override
     {
-        auto iterator = iter.get()->template covariant<HashSet<T>::HashSetConstIterator>();
-        return Object::create<HashSet<T>::HashSetConstIterator>(_container.erase(iterator->_it));
+        auto iterator = iter.get()->template covariant<typename HashSet<T>::HashSetConstIterator>();
+        return Object::create<typename HashSet<T>::HashSetConstIterator>(_container.erase(iterator.get()->_it));
     }
 
     size_t size() const override { return _container.size(); }
@@ -79,10 +85,10 @@ public:
     void clear() override { _container.clear(); }
 };
 
-template <typename T>
-bool HashSet<T>::HashSetConstIterator::operator==(ref<Object> other)
+template <typename T, typename Hasher, typename Equal>
+bool HashSet<T, Hasher, Equal>::HashSetConstIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<HashSet<T>::HashSetConstIterator *>(other.get())) // [[likely]]
+    if (auto ptr = dynamic_cast<typename HashSet<T, Hasher, Equal>::HashSetConstIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }

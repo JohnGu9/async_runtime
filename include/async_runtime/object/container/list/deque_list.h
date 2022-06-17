@@ -20,7 +20,7 @@ public:
         ref<ConstIterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<DequeList<T>::DequeListConstIterator>(std::move(++copy));
+            return Object::create<typename DequeList<T>::DequeListConstIterator>(std::move(++copy));
         }
 
         const T &value() const override { return *(this->_it); }
@@ -39,7 +39,7 @@ public:
         ref<Iterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<DequeList<T>::DequeListIterator>(std::move(++copy));
+            return Object::create<typename DequeList<T>::DequeListIterator>(std::move(++copy));
         }
 
         T &value() const override { return *(this->_it); }
@@ -48,7 +48,7 @@ public:
 
         ref<ConstIterator<T>> toConst() const override
         {
-            return Object::create<DequeList<T>::DequeListConstIterator>(_it);
+            return Object::create<typename DequeList<T>::DequeListConstIterator>(_it);
         }
     };
 
@@ -67,18 +67,18 @@ public:
 
     ref<Iterator<T>> begin() override
     {
-        return Object::create<DequeList<T>::DequeListIterator>(_container.begin());
+        return Object::create<typename DequeList<T>::DequeListIterator>(_container.begin());
     }
 
     ref<Iterator<T>> end() override
     {
-        return Object::create<DequeList<T>::DequeListIterator>(_container.end());
+        return Object::create<typename DequeList<T>::DequeListIterator>(_container.end());
     }
 
     ref<Iterator<T>> erase(ref<Iterator<T>> iter) override
     {
-        auto iterator = iter.get()->template covariant<DequeList<T>::DequeListIterator>();
-        return Object::create<DequeList<T>::DequeListIterator>(_container.erase(iterator.get()->_it));
+        auto iterator = iter.get()->template covariant<typename DequeList<T>::DequeListIterator>();
+        return Object::create<typename DequeList<T>::DequeListIterator>(_container.erase(iterator.get()->_it));
     }
 
     T &operator[](const size_t &index) override { return _container[index]; }
@@ -115,11 +115,11 @@ public:
 template <typename T>
 bool DequeList<T>::DequeListConstIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<DequeList<T>::DequeListConstIterator *>(other.get())) // [[likely]]
+    if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListConstIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<DequeList<T>::DequeListIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }
@@ -129,11 +129,11 @@ bool DequeList<T>::DequeListConstIterator::operator==(ref<Object> other)
 template <typename T>
 bool DequeList<T>::DequeListIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<DequeList<T>::DequeListIterator *>(other.get())) // [[likely]]
+    if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<DequeList<T>::DequeListConstIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListConstIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }
