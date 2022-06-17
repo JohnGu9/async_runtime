@@ -23,10 +23,10 @@ public:
     ref(const ref<R> &other) : super(other) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) : super(other) {}
+    ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::initializer_list<T> &list) : super(std::make_shared<_async_runtime::DefaultSet<T>>(list)) {}
-    ref(std::initializer_list<T> &&list) : super(std::make_shared<_async_runtime::DefaultSet<T>>(std::move(list))) {}
+    ref(const std::initializer_list<T> &list) : super(Object::create<_async_runtime::DefaultSet<T>>(list)) {}
+    ref(std::initializer_list<T> &&list) : super(Object::create<_async_runtime::DefaultSet<T>>(std::move(list))) {}
 
     ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
     ref<ConstIterator<T>> end() const { return (*this)->end(); }
@@ -36,6 +36,8 @@ protected:
 
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : super(other) {}
+    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
+    ref(std::shared_ptr<R> &&other) : super(std::move(other)) {}
 };
 
 template <typename T>

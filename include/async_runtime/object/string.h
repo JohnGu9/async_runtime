@@ -197,18 +197,16 @@ class ref<String> : public _async_runtime::RefImplement<String>
 
     using super = _async_runtime::RefImplement<String>;
 
-protected:
-    ref() {}
-    ref(const std::shared_ptr<String> &other) : super(other) {}
-
 public:
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : super(other) {}
+    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
+    ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::string &str) : super(std::make_shared<String>(str)) {}
-    ref(std::string &&str) : super(std::make_shared<String>(std::move(str))) {}
-    ref(const char *const str) : super(std::make_shared<String>(str)) {}
-    ref(const char c) : super(std::make_shared<String>(c)) {}
+    ref(const std::string &str) : super(Object::create<String>(str)) {}
+    ref(std::string &&str) : super(Object::create<String>(std::move(str))) {}
+    ref(const char *const str) : super(Object::create<String>(str)) {}
+    ref(const char c) : super(Object::create<String>(c)) {}
 
     bool operator==(const char *const other) const;
     bool operator==(const std::string &other) const;
@@ -224,6 +222,11 @@ public:
 
     template <typename T>
     ref<String> operator+(const T &value) const { return String::connect(*this, value); }
+
+protected:
+    ref() {}
+    ref(const std::shared_ptr<String> &other) : super(other) {}
+    ref(std::shared_ptr<String> &&other) : super(std::move(other)) {}
 };
 
 template <typename... Args>

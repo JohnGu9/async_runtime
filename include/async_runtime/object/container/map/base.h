@@ -11,9 +11,6 @@ class Map : public Iterable<ref<Pair<const Key, Value>>>,
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
-protected:
-    Map() {}
-
 public:
     using T = ref<Pair<const Key, Value>>;
     using std_pair = std::pair<const Key, Value>;
@@ -55,4 +52,17 @@ public:
 
     template <typename R>
     ref<Map<Key, R>> map(Function<R(const T &)>) const;
+
+protected:
+    Map() {}
+
+    T keyOnlyPairBuilder(const Key &key) const
+    {
+        return T(key);
+    }
+
+    T keyOnlyPairBuilder(Key &&key) const
+    {
+        return T(std::move(key));
+    }
 };

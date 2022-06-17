@@ -53,12 +53,12 @@ public:
     ref<ConstIterator<T>> findKey(const Key &key) const override
     {
         return Object::create<typename HashMap<Key, Value>::HashMapConstIterator>(
-            const_cast<container_type &>(_container).find(T(key)));
+            const_cast<container_type &>(_container).find(super::keyOnlyPairBuilder(key)));
     }
 
     Value &operator[](const Key &key) override
     {
-        auto pair = T(key);
+        auto pair = super::keyOnlyPairBuilder(key);
         auto it = _container.find(pair);
         if (it == _container.end())
         {
@@ -112,7 +112,7 @@ public:
 
     bool removeKey(const Key &key) override
     {
-        auto it = _container.find(T(key));
+        auto it = _container.find(super::keyOnlyPairBuilder(key));
         if (it == _container.end())
             return false;
         _container.erase(it);

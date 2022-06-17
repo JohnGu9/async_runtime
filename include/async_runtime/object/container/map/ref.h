@@ -28,8 +28,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::initializer_list<init_type> &list) : super(std::make_shared<_async_runtime::DefaultMap<Key, Value>>(list)) {}
-    ref(std::initializer_list<init_type> &&list) : super(std::make_shared<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
+    ref(const std::initializer_list<init_type> &list) : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(list)) {}
+    ref(std::initializer_list<init_type> &&list) : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
 
     template <typename... Args>
     Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
@@ -42,6 +42,8 @@ protected:
 
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     ref(const std::shared_ptr<R> &other) : super(other) {}
+    template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
+    ref(std::shared_ptr<R> &&other) : super(std::move(other)) {}
 };
 
 template <typename Key, typename Value>
