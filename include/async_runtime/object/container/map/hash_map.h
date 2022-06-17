@@ -32,15 +32,15 @@ public:
     };
 
     HashMap() {}
-    HashMap(std::initializer_list<std_pair> &&list)
-    {
-        for (const std_pair &pair : list)
-            _container.insert(T(std::move(pair)));
-    }
     HashMap(const std::initializer_list<std_pair> &list)
     {
         for (const std_pair &pair : list)
             _container.insert(T(pair));
+    }
+    HashMap(std::initializer_list<std_pair> &&list)
+    {
+        for (const std_pair &pair : list)
+            _container.insert(T(std::move(pair)));
     }
 
     ref<Map<Key, Value>> copy() const override

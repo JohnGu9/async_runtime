@@ -19,7 +19,7 @@ public:
     using std_pair = std::pair<const Key, Value>;
 
     static ref<Map<Key, Value>> create();
-    static ref<Map<Key, Value>> merge(std::initializer_list<Map<Key, Value>>);
+    static ref<Map<Key, Value>> merge(ref<List<Map<Key, Value>>>);
 
     virtual ref<Map<Key, Value>> copy() const = 0;
     virtual ref<Iterable<Key>> keys() const;

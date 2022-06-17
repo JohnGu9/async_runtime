@@ -1,7 +1,12 @@
 #pragma once
 
 #include "../map.h"
-
+/**
+ * @brief Pair for Map element type.
+ *
+ * @tparam First the [Key] type
+ * @tparam Second the [Value] type
+ */
 template <typename First, typename Second>
 class Pair : public Object
 {

@@ -89,7 +89,7 @@ void Map<Key, Value>::merge(ref<Map<Key, Value>> other)
 }
 
 template <typename Key, typename Value>
-ref<Map<Key, Value>> Map<Key, Value>::merge(std::initializer_list<Map<Key, Value>> list)
+ref<Map<Key, Value>> Map<Key, Value>::merge(ref<List<Map<Key, Value>>> list)
 {
     auto map = Map<Key, Value>::create();
     for (const Map<Key, Value> &element : list)
