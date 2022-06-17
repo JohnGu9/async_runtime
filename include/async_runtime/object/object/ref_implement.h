@@ -14,6 +14,12 @@ public:
         return hs(static_cast<const super &>(*this));
     }
 
+    T &operator*() const
+    {
+        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
+        return super::operator*();
+    }
+
     T *operator->() const
     {
         DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");

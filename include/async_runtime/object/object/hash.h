@@ -15,6 +15,12 @@ namespace std
     {
         std::size_t operator()(const ::ref<T> &other) const { return other.hashCode(); }
     };
+
+    template <typename T>
+    struct hash<::lateref<T>>
+    {
+        std::size_t operator()(const ::lateref<T> &other) const { return other.hashCode(); }
+    };
 } // namespace std
 
 namespace _async_runtime

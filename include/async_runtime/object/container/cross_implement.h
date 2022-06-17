@@ -19,7 +19,7 @@ ref<Iterable<Value>> Map<Key, Value>::values() const
 }
 
 template <typename T>
-ref<Set<T>> List<T>::toSet() const
+ref<Set<T>> Iterable<T>::toSet() const
 {
     auto set = Set<T>::create();
     for (const T &element : *this)
@@ -28,7 +28,7 @@ ref<Set<T>> List<T>::toSet() const
 }
 
 template <typename T>
-ref<List<T>> Set<T>::toList() const
+ref<List<T>> Iterable<T>::toList() const
 {
     auto list = List<T>::create();
     for (const T &element : *this)

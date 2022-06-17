@@ -20,7 +20,7 @@ public:
         ref<ConstIterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<typename DequeList<T>::DequeListConstIterator>(std::move(++copy));
+            return Object::create<DequeListConstIterator>(std::move(++copy));
         }
 
         const T &value() const override { return *(this->_it); }
@@ -39,7 +39,7 @@ public:
         ref<Iterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<typename DequeList<T>::DequeListIterator>(std::move(++copy));
+            return Object::create<DequeListIterator>(std::move(++copy));
         }
 
         T &value() const override { return *(this->_it); }

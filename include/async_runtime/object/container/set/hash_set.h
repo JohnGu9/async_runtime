@@ -26,7 +26,7 @@ public:
         ref<ConstIterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<typename HashSet<T>::HashSetConstIterator>(std::move(++copy));
+            return Object::create<HashSetConstIterator>(std::move(++copy));
         }
 
         const T &value() const override { return *(this->_it); }
@@ -36,13 +36,7 @@ public:
 
     static ref<Set<T>> create();
 
-    HashSet() {}
-    HashSet(const Set<T> &other)
-    {
-        for (const T &value : other)
-            _container.insert(value);
-    }
-
+    HashSet() : _container{} {}
     HashSet(std::initializer_list<T> &&list) : _container(std::move(list)) {}
     HashSet(const std::initializer_list<T> &list) : _container(list) {}
 

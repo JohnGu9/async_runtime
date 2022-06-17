@@ -14,12 +14,7 @@ protected:
 
 public:
     static ref<Set<T>> create();
-
     virtual ref<Set<T>> copy() const = 0;
-    virtual ref<List<T>> toList() const;
-
-    template <typename R>
-    ref<Set<R>> map(Function<R(const T &)>) const;
 
     virtual ref<ConstIterator<T>> erase(ref<ConstIterator<T>> iter) = 0;
     virtual void clear() = 0;
@@ -38,6 +33,8 @@ public:
         return false;
     }
 
+    ref<Set<T>> toSet() const { return Object::cast<>(const_cast<Set<T> *>(this)); }
+
     void toStringStream(std::ostream &os) override
     {
         os << '<' << typeid(T).name() << ">{ ";
@@ -45,4 +42,7 @@ public:
             os << element << ", ";
         os << "}";
     }
+
+    template <typename R>
+    ref<Set<R>> map(Function<R(const T &)>) const;
 };

@@ -13,12 +13,7 @@ protected:
 
 public:
     static ref<List<T>> create();
-
     virtual ref<List<T>> copy() const = 0;
-    virtual ref<Set<T>> toSet() const;
-
-    template <typename R>
-    ref<List<R>> map(Function<R(const T &)>) const;
 
     virtual void removeAt(size_t index) = 0;
 
@@ -41,6 +36,8 @@ public:
             this->removeAt(index - 1);
     }
 
+    ref<List<T>> toList() const { return Object::cast<>(const_cast<List<T> *>(this)); }
+
     void toStringStream(std::ostream &os) override
     {
         os << '<' << typeid(T).name() << ">[ ";
@@ -48,4 +45,7 @@ public:
             os << element << ", ";
         os << "]";
     }
+
+    template <typename R>
+    ref<List<R>> map(Function<R(const T &)>) const;
 };

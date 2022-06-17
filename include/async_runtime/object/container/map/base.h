@@ -25,9 +25,6 @@ public:
     virtual ref<Iterable<Key>> keys() const;
     virtual ref<Iterable<Value>> values() const;
 
-    template <typename R>
-    ref<Map<Key, R>> map(Function<R(const T &)>) const;
-
     virtual ref<ConstIterator<T>> findKey(const Key &) const = 0;
     virtual ref<ConstIterator<T>> findKey(Key &&key) const { return this->findKey(static_cast<const Key &>(key)); }
 
@@ -55,4 +52,7 @@ public:
             os << element << ", ";
         os << "}";
     }
+
+    template <typename R>
+    ref<Map<Key, R>> map(Function<R(const T &)>) const;
 };

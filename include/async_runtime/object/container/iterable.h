@@ -70,6 +70,9 @@ public:
             os << element << ", ";
         os << "]";
     }
+
+    virtual ref<Set<T>> toSet() const;
+    virtual ref<List<T>> toList() const;
 };
 
 template <typename T>
