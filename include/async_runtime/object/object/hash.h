@@ -9,11 +9,10 @@ namespace std
     {
         std::size_t operator()(const ::option<T> &other) const
         {
-            if_not_null(other)
+            if (auto ptr = other.get())
             {
-                return other->hashCode();
+                return ptr->hashCode();
             }
-            end_if();
             return 0;
         }
     };
@@ -30,15 +29,3 @@ namespace std
         std::size_t operator()(const ::lateref<T> &other) const { return other->hashCode(); }
     };
 } // namespace std
-
-namespace _async_runtime
-{
-    inline size_t hash_c_string(const char *p, size_t s)
-    {
-        static const size_t prime = 31;
-        size_t result = 0;
-        for (size_t i = 0; i < s; ++i)
-            result = p[i] + (result * prime);
-        return result;
-    }
-}

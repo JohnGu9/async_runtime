@@ -39,14 +39,5 @@ namespace _async_runtime
     {
         extern std::recursive_mutex mutex;
         extern size_t depth;
-
-        class Guard
-        {
-        public:
-            std::lock_guard<std::recursive_mutex> lk;
-
-            Guard() : lk(_async_runtime::OstreamStack::mutex) { ++_async_runtime::OstreamStack::depth; }
-            ~Guard() { --_async_runtime::OstreamStack::depth; }
-        };
     };
 };
