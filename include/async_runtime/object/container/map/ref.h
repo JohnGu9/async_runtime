@@ -84,17 +84,17 @@ ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const T &)> fn) const
 }
 
 template <typename Key, typename Value>
-void Map<Key, Value>::merge(ref<Map<Key, Value>> other)
+void Map<Key, Value>::merge(iterable_type other)
 {
     for (const T &pair : other)
         this->emplace(pair->first, pair->second);
 }
 
 template <typename Key, typename Value>
-ref<Map<Key, Value>> Map<Key, Value>::merge(ref<List<Map<Key, Value>>> list)
+ref<Map<Key, Value>> Map<Key, Value>::merge(ref<List<iterable_type>> list)
 {
     auto map = Map<Key, Value>::create();
-    for (const Map<Key, Value> &element : list)
+    for (const ref<Iterable<ref<Pair<Key, Value>>>> &element : list)
         map->merge(element);
     return map;
 }

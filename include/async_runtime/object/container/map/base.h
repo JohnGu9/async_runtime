@@ -10,13 +10,14 @@ class Map : public Iterable<ref<Pair<const Key, Value>>>,
             public IndexableMixin<Key, Value>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
+    using iterable_type = ref<Iterable<ref<Pair<const Key, Value>>>>;
 
 public:
     using T = ref<Pair<const Key, Value>>;
     using std_pair = std::pair<const Key, Value>;
 
     static ref<Map<Key, Value>> create();
-    static ref<Map<Key, Value>> merge(ref<List<Map<Key, Value>>>);
+    static ref<Map<Key, Value>> merge(ref<List<iterable_type>>);
 
     virtual ref<Map<Key, Value>> copy() const = 0;
     virtual ref<Iterable<Key>> keys() const;
@@ -40,7 +41,7 @@ public:
     virtual bool insert(const Key &key, const Value &value) { return this->emplace(key, value); }
     virtual bool insert(Key &&key, Value &&value) { return this->emplace(std::move(key), std::move(value)); }
 
-    virtual void merge(ref<Map<Key, Value>> other);
+    virtual void merge(iterable_type other);
 
     void toStringStream(std::ostream &os) override
     {
