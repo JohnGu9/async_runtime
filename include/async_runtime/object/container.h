@@ -7,6 +7,7 @@
 #include "container/iterable.h"
 #include "container/iterator.h"
 
+#include "container/cached_map_iterable.h"
 #include "container/chain_iterable.h"
 #include "container/iterator_wrapper_iterable.h"
 #include "container/map_iterable.h"

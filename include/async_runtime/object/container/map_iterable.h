@@ -4,6 +4,7 @@
 template <typename From, typename To>
 class MapIterable : public Iterable<To>
 {
+protected:
     ref<Iterable<From>> _origin;
     Function<const To &(const From &)> _transform;
 
