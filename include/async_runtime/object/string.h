@@ -114,7 +114,7 @@ public:
             return Object::create<String::ReverseConstIterator>(_it + shift);
         }
     };
-
+    using Iterable<char>::find;
     static constexpr const size_t npos = super::npos;
 
     static ref<String> getline(std::istream &os);

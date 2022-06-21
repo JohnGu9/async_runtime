@@ -95,7 +95,7 @@ void Map<Key, Value>::merge(iterable_type other)
 }
 
 template <typename Key, typename Value>
-ref<Map<Key, Value>> Map<Key, Value>::merge(ref<List<iterable_type>> list)
+ref<Map<Key, Value>> Map<Key, Value>::merge(ref<Iterable<iterable_type>> list)
 {
     auto map = Map<Key, Value>::create();
     for (const iterable_type &element : list)

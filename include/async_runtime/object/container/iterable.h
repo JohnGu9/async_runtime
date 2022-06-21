@@ -80,7 +80,11 @@ class MutableIterable : public virtual Iterable<T>,
                         public virtual EmplaceMixin<T>,
                         public virtual RemovableMixin<T>
 {
+    using super = Iterable<T>;
+
 public:
+    using Iterable<T>::find;
+
     ref<ConstIterator<T>> begin() const override { return const_cast<MutableIterable<T> *>(this)->begin().get()->toConst(); }
     ref<ConstIterator<T>> end() const override { return const_cast<MutableIterable<T> *>(this)->end().get()->toConst(); }
 

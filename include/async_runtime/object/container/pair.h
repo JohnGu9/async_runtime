@@ -27,7 +27,7 @@ public:
     Pair(std::pair<First, Second> &&pair)
         : first(std::move(pair.first)), second(std::move(pair.second)) {}
 
-    bool operator==(ref<Object> other)
+    bool operator==(ref<Object> other) override
     {
         if (auto ptr = dynamic_cast<Pair<First, Second> *>(other.get()))
         {

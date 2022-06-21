@@ -16,7 +16,7 @@ public:
     using T = ref<Pair<const Key, Value>>;
 
     static ref<Map<Key, Value>> create();
-    static ref<Map<Key, Value>> merge(ref<List<iterable_type>>);
+    static ref<Map<Key, Value>> merge(ref<Iterable<iterable_type>>);
 
     virtual ref<Map<Key, Value>> copy() const = 0;
     virtual ref<Iterable<Key>> keys() const;

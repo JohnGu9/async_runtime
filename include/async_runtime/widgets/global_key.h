@@ -57,7 +57,7 @@ option<TargetState> GlobalKey<TargetState>::getCurrentState()
     option<Element> element = this->_element.toOption();
     if_not_null(element)
     {
-        option<StatefulElement> statefulElement = element->cast<StatefulElement>();
+        option<StatefulElement> statefulElement = element->template cast<StatefulElement>();
         if_not_null(statefulElement) return statefulElement->_state->template covariant<TargetState>();
         end_if()
     }
