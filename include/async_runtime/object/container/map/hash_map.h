@@ -37,7 +37,8 @@ public:
     ref<Map<Key, Value>> copy() const override
     {
         auto other = Object::create<HashMap<Key, Value>>();
-        other->_container = _container;
+        for (const auto &pair : _container)
+            other->emplace(pair->first, pair->second);
         return other;
     }
 
