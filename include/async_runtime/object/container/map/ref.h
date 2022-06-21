@@ -17,25 +17,23 @@ class ref<Map<Key, Value>> : public _async_runtime::RefImplement<Map<Key, Value>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     using super = _async_runtime::RefImplement<Map<Key, Value>>;
+    using T = typename Map<Key, Value>::T;
 
 public:
-    using value_type = typename Map<Key, Value>::T;
-    using init_type = typename Map<Key, Value>::std_pair;
-
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : super(other) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::initializer_list<init_type> &list) : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(list)) {}
-    ref(std::initializer_list<init_type> &&list) : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
+    ref(const std::initializer_list<T> &list) : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(list)) {}
+    ref(std::initializer_list<T> &&list) : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
 
     template <typename... Args>
     Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
 
-    ref<ConstIterator<value_type>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<value_type>> end() const { return (*this)->end(); }
+    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
+    ref<ConstIterator<T>> end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -51,10 +49,9 @@ class lateref<Map<Key, Value>> : public ref<Map<Key, Value>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     using super = ref<Map<Key, Value>>;
+    using T = typename Map<Key, Value>::T;
 
 public:
-    using value_type = typename super::value_type;
-    using init_type = typename Map<Key, Value>::std_pair;
     explicit lateref() : super() {}
     lateref(std::nullptr_t) = delete;
 
@@ -64,8 +61,14 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     lateref(ref<R> &&other) : super(std::move(other)) {}
 
-    lateref(const std::initializer_list<init_type> &list) : super(list) {}
-    lateref(std::initializer_list<init_type> &&list) : super(std::move(list)) {}
+    lateref(const std::initializer_list<T> &list) : super(list) {}
+    lateref(std::initializer_list<T> &&list) : super(std::move(list)) {}
+
+    template <typename... Args>
+    Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
+
+    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
+    ref<ConstIterator<T>> end() const { return (*this)->end(); }
 };
 
 template <typename Key, typename Value>

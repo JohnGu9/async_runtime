@@ -14,7 +14,6 @@ class Map : public Iterable<ref<Pair<const Key, Value>>>,
 
 public:
     using T = ref<Pair<const Key, Value>>;
-    using std_pair = std::pair<const Key, Value>;
 
     static ref<Map<Key, Value>> create();
     static ref<Map<Key, Value>> merge(ref<List<iterable_type>>);

@@ -7,7 +7,6 @@ class HashMap : public Map<Key, Value>
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     using super = Map<Key, Value>;
     using T = typename super::T;
-    using std_pair = typename super::std_pair;
     using container_type = std::unordered_set<T, _async_runtime::KeyHasher<T>, _async_runtime::KeyEqual<T>>;
     container_type _container;
 
@@ -32,16 +31,8 @@ public:
     };
 
     HashMap() {}
-    HashMap(const std::initializer_list<std_pair> &list)
-    {
-        for (const std_pair &pair : list)
-            _container.insert(T(pair));
-    }
-    HashMap(std::initializer_list<std_pair> &&list)
-    {
-        for (const std_pair &pair : list)
-            _container.insert(T(std::move(pair)));
-    }
+    HashMap(const std::initializer_list<T> &list) : _container(list) {}
+    HashMap(std::initializer_list<T> &&list) : _container(std::move(list)) {}
 
     ref<Map<Key, Value>> copy() const override
     {
