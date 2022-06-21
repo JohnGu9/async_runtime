@@ -60,9 +60,6 @@ public:
 
     lateref(const std::initializer_list<T> &list) : super(list) {}
     lateref(std::initializer_list<T> &&list) : super(std::move(list)) {}
-
-    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<T>> end() const { return (*this)->end(); }
 };
 
 template <typename T>

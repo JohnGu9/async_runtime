@@ -13,19 +13,19 @@ public:
     option(std::nullptr_t) : super(nullptr) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const ref<R> &other);
+    option(const ref<R> &other) noexcept;
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(ref<R> &&other);
+    option(ref<R> &&other) noexcept;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const option<R> &other) : super(other) {}
+    option(const option<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(option<R> &&other) : super(std::move(other)) {}
+    option(option<R> &&other) noexcept : super(std::move(other)) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) : super(other){};
+    option(const std::shared_ptr<R> &other) noexcept : super(other){};
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(std::shared_ptr<R> &&other) : super(std::move(other)){};
+    option(std::shared_ptr<R> &&other) noexcept : super(std::move(other)){};
 
     /**
      * @brief Construct a new option object

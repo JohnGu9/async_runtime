@@ -63,12 +63,6 @@ public:
 
     lateref(const std::initializer_list<T> &list) : super(list) {}
     lateref(std::initializer_list<T> &&list) : super(std::move(list)) {}
-
-    template <typename... Args>
-    Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
-
-    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<T>> end() const { return (*this)->end(); }
 };
 
 template <typename Key, typename Value>

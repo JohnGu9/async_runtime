@@ -60,11 +60,6 @@ public:
 
     lateref(const std::initializer_list<T> &list) : ref<List<T>>(list) {}
     lateref(std::initializer_list<T> &&list) : ref<List<T>>(std::move(list)) {}
-
-    T &operator[](size_t index) const { return (*this)->operator[](index); }
-
-    ref<Iterator<T>> begin() const { return (*this)->begin(); }
-    ref<Iterator<T>> end() const { return (*this)->end(); }
 };
 
 template <typename T>

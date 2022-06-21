@@ -18,10 +18,10 @@ public:
     operator bool() const = delete;
 
 protected:
-    OptionImplement() {}
-    OptionImplement(std::nullptr_t) : super(nullptr) {}
+    OptionImplement() noexcept {}
+    OptionImplement(std::nullptr_t) noexcept : super(nullptr) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    OptionImplement(const std::shared_ptr<R> &other) : super(other){};
+    OptionImplement(const std::shared_ptr<R> &other) noexcept : super(other){};
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    OptionImplement(std::shared_ptr<R> &&other) : super(other){};
+    OptionImplement(std::shared_ptr<R> &&other) noexcept : super(other){};
 };
