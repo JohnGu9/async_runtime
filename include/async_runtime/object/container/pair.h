@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../map.h"
+#include "../object.h"
 
 /**
  * @brief Pair for Map element type.
@@ -12,6 +12,8 @@ template <typename First, typename Second>
 class Pair : public Object
 {
 public:
+    using init_type = std::pair<First, Second>;
+
     First first;
     Second second;
 

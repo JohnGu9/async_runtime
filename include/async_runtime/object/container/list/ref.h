@@ -50,6 +50,7 @@ class lateref<List<T>> : public ref<List<T>>
 
 public:
     explicit lateref() : ref<List<T>>() {}
+    lateref(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : ref<List<T>>(other) {}

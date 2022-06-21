@@ -50,6 +50,7 @@ class lateref<Set<T>> : public ref<Set<T>>
 
 public:
     explicit lateref() : super() {}
+    lateref(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : super(other) {}

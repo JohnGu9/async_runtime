@@ -2,6 +2,12 @@
 
 #include "../container.h"
 
+template <typename T>
+ref<Iterable<T>>::ref(const std::initializer_list<T> &list) : super(Object::create<_async_runtime::DefaultList<T>>(list)) {}
+
+template <typename T>
+ref<Iterable<T>>::ref(std::initializer_list<T> &&list) : super(Object::create<_async_runtime::DefaultList<T>>(std::move(list))) {}
+
 template <typename Key, typename Value>
 ref<Iterable<Key>> Map<Key, Value>::keys() const
 {

@@ -8,3 +8,6 @@ class Map;
 
 template <typename T>
 class Set;
+
+template <typename First, typename Second>
+class Pair;

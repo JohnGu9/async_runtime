@@ -56,6 +56,7 @@ public:
     using value_type = typename super::value_type;
     using init_type = typename Map<Key, Value>::std_pair;
     explicit lateref() : super() {}
+    lateref(std::nullptr_t) = delete;
 
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     lateref(const ref<R> &other) : super(other) {}

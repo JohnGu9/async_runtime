@@ -2,6 +2,8 @@
 
 #include "container/declare.h"
 
+#include "container/pair.h"
+
 #include "container/iterable.h"
 #include "container/iterator.h"
 
