@@ -6,12 +6,12 @@ class HashMap : public Map<Key, Value>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     using super = Map<Key, Value>;
-    using T = typename super::T;
-    using container_type = std::unordered_set<T, _async_runtime::KeyHasher<T>, _async_runtime::KeyEqual<T>>;
+    using Pair = typename super::Pair;
+    using container_type = std::unordered_set<Pair, _async_runtime::KeyHasher<Pair>, _async_runtime::KeyEqual<Pair>>;
     container_type _container;
 
 public:
-    class HashMapConstIterator : public ConstIterator<T>
+    class HashMapConstIterator : public ConstIterator<Pair>
     {
         using iterator = typename container_type::iterator;
 
@@ -19,20 +19,20 @@ public:
         const iterator _it;
         HashMapConstIterator(const iterator it) : _it(it) {}
 
-        ref<ConstIterator<T>> next() const override
+        ref<ConstIterator<Pair>> next() const override
         {
             auto copy = _it;
             return Object::create<HashMap<Key, Value>::HashMapConstIterator>(std::move(++copy));
         }
 
-        const T &value() const override { return *(this->_it); }
+        const Pair &value() const override { return *(this->_it); }
 
         bool operator==(ref<Object> other) override;
     };
 
     HashMap() {}
-    HashMap(const std::initializer_list<T> &list) : _container(list) {}
-    HashMap(std::initializer_list<T> &&list) : _container(std::move(list)) {}
+    HashMap(const std::initializer_list<Pair> &list) : _container(list) {}
+    HashMap(std::initializer_list<Pair> &&list) : _container(std::move(list)) {}
 
     ref<Map<Key, Value>> copy() const override
     {
@@ -42,7 +42,7 @@ public:
         return other;
     }
 
-    ref<ConstIterator<T>> find(const T &value) const override
+    ref<ConstIterator<Pair>> find(const Pair &value) const override
     {
         auto it = const_cast<container_type &>(_container).find(value);
         if (*it == value)
@@ -50,7 +50,7 @@ public:
         return this->end();
     }
 
-    ref<ConstIterator<T>> findKey(const Key &key) const override
+    ref<ConstIterator<Pair>> findKey(const Key &key) const override
     {
         return Object::create<HashMapConstIterator>(
             const_cast<container_type &>(_container).find(super::keyOnlyPairBuilder(key)));
@@ -70,19 +70,19 @@ public:
 
     size_t size() const override { return _container.size(); }
 
-    ref<ConstIterator<T>> begin() const override
+    ref<ConstIterator<Pair>> begin() const override
     {
         return Object::create<HashMapConstIterator>(
             const_cast<container_type &>(_container).begin());
     }
 
-    ref<ConstIterator<T>> end() const override
+    ref<ConstIterator<Pair>> end() const override
     {
         return Object::create<HashMapConstIterator>(
             const_cast<container_type &>(_container).end());
     }
 
-    ref<ConstIterator<T>> erase(ref<ConstIterator<T>> it) override
+    ref<ConstIterator<Pair>> erase(ref<ConstIterator<Pair>> it) override
     {
         auto iterator = it.get()->template covariant<HashMapConstIterator>();
         return Object::create<HashMapConstIterator>(_container.erase(iterator.get()->_it));
@@ -93,7 +93,7 @@ public:
         auto result = _container.emplace(key, value);
         if (result.second == false)
         {
-            const T &pair = *(result.first);
+            const Pair &pair = *(result.first);
             pair->second = value;
         }
         return true;
@@ -104,7 +104,7 @@ public:
         auto result = _container.emplace(std::move(key), std::move(value));
         if (result.second == false)
         {
-            const T &pair = *(result.first);
+            const Pair &pair = *(result.first);
             pair->second = std::move(value);
         }
         return true;

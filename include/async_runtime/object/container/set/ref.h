@@ -41,28 +41,6 @@ protected:
 };
 
 template <typename T>
-class lateref<Set<T>> : public ref<Set<T>>
-{
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
-    using super = ref<Set<T>>;
-    using iterator = typename super::iterator;
-    using const_iterator = typename super::const_iterator;
-
-public:
-    explicit lateref() : super() {}
-    lateref(std::nullptr_t) = delete;
-
-    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
-    lateref(const ref<R> &other) : super(other) {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
-    lateref(ref<R> &&other) : super(std::move(other)) {}
-
-    lateref(const std::initializer_list<T> &list) : super(list) {}
-    lateref(std::initializer_list<T> &&list) : super(std::move(list)) {}
-};
-
-template <typename T>
 ref<Set<T>> Set<T>::create() { return Object::create<_async_runtime::DefaultSet<T>>(); }
 
 template <typename T>

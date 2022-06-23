@@ -222,6 +222,8 @@ public:
 
     template <typename T>
     ref<String> operator+(const T &value) const { return String::connect(*this, value); }
+    template <typename T>
+    ref<String> operator+(T &&value) const { return String::connect(*this, std::move(value)); }
 
 protected:
     ref() {}

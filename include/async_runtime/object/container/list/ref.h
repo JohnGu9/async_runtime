@@ -43,26 +43,6 @@ protected:
 };
 
 template <typename T>
-class lateref<List<T>> : public ref<List<T>>
-{
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
-    using super = ref<List<T>>;
-
-public:
-    explicit lateref() : ref<List<T>>() {}
-    lateref(std::nullptr_t) = delete;
-
-    template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
-    lateref(const ref<R> &other) : ref<List<T>>(other) {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<List<T>, R>::value>::type * = nullptr>
-    lateref(ref<R> &&other) : ref<List<T>>(std::move(other)) {}
-
-    lateref(const std::initializer_list<T> &list) : ref<List<T>>(list) {}
-    lateref(std::initializer_list<T> &&list) : ref<List<T>>(std::move(list)) {}
-};
-
-template <typename T>
 ref<List<T>> List<T>::create() { return Object::create<_async_runtime::DefaultList<T>>(); }
 
 template <typename T>
