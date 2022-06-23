@@ -31,7 +31,7 @@ class ref<String>;
  * ref<String> withNumberString = string + 1.023;
  *
  */
-class String : public ReverseAbleIterable<char>, public ConstIndexableMixin<size_t, char>, protected std::string
+class String : public ReversibleIterable<char>, public ConstIndexableMixin<size_t, char>, protected std::string
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
