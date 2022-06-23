@@ -17,7 +17,7 @@ class ref<Map<Key, Value>> : public _async_runtime::RefImplement<Map<Key, Value>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
     using super = _async_runtime::RefImplement<Map<Key, Value>>;
-    using Pair = typename Map<Key, Value>::Pair;
+    using element_type = typename Map<Key, Value>::element_type;
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
@@ -25,16 +25,16 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::initializer_list<Pair> &list)
+    ref(const std::initializer_list<element_type> &list)
         : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(list)) {}
-    ref(std::initializer_list<Pair> &&list)
+    ref(std::initializer_list<element_type> &&list)
         : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
 
     template <typename... Args>
     Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
 
-    ref<ConstIterator<Pair>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<Pair>> end() const { return (*this)->end(); }
+    ref<ConstIterator<element_type>> begin() const { return (*this)->begin(); }
+    ref<ConstIterator<element_type>> end() const { return (*this)->end(); }
 
 protected:
     ref() {}
@@ -50,7 +50,7 @@ ref<Map<Key, Value>> Map<Key, Value>::create() { return Object::create<_async_ru
 
 template <typename Key, typename Value>
 template <typename R>
-ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Pair &)> fn) const
+ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const element_type &)> fn) const
 {
     auto mapped = HashMap<Key, R>::create();
     for (const auto &pair : *this)
@@ -64,7 +64,7 @@ ref<Map<Key, R>> Map<Key, Value>::map(Function<R(const Pair &)> fn) const
 template <typename Key, typename Value>
 void Map<Key, Value>::merge(iterable_type other)
 {
-    for (const Pair &pair : other)
+    for (const element_type &pair : other)
         this->emplace(pair->first, pair->second);
 }
 

@@ -11,16 +11,16 @@ ref<Iterable<T>>::ref(std::initializer_list<T> &&list) : super(Object::create<_a
 template <typename Key, typename Value>
 ref<Iterable<Key>> Map<Key, Value>::keys() const
 {
-    return MapIterable<Pair, Key>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
-                                     [](const Pair &pair) -> const Key &
+    return MapIterable<element_type, Key>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
+                                     [](const element_type &pair) -> const Key &
                                      { return pair->first; });
 }
 
 template <typename Key, typename Value>
 ref<Iterable<Value>> Map<Key, Value>::values() const
 {
-    return MapIterable<Pair, Value>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
-                                       [](const Pair &pair) -> const Value &
+    return MapIterable<element_type, Value>::from(Object::cast<>(const_cast<Map<Key, Value> *>(this)),
+                                       [](const element_type &pair) -> const Value &
                                        { return pair->second; });
 }
 
