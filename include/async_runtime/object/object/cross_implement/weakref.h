@@ -37,4 +37,3 @@ option<T> weakref<T>::toOption() const noexcept
 {
     return std::weak_ptr<T>::lock();
 }
-

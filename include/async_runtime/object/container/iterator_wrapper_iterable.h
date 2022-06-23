@@ -9,23 +9,23 @@ protected:
     const IteratorType _end;
 
 public:
-    class _Iterator : public ConstIterator<T>
+    class _ConstIterator : public ConstIterator<T>
     {
     public:
         const IteratorType _it;
-        _Iterator(IteratorType it) : _it(it) {}
+        _ConstIterator(IteratorType it) : _it(it) {}
 
         ref<ConstIterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<_Iterator>(std::move(++copy));
+            return Object::create<_ConstIterator>(std::move(++copy));
         }
 
         const T &value() const override { return *_it; }
 
         bool operator==(ref<Object> other) override
         {
-            if (auto ptr = dynamic_cast<_Iterator *>(other.get()))
+            if (auto ptr = dynamic_cast<_ConstIterator *>(other.get()))
             {
                 return ptr->_it == _it;
             }
@@ -53,11 +53,11 @@ public:
 
     ref<ConstIterator<T>> begin() const
     {
-        return Object::create<_Iterator>(_begin);
+        return Object::create<_ConstIterator>(_begin);
     }
 
     ref<ConstIterator<T>> end() const
     {
-        return Object::create<_Iterator>(_end);
+        return Object::create<_ConstIterator>(_end);
     }
 };

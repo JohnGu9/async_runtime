@@ -9,18 +9,18 @@ class DequeList : public List<T>
     std::deque<T> _container;
 
 public:
-    class DequeListConstIterator : public ConstIterator<T>
+    class _ConstIterator : public ConstIterator<T>
     {
         using iterator = typename std::deque<T>::const_iterator;
 
     public:
         const iterator _it;
-        DequeListConstIterator(const iterator it) : _it(it) {}
+        _ConstIterator(const iterator it) : _it(it) {}
 
         ref<ConstIterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<DequeListConstIterator>(std::move(++copy));
+            return Object::create<_ConstIterator>(std::move(++copy));
         }
 
         const T &value() const override { return *(this->_it); }
@@ -28,18 +28,18 @@ public:
         bool operator==(ref<Object> other) override;
     };
 
-    class DequeListIterator : public Iterator<T>
+    class _Iterator : public Iterator<T>
     {
         using iterator = typename std::deque<T>::iterator;
 
     public:
         const iterator _it;
-        DequeListIterator(const iterator it) : _it(it) {}
+        _Iterator(const iterator it) : _it(it) {}
 
         ref<Iterator<T>> next() const override
         {
             auto copy = _it;
-            return Object::create<DequeListIterator>(std::move(++copy));
+            return Object::create<_Iterator>(std::move(++copy));
         }
 
         T &value() const override { return *(this->_it); }
@@ -48,7 +48,7 @@ public:
 
         ref<ConstIterator<T>> toConst() const override
         {
-            return Object::create<typename DequeList<T>::DequeListConstIterator>(_it);
+            return Object::create<_ConstIterator>(_it);
         }
     };
 
@@ -67,28 +67,28 @@ public:
 
     ref<ConstIterator<T>> begin() const override
     {
-        return Object::create<DequeListConstIterator>(_container.begin());
+        return Object::create<_ConstIterator>(_container.begin());
     }
 
     ref<ConstIterator<T>> end() const override
     {
-        return Object::create<DequeListConstIterator>(_container.end());
+        return Object::create<_ConstIterator>(_container.end());
     }
 
     ref<Iterator<T>> begin() override
     {
-        return Object::create<DequeListIterator>(_container.begin());
+        return Object::create<_Iterator>(_container.begin());
     }
 
     ref<Iterator<T>> end() override
     {
-        return Object::create<DequeListIterator>(_container.end());
+        return Object::create<_Iterator>(_container.end());
     }
 
     ref<Iterator<T>> erase(ref<Iterator<T>> iter) override
     {
-        auto iterator = iter.get()->template covariant<DequeListIterator>();
-        return Object::create<DequeListIterator>(_container.erase(iterator.get()->_it));
+        auto iterator = iter.get()->template covariant<_Iterator>();
+        return Object::create<_Iterator>(_container.erase(iterator.get()->_it));
     }
 
     T &operator[](const size_t &index) override { return _container[index]; }
@@ -123,13 +123,13 @@ public:
 };
 
 template <typename T>
-bool DequeList<T>::DequeListConstIterator::operator==(ref<Object> other)
+bool DequeList<T>::_ConstIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListConstIterator *>(other.get())) // [[likely]]
+    if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<_Iterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }
@@ -137,13 +137,13 @@ bool DequeList<T>::DequeListConstIterator::operator==(ref<Object> other)
 }
 
 template <typename T>
-bool DequeList<T>::DequeListIterator::operator==(ref<Object> other)
+bool DequeList<T>::_Iterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListIterator *>(other.get())) // [[likely]]
+    if (auto ptr = dynamic_cast<_Iterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }
-    else if (auto ptr = dynamic_cast<typename DequeList<T>::DequeListConstIterator *>(other.get()))
+    else if (auto ptr = dynamic_cast<_ConstIterator *>(other.get()))
     {
         return this->_it == ptr->_it;
     }

@@ -11,18 +11,18 @@ class HashMap : public Map<Key, Value>
     container_type _container;
 
 public:
-    class HashMapConstIterator : public ConstIterator<element_type>
+    class _ConstIterator : public ConstIterator<element_type>
     {
         using iterator = typename container_type::iterator;
 
     public:
         const iterator _it;
-        HashMapConstIterator(const iterator it) : _it(it) {}
+        _ConstIterator(const iterator it) : _it(it) {}
 
         ref<ConstIterator<element_type>> next() const override
         {
             auto copy = _it;
-            return Object::create<HashMap<Key, Value>::HashMapConstIterator>(std::move(++copy));
+            return Object::create<_ConstIterator>(std::move(++copy));
         }
 
         const element_type &value() const override { return *(this->_it); }
@@ -46,13 +46,13 @@ public:
     {
         auto it = const_cast<container_type &>(_container).find(value);
         if (*it == value)
-            return Object::create<HashMapConstIterator>(it);
+            return Object::create<_ConstIterator>(it);
         return this->end();
     }
 
     ref<ConstIterator<element_type>> findKey(const Key &key) const override
     {
-        return Object::create<HashMapConstIterator>(
+        return Object::create<_ConstIterator>(
             const_cast<container_type &>(_container).find(super::keyOnlyPairBuilder(key)));
     }
 
@@ -72,20 +72,20 @@ public:
 
     ref<ConstIterator<element_type>> begin() const override
     {
-        return Object::create<HashMapConstIterator>(
+        return Object::create<_ConstIterator>(
             const_cast<container_type &>(_container).begin());
     }
 
     ref<ConstIterator<element_type>> end() const override
     {
-        return Object::create<HashMapConstIterator>(
+        return Object::create<_ConstIterator>(
             const_cast<container_type &>(_container).end());
     }
 
     ref<ConstIterator<element_type>> erase(ref<ConstIterator<element_type>> it) override
     {
-        auto iterator = it.get()->template covariant<HashMapConstIterator>();
-        return Object::create<HashMapConstIterator>(_container.erase(iterator.get()->_it));
+        auto iterator = it.get()->template covariant<_ConstIterator>();
+        return Object::create<_ConstIterator>(_container.erase(iterator.get()->_it));
     }
 
     bool emplace(const Key &key, const Value &value) override
@@ -123,9 +123,9 @@ public:
 };
 
 template <typename Key, typename Value>
-bool HashMap<Key, Value>::HashMapConstIterator::operator==(ref<Object> other)
+bool HashMap<Key, Value>::_ConstIterator::operator==(ref<Object> other)
 {
-    if (auto ptr = dynamic_cast<typename HashMap<Key, Value>::HashMapConstIterator *>(other.get())) // [[likely]]
+    if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
     {
         return this->_it == ptr->_it;
     }

@@ -31,4 +31,3 @@ ref<T> _async_runtime::OptionImplement<T>::assertNotNull() const noexcept(false)
     RUNTIME_ASSERT(ptr != nullptr, std::string(typeid(*this).name()) + " assert not null on a null ref. ");
     return ref<T>(ptr);
 }
-

@@ -15,14 +15,14 @@ public:
         const T &value() const override { throw std::range_error("ConstIterator access overflow"); }
     };
 
-    class ChainIterableConstIterator : public ConstIterator<T>
+    class _ConstIterator : public ConstIterator<T>
     {
     public:
         ref<List<ref<Iterable<T>>>> iterables;
         const size_t current;
         ref<ConstIterator<T>> origin;
 
-        ChainIterableConstIterator(ref<List<ref<Iterable<T>>>> iterables, size_t current, ref<ConstIterator<T>> origin)
+        _ConstIterator(ref<List<ref<Iterable<T>>>> iterables, size_t current, ref<ConstIterator<T>> origin)
             : iterables(iterables), current(current), origin(origin) {}
 
         ref<ConstIterator<T>> next() const override
@@ -33,16 +33,16 @@ public:
             {
                 size_t nextCurrent = current + 1;
                 ref<ConstIterator<T>> begin = iterables[nextCurrent]->begin();
-                return Object::create<ChainIterableConstIterator>(iterables, nextCurrent, begin);
+                return Object::create<_ConstIterator>(iterables, nextCurrent, begin);
             }
-            return Object::create<ChainIterableConstIterator>(iterables, current, n);
+            return Object::create<_ConstIterator>(iterables, current, n);
         }
 
         const T &value() const override { return origin.get()->value(); }
 
         bool operator==(ref<Object> other) override
         {
-            if (auto ptr = dynamic_cast<ChainIterableConstIterator *>(other.get()))
+            if (auto ptr = dynamic_cast<_ConstIterator *>(other.get()))
             {
                 if (current == ptr->current)
                 {
@@ -75,7 +75,7 @@ public:
     ref<ConstIterator<T>> begin() const override
     {
         return _empty.ifNotNullElse([&] { //
-            return Object::create<ChainIterableConstIterator>(_iterables, 0, _iterables[0]->begin());
+            return Object::create<_ConstIterator>(_iterables, 0, _iterables[0]->begin());
         });
     }
 
@@ -83,7 +83,7 @@ public:
     {
         return _empty.ifNotNullElse([&] { //
             size_t last = _iterables->size() - 1;
-            return Object::create<ChainIterableConstIterator>(_iterables, last, _iterables[last]->end());
+            return Object::create<_ConstIterator>(_iterables, last, _iterables[last]->end());
         });
     }
 };
