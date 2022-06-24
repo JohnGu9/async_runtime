@@ -1,7 +1,6 @@
 #pragma once
 
-#include "iterable.h"
-#include "iterator.h"
+#include "../iterable.h"
 
 template <typename T>
 class ReversibleIterable : public virtual Iterable<T>

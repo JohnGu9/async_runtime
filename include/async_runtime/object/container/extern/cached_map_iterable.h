@@ -1,6 +1,13 @@
 #pragma once
 #include "map_iterable.h"
 
+/**
+ * @brief Similar to MapIterable. But this receive a transform that return a RIGHT value
+ * Not to overuse this that may cause performance issue.
+ *
+ * @tparam From
+ * @tparam To
+ */
 template <typename From, typename To>
 class CachedMapIterable : public MapIterable<From, To>
 {
