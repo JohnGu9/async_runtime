@@ -310,16 +310,17 @@ bool String::_formatFromIteratorToStream(std::ostream &os, Iterator &start, cons
     {
         if (*start == '{')
         {
-            auto next = start + 1;
+            auto next = start;
+            ++next;
             if (next != end && *next == '}')
             {
                 os << element;
-                start = next + 1;
+                start = ++next;
                 return true;
             }
         }
         os << *start;
-        start++;
+        ++start;
     }
     // [[unlikely]]
     return false;

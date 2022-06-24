@@ -18,6 +18,15 @@ public:
     virtual ref<Iterator<T>> rbegin() = 0;
     virtual ref<Iterator<T>> rend() = 0;
     virtual ref<ReversibleMuteIterable<T>> toReserve();
+
+    ref<ConstIterator<T>> rbegin() const override
+    {
+        return const_cast<ReversibleMuteIterable<T> *>(this)->rbegin().get()->toConst();
+    }
+    ref<ConstIterator<T>> rend() const override
+    {
+        return const_cast<ReversibleMuteIterable<T> *>(this)->rend().get()->toConst();
+    }
 };
 
 template <typename T>

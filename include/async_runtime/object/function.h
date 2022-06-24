@@ -17,10 +17,10 @@ class Fn<ReturnType(Args...)> : public Fn<std::nullptr_t>, protected std::functi
 
 public:
     Fn(std::nullptr_t) = delete;
-    template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
-    Fn(Lambda lambda) : super(lambda) {}
 
-    ReturnType operator()(Args... args) const { return super::operator()(std::forward<Args>(args)...); }
+    using super::function;
+    using super::operator();
+
     const super &toStdFunction() const { return *this; }
 
     /* Apple clang compile bug patch. And this is useless code can be removed if apple fix the bug */
