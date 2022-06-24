@@ -53,6 +53,8 @@ namespace std
     };
 };
 
+std::ostream &operator<<(std::ostream &os, const AsyncSnapshot<>::ConnectionState::Value &value);
+
 template <typename T>
 class AsyncSnapshot : public AsyncSnapshot<std::nullptr_t>
 {

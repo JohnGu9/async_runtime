@@ -60,3 +60,5 @@ namespace std
         }
     };
 };
+
+std::ostream &operator<<(std::ostream &os, const StatefulElement::LifeCycle::Value &obj);

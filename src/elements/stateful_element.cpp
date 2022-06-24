@@ -17,6 +17,23 @@ class StatefulElement::InvalidWidget::_State : public State<StatefulElement::Inv
 
 ref<State<StatefulWidget>> StatefulElement::InvalidWidget::createState() { return Object::create<StatefulElement::InvalidWidget::_State>(); }
 
+std::ostream &operator<<(std::ostream &os, const StatefulElement::LifeCycle::Value &value)
+{
+    switch (value)
+    {
+    case StatefulElement::LifeCycle::uninitialized:
+        return os << "StatefulElement::LifeCycle::uninitialized";
+    case StatefulElement::LifeCycle::mounted:
+        return os << "StatefulElement::LifeCycle::mounted";
+    case StatefulElement::LifeCycle::building:
+        return os << "StatefulElement::LifeCycle::building";
+    case StatefulElement::LifeCycle::unmount:
+        return os << "StatefulElement::LifeCycle::unmount";
+    default:
+        throw NotImplementedError();
+    }
+}
+
 const ref<List<StatefulElement::LifeCycle::Value>>
     StatefulElement::LifeCycle::values = {
         StatefulElement::LifeCycle::uninitialized,
@@ -26,20 +43,9 @@ const ref<List<StatefulElement::LifeCycle::Value>>
 
 ref<String> StatefulElement::LifeCycle::toString(StatefulElement::LifeCycle::Value value)
 {
-    switch (value)
-    {
-    case StatefulElement::LifeCycle::uninitialized:
-        return "StatefulElement::LifeCycle::uninitialized";
-    case StatefulElement::LifeCycle::mounted:
-        return "StatefulElement::LifeCycle::mounted";
-    case StatefulElement::LifeCycle::building:
-        return "StatefulElement::LifeCycle::building";
-    case StatefulElement::LifeCycle::unmount:
-        return "StatefulElement::LifeCycle::unmount";
-    default:
-        RUNTIME_ASSERT(false, "The enum doesn't exists. ");
-        return "The enum doesn't exists";
-    }
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
 }
 
 StatefulElement::StatefulElement(ref<StatefulWidget> widget)
