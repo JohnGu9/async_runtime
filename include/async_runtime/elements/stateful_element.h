@@ -11,16 +11,10 @@ class StatefulElement : public SingleChildElement
     class InvalidWidget;
 
 public:
-    StatefulElement(ref<StatefulWidget> widget);
-
-    ref<StatefulWidget> _statefulWidget;
-    ref<State<StatefulWidget>> _state;
-
-protected:
     class LifeCycle
     {
     public:
-        enum Value
+        enum Value : int
         {
             uninitialized,
             mounted,
@@ -31,6 +25,12 @@ protected:
         static ref<String> toString(Value value);
     };
 
+    StatefulElement(ref<StatefulWidget> widget);
+
+    ref<StatefulWidget> _statefulWidget;
+    ref<State<StatefulWidget>> _state;
+
+protected:
     LifeCycle::Value _lifeCycle;
 
     void attach() override;
@@ -40,4 +40,22 @@ protected:
     void update(ref<Widget> newWidget) override;
 
     void visitDescendant(Function<bool(ref<Element>)>) override;
+};
+
+namespace std
+{
+    /**
+     * @brief Before C++14, there is no standard for enum convert to hash.
+     * In Windows and Linux, system provide the way.
+     * But Macos doesn't.
+     *
+     */
+    template <>
+    struct hash<::StatefulElement::LifeCycle::Value>
+    {
+        std::size_t operator()(const ::StatefulElement::LifeCycle::Value &other) const
+        {
+            return ::std::hash<int>()(static_cast<int>(other));
+        }
+    };
 };

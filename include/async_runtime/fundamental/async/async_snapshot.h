@@ -9,7 +9,7 @@ public:
     class ConnectionState
     {
     public:
-        enum Value
+        enum Value : int
         {
             none,
             active,
@@ -33,6 +33,24 @@ protected:
 
 public:
     const ConnectionState::Value &state = _state;
+};
+
+namespace std
+{
+    /**
+     * @brief Before C++14, there is no standard for enum convert to hash.
+     * In Windows and Linux, system provide the way.
+     * But Macos doesn't.
+     *
+     */
+    template <>
+    struct hash<::AsyncSnapshot<>::ConnectionState::Value>
+    {
+        std::size_t operator()(const ::AsyncSnapshot<>::ConnectionState::Value &other) const
+        {
+            return ::std::hash<int>()(static_cast<int>(other));
+        }
+    };
 };
 
 template <typename T>
