@@ -46,6 +46,7 @@ StatefulElement::StatefulElement(ref<StatefulWidget> widget)
     : SingleChildElement(widget),
       _statefulWidget(widget),
       _state(_statefulWidget->createState()),
+      _setStateCallbacks(List<Function<void()>>::create()),
       _lifeCycle(StatefulElement::LifeCycle::uninitialized)
 {
 }
@@ -73,13 +74,16 @@ void StatefulElement::detach()
     static finalref<StatefulElement> _invalidElement = Object::create<StatefulElement>(Object::create<StatefulElement::InvalidWidget>());
     this->_state->_context = _invalidElement;
     this->_state->_element = _invalidElement;
+    this->_setStateCallbacks->clear();
     Element::detach();
 }
 
 void StatefulElement::build()
 {
     this->_lifeCycle = StatefulElement::LifeCycle::building;
-    this->_state->beforeBuild();
+    for (const auto &fn : this->_setStateCallbacks)
+        fn();
+    this->_setStateCallbacks->clear();
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     ref<Widget> oldWidget = this->_childElement->getWidget();
     if (Object::identical(widget, oldWidget))
@@ -113,7 +117,9 @@ void StatefulElement::notify(ref<Widget> newWidget)
         this->_state->didDependenceChanged();
     }
     {
-        this->_state->beforeBuild();
+        for (const auto &fn : this->_setStateCallbacks)
+            fn();
+        this->_setStateCallbacks->clear();
         ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
         ref<Widget> oldWidget = this->_childElement->getWidget();
         if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
@@ -128,4 +134,14 @@ void StatefulElement::visitDescendant(Function<bool(ref<Element>)> fn)
 {
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);
+}
+
+void StatefulElement::scheduleRebuild(Function<void()> fn, ref<EventLoop> loop)
+{
+    auto self = self();
+    this->_setStateCallbacks->emplaceBack(fn);    // mark state dirty
+    loop->callSoon([this, self] {                 //
+        if (!this->_setStateCallbacks->isEmpty()) // if state is dirty, rebuild the tree
+            this->build();
+    });
 }

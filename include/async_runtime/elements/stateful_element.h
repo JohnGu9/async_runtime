@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../fundamental/async.h"
 #include "../widgets/state.h"
 #include "single_child_element.h"
 
@@ -29,8 +30,7 @@ public:
 
     ref<StatefulWidget> _statefulWidget;
     ref<State<StatefulWidget>> _state;
-
-protected:
+    ref<List<Function<void()>>> _setStateCallbacks;
     LifeCycle::Value _lifeCycle;
 
     void attach() override;
@@ -38,8 +38,9 @@ protected:
     void build() override;
     void notify(ref<Widget> newWidget) override;
     void update(ref<Widget> newWidget) override;
-
     void visitDescendant(Function<bool(ref<Element>)>) override;
+
+    void scheduleRebuild(Function<void()> fn, ref<EventLoop> loop);
 };
 
 namespace std

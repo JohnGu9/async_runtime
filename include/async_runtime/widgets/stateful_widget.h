@@ -25,13 +25,11 @@ class State<StatefulWidget> : public virtual Object, public EventLoopGetterMixin
 
     bool _mounted = false;
     ref<EventLoop> _loop;
-    ref<List<Function<void()>>> _setStateCallbacks;
     lateref<StatefulElement> _element;
     lateref<BuildContext> _context;
 
     virtual void initState();
     virtual void dispose();
-    void beforeBuild(); // call by [StatefulElement] for mark state is not dirty any more
 
     virtual void didDependenceChanged() = 0;
     virtual void callDidWidgetUpdated(ref<StatefulWidget> oldWidget) = 0;
@@ -53,8 +51,7 @@ protected:
     void setState(Function<void()> fn);
 
 public:
-    State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)),
-              _setStateCallbacks(List<Function<void()>>::create()) {}
+    State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)) {}
     ~State() { DEBUG_ASSERT(_mounted == false && "[dispose] must to call super::dispose"); }
 
     ref<EventLoop> eventLoop() override { return this->_loop; }
