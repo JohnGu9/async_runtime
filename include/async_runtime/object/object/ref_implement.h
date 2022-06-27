@@ -37,20 +37,4 @@ protected:
     {
         DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
     }
-
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement &operator=(const std::shared_ptr<R> &other) noexcept
-    {
-        static_cast<std::shared_ptr<T> &>(*this) = other;
-        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
-        return *this;
-    }
-
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement &operator=(std::shared_ptr<R> &&other) noexcept
-    {
-        static_cast<std::shared_ptr<T> &>(*this) = std::move(other);
-        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
-        return *this;
-    }
 };
