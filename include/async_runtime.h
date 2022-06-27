@@ -93,10 +93,23 @@ namespace _async_runtime
     extern const char *warning_logger_type;
     extern const char *error_logger_type;
 
-    template <class... Args>
-    inline constexpr size_t variableArgumentsAmount(Args &&...) { return sizeof...(Args); }
+    inline std::stringstream &loggerTime(std::stringstream &ss)
+    {
+        struct tm timebuf;
+        time_t t = time(nullptr);
+#ifdef _WIN32
+        localtime_s(&timebuf, &t);
+#else
+        localtime_r(&t, &timebuf);
+#endif
+        ss << std::put_time(&timebuf, ASYNC_RUNTIME_TIMESTAMP_FORMAT);
 
-    std::stringstream &loggerTime(std::stringstream &ss);
+#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
+        ss << std::boolalpha;
+#endif
+
+        return ss;
+    }
 }
 
 #ifndef ASYNC_RUNTIME_OSTREAM_REDIRECT
@@ -116,18 +129,18 @@ namespace _async_runtime
 
 #ifndef LogDebug
 #ifndef NDEBUG
-#define LogDebug(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::debug_logger_type, __format__, ##__VA_ARGS__)
+#define LogDebug(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(::_async_runtime::debug_logger_type, __format__, ##__VA_ARGS__)
 #else
 #define LogDebug(__format__, ...) ((void)0)
 #endif
 #endif
 
 #ifndef LogInfo
-#define LogInfo(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::info_logger_type, __format__, ##__VA_ARGS__)
+#define LogInfo(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(::_async_runtime::info_logger_type, __format__, ##__VA_ARGS__)
 #endif
 
 #ifndef LogWarning
-#define LogWarning(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(_async_runtime::warning_logger_type, __format__, ##__VA_ARGS__)
+#define LogWarning(__format__, ...) ASYNC_RUNTIME_LOG_FORMAT(::_async_runtime::warning_logger_type, __format__, ##__VA_ARGS__)
 #endif
 
 #ifndef LogError

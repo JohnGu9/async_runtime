@@ -1,6 +1,6 @@
+#include "async_runtime.h"
 #include "async_runtime/elements/root_element.h"
 #include "async_runtime/utilities/console_format.h"
-#include "async_runtime.h"
 
 static void task(ref<Widget> widget);
 
@@ -48,22 +48,4 @@ namespace _async_runtime
     const char *info_logger_type = "INFO ";
     const char *warning_logger_type = "WARNING";
     const char *error_logger_type = "ERROR";
-
-    std::stringstream &loggerTime(std::stringstream &ss)
-    {
-        struct tm timebuf;
-        time_t t = time(nullptr);
-#ifdef _WIN32
-        localtime_s(&timebuf, &t);
-#else
-        localtime_r(&t, &timebuf);
-#endif
-        ss << std::put_time(&timebuf, ASYNC_RUNTIME_TIMESTAMP_FORMAT);
-
-#ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
-        ss << std::boolalpha;
-#endif
-
-        return ss;
-    }
 }

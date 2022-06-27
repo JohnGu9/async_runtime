@@ -40,6 +40,7 @@ public:
     void update(ref<Widget> newWidget) override;
     void visitDescendant(Function<bool(ref<Element>)>) override;
 
+    void clearCallbacks();
     void scheduleRebuild(Function<void()> fn, ref<EventLoop> loop);
 };
 

@@ -87,9 +87,7 @@ void StatefulElement::detach()
 void StatefulElement::build()
 {
     this->_lifeCycle = StatefulElement::LifeCycle::building;
-    for (const auto &fn : this->_setStateCallbacks)
-        fn();
-    this->_setStateCallbacks->clear();
+    this->clearCallbacks();
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     ref<Widget> oldWidget = this->_childElement->getWidget();
     if (Object::identical(widget, oldWidget))
@@ -123,9 +121,7 @@ void StatefulElement::notify(ref<Widget> newWidget)
         this->_state->didDependenceChanged();
     }
     {
-        for (const auto &fn : this->_setStateCallbacks)
-            fn();
-        this->_setStateCallbacks->clear();
+        this->clearCallbacks();
         ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
         ref<Widget> oldWidget = this->_childElement->getWidget();
         if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
@@ -140,6 +136,13 @@ void StatefulElement::visitDescendant(Function<bool(ref<Element>)> fn)
 {
     if (fn(this->_childElement) == false)
         this->_childElement->visitDescendant(fn);
+}
+
+void StatefulElement::clearCallbacks()
+{
+    for (const auto &fn : this->_setStateCallbacks)
+        fn();
+    this->_setStateCallbacks->clear();
 }
 
 void StatefulElement::scheduleRebuild(Function<void()> fn, ref<EventLoop> loop)

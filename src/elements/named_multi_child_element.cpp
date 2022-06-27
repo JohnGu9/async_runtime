@@ -29,7 +29,7 @@ void NamedMultiChildElement::detach()
 void NamedMultiChildElement::build()
 {
     finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
-    for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
+    for (auto iter = this->_childrenElements->begin(), end = this->_childrenElements->end(); iter != end;)
     {
         if (children->findKey((*iter)->first) == children->end())
         {
@@ -87,7 +87,7 @@ void NamedMultiChildElement::notify(ref<Widget> newWidget)
     this->_namedMultiChildWidget = newWidget->covariant<NamedMultiChildWidget>();
 
     finalref<Map<ref<String>, lateref<Widget>>> &children = this->_namedMultiChildWidget->_children;
-    for (auto iter = this->_childrenElements->begin(); iter != this->_childrenElements->end();)
+    for (auto iter = this->_childrenElements->begin(), end = this->_childrenElements->end(); iter != end;)
     {
         if (children->findKey((*iter)->first) == children->end())
         {
