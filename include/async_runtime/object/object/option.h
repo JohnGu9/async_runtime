@@ -1,44 +1,33 @@
 #pragma once
-#include "option_implement.h"
 #include "ref.h"
 
 template <typename T>
-class option : public _async_runtime::OptionImplement<T>
+class option : protected ref<T>, public _async_runtime::ToRefMixin<T>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
-    using super = _async_runtime::OptionImplement<T>;
+    using super = ref<T>;
 
 public:
-    option() {}
-    option(std::nullptr_t) : super(nullptr) {}
+    using ref<T>::ref;
+
+    option() : super() {}
+    option(std::nullptr_t) : super() {}
+
+    option(const ref<T> &other) noexcept : super(other) {}
+    option(ref<T> &&other) noexcept : super(std::move(other)) {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const ref<R> &other) noexcept;
+    option(const option<R> &other) noexcept : super{other == nullptr ? super() : super(other)} {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(ref<R> &&other) noexcept;
+    option(option<R> &&other) noexcept : super{other == nullptr ? super() : super(std::move(other))} {}
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const option<R> &other) noexcept : super(other) {}
+    option(const std::shared_ptr<R> &other) noexcept : super{other == nullptr ? super() : super(other)} {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(option<R> &&other) noexcept : super(std::move(other)) {}
+    option(std::shared_ptr<R> &&other) noexcept : super{other == nullptr ? super() : super(std::move(other))} {}
 
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) noexcept : super(other){};
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(std::shared_ptr<R> &&other) noexcept : super(std::move(other)){};
-
-    /**
-     * @brief Construct a new option object
-     * ref quick init also available for option (just forward argument to ref)
-     * so that option no need to specialize template
-     * but for nullsafety, option quick init need at least one argument (zero arguments will cause null ref init)
-     * this api should only used inside nullsafety system, not for public usage
-     *
-     * @tparam First
-     * @tparam Args
-     * @param first
-     * @param args
-     */
-    template <typename First, typename... Args>
-    option(const First &first, Args &&...args);
+    T *get() const { return this->std::shared_ptr<T>::get(); }
+    _async_runtime::Else ifNotNull(Function<void(ref<T>)> fn) const noexcept override;
+    ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept override;
+    ref<T> assertNotNull() const noexcept(false) override;
 };

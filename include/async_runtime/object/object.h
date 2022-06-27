@@ -7,14 +7,6 @@
  *
  * inherits layout:
  *
- * std::shared_ptr
- *       ^
- *       |
- *  _async_runtime::OptionImplement
- *       ^
- *       |
- *  option
- *
  *
  * std::shared_ptr
  *       ^
@@ -23,9 +15,18 @@
  *       ^
  *       |
  *  ref
+ *
+ *
+ *  ref
  *       ^
  *       |
  *  lateref
+ * 
+ *
+ *  ref
+ *       ^
+ *       |
+ *  option
  *
  *
  *  std::weak_ptr
@@ -63,7 +64,6 @@
 #pragma once
 #include "object/declare.h"
 
-#include "object/option_implement.h"
 #include "object/ref_implement.h"
 
 #include "object/ref.h"

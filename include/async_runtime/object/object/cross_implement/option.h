@@ -3,13 +3,32 @@
 #include "../option.h"
 
 template <typename T>
-template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
-option<T>::option(const ref<R> &other) noexcept : super(other) {}
+_async_runtime::Else option<T>::ifNotNull(Function<void(ref<T>)> fn) const noexcept
+{
+    const std::shared_ptr<T> &ptr = static_cast<const std::shared_ptr<T> &>(*this);
+    if (ptr != nullptr)
+    {
+        fn(ref<T>(ptr));
+        return _async_runtime::Else(true);
+    }
+    else
+        return _async_runtime::Else(false);
+}
 
 template <typename T>
-template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type *>
-option<T>::option(ref<R> &&other) noexcept : super(std::move(other)) {}
+ref<T> option<T>::ifNotNullElse(Function<ref<T>()> fn) const noexcept
+{
+    const std::shared_ptr<T> &ptr = static_cast<const std::shared_ptr<T> &>(*this);
+    if (ptr != nullptr)
+        return ref<T>(ptr);
+    else
+        return fn();
+}
 
 template <typename T>
-template <typename First, typename... Args>
-option<T>::option(const First &first, Args &&...args) : super(ref<T>(first, std::forward<Args>(args)...)) {}
+ref<T> option<T>::assertNotNull() const noexcept(false)
+{
+    const std::shared_ptr<T> &ptr = static_cast<const std::shared_ptr<T> &>(*this);
+    RUNTIME_ASSERT(ptr != nullptr, std::string(typeid(*this).name()) + " assert not null on a null ref. ");
+    return ref<T>(ptr);
+}
