@@ -39,7 +39,6 @@ public:
 
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : super(other) {}
-
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(other) {}
 
@@ -62,9 +61,7 @@ public:
 
 protected:
     ref() {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(const std::shared_ptr<R> &other) : super(other) {}
+    using _async_runtime::RefImplement<ConstIterator<T>>::RefImplement;
 };
 
 template <typename T>
@@ -107,9 +104,5 @@ public:
 
 protected:
     ref() {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(const std::shared_ptr<R> &other) : super(other) {}
-    template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(std::shared_ptr<R> &&other) : super(std::move(other)) {}
+    using _async_runtime::RefImplement<Iterator<T>>::RefImplement;
 };

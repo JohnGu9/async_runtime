@@ -207,6 +207,7 @@ public:
     ref(std::string &&str) : super(Object::create<String>(std::move(str))) {}
     ref(const char *const str) : super(Object::create<String>(str)) {}
     ref(const char c) : super(Object::create<String>(c)) {}
+    ref(std::nullptr_t) = delete;
 
     bool operator==(const char *const other) const;
     bool operator==(const std::string &other) const;
@@ -227,8 +228,7 @@ public:
 
 protected:
     ref() {}
-    ref(const std::shared_ptr<String> &other) : super(other) {}
-    ref(std::shared_ptr<String> &&other) : super(std::move(other)) {}
+    using _async_runtime::RefImplement<String>::RefImplement;
 };
 
 template <typename... Args>

@@ -21,7 +21,6 @@ class ref<Set<T>> : public _async_runtime::RefImplement<Set<T>>
 public:
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     ref(const ref<R> &other) : super(other) {}
-
     template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(std::move(other)) {}
 
@@ -33,11 +32,7 @@ public:
 
 protected:
     ref() {}
-
-    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
-    ref(const std::shared_ptr<R> &other) : super(other) {}
-    template <typename R, typename std::enable_if<std::is_base_of<Set<T>, R>::value>::type * = nullptr>
-    ref(std::shared_ptr<R> &&other) : super(std::move(other)) {}
+    using _async_runtime::RefImplement<Set<T>>::RefImplement;
 };
 
 template <typename T>

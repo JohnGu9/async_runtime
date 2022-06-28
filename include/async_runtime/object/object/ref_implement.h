@@ -17,11 +17,6 @@ public:
         return super::get();
     }
 
-    std::shared_ptr<T> &operator=(std::nullptr_t) = delete;
-    bool operator==(std::nullptr_t) const = delete;
-    bool operator!=(std::nullptr_t) const = delete;
-    operator bool() const = delete;
-
 protected:
     RefImplement() noexcept {}
     RefImplement(std::nullptr_t) = delete;
