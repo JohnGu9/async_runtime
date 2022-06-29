@@ -37,19 +37,17 @@ public:
     static ref<Set<T>> create();
 
     HashSet() : _container{} {}
-    HashSet(std::initializer_list<T> &&list) : _container(std::move(list)) {}
     HashSet(const std::initializer_list<T> &list) : _container(list) {}
+    HashSet(std::initializer_list<T> &&list) : _container(std::move(list)) {}
 
     ref<ConstIterator<T>> begin() const override
     {
-        return Object::create<_ConstIterator>(
-            container().begin());
+        return Object::create<_ConstIterator>(container().begin());
     }
 
     ref<ConstIterator<T>> end() const override
     {
-        return Object::create<_ConstIterator>(
-            container().end());
+        return Object::create<_ConstIterator>(container().end());
     }
 
     ref<Set<T>> copy() const override

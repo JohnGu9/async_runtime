@@ -22,10 +22,10 @@ public:
     Pair(First &&first, Second &&second)
         : first(std::move(first)), second(std::move(second)) {}
 
-    Pair(const std::pair<First, Second> &pair)
-        : first(pair.first), second(pair.second) {}
-    Pair(std::pair<First, Second> &&pair)
-        : first(std::move(pair.first)), second(std::move(pair.second)) {}
+    Pair(const First &first, Second &&second)
+        : first(first), second(std::move(second)) {}
+    Pair(First &&first, const Second &second)
+        : first(std::move(first)), second(second) {}
 
     bool operator==(ref<Object> other) override
     {
@@ -60,9 +60,8 @@ public:
 
     ref(const First &first, const Second &second) : super(Object::create<element_type>(first, second)) {}
     ref(First &&first, Second &&second) : super(Object::create<element_type>(std::move(first), std::move(second))) {}
-
-    ref(const std::pair<First, Second> &pair) : super(Object::create<element_type>(pair)) {}
-    ref(std::pair<First, Second> &&pair) : super(Object::create<element_type>(std::move(pair))) {}
+    ref(const First &first, Second &&second) : super(Object::create<element_type>(first, std::move(second))) {}
+    ref(First &&first, const Second &second) : super(Object::create<element_type>(std::move(first), second)) {}
 
 protected:
     ref(const First &first) : super(Object::create<element_type>(first, Second())) {}

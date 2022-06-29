@@ -10,6 +10,11 @@ class HashMap : public Map<Key, Value>
     using container_type = std::unordered_set<element_type, _async_runtime::KeyHasher<element_type>, _async_runtime::KeyEqual<element_type>>;
     container_type _container;
 
+    container_type &container() const
+    {
+        return const_cast<container_type &>(_container);
+    }
+
 public:
     class _ConstIterator : public ConstIterator<element_type>
     {
@@ -52,8 +57,14 @@ public:
 
     ref<ConstIterator<element_type>> findKey(const Key &key) const override
     {
-        return Object::create<_ConstIterator>(
-            const_cast<container_type &>(_container).find(super::keyOnlyPairBuilder(key)));
+        return Object::create<_ConstIterator>(container().find(super::keyOnlyPairBuilder(key)));
+    }
+
+    const Value &operator[](const Key &key) const override
+    {
+        auto pair = super::keyOnlyPairBuilder(key);
+        auto it = _container.find(pair);
+        return (*it)->second;
     }
 
     Value &operator[](const Key &key) override
@@ -72,14 +83,12 @@ public:
 
     ref<ConstIterator<element_type>> begin() const override
     {
-        return Object::create<_ConstIterator>(
-            const_cast<container_type &>(_container).begin());
+        return Object::create<_ConstIterator>(container().begin());
     }
 
     ref<ConstIterator<element_type>> end() const override
     {
-        return Object::create<_ConstIterator>(
-            const_cast<container_type &>(_container).end());
+        return Object::create<_ConstIterator>(container().end());
     }
 
     ref<ConstIterator<element_type>> erase(ref<ConstIterator<element_type>> it) override
