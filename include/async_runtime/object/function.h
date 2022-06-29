@@ -13,7 +13,6 @@ template <typename ReturnType, class... Args>
 class Fn<ReturnType(Args...)> : public Fn<std::nullptr_t>, protected std::function<ReturnType(Args...)>
 {
     using super = std::function<ReturnType(Args...)>;
-    static_assert(std::is_constructible<super, ReturnType(Args...)>::value, "Can't construct object in function");
 
 public:
     Fn(std::nullptr_t) = delete;
@@ -40,8 +39,7 @@ public:
     ref(ref<R> &&other) : super(std::move(other)) {}
 
     template <typename Lambda, typename std::enable_if<std::is_constructible<std::function<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
-    ref(Lambda lambda) : super(Object::create<Fn<ReturnType(Args...)>>(lambda)) {}
-    ref(std::nullptr_t) = delete;
+    ref(Lambda lambda) : super(Object::create<Fn<ReturnType(Args...)>>(std::forward<Lambda>(lambda))) {}
 
     ReturnType operator()(Args... args) const { return (*this)->operator()(std::forward<Args>(args)...); }
 

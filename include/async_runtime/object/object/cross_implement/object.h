@@ -10,7 +10,7 @@
  * @param __args the constructor arguments
  * @return ref<T>
  */
-template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, class... _Args>
+template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *, typename... _Args, typename>
 ref<T> Object::create(_Args &&...__args)
 {
     finalref<T> object = std::make_shared<T>(std::forward<_Args>(__args)...);

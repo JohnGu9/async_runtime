@@ -134,6 +134,7 @@ public:
     template <typename Iterator, typename... Args>
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
+    String(std::nullptr_t) = delete;
     String(const char c) : super{c} {}
     String(const std::string &str) : super(str) {}
     String(std::string &&str) : super(std::move(str)) {}
@@ -203,11 +204,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
     ref(ref<R> &&other) : super(std::move(other)) {}
 
-    ref(const std::string &str) : super(Object::create<String>(str)) {}
-    ref(std::string &&str) : super(Object::create<String>(std::move(str))) {}
-    ref(const char *const str) : super(Object::create<String>(str)) {}
-    ref(const char c) : super(Object::create<String>(c)) {}
-    ref(std::nullptr_t) = delete;
+    template <typename... Args, typename = decltype(String(std::declval<Args>()...))>
+    ref(Args &&...args) : super(Object::create<String>(std::forward<Args>(args)...)) {}
 
     bool operator==(const char *const other) const;
     bool operator==(const std::string &other) const;

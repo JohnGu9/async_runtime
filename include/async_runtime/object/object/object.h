@@ -20,7 +20,7 @@ class Object : public std::enable_shared_from_this<Object>
 public:
     using RuntimeType = size_t;
 
-    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, class... _Args>
+    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, typename... _Args, typename = decltype(T(std::declval<_Args>()...))>
     static ref<T> create(_Args &&...);
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     static void detach(ref<T> &) noexcept;
