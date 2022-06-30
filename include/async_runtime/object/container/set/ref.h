@@ -31,7 +31,7 @@ public:
     ref<ConstIterator<T>> end() const { return (*this)->end(); }
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<Set<T>>::RefImplement;
 };
 

@@ -17,24 +17,12 @@ public:
     const int value;
     Integer(int value) : value(value) {}
 
-    int toInt() override { return value; }
-    double toDouble() override { return value; }
+    int toInt() override;
+    double toDouble() override;
 
-    bool operator==(ref<Object> other) override
-    {
-        if (auto ptr = dynamic_cast<Integer *>(other.get()))
-        {
-            return this->value == ptr->value;
-        }
-        return false;
-    }
-
-    size_t hashCode() override
-    {
-        return std::hash<int>()(value);
-    }
-
-    void toStringStream(std::ostream &os) override { os << value; }
+    bool operator==(ref<Object> other) override;
+    size_t hashCode() override;
+    void toStringStream(std::ostream &os) override;
 };
 
 class Number::Double : public Number
@@ -43,24 +31,12 @@ public:
     const double value;
     Double(double value) : value(value) {}
 
-    int toInt() override { return static_cast<int>(value); }
-    double toDouble() override { return value; }
+    int toInt() override;
+    double toDouble() override;
 
-    bool operator==(ref<Object> other) override
-    {
-        if (auto ptr = dynamic_cast<Double *>(other.get()))
-        {
-            return this->value == ptr->value;
-        }
-        return false;
-    }
-
-    size_t hashCode() override
-    {
-        return std::hash<double>()(value);
-    }
-
-    void toStringStream(std::ostream &os) override { os << value; }
+    bool operator==(ref<Object> other) override;
+    size_t hashCode() override;
+    void toStringStream(std::ostream &os) override;
 };
 
 template <>
@@ -79,6 +55,6 @@ public:
     ref(double value) : super(Object::create<Number::Double>(value)) {}
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<Number>::RefImplement;
 };

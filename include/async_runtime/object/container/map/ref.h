@@ -37,7 +37,7 @@ public:
     ref<ConstIterator<element_type>> end() const { return (*this)->end(); }
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<Map<Key, Value>>::RefImplement;
 };
 

@@ -225,7 +225,7 @@ public:
     ref<String> operator+(T &&value) const { return String::connect(*this, std::move(value)); }
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<String>::RefImplement;
 };
 

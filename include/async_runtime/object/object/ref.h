@@ -14,6 +14,6 @@ public:
     ref(ref<R> &&other) : super(std::move(other)) {}
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<T>::RefImplement;
 };

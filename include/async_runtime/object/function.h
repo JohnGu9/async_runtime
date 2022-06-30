@@ -44,6 +44,6 @@ public:
     ReturnType operator()(Args... args) const { return (*this)->operator()(std::forward<Args>(args)...); }
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<Fn<ReturnType(Args...)>>::RefImplement;
 };

@@ -60,7 +60,7 @@ public:
     }
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<ConstIterator<T>>::RefImplement;
 };
 
@@ -103,6 +103,6 @@ public:
     operator ref<ConstIterator<T>>() const { return (*this)->toConst(); }
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<Iterator<T>>::RefImplement;
 };

@@ -33,7 +33,7 @@ public:
     ref<Iterator<T>> end() const { return (*this)->end(); }
 
 protected:
-    ref() {}
+    ref() noexcept : super() {}
     using _async_runtime::RefImplement<List<T>>::RefImplement;
 };
 
