@@ -21,9 +21,9 @@ class ref<Map<Key, Value>> : public _async_runtime::RefImplement<Map<Key, Value>
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : super(other) {}
+    ref(const ref<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<Map<Key, Value>, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) : super(std::move(other)) {}
+    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
     ref(const std::initializer_list<element_type> &list)
         : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(list)) {}
@@ -31,10 +31,10 @@ public:
         : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
 
     template <typename... Args>
-    Value &operator[](Args &&...key) const { return (*this)->operator[](std::forward<Args>(key)...); }
+    Value &operator[](Args &&...key) const { return this->get()->operator[](std::forward<Args>(key)...); }
 
-    ref<ConstIterator<element_type>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<element_type>> end() const { return (*this)->end(); }
+    ref<ConstIterator<element_type>> begin() const { return this->get()->begin(); }
+    ref<ConstIterator<element_type>> end() const { return this->get()->end(); }
 
 protected:
     ref() noexcept : super() {}

@@ -47,9 +47,9 @@ class ref<Number> : public _async_runtime::RefImplement<Number>
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<Number, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : super(other) {}
+    ref(const ref<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<Number, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) : super(std::move(other)) {}
+    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
     ref(int value) : super(Object::create<Number::Integer>(value)) {}
     ref(double value) : super(Object::create<Number::Double>(value)) {}

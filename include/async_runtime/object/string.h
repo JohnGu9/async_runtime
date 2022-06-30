@@ -138,7 +138,6 @@ public:
     String(const char c) : super{c} {}
     String(const std::string &str) : super(str) {}
     String(std::string &&str) : super(std::move(str)) {}
-
     String(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }
     String(const char *const str, size_t length) : super(str, length) { DEBUG_ASSERT(str != nullptr); }
 
@@ -194,15 +193,13 @@ template <>
 class ref<String> : public _async_runtime::RefImplement<String>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
-    friend class String;
-
     using super = _async_runtime::RefImplement<String>;
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : super(other) {}
+    ref(const ref<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) : super(std::move(other)) {}
+    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
     template <typename... Args, typename = decltype(String(std::declval<Args>()...))>
     ref(Args &&...args) : super(Object::create<String>(std::forward<Args>(args)...)) {}
@@ -216,8 +213,8 @@ public:
     bool operator!=(std::string &&other) const { return !operator==(std::move(other)); }
 
     const char &operator[](size_t index) const { return this->get()->operator[](index); }
-    ref<ConstIterator<char>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<char>> end() const { return (*this)->end(); }
+    ref<ConstIterator<char>> begin() const { return this->get()->begin(); }
+    ref<ConstIterator<char>> end() const { return this->get()->end(); }
 
     template <typename T>
     ref<String> operator+(const T &value) const { return String::connect(*this, value); }

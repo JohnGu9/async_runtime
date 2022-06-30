@@ -11,11 +11,11 @@ class lateref : public ref<T>
 public:
     using ref<T>::ref;
 
-    explicit lateref() : super() {}
+    explicit lateref() noexcept : super() {}
     lateref(std::nullptr_t) = delete;
 
     // linux can't infer correct template constructor that inherited from ref<T>
     // two constructor below is to patch the problem
-    lateref(const ref<T> &other) : super(other) {}
-    lateref(ref<T> &&other) : super(std::move(other)) {}
+    lateref(const ref<T> &other) noexcept : super(other) {}
+    lateref(ref<T> &&other) noexcept : super(std::move(other)) {}
 };

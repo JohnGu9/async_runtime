@@ -11,15 +11,15 @@ class ref<Iterable<T>> : public _async_runtime::RefImplement<Iterable<T>>
 
 public:
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : super(other) {}
+    ref(const ref<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) : super(std::move(other)) {}
+    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
     ref(const std::initializer_list<T> &list);
     ref(std::initializer_list<T> &&list);
 
-    ref<ConstIterator<T>> begin() const { return (*this)->begin(); }
-    ref<ConstIterator<T>> end() const { return (*this)->end(); }
+    ref<ConstIterator<T>> begin() const { return this->get()->begin(); }
+    ref<ConstIterator<T>> end() const { return this->get()->end(); }
 
 protected:
     ref() noexcept : super() {}

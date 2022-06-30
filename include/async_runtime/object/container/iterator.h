@@ -38,9 +38,9 @@ public:
     using reference = value_type &;
 
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : super(other) {}
+    ref(const ref<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) : super(other) {}
+    ref(ref<R> &&other) noexcept : super(other) {}
 
     element_type *get() const { return super::get(); }
     pointer operator->() const { return &((this->get())->value()); }
@@ -79,9 +79,9 @@ public:
     using reference = value_type &;
 
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) : super(other) {}
+    ref(const ref<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) : super(std::move(other)) {}
+    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
     element_type *get() const { return super::get(); }
     pointer operator->() const { return &((this->get())->value()); }
@@ -100,7 +100,7 @@ public:
         return other;
     }
 
-    operator ref<ConstIterator<T>>() const { return (*this)->toConst(); }
+    operator ref<ConstIterator<T>>() const { return this->get()->toConst(); }
 
 protected:
     ref() noexcept : super() {}

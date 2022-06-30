@@ -89,16 +89,16 @@ ref<String> String::View::substr(size_t begin, size_t length) const
 bool ref<String>::operator==(const char *const other) const
 {
     const auto len = std::strlen(other);
-    if (len != (*this)->length())
+    if (len != this->get()->length())
         return false;
-    return std::strncmp((*this)->data(), other, len) == 0;
+    return std::strncmp(this->get()->data(), other, len) == 0;
 }
 
 bool ref<String>::operator==(const std::string &other) const
 {
-    if ((*this)->length() != other.length())
+    if (this->get()->length() != other.length())
         return false;
-    return std::strncmp((*this)->data(), other.data(), other.length()) == 0;
+    return std::strncmp(this->get()->data(), other.data(), other.length()) == 0;
 }
 
 bool ref<String>::operator==(std::string &&other) const
