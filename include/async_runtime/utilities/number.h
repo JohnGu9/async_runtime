@@ -41,14 +41,7 @@ public:
     const T value;
     Basic(T value) : value(value) {}
 
-    size_t hashCode() override
-    {
-        return std::hash<T>()(value);
-    }
-    void toStringStream(std::ostream &os) override
-    {
-        os << value;
-    }
+    void toStringStream(std::ostream &os) override { os << value; }
     bool operator==(ref<Object> other) override;
 };
 
@@ -57,6 +50,7 @@ class Number::Short : public Number::Basic<short>
 public:
     using Number::Basic<short>::Basic;
     Number::Type::Value type() override; // Number::Type::Short
+    size_t hashCode() override;
 };
 
 class Number::Integer : public Number::Basic<int>
@@ -64,6 +58,7 @@ class Number::Integer : public Number::Basic<int>
 public:
     using Number::Basic<int>::Basic;
     Number::Type::Value type() override; // Number::Type::Integer
+    size_t hashCode() override;
 };
 
 class Number::Long : public Number::Basic<long>
@@ -71,6 +66,7 @@ class Number::Long : public Number::Basic<long>
 public:
     using Number::Basic<long>::Basic;
     Number::Type::Value type() override; // Number::Type::Long
+    size_t hashCode() override;
 };
 
 class Number::LongLong : public Number::Basic<long long>
@@ -78,6 +74,7 @@ class Number::LongLong : public Number::Basic<long long>
 public:
     using Number::Basic<long long>::Basic;
     Number::Type::Value type() override; // Number::Type::LongLong
+    size_t hashCode() override;
 };
 
 class Number::Float : public Number::Basic<float>
@@ -85,6 +82,7 @@ class Number::Float : public Number::Basic<float>
 public:
     using Number::Basic<float>::Basic;
     Number::Type::Value type() override; // Number::Type::Float
+    size_t hashCode() override;
 };
 
 class Number::Double : public Number::Basic<double>
@@ -92,6 +90,7 @@ class Number::Double : public Number::Basic<double>
 public:
     using Number::Basic<double>::Basic;
     Number::Type::Value type() override; // Number::Type::Double
+    size_t hashCode() override;
 };
 
 template <typename T>
