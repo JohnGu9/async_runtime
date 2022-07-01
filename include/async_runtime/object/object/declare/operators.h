@@ -49,5 +49,4 @@ std::ostream &operator<<(std::ostream &os, option<T> &&);
     else           \
     {
 #define end_if() \
-    }            \
-    ;
+    }

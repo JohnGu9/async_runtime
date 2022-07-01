@@ -2,7 +2,7 @@
 #include "../object/object.h"
 #include <cmath>
 
-class Number : public Object
+class Number : public virtual Object
 {
 public:
     class Type
