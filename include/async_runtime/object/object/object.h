@@ -18,6 +18,7 @@ class Object : public std::enable_shared_from_this<Object>
     _ASYNC_RUNTIME_FRIEND_FAMILY_WITHOUT_OBJECT;
 
 public:
+    class Void;
     using RuntimeType = size_t;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, typename... _Args, typename = decltype(T(std::declval<_Args>()...))>
@@ -120,4 +121,12 @@ public:
 
     Object(const Object &) = delete;
     Object &operator=(const Object &) = delete;
+};
+
+class Object::Void : public virtual Object
+{
+public:
+    bool operator==(ref<Object> other) override;
+    void toStringStream(std::ostream &) override;
+    size_t hashCode() override;
 };

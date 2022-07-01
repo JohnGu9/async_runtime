@@ -42,9 +42,9 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(ref<R> &&other) noexcept : super(other) {}
 
-    element_type *get() const { return super::get(); }
-    pointer operator->() const { return &((this->get())->value()); }
-    reference operator*() const { return (this->get())->value(); }
+    using super::get;
+    pointer operator->() const { return &(this->get()->value()); }
+    reference operator*() const { return this->get()->value(); }
 
     ref<element_type> &operator++()
     {
@@ -83,9 +83,9 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
     ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
-    element_type *get() const { return super::get(); }
-    pointer operator->() const { return &((this->get())->value()); }
-    reference operator*() const { return (this->get())->value(); }
+    using super::get;
+    pointer operator->() const { return &(this->get()->value()); }
+    reference operator*() const { return this->get()->value(); }
 
     ref<element_type> &operator++()
     {

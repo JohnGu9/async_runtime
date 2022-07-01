@@ -34,3 +34,14 @@ size_t Object::hashCode()
 {
     return hs(static_cast<std::enable_shared_from_this<Object> *>(this)->shared_from_this());
 }
+
+bool Object::Void::operator==(ref<Object> other)
+{
+    if (auto ptr = dynamic_cast<Object::Void *>(other.get()))
+        return true;
+    return false;
+}
+
+void Object::Void::toStringStream(std::ostream &os) { os << "Object::Void"; }
+
+size_t Object::Void::hashCode() { return 0; }

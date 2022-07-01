@@ -7,7 +7,7 @@ template <typename T>
 class FutureOr;
 
 template <>
-class Future<std::nullptr_t> : public virtual Object, public EventLoopGetterMixin
+class Future<Object::Void> : public virtual Object, public EventLoopGetterMixin
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
@@ -48,7 +48,7 @@ public:
 };
 
 template <typename T>
-class Future : public Future<std::nullptr_t>
+class Future : public Future<Object::Void>
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
     static ref<List<Function<void(const T &)>>> dummy;
@@ -65,12 +65,12 @@ public:
     static ref<Future<T>> value(T &&, option<EventLoopGetterMixin> getter = nullptr);
 
     Future(option<EventLoopGetterMixin> getter = nullptr)
-        : Future<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)), _data(),
+        : Future<Object::Void>(EventLoopGetterMixin::ensureEventLoop(getter)), _data(),
           _callbackList(List<Function<void(const T &)>>::create()) {}
 
-    template <typename ReturnType = std::nullptr_t>
+    template <typename ReturnType = Object::Void>
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>(const T &)>);
-    template <typename ReturnType = std::nullptr_t>
+    template <typename ReturnType = Object::Void>
     ref<Future<ReturnType>> then(Function<FutureOr<ReturnType>()>);
 
     virtual ref<Future<T>> then(Function<void(const T &)>);

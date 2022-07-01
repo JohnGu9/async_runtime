@@ -30,8 +30,8 @@ public:
     ref(std::initializer_list<element_type> &&list)
         : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
 
-    template <typename... Args>
-    Value &operator[](Args &&...key) const { return this->get()->operator[](std::forward<Args>(key)...); }
+    Value &operator[](const Key &key) const { return this->get()->operator[](key); }
+    Value &operator[](Key &&key) const { return this->get()->operator[](std::move(key)); }
 
     ref<ConstIterator<element_type>> begin() const { return this->get()->begin(); }
     ref<ConstIterator<element_type>> end() const { return this->get()->end(); }

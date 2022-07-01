@@ -5,8 +5,20 @@
 class Number : public Object
 {
 public:
+    class Type
+    {
+    public:
+        enum Value
+        {
+            Integer,
+            Double,
+        };
+    };
+
     virtual int toInt() = 0;
     virtual double toDouble() = 0;
+    virtual Number::Type::Value type() = 0;
+
     class Integer;
     class Double;
 };
@@ -19,6 +31,7 @@ public:
 
     int toInt() override;
     double toDouble() override;
+    Number::Type::Value type() override; // Number::Type::Integer
 
     bool operator==(ref<Object> other) override;
     size_t hashCode() override;
@@ -33,6 +46,7 @@ public:
 
     int toInt() override;
     double toDouble() override;
+    Number::Type::Value type() override; // Number::Type::Double
 
     bool operator==(ref<Object> other) override;
     size_t hashCode() override;

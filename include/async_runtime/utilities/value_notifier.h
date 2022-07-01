@@ -2,18 +2,18 @@
 
 #include "value_listenable.h"
 
-template <typename T = std::nullptr_t>
+template <typename T = Object::Void>
 class ValueNotifier;
 
 template <>
-class ValueNotifier<std::nullptr_t> : public ChangeNotifier
+class ValueNotifier<Object::Void> : public ChangeNotifier
 {
 protected:
     ValueNotifier(){};
 };
 
 template <typename T>
-class ValueNotifier : public ValueListenable<T>, public ValueNotifier<std::nullptr_t>, public setter<T>
+class ValueNotifier : public ValueListenable<T>, public ValueNotifier<Object::Void>, public setter<T>
 {
 public:
     static ref<ValueNotifier<T>> fromValue(const T &value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }

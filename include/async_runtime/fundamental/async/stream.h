@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class Stream<std::nullptr_t> : public virtual Object, public EventLoopGetterMixin
+class Stream<Object::Void> : public virtual Object, public EventLoopGetterMixin
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
@@ -27,7 +27,7 @@ public:
 };
 
 template <typename T>
-class Stream : public Stream<std::nullptr_t>
+class Stream : public Stream<Object::Void>
 {
     _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY;
 
@@ -36,7 +36,7 @@ class Stream : public Stream<std::nullptr_t>
 
 public:
     Stream(option<EventLoopGetterMixin> getter = nullptr)
-        : Stream<std::nullptr_t>(EventLoopGetterMixin::ensureEventLoop(getter)) {}
+        : Stream<Object::Void>(EventLoopGetterMixin::ensureEventLoop(getter)) {}
 
     virtual ref<StreamSubscription<T>> listen(Function<void(const T &)> fn);
 

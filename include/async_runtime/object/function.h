@@ -5,12 +5,12 @@
 #include <type_traits>
 
 template <>
-class Fn<std::nullptr_t> : public virtual Object
+class Fn<Object::Void> : public virtual Object
 {
 };
 
 template <typename ReturnType, class... Args>
-class Fn<ReturnType(Args...)> : public Fn<std::nullptr_t>, protected std::function<ReturnType(Args...)>
+class Fn<ReturnType(Args...)> : public Fn<Object::Void>, protected std::function<ReturnType(Args...)>
 {
     using super = std::function<ReturnType(Args...)>;
 
@@ -19,7 +19,7 @@ public:
 
     using super::function;
     using super::operator();
-    using Fn<std::nullptr_t>::operator==;
+    using Fn<Object::Void>::operator==;
 
     const super &toStdFunction() const { return *this; }
 };

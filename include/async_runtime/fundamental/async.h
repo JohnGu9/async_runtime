@@ -10,17 +10,17 @@
 // You need to handle multi-threading issue by your own
 // You can checkout [utilities/lock.h] for some ease thread-locker
 
-template <typename T = std::nullptr_t>
+template <typename T = Object::Void>
 class Future;
-template <typename T = std::nullptr_t>
+template <typename T = Object::Void>
 class Completer;
-template <typename T = std::nullptr_t>
+template <typename T = Object::Void>
 class Stream;
-template <typename T = std::nullptr_t>
+template <typename T = Object::Void>
 class StreamController;
-template <typename T = std::nullptr_t>
+template <typename T = Object::Void>
 class StreamSubscription;
-template <typename T = std::nullptr_t>
+template <typename T = Object::Void>
 class AsyncSnapshot;
 
 #define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \

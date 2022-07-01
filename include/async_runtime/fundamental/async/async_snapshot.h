@@ -3,7 +3,7 @@
 #include "../async.h"
 
 template <>
-class AsyncSnapshot<std::nullptr_t> : public virtual Object
+class AsyncSnapshot<Object::Void> : public virtual Object
 {
 public:
     class ConnectionState
@@ -56,7 +56,7 @@ namespace std
 std::ostream &operator<<(std::ostream &os, const AsyncSnapshot<>::ConnectionState::Value &value);
 
 template <typename T>
-class AsyncSnapshot : public AsyncSnapshot<std::nullptr_t>
+class AsyncSnapshot : public AsyncSnapshot<Object::Void>
 {
 public:
     static ref<AsyncSnapshot<T>> noData(ConnectionState::Value state = ConnectionState::done);
@@ -66,7 +66,7 @@ public:
     static ref<AsyncSnapshot<T>> stateWrapper(ref<AsyncSnapshot<T>>, ConnectionState::Value state);
 
     AsyncSnapshot(ConnectionState::Value state = ConnectionState::none)
-        : AsyncSnapshot<std::nullptr_t>(state) {}
+        : AsyncSnapshot<Object::Void>(state) {}
 
 protected:
     class _HasDataAsyncSnapshot;
