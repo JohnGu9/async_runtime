@@ -22,6 +22,16 @@ public:
     template <typename OTHER>
     bool operator!=(const OTHER &other) const { return !(*this == other); }
 
+    template <typename OTHER>
+    bool operator<(const OTHER &) const;
+    template <typename OTHER>
+    bool operator>(const OTHER &) const;
+
+    template <typename OTHER>
+    bool operator<=(const OTHER &other) const { return this->operator<(other) || this->operator==(other); }
+    template <typename OTHER>
+    bool operator>=(const OTHER &other) const { return this->operator>(other) || this->operator==(other); }
+
 protected:
     RefImplement() noexcept {}
     RefImplement(std::nullptr_t) = delete;
