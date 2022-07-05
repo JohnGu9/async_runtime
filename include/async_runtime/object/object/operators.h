@@ -9,10 +9,12 @@
  *
  */
 
-#define _REVERSE                      \
+#define COMPARE_REVERSE               \
     {                                 \
         return !(object0 == object1); \
     }
+
+//
 
 template <typename T, typename R>
 bool operator==(const ref<T> &object0, const ref<R> &object1) { return Object::equal<>(object0, object1); }
@@ -24,19 +26,16 @@ template <typename T, typename R>
 bool operator==(ref<T> &&object0, ref<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
-bool operator!=(const ref<T> &object0, const ref<R> &object1) _REVERSE;
+bool operator!=(const ref<T> &object0, const ref<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(const ref<T> &object0, ref<R> &&object1) _REVERSE;
+bool operator!=(const ref<T> &object0, ref<R> &&object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(ref<T> &&object0, const ref<R> &object1) _REVERSE;
+bool operator!=(ref<T> &&object0, const ref<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(ref<T> &&object0, ref<R> &&object1) _REVERSE;
+bool operator!=(ref<T> &&object0, ref<R> &&object1) COMPARE_REVERSE;
 
 template <typename T, typename R>
-bool operator==(const ref<T> &object0, const option<R> &object1)
-{
-    return Object::equal<>(object0, object1);
-}
+bool operator==(const ref<T> &object0, const option<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
 bool operator==(const ref<T> &object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
@@ -45,19 +44,16 @@ template <typename T, typename R>
 bool operator==(ref<T> &&object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
-bool operator!=(const ref<T> &object0, const option<R> &object1) _REVERSE;
+bool operator!=(const ref<T> &object0, const option<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(const ref<T> &object0, option<R> &&object1) _REVERSE;
+bool operator!=(const ref<T> &object0, option<R> &&object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(ref<T> &&object0, const option<R> &object1) _REVERSE;
+bool operator!=(ref<T> &&object0, const option<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(ref<T> &&object0, option<R> &&object1) _REVERSE;
+bool operator!=(ref<T> &&object0, option<R> &&object1) COMPARE_REVERSE;
 
 template <typename T, typename R>
-bool operator==(const option<T> &object0, const ref<R> &object1)
-{
-    return Object::equal<>(object0, object1);
-}
+bool operator==(const option<T> &object0, const ref<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
 bool operator==(const option<T> &object0, ref<R> &&object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
@@ -66,19 +62,16 @@ template <typename T, typename R>
 bool operator==(option<T> &&object0, ref<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, const ref<R> &object1) _REVERSE;
+bool operator!=(const option<T> &object0, const ref<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, ref<R> &&object1) _REVERSE;
+bool operator!=(const option<T> &object0, ref<R> &&object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(option<T> &&object0, const ref<R> &object1) _REVERSE;
+bool operator!=(option<T> &&object0, const ref<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(option<T> &&object0, ref<R> &&object1) _REVERSE;
+bool operator!=(option<T> &&object0, ref<R> &&object1) COMPARE_REVERSE;
 
 template <typename T, typename R>
-bool operator==(const option<T> &object0, const option<R> &object1)
-{
-    return Object::equal<>(object0, object1);
-}
+bool operator==(const option<T> &object0, const option<R> &object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
 bool operator==(const option<T> &object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 template <typename T, typename R>
@@ -87,13 +80,13 @@ template <typename T, typename R>
 bool operator==(option<T> &&object0, option<R> &&object1) { return Object::equal<>(object0, object1); }
 
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, const option<R> &object1) _REVERSE;
+bool operator!=(const option<T> &object0, const option<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(const option<T> &object0, option<R> &&object1) _REVERSE;
+bool operator!=(const option<T> &object0, option<R> &&object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(option<T> &&object0, const option<R> &object1) _REVERSE;
+bool operator!=(option<T> &&object0, const option<R> &object1) COMPARE_REVERSE;
 template <typename T, typename R>
-bool operator!=(option<T> &&object0, option<R> &&object1) _REVERSE;
+bool operator!=(option<T> &&object0, option<R> &&object1) COMPARE_REVERSE;
 
 template <typename T>
 bool operator==(const option<T> &object0, std::nullptr_t) { return Object::isNull<>(object0); }
@@ -103,6 +96,8 @@ template <typename T>
 bool operator!=(const option<T> &object0, std::nullptr_t) { return !Object::isNull<>(object0); }
 template <typename T>
 bool operator!=(option<T> &&object0, std::nullptr_t) { return !Object::isNull<>(object0); }
+
+#undef COMPARE_REVERSE
 
 /**
  * @brief operator<<

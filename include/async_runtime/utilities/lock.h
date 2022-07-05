@@ -1,12 +1,3 @@
-/**
- * @brief
- * Provide a read-write lock that fully compatable with C++11
- * (only after C++14 that std provide read/write lock)
- * by default, do not include the file.
- * the file with come with container.h
- *
- */
-
 #pragma once
 #include "../object/object.h"
 #include <condition_variable>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../object.h"
+#include <type_traits>
 
 /**
  * @brief Pair for Map element type.
@@ -26,6 +27,12 @@ public:
         : first(first), second(std::move(second)) {}
     Pair(First &&first, const Second &second)
         : first(std::move(first)), second(second) {}
+
+    size_t hashCode() override
+    {
+        return std::hash<typename std::remove_const<First>::type>()(first) +
+               std::hash<typename std::remove_const<Second>::type>()(second);
+    }
 
     bool operator==(ref<Object> other) override
     {

@@ -83,10 +83,7 @@ public:
     virtual bool operator==(ref<Object> other);
 
     /**
-     * @brief the operator<<(os, object) underlay implement,
-     * not recommend to override the function,
-     * this function depend on Object::toStringStream,
-     * consider to override Object::toStringStream first.
+     * @brief object to string object
      *
      * @return ref<String>
      */
