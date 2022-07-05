@@ -86,7 +86,7 @@ ref<String> String::View::substr(size_t begin, size_t length) const
     return Object::create<String::View>(this->_parent, begin, length == npos ? this->length() + begin : length + begin);
 }
 
-bool String::operator==(option<Object> other)
+bool String::operator==(const option<Object>& other)
 {
     if (String *string = dynamic_cast<String *>(other.get()))
     {

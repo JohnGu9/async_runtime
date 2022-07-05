@@ -1,10 +1,10 @@
 #include "async_runtime/object/object.h"
 #include <typeinfo>
 
-bool Object::operator==(option<Object> other)
+bool Object::operator==(const option<Object>& other)
 {
     return static_cast<std::enable_shared_from_this<Object> *>(this)->shared_from_this() ==
-           static_cast<std::shared_ptr<Object> &>(other);
+           static_cast<const std::shared_ptr<Object> &>(other);
 }
 
 Object::RuntimeType Object::runtimeType()
@@ -36,7 +36,7 @@ size_t Object::hashCode()
     return hs(static_cast<std::enable_shared_from_this<Object> *>(this)->shared_from_this());
 }
 
-bool Object::Void::operator==(option<Object> other)
+bool Object::Void::operator==(const option<Object>& other)
 {
     auto p = other.get();
     if (p == nullptr)

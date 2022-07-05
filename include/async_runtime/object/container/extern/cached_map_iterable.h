@@ -34,7 +34,7 @@ public:
             throw NotImplementedError();
         }
 
-        bool operator==(option<Object> other) override
+        bool operator==(const option<Object>& other) override
         {
             if (auto ptr = dynamic_cast<_EndConstIterator *>(other.get())) // [[likely]]
             {

@@ -32,7 +32,7 @@ public:
 
         const element_type &value() const override { return *(this->_it); }
 
-        bool operator==(option<Object> other) override;
+        bool operator==(const option<Object>& other) override;
     };
 
     HashMap() {}
@@ -132,7 +132,7 @@ public:
 };
 
 template <typename Key, typename Value>
-bool HashMap<Key, Value>::_ConstIterator::operator==(option<Object> other)
+bool HashMap<Key, Value>::_ConstIterator::operator==(const option<Object>& other)
 {
     if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
     {

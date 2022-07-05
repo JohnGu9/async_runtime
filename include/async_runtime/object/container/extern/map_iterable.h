@@ -28,7 +28,7 @@ public:
             return _transform(*_other);
         }
 
-        bool operator==(option<Object> other) override
+        bool operator==(const option<Object>& other) override
         {
             if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
             {

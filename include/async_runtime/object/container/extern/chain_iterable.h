@@ -40,7 +40,7 @@ public:
 
         const T &value() const override { return origin.get()->value(); }
 
-        bool operator==(option<Object> other) override
+        bool operator==(const option<Object>& other) override
         {
             if (auto ptr = dynamic_cast<_ConstIterator *>(other.get()))
             {

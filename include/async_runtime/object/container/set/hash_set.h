@@ -31,7 +31,7 @@ public:
 
         const T &value() const override { return *(this->_it); }
 
-        bool operator==(option<Object> other) override;
+        bool operator==(const option<Object>& other) override;
     };
 
     static ref<Set<T>> create();
@@ -78,7 +78,7 @@ public:
 };
 
 template <typename T, typename Hasher, typename Equal>
-bool HashSet<T, Hasher, Equal>::_ConstIterator::operator==(option<Object> other)
+bool HashSet<T, Hasher, Equal>::_ConstIterator::operator==(const option<Object>& other)
 {
     if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
     {

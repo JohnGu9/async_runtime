@@ -7,7 +7,7 @@ public:
     const bool value;
     Boolean(bool value) : value(value) {}
 
-    bool operator==(option<Object> other) override;
+    bool operator==(const option<Object>& other) override;
     size_t hashCode() override;
     void toStringStream(std::ostream &os) override;
 };

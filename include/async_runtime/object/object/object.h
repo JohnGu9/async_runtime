@@ -62,7 +62,7 @@ public:
      * @return true = consider [other] is equal to self
      * @return false = consider [other] is not equal to self
      */
-    virtual bool operator==(option<Object> other);
+    virtual bool operator==(const option<Object>& other);
 
     /**
      * @brief object to string object
@@ -105,7 +105,7 @@ public:
 class Object::Void : public virtual Object
 {
 public:
-    bool operator==(option<Object> other) override;
+    bool operator==(const option<Object>& other) override;
     void toStringStream(std::ostream &) override;
     size_t hashCode() override;
 };
