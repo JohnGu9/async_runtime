@@ -33,14 +33,8 @@ class ref<String>;
  */
 class String : public ReversibleIterable<char>, public ConstIndexableMixin<size_t, char>, protected std::string
 {
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
-
-    template <typename T>
-    friend struct std::hash;
-
     template <typename T>
     static bool _formatFromStringToStream(std::ostream &os, const char *&start, const char *end, const T &element);
-
     template <typename Iterator, typename T>
     static bool _formatFromIteratorToStream(std::ostream &os, Iterator &start, const Iterator &end, const T &element);
 
@@ -68,7 +62,7 @@ public:
 
         const char &value() const override { return *(this->_it); }
 
-        bool operator==(ref<Object> other) override
+        bool operator==(option<Object> other) override
         {
             if (auto ptr = dynamic_cast<String::StringConstIterator *>(other.get()))
             {
@@ -100,7 +94,7 @@ public:
 
         const char &value() const override { return *(this->_it); }
 
-        bool operator==(ref<Object> other) override
+        bool operator==(option<Object> other) override
         {
             if (auto ptr = dynamic_cast<String::ReverseConstIterator *>(other.get()))
             {
@@ -114,6 +108,7 @@ public:
             return Object::create<String::ReverseConstIterator>(_it + shift);
         }
     };
+
     using Iterable<char>::find;
     static constexpr const size_t npos = super::npos;
 
@@ -141,10 +136,11 @@ public:
     String(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }
     String(const char *const str, size_t length) : super(str, length) { DEBUG_ASSERT(str != nullptr); }
 
-    virtual bool operator==(const ref<String> &other);
+    virtual bool operator==(const char *const other);
+    virtual bool operator==(const std::string& other);
 
     // override from Object
-    bool operator==(ref<Object> other) override;
+    bool operator==(option<Object> other) override;
     void toStringStream(std::ostream &) override;
     ref<String> toString() override;
     size_t hashCode() override;
@@ -203,14 +199,6 @@ public:
 
     template <typename... Args, typename = decltype(String(std::declval<Args>()...))>
     ref(Args &&...args) : super(Object::create<String>(std::forward<Args>(args)...)) {}
-
-    bool operator==(const char *const other) const;
-    bool operator==(const std::string &other) const;
-    bool operator==(std::string &&other) const;
-
-    bool operator!=(const char *const other) const { return !operator==(other); }
-    bool operator!=(const std::string &other) const { return !operator==(other); }
-    bool operator!=(std::string &&other) const { return !operator==(std::move(other)); }
 
     const char &operator[](size_t index) const { return this->get()->operator[](index); }
     ref<ConstIterator<char>> begin() const { return this->get()->begin(); }

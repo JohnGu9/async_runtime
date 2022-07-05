@@ -42,7 +42,7 @@ public:
     Basic(T value) : value(value) {}
 
     void toStringStream(std::ostream &os) override { os << value; }
-    bool operator==(ref<Object> other) override;
+    bool operator==(option<Object> other) override;
 };
 
 class Number::Short : public Number::Basic<short>
@@ -94,7 +94,7 @@ public:
 };
 
 template <typename T>
-bool Number::Basic<T>::operator==(ref<Object> other)
+bool Number::Basic<T>::operator==(option<Object> other)
 {
     if (auto ptr = dynamic_cast<Number *>(other.get()))
     {

@@ -1,6 +1,6 @@
 #include "async_runtime/utilities/boolean.h"
 
-bool Boolean::operator==(ref<Object> other)
+bool Boolean::operator==(option<Object> other)
 {
     if (auto ptr = dynamic_cast<Boolean *>(other.get()))
         return this->value == ptr->value;

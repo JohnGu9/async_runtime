@@ -34,7 +34,7 @@ public:
                std::hash<typename std::remove_const<Second>::type>()(second);
     }
 
-    bool operator==(ref<Object> other) override
+    bool operator==(option<Object> other) override
     {
         if (auto ptr = dynamic_cast<Pair<First, Second> *>(other.get()))
         {

@@ -13,7 +13,7 @@ public:
     {
         ref<ConstIterator<int>> next() const override { throw NotImplementedError(); }
         const int &value() const override { throw NotImplementedError(); }
-        bool operator==(ref<Object> other) override
+        bool operator==(option<Object> other) override
         {
             if (auto ptr = dynamic_cast<_End *>(other.get()))
             {
@@ -38,7 +38,7 @@ public:
             return Object::create<_ConstIterator>(nextValue, _end, _step);
         }
         const int &value() const override { return _current; }
-        bool operator==(ref<Object> other) override
+        bool operator==(option<Object> other) override
         {
             if (auto ptr = dynamic_cast<_ConstIterator *>(other.get()))
             {

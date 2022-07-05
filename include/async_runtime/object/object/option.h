@@ -1,6 +1,27 @@
 #pragma once
 #include "ref.h"
 
+namespace _async_runtime
+{
+    template <typename T>
+    class OptionFilter;
+
+    template <>
+    class OptionFilter<std::nullptr_t> : public std::false_type
+    {
+    };
+
+    template <typename T>
+    class OptionFilter<option<T>> : public std::false_type
+    {
+    };
+
+    template <typename T>
+    class OptionFilter : public std::true_type
+    {
+    };
+};
+
 template <typename T>
 class option : protected ref<T>, public _async_runtime::ToRefMixin<T>
 {
@@ -42,4 +63,13 @@ public:
     _async_runtime::Else ifNotNull(Function<void(ref<T>)> fn) const noexcept final;
     ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept final;
     ref<T> assertNotNull() const noexcept(false) final;
+
+    template <typename OTHER, typename std::enable_if<_async_runtime::OptionFilter<OTHER>::value>::type * = nullptr>
+    bool operator==(const OTHER &other) const;
+    template <typename R>
+    bool operator==(const option<R> &other) const;
+    bool operator==(std::nullptr_t) const { return this->get() == nullptr; }
+
+    template <typename OTHER>
+    bool operator!=(const OTHER &other) const { return !(*this == other); }
 };

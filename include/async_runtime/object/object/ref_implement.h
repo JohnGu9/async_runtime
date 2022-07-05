@@ -17,6 +17,11 @@ public:
         return super::get();
     }
 
+    template <typename OTHER>
+    bool operator==(const OTHER &other) const;
+    template <typename OTHER>
+    bool operator!=(const OTHER &other) const { return !(*this == other); }
+
 protected:
     RefImplement() noexcept {}
     RefImplement(std::nullptr_t) = delete;

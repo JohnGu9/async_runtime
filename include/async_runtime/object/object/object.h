@@ -35,23 +35,6 @@ public:
     template <typename T0, typename T1>
     static bool identical(const option<T0> &, const ref<T1> &) noexcept;
 
-    template <typename T0, typename T1,
-              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
-              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
-    static bool equal(const option<T0> &, const option<T1> &);
-    template <typename T0, typename T1,
-              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
-              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
-    static bool equal(const ref<T0> &, const ref<T1> &);
-    template <typename T0, typename T1,
-              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
-              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
-    static bool equal(const ref<T0> &, const option<T1> &);
-    template <typename T0, typename T1,
-              typename std::enable_if<std::is_base_of<Object, T0>::value>::type * = nullptr,
-              typename std::enable_if<std::is_base_of<Object, T1>::value>::type * = nullptr>
-    static bool equal(const option<T0> &, const ref<T1> &);
-
     template <typename T>
     static bool isNull(const option<T> &) noexcept;
     template <typename T>
@@ -73,14 +56,13 @@ public:
     ref<T> covariant() noexcept(false); // unsafely cast
 
     /**
-     * @brief the function call by operator==(...) and Object::equal,
-     * override this function to custom your object compare.
+     * @brief override this function to custom your object compare.
      *
      * @param other
      * @return true = consider [other] is equal to self
      * @return false = consider [other] is not equal to self
      */
-    virtual bool operator==(ref<Object> other);
+    virtual bool operator==(option<Object> other);
 
     /**
      * @brief object to string object
@@ -123,7 +105,7 @@ public:
 class Object::Void : public virtual Object
 {
 public:
-    bool operator==(ref<Object> other) override;
+    bool operator==(option<Object> other) override;
     void toStringStream(std::ostream &) override;
     size_t hashCode() override;
 };

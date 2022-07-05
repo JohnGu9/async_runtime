@@ -1,9 +1,10 @@
 #include "async_runtime/object/object.h"
 #include <typeinfo>
 
-bool Object::operator==(ref<Object> other)
+bool Object::operator==(option<Object> other)
 {
-    return false; // if this function be called, the [other] must be the 'another' Object
+    return static_cast<std::enable_shared_from_this<Object> *>(this)->shared_from_this() ==
+           static_cast<std::shared_ptr<Object> &>(other);
 }
 
 Object::RuntimeType Object::runtimeType()
@@ -35,9 +36,12 @@ size_t Object::hashCode()
     return hs(static_cast<std::enable_shared_from_this<Object> *>(this)->shared_from_this());
 }
 
-bool Object::Void::operator==(ref<Object> other)
+bool Object::Void::operator==(option<Object> other)
 {
-    if (auto ptr = dynamic_cast<Object::Void *>(other.get()))
+    auto p = other.get();
+    if (p == nullptr)
+        return true;
+    else if (auto ptr = dynamic_cast<Object::Void *>(p))
         return true;
     return false;
 }

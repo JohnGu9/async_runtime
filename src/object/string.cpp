@@ -86,30 +86,9 @@ ref<String> String::View::substr(size_t begin, size_t length) const
     return Object::create<String::View>(this->_parent, begin, length == npos ? this->length() + begin : length + begin);
 }
 
-bool ref<String>::operator==(const char *const other) const
+bool String::operator==(option<Object> other)
 {
-    const auto len = std::strlen(other);
-    if (len != this->get()->length())
-        return false;
-    return std::strncmp(this->get()->data(), other, len) == 0;
-}
-
-bool ref<String>::operator==(const std::string &other) const
-{
-    if (this->get()->length() != other.length())
-        return false;
-    return std::strncmp(this->get()->data(), other.data(), other.length()) == 0;
-}
-
-bool ref<String>::operator==(std::string &&other) const
-{
-    return this->operator==(static_cast<const std::string &>(other));
-}
-
-bool String::operator==(ref<Object> other)
-{
-    auto ptr = other.get();
-    if (String *string = dynamic_cast<String *>(ptr))
+    if (String *string = dynamic_cast<String *>(other.get()))
     {
         if (this->length() != string->length())
             return false;
@@ -118,11 +97,19 @@ bool String::operator==(ref<Object> other)
     return false;
 }
 
-bool String::operator==(const ref<String> &string)
+bool String::operator==(const std::string &other)
 {
-    if (this->length() != string->length())
+    if (this->length() != other.length())
         return false;
-    return std::strncmp(this->data(), string->data(), string->length()) == 0;
+    return std::strncmp(this->data(), other.data(), other.length()) == 0;
+}
+
+bool String::operator==(const char *const other)
+{
+    auto length = strlen(other);
+    if (this->length() != length)
+        return false;
+    return std::strncmp(this->data(), other, length) == 0;
 }
 
 void String::toStringStream(std::ostream &os)
