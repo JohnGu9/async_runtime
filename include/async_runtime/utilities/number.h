@@ -32,6 +32,14 @@ public:
 
     class Float;  // 32 bits
     class Double; // 64 bits
+
+    using Object::operator==;
+    virtual bool operator==(const short &other) = 0;
+    virtual bool operator==(const int &other) = 0;
+    virtual bool operator==(const long &other) = 0;
+    virtual bool operator==(const long long &other) = 0;
+    virtual bool operator==(const float &other) = 0;
+    virtual bool operator==(const double &other) = 0;
 };
 
 template <typename T>
@@ -42,7 +50,14 @@ public:
     Basic(T value) : value(value) {}
 
     void toStringStream(std::ostream &os) override { os << value; }
-    bool operator==(const option<Object>& other) override;
+    bool operator==(const option<Object> &other) override;
+
+    bool operator==(const short &other) override { return this->value == other; }
+    bool operator==(const int &other) override { return this->value == other; }
+    bool operator==(const long &other) override { return this->value == other; }
+    bool operator==(const long long &other) override { return this->value == other; }
+    bool operator==(const float &other) override { return this->value == other; }
+    bool operator==(const double &other) override { return this->value == other; }
 };
 
 class Number::Short : public Number::Basic<short>
@@ -94,7 +109,7 @@ public:
 };
 
 template <typename T>
-bool Number::Basic<T>::operator==(const option<Object>& other)
+bool Number::Basic<T>::operator==(const option<Object> &other)
 {
     if (auto ptr = dynamic_cast<Number *>(other.get()))
     {

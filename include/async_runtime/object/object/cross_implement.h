@@ -25,7 +25,9 @@ template <typename T>
 template <typename R>
 bool option<T>::operator==(const option<R> &other) const
 {
-    if (this->get() == nullptr)
-        return static_cast<const std::shared_ptr<T> &>(*this) == static_cast<const std::shared_ptr<R> &>(other);
-    return this->super::operator==(other);
+    if (this->get() != nullptr)
+        return this->super::operator==(other);
+    else if (other.get() != nullptr)
+        return (&other)->ref<R>::operator==(*this);
+    return true;
 }

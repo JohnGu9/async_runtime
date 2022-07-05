@@ -7,9 +7,11 @@ public:
     const bool value;
     Boolean(bool value) : value(value) {}
 
-    bool operator==(const option<Object>& other) override;
     size_t hashCode() override;
     void toStringStream(std::ostream &os) override;
+
+    bool operator==(const option<Object> &other) override;
+    virtual bool operator==(const bool &);
 };
 
 template <>
