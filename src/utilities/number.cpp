@@ -3,31 +3,32 @@
 static auto integer_hash = std::hash<long long>();
 static auto double_hash = std::hash<double>();
 
+long long Number::toSigned(const size_t &value) { return static_cast<long long>(value); }
+
 // SizeType
-long long Number::SizeType::toSigned() { return static_cast<long long>(this->value); }
 Number::Type::Value Number::SizeType::type() { return Number::Type::SizeType; }
-size_t Number::SizeType::hashCode() { return integer_hash(toSigned()); }
+size_t Number::SizeType::hashCode() { return integer_hash(Number::toSigned(this->value)); }
 bool Number::SizeType::operator==(const size_t &other) { return this->value == other; }
-bool Number::SizeType::operator==(const short &other) { return toSigned() == other; }
-bool Number::SizeType::operator==(const int &other) { return toSigned() == other; }
-bool Number::SizeType::operator==(const long &other) { return toSigned() == other; }
-bool Number::SizeType::operator==(const long long &other) { return toSigned() == other; }
-bool Number::SizeType::operator==(const float &other) { return toSigned() == other; }
-bool Number::SizeType::operator==(const double &other) { return toSigned() == other; }
+bool Number::SizeType::operator==(const short &other) { return Number::toSigned(this->value) == other; }
+bool Number::SizeType::operator==(const int &other) { return Number::toSigned(this->value) == other; }
+bool Number::SizeType::operator==(const long &other) { return Number::toSigned(this->value) == other; }
+bool Number::SizeType::operator==(const long long &other) { return Number::toSigned(this->value) == other; }
+bool Number::SizeType::operator==(const float &other) { return Number::toSigned(this->value) == other; }
+bool Number::SizeType::operator==(const double &other) { return Number::toSigned(this->value) == other; }
 bool Number::SizeType::operator<(const size_t &other) { return this->value < other; }
-bool Number::SizeType::operator<(const short &other) { return toSigned() < other; }
-bool Number::SizeType::operator<(const int &other) { return toSigned() < other; }
-bool Number::SizeType::operator<(const long &other) { return toSigned() < other; }
-bool Number::SizeType::operator<(const long long &other) { return toSigned() < other; }
-bool Number::SizeType::operator<(const float &other) { return toSigned() < other; }
-bool Number::SizeType::operator<(const double &other) { return toSigned() < other; }
+bool Number::SizeType::operator<(const short &other) { return Number::toSigned(this->value) < other; }
+bool Number::SizeType::operator<(const int &other) { return Number::toSigned(this->value) < other; }
+bool Number::SizeType::operator<(const long &other) { return Number::toSigned(this->value) < other; }
+bool Number::SizeType::operator<(const long long &other) { return Number::toSigned(this->value) < other; }
+bool Number::SizeType::operator<(const float &other) { return Number::toSigned(this->value) < other; }
+bool Number::SizeType::operator<(const double &other) { return Number::toSigned(this->value) < other; }
 bool Number::SizeType::operator>(const size_t &other) { return this->value < other; }
-bool Number::SizeType::operator>(const short &other) { return toSigned() > other; }
-bool Number::SizeType::operator>(const int &other) { return toSigned() > other; }
-bool Number::SizeType::operator>(const long &other) { return toSigned() > other; }
-bool Number::SizeType::operator>(const long long &other) { return toSigned() > other; }
-bool Number::SizeType::operator>(const float &other) { return toSigned() > other; }
-bool Number::SizeType::operator>(const double &other) { return toSigned() > other; }
+bool Number::SizeType::operator>(const short &other) { return Number::toSigned(this->value) > other; }
+bool Number::SizeType::operator>(const int &other) { return Number::toSigned(this->value) > other; }
+bool Number::SizeType::operator>(const long &other) { return Number::toSigned(this->value) > other; }
+bool Number::SizeType::operator>(const long long &other) { return Number::toSigned(this->value) > other; }
+bool Number::SizeType::operator>(const float &other) { return Number::toSigned(this->value) > other; }
+bool Number::SizeType::operator>(const double &other) { return Number::toSigned(this->value) > other; }
 bool Number::SizeType::operator==(const option<Object> &other)
 {
     if (auto ptr = dynamic_cast<Number *>(other.get()))
@@ -61,17 +62,17 @@ bool Number::SizeType::operator<(const ref<Number> &other)
     case Number::Type::SizeType:
         return this->value < dynamic_cast<Number::SizeType *>(other.get())->value;
     case Number::Type::Short:
-        return toSigned() < dynamic_cast<Number::Short *>(other.get())->value;
+        return Number::toSigned(this->value) < dynamic_cast<Number::Short *>(other.get())->value;
     case Number::Type::Integer:
-        return toSigned() < dynamic_cast<Number::Integer *>(other.get())->value;
+        return Number::toSigned(this->value) < dynamic_cast<Number::Integer *>(other.get())->value;
     case Number::Type::Long:
-        return toSigned() < dynamic_cast<Number::Long *>(other.get())->value;
+        return Number::toSigned(this->value) < dynamic_cast<Number::Long *>(other.get())->value;
     case Number::Type::LongLong:
-        return toSigned() < dynamic_cast<Number::LongLong *>(other.get())->value;
+        return Number::toSigned(this->value) < dynamic_cast<Number::LongLong *>(other.get())->value;
     case Number::Type::Float:
-        return toSigned() < dynamic_cast<Number::Float *>(other.get())->value;
+        return Number::toSigned(this->value) < dynamic_cast<Number::Float *>(other.get())->value;
     case Number::Type::Double:
-        return toSigned() < dynamic_cast<Number::Double *>(other.get())->value;
+        return Number::toSigned(this->value) < dynamic_cast<Number::Double *>(other.get())->value;
     default:
         throw NotImplementedError();
     }
@@ -83,17 +84,17 @@ bool Number::SizeType::operator>(const ref<Number> &other)
     case Number::Type::SizeType:
         return this->value > dynamic_cast<Number::SizeType *>(other.get())->value;
     case Number::Type::Short:
-        return toSigned() > dynamic_cast<Number::Short *>(other.get())->value;
+        return Number::toSigned(this->value) > dynamic_cast<Number::Short *>(other.get())->value;
     case Number::Type::Integer:
-        return toSigned() > dynamic_cast<Number::Integer *>(other.get())->value;
+        return Number::toSigned(this->value) > dynamic_cast<Number::Integer *>(other.get())->value;
     case Number::Type::Long:
-        return toSigned() > dynamic_cast<Number::Long *>(other.get())->value;
+        return Number::toSigned(this->value) > dynamic_cast<Number::Long *>(other.get())->value;
     case Number::Type::LongLong:
-        return toSigned() > dynamic_cast<Number::LongLong *>(other.get())->value;
+        return Number::toSigned(this->value) > dynamic_cast<Number::LongLong *>(other.get())->value;
     case Number::Type::Float:
-        return toSigned() > dynamic_cast<Number::Float *>(other.get())->value;
+        return Number::toSigned(this->value) > dynamic_cast<Number::Float *>(other.get())->value;
     case Number::Type::Double:
-        return toSigned() > dynamic_cast<Number::Double *>(other.get())->value;
+        return Number::toSigned(this->value) > dynamic_cast<Number::Double *>(other.get())->value;
     default:
         throw NotImplementedError();
     }

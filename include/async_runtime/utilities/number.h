@@ -6,6 +6,9 @@
 
 class Number : public virtual Object
 {
+protected:
+    static long long toSigned(const size_t &);
+
 public:
     class Type
     {
@@ -47,6 +50,8 @@ public:
 
     virtual bool operator<(const ref<Number> &) = 0;
     virtual bool operator>(const ref<Number> &) = 0;
+    virtual bool operator<(const option<Number> &) = 0;
+    virtual bool operator>(const option<Number> &) = 0;
 
     virtual bool operator<(const size_t &other) = 0;
     virtual bool operator<(const short &other) = 0;
@@ -55,9 +60,6 @@ public:
     virtual bool operator<(const long long &other) = 0;
     virtual bool operator<(const float &other) = 0;
     virtual bool operator<(const double &other) = 0;
-
-    virtual bool operator<(const option<Number> &) = 0;
-    virtual bool operator>(const option<Number> &) = 0;
 
     virtual bool operator>(const size_t &other) = 0;
     virtual bool operator>(const short &other) = 0;
@@ -78,7 +80,7 @@ public:
     void toStringStream(std::ostream &os) override { os << value; }
     bool operator==(const option<Object> &other) override;
 
-    bool operator==(const size_t &other) override { return this->value == other; }
+    bool operator==(const size_t &other) override { return this->value == static_cast<long long>(other); }
     bool operator==(const short &other) override { return this->value == other; }
     bool operator==(const int &other) override { return this->value == other; }
     bool operator==(const long &other) override { return this->value == other; }
@@ -88,7 +90,6 @@ public:
 
     bool operator<(const ref<Number> &) override;
     bool operator>(const ref<Number> &) override;
-
     bool operator<(const option<Number> &number) override;
     bool operator>(const option<Number> &number) override;
 
@@ -111,8 +112,6 @@ public:
 
 class Number::SizeType : public Number
 {
-    long long toSigned();
-
 public:
     const size_t value;
     SizeType(const size_t &value) : value(value) {}
@@ -237,7 +236,7 @@ bool Number::Basic<T>::operator==(const option<Object> &other)
         switch (ptr->type())
         {
         case Number::Type::SizeType:
-            return this->value == dynamic_cast<Number::SizeType *>(ptr)->value;
+            return this->value == Number::toSigned(dynamic_cast<Number::SizeType *>(ptr)->value);
         case Number::Type::Short:
             return this->value == dynamic_cast<Number::Short *>(ptr)->value;
         case Number::Type::Integer:
@@ -263,7 +262,7 @@ bool Number::Basic<T>::operator<(const ref<Number> &other)
     switch (other->type())
     {
     case Number::Type::SizeType:
-        return this->value < static_cast<long long>(dynamic_cast<Number::SizeType *>(other.get())->value);
+        return this->value < Number::toSigned(dynamic_cast<Number::SizeType *>(other.get())->value);
     case Number::Type::Short:
         return this->value < dynamic_cast<Number::Short *>(other.get())->value;
     case Number::Type::Integer:
@@ -287,7 +286,7 @@ bool Number::Basic<T>::operator>(const ref<Number> &other)
     switch (other->type())
     {
     case Number::Type::SizeType:
-        return this->value > static_cast<long long>(dynamic_cast<Number::SizeType *>(other.get())->value);
+        return this->value > Number::toSigned(dynamic_cast<Number::SizeType *>(other.get())->value);
     case Number::Type::Short:
         return this->value > dynamic_cast<Number::Short *>(other.get())->value;
     case Number::Type::Integer:
