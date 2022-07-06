@@ -33,6 +33,8 @@ ref<T> option<T>::assertNotNull() const noexcept(false)
     return ref<T>(ptr);
 }
 
+//
+
 template <typename T>
 template <typename OTHER, typename std::enable_if<_async_runtime::OptionFilter<OTHER>::value>::type *>
 bool option<T>::operator==(const OTHER &other) const
@@ -51,4 +53,72 @@ bool option<T>::operator==(const option<R> &other) const
     else if (other.get() != nullptr)
         return (&other)->ref<R>::operator==(*this);
     return true;
+}
+
+template <typename T>
+bool option<T>::operator==(const std::nullptr_t &) const
+{
+    if (this->get() == nullptr)
+        return true;
+    return this->super::operator==(option<Object>());
+}
+
+//
+
+template <typename T>
+template <typename OTHER, typename std::enable_if<_async_runtime::OptionFilter<OTHER>::value>::type *>
+bool option<T>::operator<(const OTHER &other) const
+{
+    if (this->get() == nullptr)
+        return true;
+    return this->super::operator<(other);
+}
+
+template <typename T>
+template <typename R>
+bool option<T>::operator<(const option<R> &other) const
+{
+    if (this->get() != nullptr)
+        return this->super::operator<(other);
+    else if (other.get() != nullptr)
+        return (&other)->ref<R>::operator>(*this);
+    return false;
+}
+
+template <typename T>
+bool option<T>::operator<(const std::nullptr_t &) const
+{
+    if (this->get() == nullptr)
+        return false;
+    return this->super::operator<(option<Object>());
+}
+
+//
+
+template <typename T>
+template <typename OTHER, typename std::enable_if<_async_runtime::OptionFilter<OTHER>::value>::type *>
+bool option<T>::operator>(const OTHER &other) const
+{
+    if (this->get() == nullptr)
+        return true;
+    return this->super::operator>(other);
+}
+
+template <typename T>
+template <typename R>
+bool option<T>::operator>(const option<R> &other) const
+{
+    if (this->get() != nullptr)
+        return this->super::operator>(other);
+    else if (other.get() != nullptr)
+        return (&other)->ref<R>::operator<(*this);
+    return false;
+}
+
+template <typename T>
+bool option<T>::operator>(const std::nullptr_t &) const
+{
+    if (this->get() == nullptr)
+        return false;
+    return this->super::operator>(option<Object>());
 }

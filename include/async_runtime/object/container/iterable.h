@@ -122,7 +122,7 @@ public:
     {
         for (auto it = this->begin(), end = this->end(); it != end;)
         {
-            if (it.get()->value() == value)
+            if (*it == value)
                 it = this->erase(it);
             else
                 ++it;

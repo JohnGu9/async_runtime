@@ -86,25 +86,71 @@ ref<String> String::View::substr(size_t begin, size_t length) const
     return Object::create<String::View>(this->_parent, begin, length == npos ? this->length() + begin : length + begin);
 }
 
-bool String::operator==(const option<Object>& other)
+bool String::operator<(const ref<String> &other) const
 {
-    if (String *string = dynamic_cast<String *>(other.get()))
+    if (this->length() == other->length())
     {
-        if (this->length() != string->length())
+        for (size_t i = 0, length = this->length(); i < length; i++)
+        {
+            const char &a = this->operator[](i),
+                       &b = other->operator[](i);
+            if (a == b)
+                continue;
+            return a < b;
+        }
+        return false;
+    }
+    return this->length() < other->length();
+}
+
+bool String::operator>(const ref<String> &other) const
+{
+    if (this->length() == other->length())
+    {
+        for (size_t i = 0, length = this->length(); i < length; i++)
+        {
+            const char &a = this->operator[](i),
+                       &b = other->operator[](i);
+            if (a == b)
+                continue;
+            return a > b;
+        }
+        return false;
+    }
+    return this->length() > other->length();
+}
+
+bool String::operator<(const option<String> &other) const
+{
+    if_not_null(other) return this->operator<(other);
+    end_if() return false;
+}
+
+bool String::operator>(const option<String> &other) const
+{
+    if_not_null(other) return this->operator>(other);
+    end_if() return true;
+}
+
+bool String::operator==(const option<Object> &other)
+{
+    if (auto ptr = dynamic_cast<String *>(other.get()))
+    {
+        if (this->length() != ptr->length())
             return false;
-        return std::strncmp(this->data(), string->data(), string->length()) == 0;
+        return std::strncmp(this->data(), ptr->data(), ptr->length()) == 0;
     }
     return false;
 }
 
-bool String::operator==(const std::string &other)
+bool String::operator==(const std::string &other) const
 {
     if (this->length() != other.length())
         return false;
     return std::strncmp(this->data(), other.data(), other.length()) == 0;
 }
 
-bool String::operator==(const char *const other)
+bool String::operator==(const char *const other) const
 {
     auto length = strlen(other);
     if (this->length() != length)

@@ -25,7 +25,9 @@ namespace _async_runtime
 template <typename T>
 class option : protected ref<T>, public _async_runtime::ToRefMixin<T>
 {
-    _ASYNC_RUNTIME_FRIEND_FAMILY;
+    friend class Object;
+    template <typename R>
+    friend class option;
     using super = ref<T>;
 
 public:
@@ -65,10 +67,25 @@ public:
     ref<T> assertNotNull() const noexcept(false) final;
 
     template <typename OTHER, typename std::enable_if<_async_runtime::OptionFilter<OTHER>::value>::type * = nullptr>
-    bool operator==(const OTHER &other) const;
+    bool operator==(const OTHER &) const;
     template <typename R>
-    bool operator==(const option<R> &other) const;
-    bool operator==(std::nullptr_t) const { return this->get() == nullptr; }
+    bool operator==(const option<R> &) const;
+    bool operator==(const std::nullptr_t &) const;
+
+    template <typename OTHER, typename std::enable_if<_async_runtime::OptionFilter<OTHER>::value>::type * = nullptr>
+    bool operator<(const OTHER &) const;
+    template <typename R>
+    bool operator<(const option<R> &) const;
+    bool operator<(const std::nullptr_t &) const;
+
+    template <typename OTHER, typename std::enable_if<_async_runtime::OptionFilter<OTHER>::value>::type * = nullptr>
+    bool operator>(const OTHER &) const;
+    template <typename R>
+    bool operator>(const option<R> &) const;
+    bool operator>(const std::nullptr_t &) const;
+
+    using super::operator<=;
+    using super::operator>=;
 
     template <typename OTHER>
     bool operator!=(const OTHER &other) const { return !(*this == other); }

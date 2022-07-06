@@ -62,7 +62,7 @@ public:
 
         const char &value() const override { return *(this->_it); }
 
-        bool operator==(const option<Object>& other) override
+        bool operator==(const option<Object> &other) override
         {
             if (auto ptr = dynamic_cast<String::StringConstIterator *>(other.get()))
             {
@@ -94,7 +94,7 @@ public:
 
         const char &value() const override { return *(this->_it); }
 
-        bool operator==(const option<Object>& other) override
+        bool operator==(const option<Object> &other) override
         {
             if (auto ptr = dynamic_cast<String::ReverseConstIterator *>(other.get()))
             {
@@ -136,11 +136,16 @@ public:
     String(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }
     String(const char *const str, size_t length) : super(str, length) { DEBUG_ASSERT(str != nullptr); }
 
-    virtual bool operator==(const char *const other);
-    virtual bool operator==(const std::string& other);
+    bool operator<(const ref<String> &other) const;
+    bool operator<(const option<String> &other) const;
+    bool operator>(const ref<String> &other) const;
+    bool operator>(const option<String> &other) const;
+
+    bool operator==(const char *const other) const;
+    bool operator==(const std::string &other) const;
 
     // override from Object
-    bool operator==(const option<Object>& other) override;
+    bool operator==(const option<Object> &other) override;
     void toStringStream(std::ostream &) override;
     ref<String> toString() override;
     size_t hashCode() override;
