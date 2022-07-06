@@ -40,6 +40,12 @@ public:
     virtual bool operator==(const long long &other) = 0;
     virtual bool operator==(const float &other) = 0;
     virtual bool operator==(const double &other) = 0;
+
+    virtual bool operator<(const ref<Number> &) = 0;
+    virtual bool operator>(const ref<Number> &) = 0;
+
+    virtual bool operator<(const option<Number> &) = 0;
+    virtual bool operator>(const option<Number> &) = 0;
 };
 
 template <typename T>
@@ -47,7 +53,7 @@ class Number::Basic : public Number
 {
 public:
     const T value;
-    Basic(T value) : value(value) {}
+    Basic(const T &value) : value(value) {}
 
     void toStringStream(std::ostream &os) override { os << value; }
     bool operator==(const option<Object> &other) override;
@@ -58,6 +64,20 @@ public:
     bool operator==(const long long &other) override { return this->value == other; }
     bool operator==(const float &other) override { return this->value == other; }
     bool operator==(const double &other) override { return this->value == other; }
+
+    bool operator<(const ref<Number> &) override;
+    bool operator>(const ref<Number> &) override;
+
+    bool operator<(const option<Number> &number) override
+    {
+        if_not_null(number) return this->operator<(number);
+        end_if() return false;
+    }
+    bool operator>(const option<Number> &number) override
+    {
+        if_not_null(number) return this->operator>(number);
+        end_if() return true;
+    }
 };
 
 class Number::Short : public Number::Basic<short>
@@ -134,6 +154,50 @@ bool Number::Basic<T>::operator==(const option<Object> &other)
     return false;
 }
 
+template <typename T>
+bool Number::Basic<T>::operator<(const ref<Number> &other)
+{
+    switch (other->type())
+    {
+    case Number::Type::Short:
+        return this->value < dynamic_cast<Number::Short *>(other.get())->value;
+    case Number::Type::Integer:
+        return this->value < dynamic_cast<Number::Integer *>(other.get())->value;
+    case Number::Type::Long:
+        return this->value < dynamic_cast<Number::Long *>(other.get())->value;
+    case Number::Type::LongLong:
+        return this->value < dynamic_cast<Number::LongLong *>(other.get())->value;
+    case Number::Type::Float:
+        return this->value < dynamic_cast<Number::Float *>(other.get())->value;
+    case Number::Type::Double:
+        return this->value < dynamic_cast<Number::Double *>(other.get())->value;
+    default:
+        throw NotImplementedError();
+    }
+}
+
+template <typename T>
+bool Number::Basic<T>::operator>(const ref<Number> &other)
+{
+    switch (other->type())
+    {
+    case Number::Type::Short:
+        return this->value > dynamic_cast<Number::Short *>(other.get())->value;
+    case Number::Type::Integer:
+        return this->value > dynamic_cast<Number::Integer *>(other.get())->value;
+    case Number::Type::Long:
+        return this->value > dynamic_cast<Number::Long *>(other.get())->value;
+    case Number::Type::LongLong:
+        return this->value > dynamic_cast<Number::LongLong *>(other.get())->value;
+    case Number::Type::Float:
+        return this->value > dynamic_cast<Number::Float *>(other.get())->value;
+    case Number::Type::Double:
+        return this->value > dynamic_cast<Number::Double *>(other.get())->value;
+    default:
+        throw NotImplementedError();
+    }
+}
+
 template <>
 class ref<Number> : public _async_runtime::RefImplement<Number>
 {
@@ -146,13 +210,13 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<Number, R>::value>::type * = nullptr>
     ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
-    ref(short value) : super(Object::create<Number::Short>(value)) {}
-    ref(int value) : super(Object::create<Number::Integer>(value)) {}
-    ref(long value) : super(Object::create<Number::Long>(value)) {}
-    ref(long long value) : super(Object::create<Number::LongLong>(value)) {}
+    ref(const short &value) : super(Object::create<Number::Short>(value)) {}
+    ref(const int &value) : super(Object::create<Number::Integer>(value)) {}
+    ref(const long &value) : super(Object::create<Number::Long>(value)) {}
+    ref(const long long &value) : super(Object::create<Number::LongLong>(value)) {}
 
-    ref(float value) : super(Object::create<Number::Float>(value)) {}
-    ref(double value) : super(Object::create<Number::Double>(value)) {}
+    ref(const float &value) : super(Object::create<Number::Float>(value)) {}
+    ref(const double &value) : super(Object::create<Number::Double>(value)) {}
 
 protected:
     ref() noexcept : super() {}
