@@ -20,13 +20,7 @@ ref<String> Object::toString()
 
 void Object::toStringStream(std::ostream &os)
 {
-    os << "class<"
-#ifdef _WIN32
-       << &(typeid(*this).name()[6]) // from "class MyClass" to "MyClass"
-#else
-       << typeid(*this).name()
-#endif
-       << ">[" << (size_t)this << ']';
+    os << typeid(*this).name() << "[" << (size_t)this << ']';
 }
 
 static const auto hs = std::hash<std::shared_ptr<Object>>();

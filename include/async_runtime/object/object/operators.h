@@ -36,7 +36,7 @@ std::ostream &operator<<(std::ostream &os, const option<T> &object)
               os << object;
           })
         .ifElse([&] { //
-            os << "[NULL]";
+            os << typeid(T).name() << "[NULL]";
         });
     return os;
 }
@@ -48,7 +48,7 @@ std::ostream &operator<<(std::ostream &os, option<T> &&object)
               os << object;
           })
         .ifElse([&] { //
-            os << "[NULL]";
+            os << typeid(T).name() << "[NULL]";
         });
     return os;
 }
