@@ -234,10 +234,7 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
     {
         FutureOr<ReturnType> result = fn(_data);
         auto &future = result._future;
-        if_not_null(future)
-        {
-            return future;
-        }
+        if_not_null(future) return future;
         else_end()
         {
             auto future = Object::create<Completer<ReturnType>>(self());
@@ -253,15 +250,11 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
             FutureOr<ReturnType> result = fn(value);
             auto &resultFuture = result._future;
             if_not_null(resultFuture)
-            {
                 resultFuture->then([future](const ReturnType &v) { //
                     future->complete(v);
                 });
-            }
             else_end()
-            {
                 future->complete(result._value);
-            }
             end_if();
         });
         return future;

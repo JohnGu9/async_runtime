@@ -80,7 +80,7 @@ public:
     void toStringStream(std::ostream &os) override { os << value; }
     bool operator==(const option<Object> &other) override;
 
-    bool operator==(const size_t &other) override { return this->value == static_cast<long long>(other); }
+    bool operator==(const size_t &other) override { return this->value == Number::toSigned(other); }
     bool operator==(const short &other) override { return this->value == other; }
     bool operator==(const int &other) override { return this->value == other; }
     bool operator==(const long &other) override { return this->value == other; }
@@ -93,7 +93,7 @@ public:
     bool operator<(const option<Number> &number) override;
     bool operator>(const option<Number> &number) override;
 
-    bool operator<(const size_t &other) override { return this->value < static_cast<long long>(other); }
+    bool operator<(const size_t &other) override { return this->value < Number::toSigned(other); }
     bool operator<(const short &other) override { return this->value < other; }
     bool operator<(const int &other) override { return this->value < other; }
     bool operator<(const long &other) override { return this->value < other; }
@@ -101,7 +101,7 @@ public:
     bool operator<(const float &other) override { return this->value < other; }
     bool operator<(const double &other) override { return this->value < other; }
 
-    bool operator>(const size_t &other) override { return this->value > static_cast<long long>(other); }
+    bool operator>(const size_t &other) override { return this->value > Number::toSigned(other); }
     bool operator>(const short &other) override { return this->value > other; }
     bool operator>(const int &other) override { return this->value > other; }
     bool operator>(const long &other) override { return this->value > other; }
@@ -116,10 +116,10 @@ public:
     const size_t value;
     SizeType(const size_t &value) : value(value) {}
 
-    Number::Type::Value type() override; // Number::Type::Short
+    Number::Type::Value type() override; // Number::Type::SizeType
     size_t hashCode() override;
 
-    void toStringStream(std::ostream &os) override { os << value; }
+    void toStringStream(std::ostream &os) override;
     bool operator==(const option<Object> &other) override;
 
     bool operator==(const size_t &other) override;

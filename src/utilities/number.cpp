@@ -8,6 +8,7 @@ long long Number::toSigned(const size_t &value) { return static_cast<long long>(
 // SizeType
 Number::Type::Value Number::SizeType::type() { return Number::Type::SizeType; }
 size_t Number::SizeType::hashCode() { return integer_hash(Number::toSigned(this->value)); }
+void Number::SizeType::toStringStream(std::ostream &os) { os << value; }
 bool Number::SizeType::operator==(const size_t &other) { return this->value == other; }
 bool Number::SizeType::operator==(const short &other) { return Number::toSigned(this->value) == other; }
 bool Number::SizeType::operator==(const int &other) { return Number::toSigned(this->value) == other; }

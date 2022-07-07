@@ -2,7 +2,7 @@
 #include "map_iterable.h"
 
 /**
- * @brief Similar to MapIterable. But this receive a transform that return a RIGHT value
+ * @brief Similar to MapIterable. But this receive a transform that return a RIGHT value.
  * Not to overuse this that may cause performance issue.
  *
  * @tparam From
@@ -34,7 +34,7 @@ public:
             throw NotImplementedError();
         }
 
-        bool operator==(const option<Object>& other) override
+        bool operator==(const option<Object> &other) override
         {
             if (auto ptr = dynamic_cast<_EndConstIterator *>(other.get())) // [[likely]]
             {

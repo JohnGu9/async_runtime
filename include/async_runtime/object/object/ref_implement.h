@@ -45,7 +45,7 @@ public:
     bool operator>(const std::nullptr_t &) const;
 
     template <typename OTHER>
-    bool operator!=(const OTHER &other) const { return !(*this == other); }
+    bool operator!=(const OTHER &other) const { return !this->operator==(other); }
     template <typename OTHER>
     bool operator<=(const OTHER &other) const { return this->operator<(other) || this->operator==(other); }
     template <typename OTHER>

@@ -28,12 +28,9 @@ class Logger::_Logger::_State : public State<Logger::_Logger>
     {
         option<File::Error> error = file->cast<File::Error>();
         if_not_null(error) return false;
-        else_end()
-        {
-            file->write(str);
-            return true;
-        }
-        end_if()
+        end_if();
+        file->write(str);
+        return true;
     }
 
     static bool checkFileAndWriteLine(ref<File> file, ref<String> str)
@@ -41,12 +38,9 @@ class Logger::_Logger::_State : public State<Logger::_Logger>
         static finalref<String> endl = endOfLine();
         option<File::Error> error = file->cast<File::Error>();
         if_not_null(error) return false;
-        else_end()
-        {
-            file->writeAll({str, endl});
-            return true;
-        }
         end_if();
+        file->writeAll({str, endl});
+        return true;
     }
 
 public:

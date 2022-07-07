@@ -38,8 +38,7 @@ public:
               child, [onNotification](ref<Notification> notification) -> bool { //
                   option<T> n = notification->cast<T>();
                   if_not_null(n) return onNotification(n);
-                  else_end() return false;
-                  end_if()
+                  end_if() return false;
               },
               key)
     {

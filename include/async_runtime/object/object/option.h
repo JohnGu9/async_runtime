@@ -28,6 +28,8 @@ class option : protected ref<T>, public _async_runtime::ToRefMixin<T>
     friend class Object;
     template <typename R>
     friend class option;
+    template <typename R>
+    friend class weakref;
     using super = ref<T>;
 
 public:
@@ -36,6 +38,8 @@ public:
     option() noexcept : super() {}
     option(std::nullptr_t) noexcept : super() {}
 
+    // linux can't infer correct template constructor that inherited from ref<T>
+    // two constructor below is to patch the problem
     option(const ref<T> &other) noexcept : super(other) {}
     option(ref<T> &&other) noexcept : super(std::move(other)) {}
 
@@ -48,17 +52,6 @@ public:
     option(option<R> &&other) noexcept : super()
     {
         static_cast<std::shared_ptr<T> &>(*this) = std::move(static_cast<std::shared_ptr<R> &>(other));
-    }
-
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) noexcept : super()
-    {
-        static_cast<std::shared_ptr<T> &>(*this) = other;
-    }
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(std::shared_ptr<R> &&other) noexcept : super()
-    {
-        static_cast<std::shared_ptr<T> &>(*this) = std::move(other);
     }
 
     T *get() const { return this->std::shared_ptr<T>::get(); }
@@ -84,9 +77,10 @@ public:
     bool operator>(const option<R> &) const;
     bool operator>(const std::nullptr_t &) const;
 
-    using super::operator<=;
-    using super::operator>=;
-
     template <typename OTHER>
-    bool operator!=(const OTHER &other) const { return !(*this == other); }
+    bool operator!=(const OTHER &other) const { return !this->operator==(other); }
+    template <typename OTHER>
+    bool operator<=(const OTHER &other) const { return this->operator<(other) || this->operator==(other); }
+    template <typename OTHER>
+    bool operator>=(const OTHER &other) const { return this->operator>(other) || this->operator==(other); }
 };

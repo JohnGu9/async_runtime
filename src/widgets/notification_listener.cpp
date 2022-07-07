@@ -12,8 +12,7 @@ void Notification::dispatch(ref<BuildContext> context)
     element->visitAncestor([self](ref<Element> element) -> bool { //
         option<NotificationListenerElement> listenerElement = element->cast<NotificationListenerElement>();
         if_not_null(listenerElement) return listenerElement->_notificationListenerWidget->onNotification(self);
-        else_end() return false;
-        end_if()
+        end_if() return false;
     });
 }
 #ifdef _WIN32
