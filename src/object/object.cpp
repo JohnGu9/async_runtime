@@ -42,3 +42,7 @@ bool Object::Void::operator==(const option<Object> &other)
 void Object::Void::toStringStream(std::ostream &os) { os << "Object::Void"; }
 
 size_t Object::Void::hashCode() { return 0; }
+
+std::recursive_mutex Object::OstreamCallStack::mutex;
+
+size_t Object::OstreamCallStack::depth(0);

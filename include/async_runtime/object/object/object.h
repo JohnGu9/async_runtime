@@ -18,12 +18,13 @@ class Object : public std::enable_shared_from_this<Object>
     _ASYNC_RUNTIME_FRIEND_FAMILY_WITHOUT_OBJECT;
 
 public:
+    class OstreamCallStack;
     class Void;
     using RuntimeType = size_t;
 
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, typename... _Args, typename = decltype(T(std::declval<_Args>()...))>
     static ref<T> create(_Args &&...);
-    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
+    template <typename T>
     static void detach(ref<T> &) noexcept;
 
     template <typename T0, typename T1>
@@ -37,8 +38,6 @@ public:
 
     template <typename T>
     static bool isNull(const option<T> &) noexcept;
-    template <typename T>
-    static bool isNull(option<T> &&) noexcept;
 
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     static ref<T> cast(R *); // safely cast (in release mode)
@@ -62,7 +61,7 @@ public:
      * @return true = consider [other] is equal to self
      * @return false = consider [other] is not equal to self
      */
-    virtual bool operator==(const option<Object>& other);
+    virtual bool operator==(const option<Object> &other);
 
     /**
      * @brief object to string object
@@ -94,7 +93,7 @@ public:
     /**
      * @brief Destroy the Object object,
      * under oop system, this's not recommend to custom the destructor,
-     * just only recommend use it under debug mode to do some resources-checking.
+     * just only recommend use it under debug mode to do some resources-checking-asserting.
      */
     virtual ~Object() {}
 
@@ -105,7 +104,16 @@ public:
 class Object::Void : public virtual Object
 {
 public:
-    bool operator==(const option<Object>& other) override;
+    bool operator==(const option<Object> &other) override;
     void toStringStream(std::ostream &) override;
     size_t hashCode() override;
+};
+
+#include <mutex> // for string print
+
+class Object::OstreamCallStack
+{
+public:
+    static std::recursive_mutex mutex;
+    static size_t depth;
 };

@@ -25,7 +25,7 @@ ref<T> Object::create(_Args &&...__args)
  *
  * @param object the ref need to force to release (just like python del operator)
  */
-template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type *>
+template <typename T>
 void Object::detach(ref<T> &object) noexcept
 {
     static_cast<std::shared_ptr<T> &>(object) = nullptr;
@@ -76,15 +76,6 @@ bool Object::identical(const option<T0> &lhs, const ref<T1> &rhs) noexcept
  */
 template <typename T>
 bool Object::isNull(const option<T> &object) noexcept
-{
-    return static_cast<const std::shared_ptr<T> &>(object) == nullptr;
-}
-
-/**
- * @brief check option whether point to nullptr.
- */
-template <typename T>
-bool Object::isNull(option<T> &&object) noexcept
 {
     return static_cast<const std::shared_ptr<T> &>(object) == nullptr;
 }

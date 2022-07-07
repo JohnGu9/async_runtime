@@ -12,20 +12,20 @@
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const ref<T> &object)
 {
-    std::lock_guard<std::recursive_mutex> lk(_async_runtime::OstreamStack::mutex);
-    ++_async_runtime::OstreamStack::depth;
+    std::lock_guard<std::recursive_mutex> lk(Object::OstreamCallStack::mutex);
+    ++Object::OstreamCallStack::depth;
     object->toStringStream(os);
-    --_async_runtime::OstreamStack::depth;
+    --Object::OstreamCallStack::depth;
     return os;
 }
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, ref<T> &&object)
 {
-    std::lock_guard<std::recursive_mutex> lk(_async_runtime::OstreamStack::mutex);
-    ++_async_runtime::OstreamStack::depth;
+    std::lock_guard<std::recursive_mutex> lk(Object::OstreamCallStack::mutex);
+    ++Object::OstreamCallStack::depth;
     object->toStringStream(os);
-    --_async_runtime::OstreamStack::depth;
+    --Object::OstreamCallStack::depth;
     return os;
 }
 
