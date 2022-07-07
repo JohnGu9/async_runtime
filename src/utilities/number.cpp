@@ -1,9 +1,15 @@
 #include "async_runtime/utilities/number.h"
+#include <limits>
 
 static auto integer_hash = std::hash<long long>();
 static auto double_hash = std::hash<double>();
 
-long long Number::toSigned(const size_t &value) { return static_cast<long long>(value); }
+long long Number::toSigned(const size_t &value)
+{
+    if (static_cast<unsigned long long>(std::numeric_limits<long long>::max()) < value)
+        throw std::range_error("size_t toSigned range overflow. ");
+    return static_cast<long long>(value);
+}
 
 // SizeType
 Number::Type::Value Number::SizeType::type() { return Number::Type::SizeType; }
