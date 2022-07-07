@@ -28,8 +28,6 @@ class option : protected ref<T>, public _async_runtime::ToRefMixin<T>
     friend class Object;
     template <typename R>
     friend class option;
-    template <typename R>
-    friend class weakref;
     using super = ref<T>;
 
 public:
@@ -52,6 +50,17 @@ public:
     option(option<R> &&other) noexcept : super()
     {
         static_cast<std::shared_ptr<T> &>(*this) = std::move(static_cast<std::shared_ptr<R> &>(other));
+    }
+
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    option(const std::shared_ptr<R> &other) noexcept : super()
+    {
+        static_cast<std::shared_ptr<T> &>(*this) = other;
+    }
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    option(std::shared_ptr<R> &&other) noexcept : super()
+    {
+        static_cast<std::shared_ptr<T> &>(*this) = std::move(other);
     }
 
     T *get() const { return this->std::shared_ptr<T>::get(); }
