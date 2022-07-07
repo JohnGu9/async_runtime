@@ -40,34 +40,34 @@ public:
     class Double; // 64 bits
 
     using Object::operator==;
-    virtual bool operator==(const size_t &other) = 0;
-    virtual bool operator==(const short &other) = 0;
-    virtual bool operator==(const int &other) = 0;
-    virtual bool operator==(const long &other) = 0;
-    virtual bool operator==(const long long &other) = 0;
-    virtual bool operator==(const float &other) = 0;
-    virtual bool operator==(const double &other) = 0;
+    virtual bool operator==(const size_t &) = 0;
+    virtual bool operator==(const short &) = 0;
+    virtual bool operator==(const int &) = 0;
+    virtual bool operator==(const long &) = 0;
+    virtual bool operator==(const long long &) = 0;
+    virtual bool operator==(const float &) = 0;
+    virtual bool operator==(const double &) = 0;
 
     virtual bool operator<(const ref<Number> &) = 0;
     virtual bool operator>(const ref<Number> &) = 0;
     virtual bool operator<(const option<Number> &) = 0;
     virtual bool operator>(const option<Number> &) = 0;
 
-    virtual bool operator<(const size_t &other) = 0;
-    virtual bool operator<(const short &other) = 0;
-    virtual bool operator<(const int &other) = 0;
-    virtual bool operator<(const long &other) = 0;
-    virtual bool operator<(const long long &other) = 0;
-    virtual bool operator<(const float &other) = 0;
-    virtual bool operator<(const double &other) = 0;
+    virtual bool operator<(const size_t &) = 0;
+    virtual bool operator<(const short &) = 0;
+    virtual bool operator<(const int &) = 0;
+    virtual bool operator<(const long &) = 0;
+    virtual bool operator<(const long long &) = 0;
+    virtual bool operator<(const float &) = 0;
+    virtual bool operator<(const double &) = 0;
 
-    virtual bool operator>(const size_t &other) = 0;
-    virtual bool operator>(const short &other) = 0;
-    virtual bool operator>(const int &other) = 0;
-    virtual bool operator>(const long &other) = 0;
-    virtual bool operator>(const long long &other) = 0;
-    virtual bool operator>(const float &other) = 0;
-    virtual bool operator>(const double &other) = 0;
+    virtual bool operator>(const size_t &) = 0;
+    virtual bool operator>(const short &) = 0;
+    virtual bool operator>(const int &) = 0;
+    virtual bool operator>(const long &) = 0;
+    virtual bool operator>(const long long &) = 0;
+    virtual bool operator>(const float &) = 0;
+    virtual bool operator>(const double &) = 0;
 };
 
 template <typename T>
@@ -90,8 +90,8 @@ public:
 
     bool operator<(const ref<Number> &) override;
     bool operator>(const ref<Number> &) override;
-    bool operator<(const option<Number> &number) override;
-    bool operator>(const option<Number> &number) override;
+    bool operator<(const option<Number> &) override;
+    bool operator>(const option<Number> &) override;
 
     bool operator<(const size_t &other) override { return this->value < Number::toSigned(other); }
     bool operator<(const short &other) override { return this->value < other; }
@@ -119,38 +119,38 @@ public:
     Number::Type::Value type() override; // Number::Type::SizeType
     size_t hashCode() override;
 
-    void toStringStream(std::ostream &os) override;
-    bool operator==(const option<Object> &other) override;
+    void toStringStream(std::ostream &) override;
+    bool operator==(const option<Object> &) override;
 
-    bool operator==(const size_t &other) override;
-    bool operator==(const short &other) override;
-    bool operator==(const int &other) override;
-    bool operator==(const long &other) override;
-    bool operator==(const long long &other) override;
-    bool operator==(const float &other) override;
-    bool operator==(const double &other) override;
+    bool operator==(const size_t &) override;
+    bool operator==(const short &) override;
+    bool operator==(const int &) override;
+    bool operator==(const long &) override;
+    bool operator==(const long long &) override;
+    bool operator==(const float &) override;
+    bool operator==(const double &) override;
 
     bool operator<(const ref<Number> &) override;
     bool operator>(const ref<Number> &) override;
 
-    bool operator<(const option<Number> &number) override;
-    bool operator>(const option<Number> &number) override;
+    bool operator<(const option<Number> &) override;
+    bool operator>(const option<Number> &) override;
 
-    bool operator<(const size_t &other) override;
-    bool operator<(const short &other) override;
-    bool operator<(const int &other) override;
-    bool operator<(const long &other) override;
-    bool operator<(const long long &other) override;
-    bool operator<(const float &other) override;
-    bool operator<(const double &other) override;
+    bool operator<(const size_t &) override;
+    bool operator<(const short &) override;
+    bool operator<(const int &) override;
+    bool operator<(const long &) override;
+    bool operator<(const long long &) override;
+    bool operator<(const float &) override;
+    bool operator<(const double &) override;
 
-    bool operator>(const size_t &other) override;
-    bool operator>(const short &other) override;
-    bool operator>(const int &other) override;
-    bool operator>(const long &other) override;
-    bool operator>(const long long &other) override;
-    bool operator>(const float &other) override;
-    bool operator>(const double &other) override;
+    bool operator>(const size_t &) override;
+    bool operator>(const short &) override;
+    bool operator>(const int &) override;
+    bool operator>(const long &) override;
+    bool operator>(const long long &) override;
+    bool operator>(const float &) override;
+    bool operator>(const double &) override;
 };
 
 class Number::Short : public Number::Basic<short>

@@ -24,7 +24,6 @@ public:
 
     void setValue(const T &value) override;
     void setValue(T &&value) override;
-    T &getValue() override;
     const T &getValue() const override;
 
 protected:
@@ -54,13 +53,6 @@ void ValueNotifier<T>::setValue(T &&value)
         this->_value = std::forward<T>(value);
         this->notifyListeners();
     }
-}
-
-template <typename T>
-T &ValueNotifier<T>::getValue()
-{
-    RUNTIME_ASSERT(!this->_isDisposed, "ValueNotifier can't access [getValue] after [dispose]");
-    return this->_value;
 }
 
 template <typename T>

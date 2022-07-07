@@ -5,7 +5,6 @@ class getter
 {
 public:
     virtual const T &getValue() const = 0;
-    virtual T &getValue() = 0;
 };
 
 template <typename T>
