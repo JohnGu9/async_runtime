@@ -9,5 +9,5 @@ size_t Number::DoubleBasic<T>::hashCode()
     auto f = static_cast<size_t>(std::floor(this->value));
     if (f == this->value)
         return f;
-    return std::hash<T>()(this->value);
+    return std::hash<double>()(this->value);
 }

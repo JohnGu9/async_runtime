@@ -11,24 +11,18 @@ bool Number::SizeType::operator==(const short &other) { return Number::cmp<>(thi
 bool Number::SizeType::operator==(const int &other) { return Number::cmp<>(this->value, other) == 0; }
 bool Number::SizeType::operator==(const long &other) { return Number::cmp<>(this->value, other) == 0; }
 bool Number::SizeType::operator==(const long long &other) { return Number::cmp<>(this->value, other) == 0; }
-bool Number::SizeType::operator==(const float &other) { return this->value == other; }
-bool Number::SizeType::operator==(const double &other) { return this->value == other; }
 
 bool Number::SizeType::operator<(const size_t &other) { return this->value < other; }
 bool Number::SizeType::operator<(const short &other) { return Number::cmp<>(this->value, other) < 0; }
 bool Number::SizeType::operator<(const int &other) { return Number::cmp<>(this->value, other) < 0; }
 bool Number::SizeType::operator<(const long &other) { return Number::cmp<>(this->value, other) < 0; }
 bool Number::SizeType::operator<(const long long &other) { return Number::cmp<>(this->value, other) < 0; }
-bool Number::SizeType::operator<(const float &other) { return this->value < other; }
-bool Number::SizeType::operator<(const double &other) { return this->value < other; }
 
 bool Number::SizeType::operator>(const size_t &other) { return this->value < other; }
 bool Number::SizeType::operator>(const short &other) { return Number::cmp<>(this->value, other) > 0; }
 bool Number::SizeType::operator>(const int &other) { return Number::cmp<>(this->value, other) > 0; }
 bool Number::SizeType::operator>(const long &other) { return Number::cmp<>(this->value, other) > 0; }
 bool Number::SizeType::operator>(const long long &other) { return Number::cmp<>(this->value, other) > 0; }
-bool Number::SizeType::operator>(const float &other) { return this->value > other; }
-bool Number::SizeType::operator>(const double &other) { return this->value > other; }
 
 // Short
 Number::Type::Value Number::Short::type() { return Number::Type::Short; }

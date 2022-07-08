@@ -19,22 +19,16 @@ public:
     bool operator==(const int &) override;
     bool operator==(const long &) override;
     bool operator==(const long long &) override;
-    bool operator==(const float &) override;
-    bool operator==(const double &) override;
 
     bool operator<(const size_t &) override;
     bool operator<(const short &) override;
     bool operator<(const int &) override;
     bool operator<(const long &) override;
     bool operator<(const long long &) override;
-    bool operator<(const float &) override;
-    bool operator<(const double &) override;
 
     bool operator>(const size_t &) override;
     bool operator>(const short &) override;
     bool operator>(const int &) override;
     bool operator>(const long &) override;
     bool operator>(const long long &) override;
-    bool operator>(const float &) override;
-    bool operator>(const double &) override;
 };

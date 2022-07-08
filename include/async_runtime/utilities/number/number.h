@@ -47,7 +47,7 @@ public:
     template <typename T>
     class DoubleBasic;
 
-    class SizeType;
+    class SizeType; // system size_t
 
     class Short;    // at least 16 bits
     class Integer;  // at least 16 bits

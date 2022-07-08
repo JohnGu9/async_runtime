@@ -15,20 +15,14 @@ public:
     bool operator==(const int &other) override { return this->value == other; }
     bool operator==(const long &other) override { return this->value == other; }
     bool operator==(const long long &other) override { return this->value == other; }
-    bool operator==(const float &other) override { return this->value == other; }
-    bool operator==(const double &other) override { return this->value == other; }
 
     bool operator<(const short &other) override { return this->value < other; }
     bool operator<(const int &other) override { return this->value < other; }
     bool operator<(const long &other) override { return this->value < other; }
     bool operator<(const long long &other) override { return this->value < other; }
-    bool operator<(const float &other) override { return this->value < other; }
-    bool operator<(const double &other) override { return this->value < other; }
 
     bool operator>(const short &other) override { return this->value > other; }
     bool operator>(const int &other) override { return this->value > other; }
     bool operator>(const long &other) override { return this->value > other; }
     bool operator>(const long long &other) override { return this->value > other; }
-    bool operator>(const float &other) override { return this->value > other; }
-    bool operator>(const double &other) override { return this->value > other; }
 };

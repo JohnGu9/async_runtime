@@ -17,6 +17,13 @@ public:
     bool operator<(const option<Number> &) override;
     bool operator>(const option<Number> &) override;
 
+    bool operator==(const float &other) override { return this->value == other; }
+    bool operator==(const double &other) override { return this->value == other; }
+    bool operator<(const float &other) override { return this->value < other; }
+    bool operator<(const double &other) override { return this->value < other; }
+    bool operator>(const float &other) override { return this->value > other; }
+    bool operator>(const double &other) override { return this->value > other; }
+
     using Number::operator==;
     using Number::operator<;
     using Number::operator>;
