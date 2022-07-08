@@ -14,5 +14,5 @@ public:
     bool operator==(const size_t &other) override { return Number::cmp<>(this->value, other) == 0; }
     bool operator<(const size_t &other) override { return Number::cmp<>(this->value, other) < 0; }
     bool operator>(const size_t &other) override { return Number::cmp<>(this->value, other) > 0; }
-    size_t hashCode() override;
+    size_t hashCode() override { return static_cast<size_t>(this->value); }
 };

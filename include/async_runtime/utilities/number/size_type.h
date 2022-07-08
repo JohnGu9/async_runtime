@@ -6,7 +6,6 @@ class Number::SizeType : public Number::Basic<size_t>
 {
 public:
     using Number::Basic<size_t>::Basic;
-
     using Number::Basic<size_t>::operator==;
     using Number::Basic<size_t>::operator<;
     using Number::Basic<size_t>::operator>;

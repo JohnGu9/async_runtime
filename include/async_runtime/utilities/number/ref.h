@@ -24,6 +24,7 @@ public:
 
     ref(const float &value) : super(Object::create<Number::Float>(value)) {}
     ref(const double &value) : super(Object::create<Number::Double>(value)) {}
+    ref(const long double &value) : super(Object::create<Number::LongDouble>(value)) {}
 
 protected:
     ref() noexcept : super() {}

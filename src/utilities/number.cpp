@@ -41,3 +41,6 @@ Number::Type::Value Number::Float::type() { return Number::Type::Float; }
 
 // Double
 Number::Type::Value Number::Double::type() { return Number::Type::Double; }
+
+// LongDouble
+Number::Type::Value Number::LongDouble::type() { return Number::Type::LongDouble; }

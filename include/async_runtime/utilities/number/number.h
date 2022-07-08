@@ -32,6 +32,7 @@ public:
             LongLong,
             Float,
             Double,
+            LongDouble,
         };
     };
 
@@ -56,6 +57,7 @@ public:
 
     class Float;  // 32 bits
     class Double; // 64 bits
+    class LongDouble;
 
     using Object::operator==;
     virtual bool operator==(const size_t &) = 0;
@@ -65,6 +67,7 @@ public:
     virtual bool operator==(const long long &) = 0;
     virtual bool operator==(const float &) = 0;
     virtual bool operator==(const double &) = 0;
+    virtual bool operator==(const long double &) = 0;
 
     virtual bool operator<(const ref<Number> &) = 0;
     virtual bool operator>(const ref<Number> &) = 0;
@@ -78,6 +81,7 @@ public:
     virtual bool operator<(const long long &) = 0;
     virtual bool operator<(const float &) = 0;
     virtual bool operator<(const double &) = 0;
+    virtual bool operator<(const long double &) = 0;
 
     virtual bool operator>(const size_t &) = 0;
     virtual bool operator>(const short &) = 0;
@@ -86,4 +90,5 @@ public:
     virtual bool operator>(const long long &) = 0;
     virtual bool operator>(const float &) = 0;
     virtual bool operator>(const double &) = 0;
+    virtual bool operator>(const long double &) = 0;
 };

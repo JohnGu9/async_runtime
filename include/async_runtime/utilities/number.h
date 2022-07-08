@@ -25,7 +25,3 @@
 #include "number/number_impl.h"
 
 #include "number/number_basic_impl.h"
-
-#include "number/number_integer_basic_impl.h"
-
-#include "number/number_double_basic_impl.h"

@@ -10,19 +10,21 @@ bool Number::Basic<T>::operator==(const option<Object> &other)
         switch (ptr->type())
         {
         case Number::Type::SizeType:
-            return this->operator==(dynamic_cast<Number::SizeType *>(ptr)->value);
+            return this->operator==(dynamic_cast<Number::Basic<size_t> *>(ptr)->value);
         case Number::Type::Short:
-            return this->operator==(dynamic_cast<Number::Short *>(ptr)->value);
+            return this->operator==(dynamic_cast<Number::Basic<short> *>(ptr)->value);
         case Number::Type::Integer:
-            return this->operator==(dynamic_cast<Number::Integer *>(ptr)->value);
+            return this->operator==(dynamic_cast<Number::Basic<int> *>(ptr)->value);
         case Number::Type::Long:
-            return this->operator==(dynamic_cast<Number::Long *>(ptr)->value);
+            return this->operator==(dynamic_cast<Number::Basic<long> *>(ptr)->value);
         case Number::Type::LongLong:
-            return this->operator==(dynamic_cast<Number::LongLong *>(ptr)->value);
+            return this->operator==(dynamic_cast<Number::Basic<long long> *>(ptr)->value);
         case Number::Type::Float:
-            return this->operator==(dynamic_cast<Number::Float *>(ptr)->value);
+            return this->operator==(dynamic_cast<Number::Basic<float> *>(ptr)->value);
         case Number::Type::Double:
-            return this->operator==(dynamic_cast<Number::Double *>(ptr)->value);
+            return this->operator==(dynamic_cast<Number::Basic<double> *>(ptr)->value);
+        case Number::Type::LongDouble:
+            return this->operator==(dynamic_cast<Number::Basic<long double> *>(ptr)->value);
         default:
             break;
         }
@@ -37,19 +39,21 @@ bool Number::Basic<T>::operator<(const ref<Number> &other)
     switch (ptr->type())
     {
     case Number::Type::SizeType:
-        return this->operator<(dynamic_cast<Number::SizeType *>(ptr)->value);
+        return this->operator<(dynamic_cast<Number::Basic<size_t> *>(ptr)->value);
     case Number::Type::Short:
-        return this->operator<(dynamic_cast<Number::Short *>(ptr)->value);
+        return this->operator<(dynamic_cast<Number::Basic<short> *>(ptr)->value);
     case Number::Type::Integer:
-        return this->operator<(dynamic_cast<Number::Integer *>(ptr)->value);
+        return this->operator<(dynamic_cast<Number::Basic<int> *>(ptr)->value);
     case Number::Type::Long:
-        return this->operator<(dynamic_cast<Number::Long *>(ptr)->value);
+        return this->operator<(dynamic_cast<Number::Basic<long> *>(ptr)->value);
     case Number::Type::LongLong:
-        return this->operator<(dynamic_cast<Number::LongLong *>(ptr)->value);
+        return this->operator<(dynamic_cast<Number::Basic<long long> *>(ptr)->value);
     case Number::Type::Float:
-        return this->operator<(dynamic_cast<Number::Float *>(ptr)->value);
+        return this->operator<(dynamic_cast<Number::Basic<float> *>(ptr)->value);
     case Number::Type::Double:
-        return this->operator<(dynamic_cast<Number::Double *>(ptr)->value);
+        return this->operator<(dynamic_cast<Number::Basic<double> *>(ptr)->value);
+    case Number::Type::LongDouble:
+        return this->operator<(dynamic_cast<Number::Basic<long double> *>(ptr)->value);
     default:
         throw NotImplementedError();
     }
@@ -62,19 +66,21 @@ bool Number::Basic<T>::operator>(const ref<Number> &other)
     switch (ptr->type())
     {
     case Number::Type::SizeType:
-        return this->operator>(dynamic_cast<Number::SizeType *>(ptr)->value);
+        return this->operator>(dynamic_cast<Number::Basic<size_t> *>(ptr)->value);
     case Number::Type::Short:
-        return this->operator>(dynamic_cast<Number::Short *>(ptr)->value);
+        return this->operator>(dynamic_cast<Number::Basic<short> *>(ptr)->value);
     case Number::Type::Integer:
-        return this->operator>(dynamic_cast<Number::Integer *>(ptr)->value);
+        return this->operator>(dynamic_cast<Number::Basic<int> *>(ptr)->value);
     case Number::Type::Long:
-        return this->operator>(dynamic_cast<Number::Long *>(ptr)->value);
+        return this->operator>(dynamic_cast<Number::Basic<long> *>(ptr)->value);
     case Number::Type::LongLong:
-        return this->operator>(dynamic_cast<Number::LongLong *>(ptr)->value);
+        return this->operator>(dynamic_cast<Number::Basic<long long> *>(ptr)->value);
     case Number::Type::Float:
-        return this->operator>(dynamic_cast<Number::Float *>(ptr)->value);
+        return this->operator>(dynamic_cast<Number::Basic<float> *>(ptr)->value);
     case Number::Type::Double:
-        return this->operator>(dynamic_cast<Number::Double *>(ptr)->value);
+        return this->operator>(dynamic_cast<Number::Basic<double> *>(ptr)->value);
+    case Number::Type::LongDouble:
+        return this->operator>(dynamic_cast<Number::Basic<long double> *>(ptr)->value);
     default:
         throw NotImplementedError();
     }

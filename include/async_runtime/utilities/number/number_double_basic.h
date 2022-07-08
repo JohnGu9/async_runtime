@@ -14,5 +14,11 @@ public:
     bool operator==(const size_t &other) override { return this->value == other; }
     bool operator<(const size_t &other) override { return this->value < other; }
     bool operator>(const size_t &other) override { return this->value > other; }
-    size_t hashCode() override;
+    size_t hashCode() override
+    {
+        auto f = static_cast<size_t>(std::floor(this->value));
+        if (f == this->value) // [[unlikely]]
+            return f;
+        return std::hash<long double>()(this->value);
+    }
 };
