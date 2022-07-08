@@ -1,6 +1,13 @@
 #pragma once
 #include "../object/object.h"
 
+/**
+ * @file boolean.h
+ * @brief Boolean toolkits just for providing a convince way to convert a native bool type to a Object like bool type.
+ * The target is not for performance, just for consistent in oop system.
+ *
+ */
+
 class Boolean : public virtual Object
 {
 public:
