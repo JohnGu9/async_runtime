@@ -130,7 +130,7 @@ public:
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
 
     String(std::nullptr_t) = delete;
-    String(const char c) : super{c} {}
+    String(std::initializer_list<char> list) : super(std::move(list)) {}
     String(const std::string &str) : super(str) {}
     String(std::string &&str) : super(std::move(str)) {}
     String(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }

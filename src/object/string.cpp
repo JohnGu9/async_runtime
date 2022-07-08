@@ -88,36 +88,36 @@ ref<String> String::View::substr(size_t begin, size_t length) const
 
 bool String::operator<(const ref<String> &other) const
 {
-    if (this->length() == other->length())
+    auto len = other->length();
+    if (this->length() == len)
     {
-        for (size_t i = 0, length = this->length(); i < length; i++)
+        const char *a = this->data(), *b = other->data();
+        for (size_t i = 0; i < len; i++)
         {
-            const char &a = this->operator[](i),
-                       &b = other->operator[](i);
-            if (a == b)
+            if (a[i] == b[i])
                 continue;
-            return a < b;
+            return a[i] < b[i];
         }
         return false;
     }
-    return this->length() < other->length();
+    return this->length() < len;
 }
 
 bool String::operator>(const ref<String> &other) const
 {
-    if (this->length() == other->length())
+    auto len = other->length();
+    if (this->length() == len)
     {
-        for (size_t i = 0, length = this->length(); i < length; i++)
+        const char *a = this->data(), *b = other->data();
+        for (size_t i = 0; i < len; i++)
         {
-            const char &a = this->operator[](i),
-                       &b = other->operator[](i);
-            if (a == b)
+            if (a[i] == b[i])
                 continue;
-            return a > b;
+            return a[i] > b[i];
         }
         return false;
     }
-    return this->length() > other->length();
+    return this->length() > len;
 }
 
 bool String::operator<(const option<String> &other) const
@@ -145,17 +145,22 @@ bool String::operator==(const option<Object> &other)
 
 bool String::operator==(const std::string &other) const
 {
-    if (this->length() != other.length())
+    auto len = other.length();
+    if (this->length() != len)
         return false;
-    return std::strncmp(this->data(), other.data(), other.length()) == 0;
+    return std::strncmp(this->data(), other.data(), len) == 0;
 }
 
 bool String::operator==(const char *const other) const
 {
-    auto length = strlen(other);
-    if (this->length() != length)
-        return false;
-    return std::strncmp(this->data(), other, length) == 0;
+    auto start = this->data();
+    size_t i = 0, len = this->length();
+    for (; i < len; ++i)
+    {
+        if (start[i] != other[i])
+            return false;
+    }
+    return other[i] == 0;
 }
 
 void String::toStringStream(std::ostream &os)
@@ -301,8 +306,8 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
 
 ref<String> String::trim() const
 {
-    auto begin = this->findFirstNotOf(' ');
-    auto end = this->findLastNotOf(' ') + 1;
+    auto begin = this->findFirstNotOf(" ");
+    auto end = this->findLastNotOf(" ") + 1;
     return this->substr(begin, end - begin);
 }
 

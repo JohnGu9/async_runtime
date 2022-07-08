@@ -11,7 +11,7 @@ public:
     void toStringStream(std::ostream &os) override;
 
     bool operator==(const option<Object> &other) override;
-    virtual bool operator==(const bool &);
+    bool operator==(const bool &) const;
 };
 
 template <>

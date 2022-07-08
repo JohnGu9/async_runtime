@@ -1,6 +1,6 @@
 #include "async_runtime/utilities/boolean.h"
 
-bool Boolean::operator==(const bool &other)
+bool Boolean::operator==(const bool &other) const
 {
     return this->value == other;
 }
