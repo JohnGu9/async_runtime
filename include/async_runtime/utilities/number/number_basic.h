@@ -5,6 +5,8 @@
 template <typename T>
 class Number::Basic : public Number
 {
+    using super = Number;
+
 public:
     const T value;
     Basic(const T &value) : value(value) {}
@@ -29,7 +31,7 @@ public:
     bool operator>(const double &other) override { return this->value > other; }
     bool operator>(const long double &other) override { return this->value > other; }
 
-    using Number::operator==;
-    using Number::operator<;
-    using Number::operator>;
+    using super::operator==;
+    using super::operator<;
+    using super::operator>;
 };

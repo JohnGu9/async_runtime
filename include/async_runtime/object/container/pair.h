@@ -75,7 +75,7 @@ protected:
     ref(First &&first) : super(Object::create<element_type>(std::move(first), Second())) {}
 
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<Pair<First, Second>>::RefImplement;
+    using super::super;
 };
 
 namespace _async_runtime

@@ -32,7 +32,7 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<Set<T>>::RefImplement;
+    using super::super;
 };
 
 template <typename T>

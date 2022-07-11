@@ -37,5 +37,5 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<Boolean>::RefImplement;
+    using super::super;
 };

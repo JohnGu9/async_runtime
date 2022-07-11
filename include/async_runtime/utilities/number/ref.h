@@ -28,5 +28,5 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<Number>::RefImplement;
+    using super::super;
 };

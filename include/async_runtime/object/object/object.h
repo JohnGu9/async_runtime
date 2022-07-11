@@ -109,7 +109,7 @@ public:
     size_t hashCode() override;
 };
 
-#include <mutex> // for string print
+#include <mutex> // for OstreamCallStack
 
 class Object::OstreamCallStack
 {

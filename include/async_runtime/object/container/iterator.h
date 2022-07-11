@@ -64,7 +64,7 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<ConstIterator<T>>::RefImplement;
+    using super::super;
 };
 
 template <typename T>
@@ -110,5 +110,5 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<Iterator<T>>::RefImplement;
+    using super::super;
 };

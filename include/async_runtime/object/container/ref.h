@@ -23,5 +23,5 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<Iterable<T>>::RefImplement;
+    using super::super;
 };

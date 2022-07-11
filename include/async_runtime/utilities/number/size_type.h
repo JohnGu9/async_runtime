@@ -4,11 +4,13 @@
 
 class Number::SizeType : public Number::Basic<size_t>
 {
+    using super = Number::Basic<size_t>;
+
 public:
-    using Number::Basic<size_t>::Basic;
-    using Number::Basic<size_t>::operator==;
-    using Number::Basic<size_t>::operator<;
-    using Number::Basic<size_t>::operator>;
+    using super::super;
+    using super::operator==;
+    using super::operator<;
+    using super::operator>;
 
     Number::Type::Value type() override; // Number::Type::SizeType
     size_t hashCode() override;

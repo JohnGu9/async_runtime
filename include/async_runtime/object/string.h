@@ -216,7 +216,7 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<String>::RefImplement;
+    using super::super;
 };
 
 template <typename... Args>

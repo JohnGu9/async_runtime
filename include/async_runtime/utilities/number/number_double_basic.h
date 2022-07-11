@@ -5,11 +5,13 @@
 template <typename T>
 class Number::DoubleBasic : public Number::SignedBasic<T>
 {
+    using super = Number::SignedBasic<T>;
+
 public:
-    using Number::SignedBasic<T>::SignedBasic;
-    using Number::SignedBasic<T>::operator==;
-    using Number::SignedBasic<T>::operator<;
-    using Number::SignedBasic<T>::operator>;
+    using super::super;
+    using super::operator==;
+    using super::operator<;
+    using super::operator>;
 
     bool operator==(const size_t &other) override { return this->value == other; }
     bool operator<(const size_t &other) override { return this->value < other; }

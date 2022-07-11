@@ -15,5 +15,5 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<T>::RefImplement;
+    using super::super;
 };

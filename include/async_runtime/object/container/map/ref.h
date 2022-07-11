@@ -38,7 +38,7 @@ public:
 
 protected:
     ref() noexcept : super() {}
-    using _async_runtime::RefImplement<Map<Key, Value>>::RefImplement;
+    using super::super;
 };
 
 template <typename Key, typename Value>
