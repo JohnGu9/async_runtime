@@ -35,7 +35,6 @@ public:
     void initState() override
     {
         super::initState();
-        ref<ValueListenableBuilder<T>::_State> self = self();
         this->_valueListenable = this->widget->valueListenable;
         this->_valueListenable->addListener(_listener);
     }

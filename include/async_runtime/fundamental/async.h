@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../utilities/duration.h"
 #include "../object/object.h"
+#include "../utilities/duration.h"
 
 #include "event_loop.h"
 
@@ -73,7 +73,7 @@ ref<Future<T>> Future<T>::timeout(Duration timeout, Function<T()> onTimeout)
 {
     ref<Future<T>> self = self();
     ref<Completer<T>> future = Object::create<Completer<T>>(self);
-    self->template then<int>([future](const T &value) { //
+    this->template then<int>([future](const T &value) { //
         if (!future->completed())
             future->complete(value);
         return 0;

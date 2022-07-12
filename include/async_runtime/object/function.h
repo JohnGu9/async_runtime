@@ -80,4 +80,4 @@ Function<ReturnType(Args...)> Function<ReturnType(Args...)>::bind(ReturnType (T:
     return Fn<Object::Void>::bind<>(fn, pointer);
 }
 
-#define BIND_FUNCTION(__function__) Fn<Object::Void>::bind<>(&std::remove_pointer<decltype(this)>::type::__function__, this)
+#define BIND_FUNCTION(__function__) ::Fn<Object::Void>::bind<>(&std::remove_pointer<decltype(this)>::type::__function__, this)

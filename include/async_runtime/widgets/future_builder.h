@@ -32,7 +32,7 @@ public:
         ref<Future<T>> future = this->widget->future;
         if (!future->completed())
         {
-            ref<FutureBuilder<T>::_State> self = self();
+            auto self = self();
             future->template then<int>([this, self, future](const T &) { //
                 if (this->mounted && this->widget->future == future)
                     this->setState([] {});

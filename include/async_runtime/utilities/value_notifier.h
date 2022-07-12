@@ -16,11 +16,11 @@ template <typename T>
 class ValueNotifier : public ValueListenable<T>, public ValueNotifier<Object::Void>, public setter<T>
 {
 public:
-    static ref<ValueNotifier<T>> fromValue(const T &value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
-    static ref<ValueNotifier<T>> fromValue(T &&value) { return Object::create<ValueNotifier<T>>(std::forward<T>(value)); }
+    static ref<ValueNotifier<T>> fromValue(const T &value) { return Object::create<ValueNotifier<T>>(value); }
+    static ref<ValueNotifier<T>> fromValue(T &&value) { return Object::create<ValueNotifier<T>>(std::move(value)); }
     ValueNotifier() = delete;
     ValueNotifier(const T &value) : _value(value) {}
-    ValueNotifier(T &&value) : _value(value) {}
+    ValueNotifier(T &&value) : _value(std::move(value)) {}
 
     void setValue(const T &value) override;
     void setValue(T &&value) override;
@@ -50,14 +50,10 @@ void ValueNotifier<T>::setValue(T &&value)
     RUNTIME_ASSERT(!this->_isDisposed, "ValueNotifier can't access [setValue] after [dispose]");
     if (value != this->_value)
     {
-        this->_value = std::forward<T>(value);
+        this->_value = std::move(value);
         this->notifyListeners();
     }
 }
 
 template <typename T>
-const T &ValueNotifier<T>::getValue() const
-{
-    RUNTIME_ASSERT(!this->_isDisposed, "ValueNotifier can't access [getValue] after [dispose]");
-    return this->_value;
-}
+const T &ValueNotifier<T>::getValue() const { return this->_value; }
