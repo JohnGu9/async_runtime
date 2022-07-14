@@ -30,3 +30,6 @@ protected:
     ref() noexcept : super() {}
     using super::super;
 };
+
+ref<Number> operator""_Number(unsigned long long int);
+ref<Number> operator""_Number(long double);

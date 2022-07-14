@@ -21,9 +21,10 @@ String::View::View(ref<String> parent, const char *const pointer, const size_t l
 
 ref<String> String::View::substr(size_t begin, size_t length) const
 {
-    return Object::create<String::View>(this->parent,
-                                        this->data() + begin,
-                                        length == String::npos ? this->len - begin : length);
+    auto left = this->len - begin;
+    if (length > left)
+        length = left;
+    return Object::create<String::View>(this->parent, this->data() + begin, length);
 }
 
 const ref<Map<size_t, ref<String>>> String::_staticCache = Map<size_t, ref<String>>::create();
@@ -404,9 +405,10 @@ ref<String> String::toUpperCase() const
 ref<String> String::substr(size_t begin, size_t length) const
 {
     auto self = Object::cast<>(const_cast<String *>(this));
-    return Object::create<String::View>(self,
-                                        this->data() + begin,
-                                        length == String::npos ? this->length() - begin : length);
+    auto left = this->length() - begin;
+    if (length > left)
+        length = left;
+    return Object::create<String::View>(self, this->data() + begin, length);
 }
 
 ref<String> String::replace(size_t begin, size_t length, ref<String> other) const
