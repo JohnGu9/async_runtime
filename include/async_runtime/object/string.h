@@ -31,86 +31,30 @@ class ref<String>;
  * ref<String> withNumberString = string + 1.023;
  *
  */
-class String : public ReversibleIterable<char>, public ConstIndexableMixin<size_t, char>, protected std::string
+class String : public ReversibleIterable<char>, public ConstIndexableMixin<size_t, char>
 {
     template <typename T>
     static bool _formatFromStringToStream(std::ostream &os, const char *&start, const char *end, const T &element);
     template <typename Iterator, typename T>
     static bool _formatFromIteratorToStream(std::ostream &os, Iterator &start, const Iterator &end, const T &element);
 
-    using super = std::string;
+    friend ref<String> operator""_String(const char *c, size_t);
+    static const ref<Map<size_t, ref<String>>> _staticCache;
 
 protected:
     class View;
+    class IteratorBasic;
     String() {}
 
 public:
-    class StringConstIterator : public ConstIterator<char>
-    {
-        using iterator = typename std::string::const_iterator;
+    class Static; // c string
+    class Native; // std::string
 
-    public:
-        const iterator _it;
-
-        StringConstIterator(const iterator it) : _it(it) {}
-
-        ref<ConstIterator<char>> next() const override
-        {
-            auto copy = _it;
-            return Object::create<String::StringConstIterator>(std::move(++copy));
-        }
-
-        const char &value() const override { return *(this->_it); }
-
-        bool operator==(const option<Object> &other) override
-        {
-            if (auto ptr = dynamic_cast<String::StringConstIterator *>(other.get()))
-            {
-                return this->_it == ptr->_it;
-            }
-            return false;
-        }
-
-        ref<ConstIterator<char>> operator+(size_t shift) const
-        {
-            return Object::create<String::StringConstIterator>(_it + shift);
-        }
-    };
-
-    class ReverseConstIterator : public ConstIterator<char>
-    {
-        using iterator = typename std::string::const_reverse_iterator;
-
-    public:
-        const iterator _it;
-
-        ReverseConstIterator(const iterator it) : _it(it) {}
-
-        ref<ConstIterator<char>> next() const override
-        {
-            auto copy = _it;
-            return Object::create<String::ReverseConstIterator>(std::move(++copy));
-        }
-
-        const char &value() const override { return *(this->_it); }
-
-        bool operator==(const option<Object> &other) override
-        {
-            if (auto ptr = dynamic_cast<String::ReverseConstIterator *>(other.get()))
-            {
-                return this->_it == ptr->_it;
-            }
-            return false;
-        }
-
-        ref<ConstIterator<char>> operator+(size_t shift) const
-        {
-            return Object::create<String::ReverseConstIterator>(_it + shift);
-        }
-    };
+    class StringConstIterator;
+    class ReverseConstIterator;
 
     using Iterable<char>::find;
-    static constexpr const size_t npos = super::npos;
+    static constexpr const size_t npos = std::string::npos;
 
     static ref<String> getline(std::istream &os);
 
@@ -128,13 +72,6 @@ public:
     static void formatFromIteratorToStream(std::ostream &os, const Iterator begin, const Iterator end, Args &&...args);
     template <typename Iterator, typename... Args>
     static ref<String> formatFromIterator(const Iterator begin, const Iterator end, Args &&...args);
-
-    String(std::nullptr_t) = delete;
-    String(std::initializer_list<char> list) : super(std::move(list)) {}
-    String(const std::string &str) : super(str) {}
-    String(std::string &&str) : super(std::move(str)) {}
-    String(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }
-    String(const char *const str, size_t length) : super(str, length) { DEBUG_ASSERT(str != nullptr); }
 
     bool operator<(const ref<String> &other) const;
     bool operator<(const option<String> &other) const;
@@ -154,18 +91,17 @@ public:
     bool any(Function<bool(const char &)>) const override;
     bool every(Function<bool(const char &)>) const override;
     void forEach(Function<void(const char &)>) const override;
-    size_t size() const override { return super::size(); }
-    ref<ConstIterator<char>> begin() const override { return Object::create<StringConstIterator>(super::begin()); }
-    ref<ConstIterator<char>> end() const override { return Object::create<StringConstIterator>(super::end()); }
-    ref<ConstIterator<char>> rbegin() const override { return Object::create<ReverseConstIterator>(super::rbegin()); }
-    ref<ConstIterator<char>> rend() const override { return Object::create<ReverseConstIterator>(super::rend()); }
+    ref<ConstIterator<char>> begin() const override;
+    ref<ConstIterator<char>> end() const override;
+    ref<ConstIterator<char>> rbegin() const override;
+    ref<ConstIterator<char>> rend() const override;
 
     // inherited from ConstIndexableMixin
-    const char &operator[](const size_t &index) const override { return super::operator[](index); }
+    const char &operator[](const size_t &index) const override { return this->data()[index]; }
 
     // inherited from std::string *
-    virtual const char *const c_str() const { return super::c_str(); } // will be remove in the future
-    virtual const char *const data() const { return super::data(); }
+    virtual const char *const data() const = 0;
+    virtual const char *const c_str() const { return this->data(); } // will be remove in the future
     virtual size_t length() const { return this->size(); }
 
     // new interface
@@ -177,17 +113,44 @@ public:
     virtual ref<String> trim(ref<String> pattern) const;
     virtual ref<String> toLowerCase() const;
     virtual ref<String> toUpperCase() const;
-    virtual size_t find(ref<String> pattern, size_t start = 0) const;
-    virtual size_t findFirstOf(ref<String> pattern, size_t start = 0) const;
-    virtual size_t findFirstNotOf(ref<String> pattern, size_t start = 0) const;
-    virtual size_t findLastOf(ref<String> pattern, size_t start = npos) const;
-    virtual size_t findLastNotOf(ref<String> pattern, size_t start = npos) const;
+    virtual size_t find(ref<String> pattern, size_t pos = 0) const;
+    virtual size_t findFirstOf(ref<String> pattern, size_t pos = 0) const;
+    virtual size_t findFirstNotOf(ref<String> pattern, size_t pos = 0) const;
+    virtual size_t findLastOf(ref<String> pattern, size_t pos = npos) const;
+    virtual size_t findLastNotOf(ref<String> pattern, size_t pos = npos) const;
     virtual ref<String> substr(size_t begin = 0, size_t length = npos) const;
     virtual ref<String> replace(size_t begin, size_t length, ref<String> other) const;
     virtual ref<String> reverse() const;
 
     template <typename... Args>
-    ref<String> format(Args &&...args);
+    ref<String> format(Args &&...args) const;
+};
+
+class String::Native : public String, protected std::string
+{
+    using super = std::string;
+
+public:
+    Native(std::initializer_list<char> list) : super(std::move(list)) {}
+    Native(const std::string &str) : super(str) {}
+    Native(std::string &&str) : super(std::move(str)) {}
+    Native(const char *const str) : super(str) { DEBUG_ASSERT(str != nullptr); }
+    Native(const char *const str, size_t length) : super(str, length) { DEBUG_ASSERT(str != nullptr); }
+
+    // override from Iterable
+    size_t size() const override { return this->std::string::size(); }
+    // override from String
+    const char *const data() const override { return this->std::string::data(); }
+};
+
+class String::Static : public String
+{
+public:
+    const char *const pointer;
+    const size_t len;
+    Static(const char *const pointer, const size_t len) : pointer(pointer), len(len){};
+    const char *const data() const override { return pointer; }
+    size_t size() const override { return len; }
 };
 
 template <>
@@ -202,8 +165,8 @@ public:
     template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
     ref(ref<R> &&other) noexcept : super(std::move(other)) {}
 
-    template <typename... Args, typename = decltype(String(std::declval<Args>()...))>
-    ref(Args &&...args) : super(Object::create<String>(std::forward<Args>(args)...)) {}
+    template <typename... Args, typename = decltype(String::Native(std::declval<Args>()...))>
+    ref(Args &&...args) : super(Object::create<String::Native>(std::forward<Args>(args)...)) {}
 
     const char &operator[](size_t index) const { return this->get()->operator[](index); }
     ref<ConstIterator<char>> begin() const { return this->get()->begin(); }
@@ -346,10 +309,10 @@ ref<String> String::formatFromIterator(const Iterator begin, const Iterator end,
 }
 
 template <>
-inline ref<String> String::format() { return self(); }
+inline ref<String> String::format() const { return Object::cast<>(const_cast<String *>(this)); }
 
 template <typename... Args>
-ref<String> String::format(Args &&...args)
+ref<String> String::format(Args &&...args) const
 {
     std::stringstream ss;
 #ifndef ASYNC_RUNTIME_DISABLE_BOOL_TO_STRING
@@ -359,7 +322,45 @@ ref<String> String::format(Args &&...args)
     return ss.str();
 }
 
+class String::IteratorBasic : public ConstIterator<char>
+{
+public:
+    const char *const data;
+    const size_t position;
+    IteratorBasic(const char *const data, const size_t position)
+        : data(data), position(position) {}
+
+    const char &value() const override { return data[position]; }
+    bool operator==(const option<Object> &other) override;
+};
+
+class String::StringConstIterator : public String::IteratorBasic
+{
+    using super = String::IteratorBasic;
+
+public:
+    StringConstIterator(const char *const data, const size_t position)
+        : super(data, position) {}
+
+    ref<ConstIterator<char>> next() const override;
+    ref<ConstIterator<char>> operator+(size_t shift) const;
+};
+
+class String::ReverseConstIterator : public String::IteratorBasic
+{
+    using super = String::IteratorBasic;
+
+public:
+    ReverseConstIterator(const char *const data, const size_t position)
+        : super(data, position) {}
+
+    ref<ConstIterator<char>> next() const override;
+    ref<ConstIterator<char>> operator+(size_t shift) const;
+};
+
 ref<String> operator+(const char c, ref<String> string);
 ref<String> operator+(const char *const str, ref<String> string);
 ref<String> operator+(const std::string &str, ref<String> string);
 ref<String> operator+(std::string &&str, ref<String> string);
+
+ref<String> operator""_String(const char *, size_t);

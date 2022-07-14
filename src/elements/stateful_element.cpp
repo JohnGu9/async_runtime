@@ -19,19 +19,7 @@ ref<State<StatefulWidget>> StatefulElement::InvalidWidget::createState() { retur
 
 std::ostream &operator<<(std::ostream &os, const StatefulElement::LifeCycle::Value &value)
 {
-    switch (value)
-    {
-    case StatefulElement::LifeCycle::uninitialized:
-        return os << "StatefulElement::LifeCycle::uninitialized";
-    case StatefulElement::LifeCycle::mounted:
-        return os << "StatefulElement::LifeCycle::mounted";
-    case StatefulElement::LifeCycle::building:
-        return os << "StatefulElement::LifeCycle::building";
-    case StatefulElement::LifeCycle::unmount:
-        return os << "StatefulElement::LifeCycle::unmount";
-    default:
-        throw NotImplementedError();
-    }
+    return os << StatefulElement::LifeCycle::toString(value);
 }
 
 const ref<List<StatefulElement::LifeCycle::Value>>
@@ -43,9 +31,19 @@ const ref<List<StatefulElement::LifeCycle::Value>>
 
 ref<String> StatefulElement::LifeCycle::toString(StatefulElement::LifeCycle::Value value)
 {
-    std::stringstream ss;
-    ss << value;
-    return ss.str();
+    switch (value)
+    {
+    case StatefulElement::LifeCycle::uninitialized:
+        return "StatefulElement::LifeCycle::uninitialized"_String;
+    case StatefulElement::LifeCycle::mounted:
+        return "StatefulElement::LifeCycle::mounted"_String;
+    case StatefulElement::LifeCycle::building:
+        return "StatefulElement::LifeCycle::building"_String;
+    case StatefulElement::LifeCycle::unmount:
+        return "StatefulElement::LifeCycle::unmount"_String;
+    default:
+        throw NotImplementedError();
+    }
 }
 
 StatefulElement::StatefulElement(ref<StatefulWidget> widget)

@@ -2,89 +2,36 @@
 #include <algorithm>
 #include <cctype>
 
-class String::View : public String
+class String::View : public String::Static
 {
-    const ref<String> _parent;
-    const size_t _begin;
-    const size_t _end;
-    const size_t _length;
-
-    using super = String;
+    using super = String::Static;
 
 public:
-    View(ref<String> parent, size_t begin, size_t end);
-
-    const char *const c_str() const override { return _parent->c_str() + _begin; }
-    const char *const data() const override { return _parent->data() + _begin; }
-    size_t length() const override { return _length; }
-    size_t size() const override { return _length; }
-
-    const char &operator[](const size_t &index) const override
-    {
-        if (index >= _length)
-            throw std::range_error("String::View::operator[] access out of range memory");
-        return _parent[index + _begin];
-    }
-    ref<ConstIterator<char>> begin() const override { return _parent->begin().get()->covariant<String::StringConstIterator>()->operator+(_begin); }
-    ref<ConstIterator<char>> end() const override { return _parent->begin().get()->covariant<String::StringConstIterator>()->operator+(_end); }
-    ref<ConstIterator<char>> rbegin() const override { return _parent->rbegin().get()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _end); }
-    ref<ConstIterator<char>> rend() const override { return _parent->rbegin().get()->covariant<String::ReverseConstIterator>()->operator+(_parent->length() - _begin); }
-
-    size_t find(ref<String> pattern, size_t start = 0) const override
-    {
-        size_t result = _parent->find(pattern, start + _begin);
-        if (result >= _end)
-            return super::npos;
-        return result - _begin;
-    }
-    size_t findFirstOf(ref<String> pattern, size_t start = 0) const override
-    {
-        size_t result = _parent->findFirstOf(pattern, start + _begin);
-        if (result >= _end)
-            return super::npos;
-        return result - _begin;
-    }
-    size_t findFirstNotOf(ref<String> pattern, size_t start = 0) const override
-    {
-        size_t result = _parent->findFirstNotOf(pattern, start + _begin);
-        if (result >= _end)
-            return super::npos;
-        return result - _begin;
-    }
-    size_t findLastOf(ref<String> pattern, size_t start = npos) const override
-    {
-        const auto max = std::max(_begin, _end - 1);
-        start = start == npos ? max : std::min(start + _begin, max);
-        size_t result = _parent->findLastOf(pattern, start);
-        if (result < _begin)
-            return super::npos;
-        return result - _begin;
-    }
-    size_t findLastNotOf(ref<String> pattern, size_t start = npos) const override
-    {
-        const auto max = std::max(_begin, _end - 1);
-        start = start == npos ? max : std::min(start + _begin, max);
-        size_t result = _parent->findLastNotOf(pattern, start);
-        if (result < _begin)
-            return super::npos;
-        return result - _begin;
-    }
-
+    const ref<String> parent;
+    View(ref<String> parent, const char *const pointer, const size_t len);
     ref<String> substr(size_t begin = 0, size_t length = SIZE_MAX) const override;
 };
 
-String::View::View(ref<String> parent, size_t begin, size_t end)
-    : _parent(parent), _begin(begin), _end(end), _length(_end - _begin)
+String::View::View(ref<String> parent, const char *const pointer, const size_t len)
+    : super(pointer, len), parent(parent)
 {
-    DEBUG_ASSERT(_parent->cast<String::View>() == nullptr);
-    DEBUG_ASSERT(_parent->length() >= _begin && _parent->length() >= _end);
+    DEBUG_ASSERT(parent->cast<String::View>() == nullptr);
+    DEBUG_ASSERT(parent->data() <= pointer && parent->length() >= len);
 }
 
 ref<String> String::View::substr(size_t begin, size_t length) const
 {
-    begin = begin + this->_begin;
-    return Object::create<String::View>(this->_parent, begin, length == npos ? this->length() + begin : length + begin);
+    return Object::create<String::View>(this->parent,
+                                        this->data() + begin,
+                                        length == String::npos ? this->len - begin : length);
 }
+
+const ref<Map<size_t, ref<String>>> String::_staticCache = Map<size_t, ref<String>>::create();
+
+ref<ConstIterator<char>> String::begin() const { return Object::create<StringConstIterator>(this->data(), 0); }
+ref<ConstIterator<char>> String::end() const { return Object::create<StringConstIterator>(this->data(), this->length()); }
+ref<ConstIterator<char>> String::rbegin() const { return Object::create<ReverseConstIterator>(this->data(), this->length() - 1); }
+ref<ConstIterator<char>> String::rend() const { return Object::create<ReverseConstIterator>(this->data(), static_cast<size_t>(-1)); }
 
 bool String::operator<(const ref<String> &other) const
 {
@@ -236,29 +183,147 @@ ref<String> operator+(std::string &&str, ref<String> string)
     return String::connect(str, string);
 }
 
-size_t String::find(ref<String> pattern, size_t start) const
+#include <mutex>
+
+ref<String> operator""_String(const char *c, size_t len)
 {
-    return super::find(pattern->data(), start, pattern->length());
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> guard(mutex);
+    auto it = String::_staticCache->findKey((size_t)c);
+    if (it != String::_staticCache->end())
+        return it.get()->value()->second;
+    auto res = Object::create<String::Static>(c, len);
+    String::_staticCache->emplace((size_t)c, res);
+    return res;
 }
 
-size_t String::findFirstOf(ref<String> pattern, size_t start) const
+#include <vector>
+
+static size_t samePrefixSuffix(const char *const data, size_t length)
 {
-    return super::find_first_of(pattern->data(), start, pattern->length());
+    for (size_t i = 1; i < length; i++)
+    {
+        const auto compareLength = length - i;
+        if (std::strncmp(data, data + i, compareLength) == 0)
+            return compareLength;
+    }
+    return 0;
 }
 
-size_t String::findFirstNotOf(ref<String> pattern, size_t start) const
+static std::vector<size_t> maxLengthSamePrefixSuffix(const char *const data, size_t length)
 {
-    return super::find_first_not_of(pattern->data(), start, pattern->length());
+    std::vector<size_t> res(length, 0);
+    for (size_t i = 1; i < length; i++)
+        res[i] = samePrefixSuffix(data, i + 1);
+    return res;
 }
 
-size_t String::findLastOf(ref<String> pattern, size_t start) const
+static size_t findFirstMatchChar(const char c, const char *const data, size_t start, size_t end)
 {
-    return super::find_last_of(pattern->data(), start, pattern->length());
+    for (size_t i = start; i < end; i++)
+    {
+        if (data[i] == c)
+            return i;
+    }
+    return String::npos;
 }
 
-size_t String::findLastNotOf(ref<String> pattern, size_t start) const
+size_t String::find(ref<String> pattern, size_t pos) const
 {
-    return super::find_last_not_of(pattern->data(), start, pattern->length());
+    const auto parentLength = this->length(), patternLength = pattern->length();
+    if ((parentLength - pos) >= patternLength)
+    {
+        const auto parentData = this->data(), patternData = pattern->data();
+        const auto kmp = maxLengthSamePrefixSuffix(patternData, patternLength);
+        for (size_t start = findFirstMatchChar(pattern[0], parentData, pos, parentLength - patternLength + 1), i = 1;
+             start != String::npos;)
+        {
+            auto match = true;
+            for (; i < patternLength; i++)
+            {
+                auto x = parentData + start + i,
+                     y = patternData + i;
+                if (*x != *y)
+                {
+                    match = false;
+                    const auto hint = kmp[i - 1];
+                    start += (i - hint);
+                    i = hint;
+                    break;
+                }
+            }
+            if (match) // [[unlikely]]
+                return start;
+            else if (i == 0)
+            {
+                start = findFirstMatchChar(pattern[0], parentData, start, parentLength - patternLength + 1);
+                i = 1;
+            }
+        }
+    }
+    return String::npos;
+}
+
+#include <set>
+
+size_t String::findFirstOf(ref<String> pattern, size_t pos) const
+{
+    std::set<char> s(pattern->begin(), pattern->end());
+    auto end = s.end();
+    auto data = this->data();
+    auto length = this->length();
+    for (size_t i = pos; i < length; i++)
+    {
+        if (s.find(data[i]) != end)
+            return i;
+    }
+    return String::npos;
+}
+
+size_t String::findFirstNotOf(ref<String> pattern, size_t pos) const
+{
+    std::set<char> s(pattern->begin(), pattern->end());
+    auto end = s.end();
+    auto data = this->data();
+    auto length = this->length();
+    for (size_t i = pos; i < length; i++)
+    {
+        if (s.find(data[i]) == end)
+            return i;
+    }
+    return String::npos;
+}
+
+size_t String::findLastOf(ref<String> pattern, size_t pos) const
+{
+    auto length = this->length();
+    if (pos == String::npos)
+        pos = length - 1;
+    auto data = this->data();
+    std::set<char> s(pattern->begin(), pattern->end());
+    auto end = s.end();
+    for (size_t i = pos; i != static_cast<size_t>(-1); i--)
+    {
+        if (s.find(data[i]) != end)
+            return i;
+    }
+    return String::npos;
+}
+
+size_t String::findLastNotOf(ref<String> pattern, size_t pos) const
+{
+    auto length = this->length();
+    if (pos == String::npos)
+        pos = length - 1;
+    auto data = this->data();
+    std::set<char> s(pattern->begin(), pattern->end());
+    auto end = s.end();
+    for (size_t i = pos; i != static_cast<size_t>(-1); i--)
+    {
+        if (s.find(data[i]) == end)
+            return i;
+    }
+    return String::npos;
 }
 
 std::string String::toStdString() const
@@ -339,7 +404,9 @@ ref<String> String::toUpperCase() const
 ref<String> String::substr(size_t begin, size_t length) const
 {
     auto self = Object::cast<>(const_cast<String *>(this));
-    return Object::create<String::View>(self, begin, length == npos ? this->length() : (length + begin));
+    return Object::create<String::View>(self,
+                                        this->data() + begin,
+                                        length == String::npos ? this->length() - begin : length);
 }
 
 ref<String> String::replace(size_t begin, size_t length, ref<String> other) const
@@ -362,4 +429,34 @@ ref<String> String::getline(std::istream &is)
     std::string str;
     std::getline(is, str);
     return str;
+}
+
+bool String::IteratorBasic::operator==(const option<Object> &other)
+{
+    if (auto ptr = dynamic_cast<IteratorBasic *>(other.get()))
+    {
+        return this->data == ptr->data &&       // [[likely]]
+               this->position == ptr->position; // [[unlikely]]
+    }
+    return false;
+}
+
+ref<ConstIterator<char>> String::StringConstIterator::next() const
+{
+    return Object::create<StringConstIterator>(data, position + 1);
+}
+
+ref<ConstIterator<char>> String::StringConstIterator::operator+(size_t shift) const
+{
+    return Object::create<StringConstIterator>(data, position + shift);
+}
+
+ref<ConstIterator<char>> String::ReverseConstIterator::next() const
+{
+    return Object::create<ReverseConstIterator>(data, position - 1);
+}
+
+ref<ConstIterator<char>> String::ReverseConstIterator::operator+(size_t shift) const
+{
+    return Object::create<ReverseConstIterator>(data, position - shift);
 }
