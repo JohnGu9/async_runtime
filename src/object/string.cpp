@@ -27,11 +27,12 @@ ref<String> String::View::substr(size_t begin, size_t length) const
     return Object::create<String::View>(this->parent, this->data() + begin, length);
 }
 
-const ref<Map<size_t, ref<String>>> String::_staticCache = Map<size_t, ref<String>>::create();
-
 ref<ConstIterator<char>> String::begin() const { return Object::create<StringConstIterator>(this->data(), 0); }
+
 ref<ConstIterator<char>> String::end() const { return Object::create<StringConstIterator>(this->data(), this->length()); }
+
 ref<ConstIterator<char>> String::rbegin() const { return Object::create<ReverseConstIterator>(this->data(), this->length() - 1); }
+
 ref<ConstIterator<char>> String::rend() const { return Object::create<ReverseConstIterator>(this->data(), static_cast<size_t>(-1)); }
 
 bool String::operator<(const ref<String> &other) const
@@ -185,6 +186,8 @@ ref<String> operator+(std::string &&str, ref<String> string)
 }
 
 #include <mutex>
+
+const ref<Map<size_t, ref<String>>> String::_staticCache = Map<size_t, ref<String>>::create();
 
 ref<String> String::_cacheLiterals(const char *c, size_t len)
 {
