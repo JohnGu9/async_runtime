@@ -36,7 +36,7 @@ public:
             this->removeAt(index - 1);
     }
 
-    ref<List<T>> toList() const override { return Object::cast<>(const_cast<List<T> *>(this)); }
+    ref<List<T>> toList() const override { return constSelf(); }
 
     void toStringStream(std::ostream &os) override
     {

@@ -71,11 +71,11 @@ public:
 template <typename T>
 ref<ReversibleIterable<T>> ReversibleIterable<T>::toReserve() const
 {
-    return Object::create<ReverseIterableWrapper<T>>(Object::cast<>(const_cast<ReversibleIterable<T> *>(this)));
+    return Object::create<ReverseIterableWrapper<T>>(constSelf());
 }
 
 template <typename T>
 ref<ReversibleMuteIterable<T>> ReversibleMuteIterable<T>::toReserve()
 {
-    return Object::create<ReverseMuteIterableWrapper<T>>(Object::cast<>(const_cast<ReversibleMuteIterable<T> *>(this)));
+    return Object::create<ReverseMuteIterableWrapper<T>>(self());
 }

@@ -309,7 +309,7 @@ ref<String> String::formatFromIterator(const Iterator begin, const Iterator end,
 }
 
 template <>
-inline ref<String> String::format() const { return Object::cast<>(const_cast<String *>(this)); }
+inline ref<String> String::format() const { return constSelf(); }
 
 template <typename... Args>
 ref<String> String::format(Args &&...args) const

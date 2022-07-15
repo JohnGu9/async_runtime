@@ -33,7 +33,7 @@ public:
         return false;
     }
 
-    ref<Set<T>> toSet() const override { return Object::cast<>(const_cast<Set<T> *>(this)); }
+    ref<Set<T>> toSet() const override { return constSelf(); }
 
     void toStringStream(std::ostream &os) override
     {
