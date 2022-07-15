@@ -38,7 +38,9 @@ class String : public ReversibleIterable<char>, public ConstIndexableMixin<size_
     template <typename Iterator, typename T>
     static bool _formatFromIteratorToStream(std::ostream &os, Iterator &start, const Iterator &end, const T &element);
 
+    friend ref<String> operator""_String(const char *);
     friend ref<String> operator""_String(const char *c, size_t);
+    static ref<String> _cacheLiterals(const char *c, size_t);
     static const ref<Map<size_t, ref<String>>> _staticCache;
 
 protected:
@@ -363,4 +365,5 @@ ref<String> operator+(const char *const str, ref<String> string);
 ref<String> operator+(const std::string &str, ref<String> string);
 ref<String> operator+(std::string &&str, ref<String> string);
 
+ref<String> operator""_String(const char *);
 ref<String> operator""_String(const char *, size_t);

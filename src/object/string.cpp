@@ -186,7 +186,7 @@ ref<String> operator+(std::string &&str, ref<String> string)
 
 #include <mutex>
 
-ref<String> operator""_String(const char *c, size_t len)
+ref<String> String::_cacheLiterals(const char *c, size_t len)
 {
     static std::mutex mutex;
     std::lock_guard<std::mutex> guard(mutex);
@@ -196,6 +196,16 @@ ref<String> operator""_String(const char *c, size_t len)
     auto res = Object::create<String::Static>(c, len);
     String::_staticCache->emplace((size_t)c, res);
     return res;
+}
+
+ref<String> operator""_String(const char *c)
+{
+    return String::_cacheLiterals(c, strlen(c));
+}
+
+ref<String> operator""_String(const char *c, size_t len)
+{
+    return String::_cacheLiterals(c, len);
 }
 
 #include <vector>
