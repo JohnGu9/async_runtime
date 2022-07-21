@@ -1,5 +1,10 @@
 #include "async_runtime/utilities/boolean.h"
 
+ref<Boolean> operator""_Boolean(unsigned long long int value)
+{
+    return value != 0;
+}
+
 bool Boolean::operator==(const bool &other) const
 {
     return this->value == other;

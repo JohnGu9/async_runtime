@@ -6,10 +6,7 @@ ref<Number> operator""_Number(unsigned long long int value) { return Object::cre
 ref<Number> operator""_Number(long double value) { return Object::create<Number::LongDouble>(value); }
 
 // SizeType
-Number::Type::Value Number::SizeType::type()
-{
-    return Number::Type::SizeType;
-}
+Number::Type::Value Number::SizeType::type() { return Number::Type::SizeType; }
 size_t Number::SizeType::hashCode() { return this->value; }
 
 bool Number::SizeType::operator==(const size_t &other) { return this->value == other; }

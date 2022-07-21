@@ -386,15 +386,15 @@ ref<List<ref<String>>> String::split(ref<String> pattern) const
 ref<String> String::trim() const
 {
     auto begin = this->findFirstNotOf(" ");
-    auto end = this->findLastNotOf(" ") + 1;
-    return this->substr(begin, end - begin);
+    auto end = this->findLastNotOf(" ");
+    return this->substr(begin, end + 1 - begin);
 }
 
 ref<String> String::trim(ref<String> pattern) const
 {
     auto begin = this->findFirstNotOf(pattern);
-    auto end = this->findLastNotOf(pattern) + 1;
-    return this->substr(begin, end - begin);
+    auto end = this->findLastNotOf(pattern);
+    return this->substr(begin, end + 1 - begin);
 }
 
 ref<String> String::toLowerCase() const

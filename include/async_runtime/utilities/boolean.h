@@ -39,3 +39,13 @@ protected:
     ref() noexcept : super() {}
     using super::super;
 };
+
+/**
+ * @brief
+ *
+ * @param int
+ *  0 - standard for false
+ *  1 - standard for true
+ * @return ref<Boolean>
+ */
+ref<Boolean> operator""_Boolean(unsigned long long int);
