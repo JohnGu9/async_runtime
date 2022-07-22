@@ -23,28 +23,28 @@ class Duration
     using DataType = signed long long;
 
 public:
-    static const DataType microsecondsPerMillisecond = 1000;
-    static const DataType millisecondsPerSecond = 1000;
-    static const DataType secondsPerMinute = 60;
-    static const DataType minutesPerHour = 60;
-    static const DataType hoursPerDay = 24;
+    constexpr static const DataType microsecondsPerMillisecond = 1000;
+    constexpr static const DataType millisecondsPerSecond = 1000;
+    constexpr static const DataType secondsPerMinute = 60;
+    constexpr static const DataType minutesPerHour = 60;
+    constexpr static const DataType hoursPerDay = 24;
 
-    static const DataType microsecondsPerSecond =
+    constexpr static const DataType microsecondsPerSecond =
         microsecondsPerMillisecond * millisecondsPerSecond;
-    static const DataType microsecondsPerMinute =
+    constexpr static const DataType microsecondsPerMinute =
         microsecondsPerSecond * secondsPerMinute;
-    static const DataType microsecondsPerHour = microsecondsPerMinute * minutesPerHour;
-    static const DataType microsecondsPerDay = microsecondsPerHour * hoursPerDay;
+    constexpr static const DataType microsecondsPerHour = microsecondsPerMinute * minutesPerHour;
+    constexpr static const DataType microsecondsPerDay = microsecondsPerHour * hoursPerDay;
 
-    static const DataType millisecondsPerMinute =
+    constexpr static const DataType millisecondsPerMinute =
         millisecondsPerSecond * secondsPerMinute;
-    static const DataType millisecondsPerHour = millisecondsPerMinute * minutesPerHour;
-    static const DataType millisecondsPerDay = millisecondsPerHour * hoursPerDay;
+    constexpr static const DataType millisecondsPerHour = millisecondsPerMinute * minutesPerHour;
+    constexpr static const DataType millisecondsPerDay = millisecondsPerHour * hoursPerDay;
 
-    static const DataType secondsPerHour = secondsPerMinute * minutesPerHour;
-    static const DataType secondsPerDay = secondsPerHour * hoursPerDay;
+    constexpr static const DataType secondsPerHour = secondsPerMinute * minutesPerHour;
+    constexpr static const DataType secondsPerDay = secondsPerHour * hoursPerDay;
 
-    static const DataType minutesPerDay = minutesPerHour * hoursPerDay;
+    constexpr static const DataType minutesPerDay = minutesPerHour * hoursPerDay;
 
     constexpr static Duration fromDetail(
         signed long long days = 0,

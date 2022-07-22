@@ -11,7 +11,7 @@ public:
     template <typename T, typename ReturnType, typename... Args>
     static Function<ReturnType(Args...)> bind(ReturnType (T::*fn)(Args...), T *);
 
-    template <typename T, typename ReturnType, typename... Args>
+    template <typename ReturnType, typename... Args>
     class BindFn;
 };
 
@@ -55,21 +55,21 @@ protected:
     using super::super;
 };
 
-template <typename T, typename ReturnType, typename... Args>
+template <typename ReturnType, typename... Args>
 class Fn<Object::Void>::BindFn : public Fn<ReturnType(Args...)>
 {
     using super = Fn<ReturnType(Args...)>;
 
 public:
-    lateref<T> object;
+    lateref<Object> object;
     using super::super;
 };
 
 template <typename T, typename ReturnType, typename... Args>
 Function<ReturnType(Args...)> Fn<Object::Void>::bind(ReturnType (T::*fn)(Args...), T *pointer)
 {
-    auto res = Object::create<Fn<Object::Void>::BindFn<T, ReturnType, Args...>>(std::bind(fn, pointer));
-    res->object = Object::cast<>(pointer);
+    auto res = Object::create<Fn<Object::Void>::BindFn<ReturnType, Args...>>(std::bind(fn, pointer));
+    res->object = Object::cast<Object>(pointer);
     return res;
 }
 

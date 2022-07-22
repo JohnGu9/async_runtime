@@ -23,5 +23,3 @@ protected:
 
     class _Timer;
 };
-
-inline ref<EventLoop> Timer::eventLoop() { return _loop; }

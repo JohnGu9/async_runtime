@@ -2,10 +2,11 @@
 
 #include "string/string.h"
 
+#include "string/ref.h"
+
 #include "string/string_native.h"
 #include "string/string_static.h"
-
-#include "string/ref.h"
+#include "string/string_view.h"
 
 #include "string/iterator.h"
 #include "string/operators.h"

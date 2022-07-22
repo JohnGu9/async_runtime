@@ -1,6 +1,10 @@
 #include "async_runtime/widgets/stateful_widget.h"
 #include "async_runtime/elements/stateful_element.h"
 
+State<StatefulWidget>::State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)) {}
+
+State<StatefulWidget>::~State() { DEBUG_ASSERT(_mounted == false && "[dispose] must to call super::dispose"); }
+
 void State<StatefulWidget>::initState()
 {
     DEBUG_ASSERT(_mounted == false && "This [State] class mount twice is not allowed. User should not reuse [State] class or manually call [initState]");
@@ -21,6 +25,8 @@ void State<StatefulWidget>::setState(Function<void()> fn)
     DEBUG_ASSERT(this->_element->_lifeCycle == StatefulElement::LifeCycle::mounted && "[setState] can't not call in widget lifecycle hooker. ");
     this->_element->scheduleRebuild(fn, this->_loop);
 }
+
+ref<EventLoop> State<StatefulWidget>::eventLoop() { return this->_loop; }
 
 ref<Element> StatefulWidget::createElement()
 {

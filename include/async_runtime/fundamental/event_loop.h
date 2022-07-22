@@ -33,7 +33,6 @@ public:
     public:
         static ref<Handle> create(option<EventLoopGetterMixin> getter = nullptr);
         virtual void dispose() = 0;
-        virtual ~Handle() {}
     };
 
     class WithHandleMixin

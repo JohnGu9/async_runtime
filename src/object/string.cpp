@@ -2,31 +2,6 @@
 #include <algorithm>
 #include <cctype>
 
-class String::View : public String::Static
-{
-    using super = String::Static;
-
-public:
-    const ref<String> parent;
-    View(ref<String> parent, const char *const pointer, const size_t len);
-    ref<String> substr(size_t begin = 0, size_t length = SIZE_MAX) const override;
-};
-
-String::View::View(ref<String> parent, const char *const pointer, const size_t len)
-    : super(pointer, len), parent(parent)
-{
-    DEBUG_ASSERT(parent->cast<String::View>() == nullptr);
-    DEBUG_ASSERT(parent->data() <= pointer && parent->length() >= len);
-}
-
-ref<String> String::View::substr(size_t begin, size_t length) const
-{
-    auto left = this->len - begin;
-    if (length > left)
-        length = left;
-    return Object::create<String::View>(this->parent, this->data() + begin, length);
-}
-
 ref<ConstIterator<char>> String::begin() const { return Object::create<StringConstIterator>(this->data(), 0); }
 
 ref<ConstIterator<char>> String::end() const { return Object::create<StringConstIterator>(this->data(), this->length()); }
@@ -34,83 +9,6 @@ ref<ConstIterator<char>> String::end() const { return Object::create<StringConst
 ref<ConstIterator<char>> String::rbegin() const { return Object::create<ReverseConstIterator>(this->data(), this->length() - 1); }
 
 ref<ConstIterator<char>> String::rend() const { return Object::create<ReverseConstIterator>(this->data(), static_cast<size_t>(-1)); }
-
-bool String::operator<(const ref<String> &other) const
-{
-    auto len = other->length();
-    if (this->length() == len)
-    {
-        const char *a = this->data(), *b = other->data();
-        for (size_t i = 0; i < len; i++)
-        {
-            if (a[i] == b[i])
-                continue;
-            return a[i] < b[i];
-        }
-        return false;
-    }
-    return this->length() < len;
-}
-
-bool String::operator>(const ref<String> &other) const
-{
-    auto len = other->length();
-    if (this->length() == len)
-    {
-        const char *a = this->data(), *b = other->data();
-        for (size_t i = 0; i < len; i++)
-        {
-            if (a[i] == b[i])
-                continue;
-            return a[i] > b[i];
-        }
-        return false;
-    }
-    return this->length() > len;
-}
-
-bool String::operator<(const option<String> &other) const
-{
-    if_not_null(other) return this->operator<(other);
-    end_if() return false;
-}
-
-bool String::operator>(const option<String> &other) const
-{
-    if_not_null(other) return this->operator>(other);
-    end_if() return true;
-}
-
-bool String::operator==(const option<Object> &other)
-{
-    if (auto ptr = dynamic_cast<String *>(other.get()))
-    {
-        if (this->length() != ptr->length())
-            return false;
-        return std::strncmp(this->data(), ptr->data(), ptr->length()) == 0;
-    }
-    return false;
-}
-
-bool String::operator==(const std::string &other) const
-{
-    auto len = other.length();
-    if (this->length() != len)
-        return false;
-    return std::strncmp(this->data(), other.data(), len) == 0;
-}
-
-bool String::operator==(const char *const other) const
-{
-    auto start = this->data();
-    size_t i = 0, len = this->length();
-    for (; i < len; ++i)
-    {
-        if (start[i] != other[i])
-            return false;
-    }
-    return other[i] == 0;
-}
 
 void String::toStringStream(std::ostream &os)
 {
@@ -163,52 +61,6 @@ void String::forEach(Function<void(const char &)> fn) const
 {
     for (size_t i = 0, len = this->length(); i < len; i++)
         fn(this->operator[](i));
-}
-
-ref<String> operator+(const char c, ref<String> string)
-{
-    return String::connect(c, string);
-}
-
-ref<String> operator+(const char *const str, ref<String> string)
-{
-    return String::connect(str, string);
-}
-
-ref<String> operator+(const std::string &str, ref<String> string)
-{
-    return String::connect(str, string);
-}
-
-ref<String> operator+(std::string &&str, ref<String> string)
-{
-    return String::connect(str, string);
-}
-
-#include <mutex>
-
-const ref<Map<size_t, ref<String>>> String::_staticCache = Map<size_t, ref<String>>::create();
-
-ref<String> String::_cacheLiterals(const char *c, size_t len)
-{
-    static std::mutex mutex;
-    std::lock_guard<std::mutex> guard(mutex);
-    auto it = String::_staticCache->findKey((size_t)c);
-    if (it != String::_staticCache->end())
-        return it.get()->value()->second;
-    auto res = Object::create<String::Static>(c, len);
-    String::_staticCache->emplace((size_t)c, res);
-    return res;
-}
-
-ref<String> operator""_String(const char *c)
-{
-    return String::_cacheLiterals(c, strlen(c));
-}
-
-ref<String> operator""_String(const char *c, size_t len)
-{
-    return String::_cacheLiterals(c, len);
 }
 
 #include <vector>
@@ -444,34 +296,4 @@ ref<String> String::getline(std::istream &is)
     std::string str;
     std::getline(is, str);
     return str;
-}
-
-bool String::IteratorBasic::operator==(const option<Object> &other)
-{
-    if (auto ptr = dynamic_cast<IteratorBasic *>(other.get()))
-    {
-        return this->data == ptr->data &&       // [[likely]]
-               this->position == ptr->position; // [[unlikely]]
-    }
-    return false;
-}
-
-ref<ConstIterator<char>> String::StringConstIterator::next() const
-{
-    return Object::create<StringConstIterator>(data, position + 1);
-}
-
-ref<ConstIterator<char>> String::StringConstIterator::operator+(size_t shift) const
-{
-    return Object::create<StringConstIterator>(data, position + shift);
-}
-
-ref<ConstIterator<char>> String::ReverseConstIterator::next() const
-{
-    return Object::create<ReverseConstIterator>(data, position - 1);
-}
-
-ref<ConstIterator<char>> String::ReverseConstIterator::operator+(size_t shift) const
-{
-    return Object::create<ReverseConstIterator>(data, position - shift);
 }

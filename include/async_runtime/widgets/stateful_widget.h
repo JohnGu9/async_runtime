@@ -51,10 +51,9 @@ protected:
     void setState(Function<void()> fn);
 
 public:
-    State() : _loop(EventLoopGetterMixin::ensureEventLoop(nullptr)) {}
-    ~State() { DEBUG_ASSERT(_mounted == false && "[dispose] must to call super::dispose"); }
-
-    ref<EventLoop> eventLoop() override { return this->_loop; }
+    State();
+    ~State();
+    ref<EventLoop> eventLoop() override;
 };
 
 template <typename T, typename std::enable_if<std::is_base_of<StatefulWidget, T>::value>::type *>

@@ -44,7 +44,7 @@ public:
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     static ref<T> cast(T *); // safely cast (in release mode)
 
-    Object() {}
+    Object() = default;
 
     // @mustCallSuper
     virtual void init() {}

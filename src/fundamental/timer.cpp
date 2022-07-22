@@ -8,6 +8,8 @@ extern "C"
 #include <uv.h>
 }
 
+ref<EventLoop> Timer::eventLoop() { return _loop; }
+
 static void timer_cb(uv_timer_t *handle)
 {
     const std::function<void()> *fn = reinterpret_cast<std::function<void()> *>(handle->data);
