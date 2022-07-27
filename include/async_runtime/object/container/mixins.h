@@ -1,5 +1,4 @@
 #pragma once
-
 #include "iterator.h"
 
 template <typename T>

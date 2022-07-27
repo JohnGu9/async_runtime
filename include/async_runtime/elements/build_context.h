@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../widgets/inherited_widget.h"
 #include "context.h"
 

@@ -1,21 +1,9 @@
-/**
- * @file duration.h
- * @brief
- * Duration work for time duration in async runtime
- * Mostly for Timer
- *
- * Duration is not Object that not a part of nullsafety system
- * Do not use ref<Duration> or option <Duration>
- *
- */
-
 #pragma once
-
 #include <cmath>
+
 /**
- * @brief Duration for a peroid of time in Async Runtime
- *
- * @alarm native copyable type that don't not need ref
+ * @brief Duration for a period of time in Async Runtime
+ * @warning native copyable type that don't not need ref
  *
  */
 class Duration
@@ -62,7 +50,7 @@ public:
 
     constexpr Duration(signed long long milliseconds);
 
-    constexpr Duration operator+(Duration &&other) const
+    constexpr Duration operator+(const Duration &other) const
     {
         return Duration(_duration + other._duration);
     }
@@ -71,7 +59,7 @@ public:
      * Subtracts [other] from this Duration and
      * returns the difference as a new Duration object.
      */
-    constexpr Duration operator-(Duration &&other) const
+    constexpr Duration operator-(const Duration &other) const
     {
         return Duration(_duration - other._duration);
     }
@@ -108,25 +96,25 @@ public:
      * Returns `true` if the value of this Duration
      * is less than the value of [other].
      */
-    constexpr bool operator<(Duration other) const { return this->_duration < other._duration; }
+    constexpr bool operator<(const Duration &other) const { return this->_duration < other._duration; }
 
     /**
      * Returns `true` if the value of this Duration
      * is greater than the value of [other].
      */
-    constexpr bool operator>(Duration other) const { return this->_duration > other._duration; }
+    constexpr bool operator>(const Duration &other) const { return this->_duration > other._duration; }
 
     /**
      * Returns `true` if the value of this Duration
      * is less than or equal to the value of [other].
      */
-    constexpr bool operator<=(Duration other) const { return this->_duration <= other._duration; }
+    constexpr bool operator<=(const Duration &other) const { return this->_duration <= other._duration; }
 
     /**
      * Returns `true` if the value of this Duration
      * is greater than or equal to the value of [other].
      */
-    constexpr bool operator>=(Duration other) const { return this->_duration >= other._duration; }
+    constexpr bool operator>=(const Duration &other) const { return this->_duration >= other._duration; }
 
     constexpr DataType toSeconds() const { return _duration / microsecondsPerSecond; }
     constexpr DataType toMilliseconds() const { return _duration / microsecondsPerMillisecond; }

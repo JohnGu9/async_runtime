@@ -1,5 +1,4 @@
 #pragma once
-
 #include "number_basic.h"
 
 class Number::SizeType : public Number::Basic<size_t>

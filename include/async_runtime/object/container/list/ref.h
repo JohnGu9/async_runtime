@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../list.h"
 
 #ifndef ASYNC_RUNTIME_CUSTOM_LIST_CONSTRUCTOR

@@ -1,3 +1,23 @@
+#pragma once
+#include "object/declare.h"
+
+#include "object/ref_implement.h"
+
+#include "object/lateref.h"
+#include "object/option.h"
+#include "object/ref.h"
+#include "object/weak_ref.h"
+
+#include "object/object.h"
+
+#include "container.h"
+#include "function.h"
+#include "string.h"
+
+#include "object/cross_implement.h"
+#include "object/hash.h"
+#include "object/operators.h"
+
 /**
  * @brief
  * The mechanism of nullsafety system
@@ -60,23 +80,3 @@
  * object = opt.ifNotNullElse(Object::create<Object>); another syntax
  *
  */
-
-#pragma once
-#include "object/declare.h"
-
-#include "object/ref_implement.h"
-
-#include "object/lateref.h"
-#include "object/option.h"
-#include "object/ref.h"
-#include "object/weak_ref.h"
-
-#include "object/object.h"
-
-#include "container.h"
-#include "function.h"
-#include "string.h"
-
-#include "object/cross_implement.h"
-#include "object/hash.h"
-#include "object/operators.h"

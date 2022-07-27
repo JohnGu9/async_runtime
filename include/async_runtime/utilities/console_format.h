@@ -1,5 +1,4 @@
 #pragma once
-
 #include <iostream>
 
 // not work in Windows CMD

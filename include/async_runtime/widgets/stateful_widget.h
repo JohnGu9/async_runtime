@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../elements/stateful_element.h"
 #include "../fundamental/async.h"
 #include "state.h"

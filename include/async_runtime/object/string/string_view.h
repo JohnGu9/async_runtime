@@ -1,5 +1,4 @@
 #pragma once
-
 #include "string_static.h"
 
 class String::View : public String::Static

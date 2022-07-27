@@ -1,5 +1,4 @@
 #pragma once
-
 #include "number_integer_basic.h"
 
 class Number::Short : public Number::IntegerBasic<short>

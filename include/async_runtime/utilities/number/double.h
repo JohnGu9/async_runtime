@@ -1,5 +1,4 @@
 #pragma once
-
 #include "number_double_basic.h"
 
 class Number::Float : public Number::DoubleBasic<float>

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "stateful_widget.h"
 
 template <typename T>

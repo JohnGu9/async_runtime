@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../fundamental/async.h"
 #include "stateful_widget.h"
 

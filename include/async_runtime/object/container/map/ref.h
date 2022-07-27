@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../map.h"
 
 #ifndef ASYNC_RUNTIME_CUSTOM_MAP_CONSTRUCTOR

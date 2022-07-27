@@ -1,8 +1,6 @@
 #pragma once
-
 #include "../object/object.h"
 #include "../utilities/duration.h"
-
 #include "event_loop.h"
 
 // Forward define

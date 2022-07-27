@@ -1,5 +1,4 @@
 #pragma once
-
 #include "container/declare.h"
 
 #include "container/pair.h"

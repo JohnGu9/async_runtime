@@ -1,5 +1,4 @@
 #pragma once
-
 #include "stateless_element.h"
 #include "../widgets/notification_listener.h"
 

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../container.h"
 #include "../object.h"
 #include <cstring>

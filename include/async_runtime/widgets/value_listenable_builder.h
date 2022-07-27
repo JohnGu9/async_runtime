@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../utilities/value_notifier.h"
 #include "stateful_widget.h"
 

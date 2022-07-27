@@ -1,5 +1,4 @@
 #pragma once
-
 #include "value_listenable.h"
 
 template <typename T = Object::Void>

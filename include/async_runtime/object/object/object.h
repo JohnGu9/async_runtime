@@ -1,5 +1,4 @@
 #pragma once
-
 #include "declare.h"
 #include <ostream>
 
@@ -22,8 +21,8 @@ public:
     class Void;
     using RuntimeType = size_t;
 
-    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, typename... _Args, typename = decltype(T(std::declval<_Args>()...))>
-    static ref<T> create(_Args &&...);
+    template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr, typename... Args, typename = decltype(T(std::declval<Args>()...))>
+    static ref<T> create(Args &&...);
     template <typename T>
     static void detach(ref<T> &) noexcept;
 
@@ -44,7 +43,7 @@ public:
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
     static ref<T> cast(T *); // safely cast (in release mode)
 
-    Object() = default;
+    Object() noexcept = default;
 
     // @mustCallSuper
     virtual void init() {}

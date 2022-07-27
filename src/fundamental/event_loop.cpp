@@ -165,9 +165,10 @@ ref<EventLoop> EventLoopGetterMixin::ensureEventLoop(option<EventLoopGetterMixin
 
 ref<EventLoop> EventLoop::ensure() noexcept
 {
-    if_not_null(runningEventLoop) if (runningEventLoop->alive())
+    if_not_null(runningEventLoop)
     {
-        return runningEventLoop;
+        if (runningEventLoop->alive())
+            return runningEventLoop;
     }
     end_if();
 

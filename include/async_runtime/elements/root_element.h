@@ -1,6 +1,4 @@
 #pragma once
-
-#include "../fundamental/async.h"
 #include "single_child_element.h"
 
 class LoggerHandler;

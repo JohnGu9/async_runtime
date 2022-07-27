@@ -54,9 +54,6 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
                 this->_condition.wait(lock, [this]
                                       { return this->_stop || !this->_microTasks.empty() || !this->_tasks.empty(); });
 
-                if (this->_stop && this->_microTasks.empty() && this->_tasks.empty())
-                    return;
-
                 if (!this->_microTasks.empty())
                 {
                     task = std::move(this->_microTasks.front());
@@ -67,8 +64,14 @@ std::function<void()> ThreadPool::workerBuilder(size_t threadId)
                     task = std::move(this->_tasks.front());
                     this->_tasks.pop();
                 }
+                else if (this->_stop)
+                {
+                    return;
+                }
                 else
+                {
                     continue;
+                }
             }
             task();
         }

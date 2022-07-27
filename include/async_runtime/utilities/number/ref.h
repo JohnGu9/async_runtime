@@ -1,5 +1,4 @@
 #pragma once
-
 #include "double.h"
 #include "integer.h"
 

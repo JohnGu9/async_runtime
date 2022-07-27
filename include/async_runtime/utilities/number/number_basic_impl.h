@@ -1,5 +1,4 @@
 #pragma once
-
 #include "number_basic.h"
 
 template <typename T>

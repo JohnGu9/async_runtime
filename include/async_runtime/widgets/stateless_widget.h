@@ -1,5 +1,4 @@
 #pragma once
-
 #include "widget.h"
 
 class Element;

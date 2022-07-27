@@ -1,8 +1,6 @@
 #pragma once
-
-#include "string/string.h"
-
 #include "string/ref.h"
+#include "string/string.h"
 
 #include "string/string_native.h"
 #include "string/string_static.h"

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "single_child_element.h"
 
 class StatelessWidget;

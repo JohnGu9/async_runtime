@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../ref_implement.h"
 
 template <typename T>

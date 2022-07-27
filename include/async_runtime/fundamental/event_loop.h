@@ -80,7 +80,7 @@ public:
     ref<EventLoop> eventLoop() override { return self(); }
 
 protected:
-    EventLoop() noexcept {}
+    EventLoop() {}
     class _EventLoop;
     friend class _ThreadEventLoop;
 };

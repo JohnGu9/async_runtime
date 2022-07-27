@@ -1,5 +1,4 @@
 #pragma once
-
 #include "basic.h"
 #include "function.h"
 

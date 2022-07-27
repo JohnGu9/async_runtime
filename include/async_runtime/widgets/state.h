@@ -1,5 +1,4 @@
 #pragma once
-
 #include <type_traits>
 
 // declare state first for easy reference order later

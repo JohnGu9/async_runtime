@@ -3,7 +3,7 @@
 #include "key.h"
 #include "stateful_widget.h"
 
-template <class TargetState = State<StatefulWidget>>
+template <typename TargetState = State<StatefulWidget>>
 class GlobalKey : public Key
 {
 public:
@@ -25,14 +25,14 @@ protected:
 
 // [GlobalKey] is the [Key] only can be bind one widget at one time
 // but you can access target widget, context and state (if widget is StatefulWidget)
-template <class TargetState>
+template <typename TargetState>
 void GlobalKey<TargetState>::setElement(ref<Element> element)
 {
     RUNTIME_ASSERT(this->_element.toOption() == nullptr, "One [GlobalKey] instance can't mount more than one element. ");
     this->_element = element;
 }
 
-template <class TargetState>
+template <typename TargetState>
 void GlobalKey<TargetState>::dispose()
 {
     this->_element = nullptr;
@@ -40,7 +40,7 @@ void GlobalKey<TargetState>::dispose()
 
 #include "../elements/stateful_element.h"
 
-template <class TargetState>
+template <typename TargetState>
 option<Widget> GlobalKey<TargetState>::getCurrentWidget()
 {
     option<Element> element = this->_element.toOption();
@@ -48,10 +48,10 @@ option<Widget> GlobalKey<TargetState>::getCurrentWidget()
     end_if() return nullptr;
 }
 
-template <class TargetState>
+template <typename TargetState>
 option<BuildContext> GlobalKey<TargetState>::getCurrentContext() { return this->_element.toOption(); }
 
-template <class TargetState>
+template <typename TargetState>
 option<TargetState> GlobalKey<TargetState>::getCurrentState()
 {
     option<Element> element = this->_element.toOption();
@@ -65,7 +65,7 @@ option<TargetState> GlobalKey<TargetState>::getCurrentState()
     return nullptr;
 }
 
-template <class TargetState = State<StatefulWidget>>
+template <typename TargetState = State<StatefulWidget>>
 class GlobalObjectKey : public GlobalKey<TargetState>
 {
 public:

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "object.h"
 #include <functional>
 #include <type_traits>
@@ -80,4 +79,11 @@ Function<ReturnType(Args...)> Function<ReturnType(Args...)>::bind(ReturnType (T:
     return Fn<Object::Void>::bind<>(fn, pointer);
 }
 
+/**
+ * @brief bind a class member function
+ * @warning bind function does not work with inheritance-override
+ * 
+ * @example bind(memberFunction)
+ * 
+ */
 #define BIND_FUNCTION(__function__) ::Fn<Object::Void>::bind<>(&std::remove_pointer<decltype(this)>::type::__function__, this)

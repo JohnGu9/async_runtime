@@ -26,10 +26,7 @@ protected:
     ConnectionState::Value _state;
 
     template <typename T>
-    static T &getDataFromFuture(option<Future<T>> future)
-    {
-        return future->_data;
-    }
+    static T &getDataFromFuture(option<Future<T>> future) { return future->_data; }
 
 public:
     const ConnectionState::Value &state = _state;

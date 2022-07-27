@@ -26,7 +26,6 @@ public:
     class SharedLock;
     class UniqueLock;
     class InvalidLock;
-    class WithLockMixin;
 
     Lock() {}
     ~Lock();
@@ -66,21 +65,4 @@ class Lock::InvalidLock : public Lock
 {
     option<Lock::SharedLock> sharedLock() override { return nullptr; }
     option<Lock::UniqueLock> uniqueLock() override { return nullptr; }
-};
-
-class Lock::WithLockMixin
-{
-    ref<Lock> _lock;
-
-public:
-    WithLockMixin(option<Lock> lock = nullptr) : _lock(lock.ifNotNullElse(Object::create<Lock>)) {}
-    WithLockMixin(const WithLockMixin &other) : _lock(other.lock) {}
-
-    const ref<Lock> &lock = _lock;
-
-    WithLockMixin &operator=(const WithLockMixin &other)
-    {
-        this->_lock = other.lock;
-        return *this;
-    }
 };

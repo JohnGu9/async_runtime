@@ -1,5 +1,4 @@
 #pragma once
-
 #include "listenable.h"
 #include "change_notifier.h"
 #include "getter_setter.h"

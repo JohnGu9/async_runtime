@@ -1,5 +1,4 @@
 #pragma once
-
 #include "listenable.h"
 
 class ChangeNotifier : public virtual Listenable

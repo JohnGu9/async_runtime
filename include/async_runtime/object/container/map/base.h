@@ -1,8 +1,7 @@
 #pragma once
-
 #include "../map.h"
-#include "../set.h"
 #include "../pair.h"
+#include "../set.h"
 #include <map>
 
 template <typename Key, typename Value>
@@ -55,14 +54,6 @@ public:
 
 protected:
     Map() {}
-
-    element_type keyOnlyPairBuilder(const Key &key) const
-    {
-        return element_type(key);
-    }
-
-    element_type keyOnlyPairBuilder(Key &&key) const
-    {
-        return element_type(std::move(key));
-    }
+    element_type keyOnlyPairBuilder(const Key &key) const { return element_type(key); }
+    element_type keyOnlyPairBuilder(Key &&key) const { return element_type(std::move(key)); }
 };

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "element.h"
 
 class NamedMultiChildWidget;

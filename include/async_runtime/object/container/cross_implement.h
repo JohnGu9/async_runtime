@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../container.h"
 
 template <typename T>

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "build_context.h"
 
 class Widget;

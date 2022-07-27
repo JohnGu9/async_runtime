@@ -8,8 +8,8 @@
  *
  */
 
-#include "../utilities/duration.h"
 #include "../fundamental/async.h"
+#include "../utilities/duration.h"
 #include <fcntl.h>
 
 class File : public virtual Object, public EventLoopGetterMixin
@@ -78,10 +78,7 @@ public:
     virtual ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) { throw NotImplementedError(); };
 
     virtual bool isClosed() noexcept { return true; }
-    virtual ref<Future<int>> close()
-    {
-        return Future<int>::value(0, _loop);
-    }
+    virtual ref<Future<int>> close() { return Future<int>::value(0, _loop); }
 
     ref<EventLoop> eventLoop() override { return _loop; }
 

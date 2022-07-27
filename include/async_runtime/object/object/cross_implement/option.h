@@ -1,5 +1,4 @@
 #pragma once
-
 #include "../option.h"
 
 template <typename T>

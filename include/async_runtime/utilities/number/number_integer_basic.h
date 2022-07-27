@@ -1,5 +1,4 @@
 #pragma once
-
 #include "number_signed_basic.h"
 
 template <typename T>

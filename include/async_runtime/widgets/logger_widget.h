@@ -1,3 +1,7 @@
+#pragma once
+#include "inherited_widget.h"
+#include "stateful_widget.h"
+
 /**
  * @brief
  *
@@ -36,9 +40,6 @@
  *  both output same stuff
  *
  */
-#pragma once
-#include "inherited_widget.h"
-#include "stateful_widget.h"
 
 class LoggerHandler : public virtual Object
 {
