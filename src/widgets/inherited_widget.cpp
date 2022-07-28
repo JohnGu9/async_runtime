@@ -5,7 +5,4 @@ InheritedWidget::InheritedWidget(ref<Widget> child, option<Key> key) : Stateless
 
 ref<Widget> InheritedWidget::build(ref<BuildContext> context) { return _child; }
 
-ref<Element> InheritedWidget::createElement()
-{
-    return Object::create<InheritedElement>(self());
-}
+ref<Element> InheritedWidget::createElement() { return Object::create<InheritedElement>(self()); }

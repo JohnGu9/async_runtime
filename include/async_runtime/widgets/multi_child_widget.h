@@ -7,8 +7,7 @@ class MultiChildWidget : public Widget
 
 public:
     static ref<MultiChildWidget> fromChildren(ref<List<ref<Widget>>> children, option<Key> key = nullptr);
-    MultiChildWidget(ref<List<ref<Widget>>> children, option<Key> key = nullptr)
-        : Widget(key), _children(children) {}
+    MultiChildWidget(ref<List<ref<Widget>>> children, option<Key> key = nullptr);
 
 protected:
     finalref<List<ref<Widget>>> _children;

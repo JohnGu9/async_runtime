@@ -7,8 +7,7 @@ class NamedMultiChildWidget : public Widget
 
 public:
     static ref<NamedMultiChildWidget> fromChildren(ref<Map<ref<String>, lateref<Widget>>> children, option<Key> key = nullptr);
-    NamedMultiChildWidget(ref<Map<ref<String>, lateref<Widget>>> children, option<Key> key = nullptr)
-        : Widget(key), _children(children) {}
+    NamedMultiChildWidget(ref<Map<ref<String>, lateref<Widget>>> children, option<Key> key = nullptr);
 
 protected:
     finalref<Map<ref<String>, lateref<Widget>>> _children;

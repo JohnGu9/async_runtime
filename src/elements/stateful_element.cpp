@@ -78,7 +78,10 @@ void StatefulElement::detach()
     static finalref<StatefulElement> _invalidElement = Object::create<StatefulElement>(Object::create<StatefulElement::InvalidWidget>());
     this->_state->_context = _invalidElement;
     this->_state->_element = _invalidElement;
-    this->_setStateCallbacks->clear();
+
+    static finalref<List<Function<void()>>> dummy = List<Function<void()>>::create();
+    this->_setStateCallbacks = dummy;
+
     Element::detach();
 }
 

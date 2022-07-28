@@ -6,6 +6,9 @@ ref<MultiChildWidget> MultiChildWidget::fromChildren(ref<List<ref<Widget>>> chil
     return Object::create<MultiChildWidget>(children, key);
 }
 
+MultiChildWidget::MultiChildWidget(ref<List<ref<Widget>>> children, option<Key> key)
+    : Widget(key), _children(children) {}
+
 ref<Element> MultiChildWidget::createElement()
 {
     return Object::create<MultiChildElement>(self());

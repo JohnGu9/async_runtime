@@ -23,14 +23,13 @@ void Element::attach()
 {
     ref<Element> parent = this->parent.assertNotNull();
     this->_inheritances = parent->_inheritances;
-    lateref<Key> key;
     initKey(this->widget);
 }
 
+static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> _empty = Map<Object::RuntimeType, lateref<InheritedWidget>>::create();
 void Element::detach()
 {
     disposeKey(this->widget);
-    static finalref<Map<Object::RuntimeType, lateref<InheritedWidget>>> _empty = Map<Object::RuntimeType, lateref<InheritedWidget>>::create();
     this->_inheritances = _empty; // release map reference
 }
 

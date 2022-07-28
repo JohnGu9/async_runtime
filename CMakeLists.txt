@@ -39,8 +39,8 @@ add_subdirectory(vendor/libuv)
 
 if(WIN32)
     # disable libuv useless warnings on windows platform
-    target_compile_options(uv PRIVATE /wd4244 /wd4245 /wd4267 /wd4701 /wd4702)
-    target_compile_options(uv_a PRIVATE /wd4244 /wd4245 /wd4267 /wd4701 /wd4702)
+    target_compile_options(uv PRIVATE /wd4244 /wd4245 /wd4267 /wd4701 /wd4702 /wd4133)
+    target_compile_options(uv_a PRIVATE /wd4244 /wd4245 /wd4267 /wd4701 /wd4702 /wd4133)
 endif()
 
 message(STATUS "Libuv end")

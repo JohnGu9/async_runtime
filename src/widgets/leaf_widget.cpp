@@ -9,7 +9,4 @@ ref<LeafWidget> LeafWidget::factory()
 
 LeafWidget::LeafWidget(option<Key> key) : Widget(key){};
 
-ref<Element> LeafWidget::createElement()
-{
-    return Object::create<LeafElement>(self());
-}
+ref<Element> LeafWidget::createElement() { return Object::create<LeafElement>(self()); }

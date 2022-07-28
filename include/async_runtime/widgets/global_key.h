@@ -7,11 +7,7 @@ template <typename TargetState = State<StatefulWidget>>
 class GlobalKey : public Key
 {
 public:
-    bool isEqual(option<Key> other) override
-    {
-        return Object::identical<>(self(), other);
-    }
-
+    bool isEqual(option<Key> other) override { return Object::identical<>(self(), other); }
     void setElement(ref<Element> element) override;
     void dispose() override;
 

@@ -7,6 +7,9 @@ ref<NamedMultiChildWidget> NamedMultiChildWidget::fromChildren(
     return Object::create<NamedMultiChildWidget>(children, key);
 }
 
+NamedMultiChildWidget::NamedMultiChildWidget(ref<Map<ref<String>, lateref<Widget>>> children, option<Key> key)
+    : Widget(key), _children(children) {}
+
 ref<Element> NamedMultiChildWidget::createElement()
 {
     return Object::create<NamedMultiChildElement>(self());
