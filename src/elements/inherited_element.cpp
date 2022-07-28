@@ -15,7 +15,6 @@ void InheritedElement::attach()
 void InheritedElement::detach()
 {
     this->detachElement();
-    this->_inheritances->clear();
     Element::detach();
 }
 
@@ -46,11 +45,10 @@ void InheritedElement::notify(ref<Widget> newWidget)
     Element::notify(newWidget);
     this->_inheritances = this->_inheritances->copy();
     this->_inheritances[this->_inheritWidget->runtimeType()] = this->_inheritWidget;
-    this->_inheritWidget = newWidget->covariant<InheritedWidget>();
 
     ref<Widget> widget = this->_inheritWidget->build(Object::cast<BuildContext>(this));
     ref<Widget> oldWidget = this->_childElement->getWidget();
-    if (Object::identical(widget, oldWidget) || widget->canUpdate(oldWidget))
+    if (widget->canUpdate(oldWidget))
         this->_childElement->notify(widget);
     else
         this->reattachElement(widget->createElement());
