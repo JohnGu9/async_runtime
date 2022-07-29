@@ -39,10 +39,7 @@ public:
     template <typename T>
     static Function<ReturnType(Args...)> bind(ReturnType (T::*fn)(Args...), T *);
 
-    template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) noexcept : super(other) {}
-    template <typename R, typename std::enable_if<std::is_base_of<Fn<ReturnType(Args...)>, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
+    using super::super;
 
     template <typename Lambda, typename std::enable_if<std::is_constructible<Fn<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
     ref(Lambda lambda) : super(Object::create<Fn<ReturnType(Args...)>>(std::move(lambda))) {}
@@ -50,8 +47,7 @@ public:
     ReturnType operator()(Args... args) const { return this->get()->operator()(std::forward<Args>(args)...); }
 
 protected:
-    ref() noexcept : super() {}
-    using super::super;
+    ref() noexcept = default;
 };
 
 template <typename ReturnType, typename... Args>
@@ -82,8 +78,8 @@ Function<ReturnType(Args...)> Function<ReturnType(Args...)>::bind(ReturnType (T:
 /**
  * @brief bind a class member function
  * @warning bind function does not work with inheritance-override
- * 
+ *
  * @example bind(memberFunction)
- * 
+ *
  */
 #define BIND_FUNCTION(__function__) ::Fn<Object::Void>::bind<>(&std::remove_pointer<decltype(this)>::type::__function__, this)

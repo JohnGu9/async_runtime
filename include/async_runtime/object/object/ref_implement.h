@@ -26,12 +26,7 @@ class _async_runtime::RefImplement : protected std::shared_ptr<T>
 public:
     using super::operator*;
     using super::operator->;
-
-    T *get() const
-    {
-        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
-        return super::get();
-    }
+    using super::get;
 
     template <typename OTHER, typename std::enable_if<_async_runtime::RefFilter<OTHER>::value>::type * = nullptr>
     bool operator==(const OTHER &) const;
@@ -51,19 +46,18 @@ public:
     template <typename OTHER>
     bool operator>=(const OTHER &other) const { return this->operator>(other) || this->operator==(other); }
 
-protected:
-    RefImplement() noexcept {}
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    RefImplement(const ref<R> &other) noexcept;
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    RefImplement(ref<R> &&other) noexcept;
+
     RefImplement(std::nullptr_t) = delete;
 
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement(const std::shared_ptr<R> &other) noexcept : super(other)
-    {
-        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
-    }
+protected:
+    RefImplement() noexcept = default;
 
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    RefImplement(std::shared_ptr<R> &&other) noexcept : super(std::move(other))
-    {
-        DEBUG_ASSERT(super::get() && "ref Uninitiated NullReference Error! As usually this error cause by lateref that use before assgin a non-null reference. ");
-    }
+    RefImplement(const std::shared_ptr<R> &other) noexcept : super(other) {}
+    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
+    RefImplement(std::shared_ptr<R> &&other) noexcept : super(std::move(other)) {}
 };

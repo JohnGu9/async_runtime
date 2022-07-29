@@ -9,10 +9,7 @@ class ref<String> : public _async_runtime::RefImplement<String>
     using super = _async_runtime::RefImplement<String>;
 
 public:
-    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) noexcept : super(other) {}
-    template <typename R, typename std::enable_if<std::is_base_of<String, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
+    using super::super;
 
     template <typename... Args, typename = decltype(String::Native(std::declval<Args>()...))>
     ref(Args &&...args) : super(Object::create<String::Native>(std::forward<Args>(args)...)) {}
@@ -27,6 +24,5 @@ public:
     ref<String> operator+(T &&value) const { return String::connect(*this, std::move(value)); }
 
 protected:
-    ref() noexcept : super() {}
-    using super::super;
+    ref() noexcept = default;
 };

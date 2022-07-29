@@ -33,7 +33,7 @@ public:
                std::hash<typename std::remove_const<Second>::type>()(second);
     }
 
-    bool operator==(const option<Object>& other) override
+    bool operator==(const option<Object> &other) override
     {
         if (auto ptr = dynamic_cast<Pair<First, Second> *>(other.get()))
         {
@@ -59,10 +59,7 @@ class ref<Pair<First, Second>> : public _async_runtime::RefImplement<Pair<First,
     using element_type = Pair<First, Second>;
 
 public:
-    template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) noexcept : super(other) {}
-    template <typename R, typename std::enable_if<std::is_base_of<element_type, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
+    using super::super;
 
     ref(const First &first, const Second &second) : super(Object::create<element_type>(first, second)) {}
     ref(First &&first, Second &&second) : super(Object::create<element_type>(std::move(first), std::move(second))) {}
@@ -72,9 +69,7 @@ public:
 protected:
     ref(const First &first) : super(Object::create<element_type>(first, Second())) {}
     ref(First &&first) : super(Object::create<element_type>(std::move(first), Second())) {}
-
-    ref() noexcept : super() {}
-    using super::super;
+    ref() noexcept = default;
 };
 
 namespace _async_runtime

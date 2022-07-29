@@ -35,15 +35,9 @@
  *       ^
  *       |
  *  ref
- *
- *
- *  ref
  *       ^
  *       |
  *  lateref
- *
- *
- *  ref
  *       ^
  *       |
  *  option

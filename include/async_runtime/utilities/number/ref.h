@@ -1,6 +1,7 @@
 #pragma once
 #include "double.h"
 #include "integer.h"
+#include "size_type.h"
 
 template <>
 class ref<Number> : public _async_runtime::RefImplement<Number>
@@ -9,10 +10,7 @@ class ref<Number> : public _async_runtime::RefImplement<Number>
     using super = _async_runtime::RefImplement<Number>;
 
 public:
-    template <typename R, typename std::enable_if<std::is_base_of<Number, R>::value>::type * = nullptr>
-    ref(const ref<R> &other) noexcept : super(other) {}
-    template <typename R, typename std::enable_if<std::is_base_of<Number, R>::value>::type * = nullptr>
-    ref(ref<R> &&other) noexcept : super(std::move(other)) {}
+    using super::super;
 
     ref(const size_t &value) : super(Object::create<Number::SizeType>(value)) {}
 
@@ -26,8 +24,7 @@ public:
     ref(const long double &value) : super(Object::create<Number::LongDouble>(value)) {}
 
 protected:
-    ref() noexcept : super() {}
-    using super::super;
+    ref() noexcept = default;
 };
 
 ref<Number> operator""_Number(unsigned long long int);
