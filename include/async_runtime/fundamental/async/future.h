@@ -314,7 +314,7 @@ public:
 template <typename T>
 class FutureOr
 {
-    template <typename R>
+    template <typename>
     friend class Future;
 
 public:

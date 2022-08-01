@@ -17,6 +17,10 @@ namespace _async_runtime
     };
 };
 
+#define _ASYNC_RUNTIME_OPERATOR_FORWARD(__OPERATOR__) \
+    template <typename... Args, typename R = T>       \
+    auto __OPERATOR__(Args &&...args) const->decltype(std::declval<R>().__OPERATOR__(std::forward<Args>(args)...)) { return this->get()->__OPERATOR__(std::forward<Args>(args)...); }
+
 template <typename T>
 class _async_runtime::RefImplement : protected std::shared_ptr<T>
 {
@@ -46,6 +50,27 @@ public:
     template <typename OTHER>
     bool operator>=(const OTHER &other) const { return this->operator>(other) || this->operator==(other); }
 
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(begin);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(end);
+
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator[]);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator());
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator+);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator-);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator*);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator/);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator%);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator^);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator&);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator|);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator<<);
+    _ASYNC_RUNTIME_OPERATOR_FORWARD(operator>>);
+
+    template <typename R = T>
+    auto operator!() const -> decltype(std::declval<R>().operator!()) { return this->get()->operator!(); }
+    template <typename R = T>
+    auto operator~() const -> decltype(std::declval<R>().operator~()) { return this->get()->operator~(); }
+
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(const ref<R> &other) noexcept;
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
@@ -61,3 +86,5 @@ protected:
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(std::shared_ptr<R> &&other) noexcept : super(std::move(other)) {}
 };
+
+#undef _ASYNC_RUNTIME_OPERATOR_FORWARD

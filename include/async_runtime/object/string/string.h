@@ -101,4 +101,9 @@ public:
 
     template <typename... Args>
     ref<String> format(Args &&...args) const;
+
+    template <typename T>
+    ref<String> operator+(const T &value) const;
+    template <typename T>
+    ref<String> operator+(T &&value) const;
 };

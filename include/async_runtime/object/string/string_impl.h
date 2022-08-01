@@ -140,3 +140,8 @@ ref<String> String::format(Args &&...args) const
     String::formatFromStringToStream<>(ss, this->data(), this->length(), std::forward<Args>(args)...);
     return ss.str();
 }
+
+template <typename T>
+ref<String> String::operator+(const T &value) const { return String::connect<>(constSelf(), value); }
+template <typename T>
+ref<String> String::operator+(T &&value) const { return String::connect<>(constSelf(), std::move(value)); }

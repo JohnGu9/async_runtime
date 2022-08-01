@@ -23,9 +23,6 @@ public:
     ref(const std::initializer_list<T> &list) : super(Object::create<_async_runtime::DefaultSet<T>>(list)) {}
     ref(std::initializer_list<T> &&list) : super(Object::create<_async_runtime::DefaultSet<T>>(std::move(list))) {}
 
-    ref<ConstIterator<T>> begin() const { return this->get()->begin(); }
-    ref<ConstIterator<T>> end() const { return this->get()->end(); }
-
 protected:
     ref() noexcept = default;
 };

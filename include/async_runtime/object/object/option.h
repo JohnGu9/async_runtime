@@ -26,7 +26,7 @@ template <typename T>
 class option : protected lateref<T>, public _async_runtime::ToRefMixin<T>
 {
     friend class Object;
-    template <typename R>
+    template <typename>
     friend class option;
     using super = lateref<T>;
 

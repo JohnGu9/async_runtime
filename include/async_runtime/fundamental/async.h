@@ -22,17 +22,17 @@ template <typename T = Object::Void>
 class AsyncSnapshot;
 
 #define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \
-    template <typename R>                  \
+    template <typename>                  \
     friend class Future;                   \
-    template <typename R>                  \
+    template <typename>                  \
     friend class Completer;                \
-    template <typename R>                  \
+    template <typename>                  \
     friend class Stream;                   \
-    template <typename R>                  \
+    template <typename>                  \
     friend class StreamController;         \
-    template <typename R>                  \
+    template <typename>                  \
     friend class StreamSubscription;       \
-    template <typename R>                  \
+    template <typename>                  \
     friend class AsyncSnapshot;
 
 #include "async/async_snapshot.h"

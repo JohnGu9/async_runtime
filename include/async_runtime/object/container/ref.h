@@ -15,9 +15,6 @@ public:
     ref(const std::initializer_list<T> &list);
     ref(std::initializer_list<T> &&list);
 
-    ref<ConstIterator<T>> begin() const { return this->get()->begin(); }
-    ref<ConstIterator<T>> end() const { return this->get()->end(); }
-
 protected:
     ref() noexcept = default;
 };
