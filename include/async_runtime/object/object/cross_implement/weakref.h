@@ -8,10 +8,10 @@ _async_runtime::Else weakref<T>::ifNotNull(Function<void(ref<T>)> fn) const noex
     if (ptr != nullptr)
     {
         fn(ref<T>(ptr));
-        return _async_runtime::Else(true);
+        return Else(true);
     }
     else
-        return _async_runtime::Else(false);
+        return Else(false);
 }
 
 template <typename T>

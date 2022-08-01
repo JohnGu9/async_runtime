@@ -28,25 +28,23 @@ class option : protected lateref<T>, public _async_runtime::ToRefMixin<T>
     friend class Object;
     template <typename>
     friend class option;
+    template <typename>
+    friend class weakref;
     using super = lateref<T>;
+    using Else = _async_runtime::Else;
 
 public:
     using super::super;
     explicit option() noexcept = default; // MSVC bug patch: can't inherit no argument constructor from parent
     option(std::nullptr_t) noexcept : super() {}
-
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(const option<R> &other) noexcept : super(static_cast<const std::shared_ptr<R> &>(other)) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     option(option<R> &&other) noexcept : super(std::move(static_cast<std::shared_ptr<R> &>(other))) {}
 
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(const std::shared_ptr<R> &other) noexcept : super(other) {}
-    template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    option(std::shared_ptr<R> &&other) noexcept : super(std::move(other)) {}
-
     using super::get;
-    _async_runtime::Else ifNotNull(Function<void(ref<T>)> fn) const noexcept final;
+
+    Else ifNotNull(Function<void(ref<T>)> fn) const noexcept final;
     ref<T> ifNotNullElse(Function<ref<T>()> fn) const noexcept final;
     ref<T> assertNotNull() const noexcept(false) final;
 

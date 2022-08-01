@@ -32,23 +32,13 @@ std::ostream &operator<<(std::ostream &os, ref<T> &&object)
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const option<T> &object)
 {
-    object.ifNotNull([&](ref<T> object) { //
-              os << object;
-          })
-        .ifElse([&] { //
-            os << typeid(T).name() << "[NULL]";
-        });
-    return os;
+    if_not_null(object) return os << object;
+    end_if() return os << typeid(T).name() << "[NULL]";
 }
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, option<T> &&object)
 {
-    object.ifNotNull([&](ref<T> object) { //
-              os << object;
-          })
-        .ifElse([&] { //
-            os << typeid(T).name() << "[NULL]";
-        });
-    return os;
+    if_not_null(object) return os << object;
+    end_if() return os << typeid(T).name() << "[NULL]";
 }

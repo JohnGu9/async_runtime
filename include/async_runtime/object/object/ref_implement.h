@@ -50,6 +50,8 @@ public:
     template <typename OTHER>
     bool operator>=(const OTHER &other) const { return this->operator>(other) || this->operator==(other); }
 
+    // don't forward operator-> and operator*
+
     _ASYNC_RUNTIME_OPERATOR_FORWARD(begin);
     _ASYNC_RUNTIME_OPERATOR_FORWARD(end);
 
