@@ -11,9 +11,7 @@ class ref<Iterable<T>> : public _async_runtime::RefImplement<Iterable<T>>
 
 public:
     using super::super;
-
-    ref(const std::initializer_list<T> &list);
-    ref(std::initializer_list<T> &&list);
+    ref(std::initializer_list<T> list);
 
 protected:
     ref() noexcept = default;

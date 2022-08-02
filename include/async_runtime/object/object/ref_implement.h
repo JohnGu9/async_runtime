@@ -73,16 +73,14 @@ public:
     template <typename R = T>
     auto operator~() const -> decltype(std::declval<R>().operator~()) { return this->get()->operator~(); }
 
+    RefImplement(std::nullptr_t) = delete;
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(const ref<R> &other) noexcept;
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(ref<R> &&other) noexcept;
 
-    RefImplement(std::nullptr_t) = delete;
-
 protected:
     RefImplement() noexcept = default;
-
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
     RefImplement(const std::shared_ptr<R> &other) noexcept : super(other) {}
     template <typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>

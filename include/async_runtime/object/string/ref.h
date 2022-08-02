@@ -10,9 +10,9 @@ class ref<String> : public _async_runtime::RefImplement<String>
 
 public:
     using super::super;
-
     template <typename... Args, typename = decltype(String::Native(std::declval<Args>()...))>
     ref(Args &&...args) : super(Object::create<String::Native>(std::forward<Args>(args)...)) {}
+    ref(std::initializer_list<char> list) : super(Object::create<String::Native>(std::move(list))) {}
 
 protected:
     ref() noexcept = default;

@@ -19,9 +19,7 @@ class ref<List<T>> : public _async_runtime::RefImplement<List<T>>
 
 public:
     using super::super;
-
-    ref(const std::initializer_list<T> &list) : super(Object::create<_async_runtime::DefaultList<T>>(list)) {}
-    ref(std::initializer_list<T> &&list) : super(Object::create<_async_runtime::DefaultList<T>>(std::move(list))) {}
+    ref(std::initializer_list<T> list) : super(Object::create<_async_runtime::DefaultList<T>>(std::move(list))) {}
 
 protected:
     ref() noexcept = default;

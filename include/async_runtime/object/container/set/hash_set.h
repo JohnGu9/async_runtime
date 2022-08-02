@@ -31,14 +31,13 @@ public:
 
         const T &value() const override { return *(this->_it); }
 
-        bool operator==(const option<Object>& other) override;
+        bool operator==(const option<Object> &other) override;
     };
 
     static ref<Set<T>> create();
 
     HashSet() : _container{} {}
-    HashSet(const std::initializer_list<T> &list) : _container(list) {}
-    HashSet(std::initializer_list<T> &&list) : _container(std::move(list)) {}
+    HashSet(std::initializer_list<T> list) : _container(std::move(list)) {}
 
     ref<ConstIterator<T>> begin() const override
     {
@@ -78,7 +77,7 @@ public:
 };
 
 template <typename T, typename Hasher, typename Equal>
-bool HashSet<T, Hasher, Equal>::_ConstIterator::operator==(const option<Object>& other)
+bool HashSet<T, Hasher, Equal>::_ConstIterator::operator==(const option<Object> &other)
 {
     if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
     {

@@ -14,8 +14,8 @@
 
 #define finalref const ref
 #define finaloption const option
-#define self() Object::cast<>(this)
-#define constSelf() Object::cast<>(const_cast<typename _async_runtime::RemovePointerConst<decltype(this)>::type>(this))
+#define self() ::Object::cast<>(this)
+#define constSelf() ::Object::cast<>(const_cast<typename ::_async_runtime::RemovePointerConst<decltype(this)>::type>(this))
 
 #ifdef NDEBUG
 #define DEBUG_ASSERT(...) void(0)

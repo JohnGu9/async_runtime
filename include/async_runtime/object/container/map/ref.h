@@ -20,11 +20,7 @@ class ref<Map<Key, Value>> : public _async_runtime::RefImplement<Map<Key, Value>
 
 public:
     using super::super;
-
-    ref(const std::initializer_list<element_type> &list)
-        : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(list)) {}
-    ref(std::initializer_list<element_type> &&list)
-        : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
+    ref(std::initializer_list<element_type> list) : super(Object::create<_async_runtime::DefaultMap<Key, Value>>(std::move(list))) {}
 
 protected:
     ref() noexcept = default;

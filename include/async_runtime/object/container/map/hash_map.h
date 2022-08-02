@@ -32,12 +32,11 @@ public:
 
         const element_type &value() const override { return *(this->_it); }
 
-        bool operator==(const option<Object>& other) override;
+        bool operator==(const option<Object> &other) override;
     };
 
     HashMap() {}
-    HashMap(const std::initializer_list<element_type> &list) : _container(list) {}
-    HashMap(std::initializer_list<element_type> &&list) : _container(std::move(list)) {}
+    HashMap(std::initializer_list<element_type> list) : _container(std::move(list)) {}
 
     ref<Map<Key, Value>> copy() const override
     {
@@ -132,7 +131,7 @@ public:
 };
 
 template <typename Key, typename Value>
-bool HashMap<Key, Value>::_ConstIterator::operator==(const option<Object>& other)
+bool HashMap<Key, Value>::_ConstIterator::operator==(const option<Object> &other)
 {
     if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
     {

@@ -25,7 +25,7 @@ public:
 
         const T &value() const override { return *(this->_it); }
 
-        bool operator==(const option<Object>& other) override;
+        bool operator==(const option<Object> &other) override;
     };
 
     class _Iterator : public Iterator<T>
@@ -44,7 +44,7 @@ public:
 
         T &value() const override { return *(this->_it); }
 
-        bool operator==(const option<Object>& other) override;
+        bool operator==(const option<Object> &other) override;
 
         ref<ConstIterator<T>> toConst() const override
         {
@@ -55,8 +55,7 @@ public:
     static ref<List<T>> create();
 
     DequeList() {}
-    DequeList(const std::initializer_list<T> &list) : _container(list) {}
-    DequeList(std::initializer_list<T> &&list) : _container(std::move(list)) {}
+    DequeList(std::initializer_list<T> list) : _container(std::move(list)) {}
 
     ref<List<T>> copy() const override
     {
@@ -123,7 +122,7 @@ public:
 };
 
 template <typename T>
-bool DequeList<T>::_ConstIterator::operator==(const option<Object>& other)
+bool DequeList<T>::_ConstIterator::operator==(const option<Object> &other)
 {
     if (auto ptr = dynamic_cast<_ConstIterator *>(other.get())) // [[likely]]
     {
@@ -137,7 +136,7 @@ bool DequeList<T>::_ConstIterator::operator==(const option<Object>& other)
 }
 
 template <typename T>
-bool DequeList<T>::_Iterator::operator==(const option<Object>& other)
+bool DequeList<T>::_Iterator::operator==(const option<Object> &other)
 {
     if (auto ptr = dynamic_cast<_Iterator *>(other.get())) // [[likely]]
     {
