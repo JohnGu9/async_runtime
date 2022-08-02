@@ -318,7 +318,6 @@ class FutureOr
     friend class Future;
 
 public:
-    FutureOr() {}
     FutureOr(T directlyReturn) : _value(directlyReturn) {}
     FutureOr(ref<Future<T>> asyncReturn) : _future(asyncReturn) {}
 

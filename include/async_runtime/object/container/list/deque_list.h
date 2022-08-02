@@ -52,9 +52,7 @@ public:
         }
     };
 
-    static ref<List<T>> create();
-
-    DequeList() {}
+    DequeList() = default;
     DequeList(std::initializer_list<T> list) : _container(std::move(list)) {}
 
     ref<List<T>> copy() const override

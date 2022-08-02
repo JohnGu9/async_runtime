@@ -8,7 +8,7 @@ template <>
 class ValueNotifier<Object::Void> : public ChangeNotifier
 {
 protected:
-    ValueNotifier(){};
+    ValueNotifier() = default;
 };
 
 template <typename T>

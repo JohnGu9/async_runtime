@@ -53,7 +53,7 @@ public:
     ref<Map<Key, R>> map(Function<R(const element_type &)>) const;
 
 protected:
-    Map() {}
+    Map() noexcept = default;
     element_type keyOnlyPairBuilder(const Key &key) const { return element_type(key); }
     element_type keyOnlyPairBuilder(Key &&key) const { return element_type(std::move(key)); }
 };

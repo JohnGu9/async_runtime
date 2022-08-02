@@ -44,7 +44,7 @@
 class LoggerHandler : public virtual Object
 {
 public:
-    LoggerHandler() {}
+    LoggerHandler() noexcept = default;
 
     virtual ref<Future<bool>> write(ref<String> str) = 0;
     virtual ref<Future<bool>> writeLine(ref<String> str) = 0;

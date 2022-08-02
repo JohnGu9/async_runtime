@@ -3,11 +3,9 @@
 #include <cctype>
 
 ref<ConstIterator<char>> String::begin() const { return Object::create<StringConstIterator>(this->data(), 0); }
-
 ref<ConstIterator<char>> String::end() const { return Object::create<StringConstIterator>(this->data(), this->length()); }
 
 ref<ConstIterator<char>> String::rbegin() const { return Object::create<ReverseConstIterator>(this->data(), this->length() - 1); }
-
 ref<ConstIterator<char>> String::rend() const { return Object::create<ReverseConstIterator>(this->data(), static_cast<size_t>(-1)); }
 
 void String::toStringStream(std::ostream &os)

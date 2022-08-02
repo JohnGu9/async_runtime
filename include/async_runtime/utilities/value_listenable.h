@@ -1,7 +1,7 @@
 #pragma once
-#include "listenable.h"
 #include "change_notifier.h"
 #include "getter_setter.h"
+#include "listenable.h"
 
 template <typename T = Object::Void>
 class ValueListenable;
@@ -10,7 +10,7 @@ template <>
 class ValueListenable<Object::Void> : public virtual Listenable
 {
 protected:
-    ValueListenable() {}
+    ValueListenable() = default;
 };
 
 template <typename T>

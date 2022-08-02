@@ -36,7 +36,7 @@ public:
 
     static ref<Set<T>> create();
 
-    HashSet() : _container{} {}
+    HashSet() = default;
     HashSet(std::initializer_list<T> list) : _container(std::move(list)) {}
 
     ref<ConstIterator<T>> begin() const override

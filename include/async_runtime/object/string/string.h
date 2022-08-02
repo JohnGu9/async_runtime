@@ -21,7 +21,7 @@ class String : public ReversibleIterable<char>, public ConstIndexableMixin<size_
 protected:
     class View;
     class IteratorBasic;
-    String() {}
+    String() noexcept = default;
 
 public:
     class Static; // c string

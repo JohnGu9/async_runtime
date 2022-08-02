@@ -27,7 +27,7 @@ public:
     class UniqueLock;
     class InvalidLock;
 
-    Lock() {}
+    Lock() = default;
     ~Lock();
 
     virtual option<Lock::SharedLock> sharedLock();

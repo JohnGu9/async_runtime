@@ -94,7 +94,7 @@ public:
      * under oop system, this's not recommend to custom the destructor,
      * just only recommend use it under debug mode to do some resources-checking-asserting.
      */
-    virtual ~Object() {}
+    virtual ~Object() = default;
 
     Object(const Object &) = delete;
     Object &operator=(const Object &) = delete;

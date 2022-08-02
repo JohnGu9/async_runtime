@@ -8,7 +8,7 @@ class List : public MutableIterable<T>,
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 protected:
-    List() {}
+    List() noexcept = default;
 
 public:
     static ref<List<T>> create();

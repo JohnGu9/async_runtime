@@ -63,8 +63,6 @@ public:
     static ref<Future<ref<File>>> fromPath(ref<String> path, OpenFlags flags, OpenMode mode, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Future<int>> unlink(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
 
-    virtual ~File() {}
-
     virtual int error() noexcept { return code; }
     virtual int flags() { throw NotImplementedError(); }
     virtual int mode() { throw NotImplementedError(); }

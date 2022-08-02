@@ -34,6 +34,6 @@
 class NotImplementedError : public std::exception
 {
 public:
-    NotImplementedError() noexcept : std::exception(){};
+    NotImplementedError() noexcept = default;
     const char *what() const noexcept override { return "Function not yet implemented"; }
 };

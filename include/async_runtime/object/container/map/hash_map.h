@@ -35,7 +35,7 @@ public:
         bool operator==(const option<Object> &other) override;
     };
 
-    HashMap() {}
+    HashMap() = default;
     HashMap(std::initializer_list<element_type> list) : _container(std::move(list)) {}
 
     ref<Map<Key, Value>> copy() const override

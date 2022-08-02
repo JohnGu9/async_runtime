@@ -9,7 +9,7 @@ class Set : public Iterable<T>,
     _ASYNC_RUNTIME_FRIEND_FAMILY;
 
 protected:
-    Set() {}
+    Set() noexcept = default;
 
 public:
     static ref<Set<T>> create();
