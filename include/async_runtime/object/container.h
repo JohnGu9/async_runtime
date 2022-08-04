@@ -5,6 +5,7 @@
 
 #include "container/iterable.h"
 #include "container/iterator.h"
+#include "container/ref.h"
 
 #include "container/extern.h"
 

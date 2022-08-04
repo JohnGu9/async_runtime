@@ -39,9 +39,9 @@ public:
     static bool isNull(const option<T> &) noexcept;
 
     template <typename T, typename R, typename std::enable_if<std::is_base_of<T, R>::value>::type * = nullptr>
-    static ref<T> cast(R *); // safely cast (in release mode)
+    static ref<T> cast(R *); // safely downcast (in release mode)
     template <typename T, typename std::enable_if<std::is_base_of<Object, T>::value>::type * = nullptr>
-    static ref<T> cast(T *); // safely cast (in release mode)
+    static ref<T> cast(T *); // safely downcast (in release mode)
 
     Object() noexcept = default;
 
@@ -49,9 +49,9 @@ public:
     virtual void init() {}
 
     template <typename T>
-    option<T> cast() noexcept; // safely cast
+    option<T> cast() noexcept; // safely upcast
     template <typename T>
-    ref<T> covariant() noexcept(false); // unsafely cast
+    ref<T> covariant() noexcept(false); // unsafely upcast
 
     /**
      * @brief override this function to custom your object compare.

@@ -1,17 +1,17 @@
 #pragma once
 #include "string.h"
+#include "vector"
 
-class String::Native : public String, protected std::string
+class String::Native : public String
 {
-    using super = std::string;
+    const std::string _container;
 
 public:
-    using super::super;
-    Native(const std::string &other) : super(other) {}
-    Native(std::string &&other) : super(std::move(other)) {}
+    template <typename... Args, typename = decltype(std::string(std::declval<Args>()...))>
+    Native(Args &&...args) : _container(std::forward<Args>(args)...) {}
 
     // override from Iterable
-    size_t size() const override { return this->std::string::size(); }
+    size_t size() const override { return this->_container.size(); }
     // override from String
-    const char *const data() const override { return this->std::string::data(); }
+    const char *const data() const override { return this->_container.data(); }
 };

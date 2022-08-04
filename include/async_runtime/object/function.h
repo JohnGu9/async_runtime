@@ -36,9 +36,6 @@ class ref<Fn<ReturnType(Args...)>> : public _async_runtime::RefImplement<Fn<Retu
     using super = _async_runtime::RefImplement<Fn<ReturnType(Args...)>>;
 
 public:
-    template <typename T>
-    static Function<ReturnType(Args...)> bind(ReturnType (T::*fn)(Args...), T *);
-
     using super::super;
 
     template <typename Lambda, typename std::enable_if<std::is_constructible<Fn<ReturnType(Args...)>, Lambda>::value>::type * = nullptr>
@@ -58,21 +55,15 @@ class Fn<Object::Void>::BindFn : public Fn<ReturnType(Args...)>
 public:
     lateref<Object> object;
     using super::super;
+
+    template <typename Lambda>
+    BindFn(Lambda lambda, Object *object) : super(std::move(lambda)), object(::Object::cast<>(object)) {}
 };
 
 template <typename T, typename ReturnType, typename... Args>
 Function<ReturnType(Args...)> Fn<Object::Void>::bind(ReturnType (T::*fn)(Args...), T *pointer)
 {
-    auto res = Object::create<Fn<Object::Void>::BindFn<ReturnType, Args...>>(std::bind(fn, pointer));
-    res->object = Object::cast<Object>(pointer);
-    return res;
-}
-
-template <typename ReturnType, typename... Args>
-template <typename T>
-Function<ReturnType(Args...)> Function<ReturnType(Args...)>::bind(ReturnType (T::*fn)(Args...), T *pointer)
-{
-    return Fn<Object::Void>::bind<>(fn, pointer);
+    return Object::create<Fn<Object::Void>::BindFn<ReturnType, Args...>>(std::bind(fn, pointer), pointer);
 }
 
 /**
