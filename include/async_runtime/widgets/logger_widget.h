@@ -1,4 +1,5 @@
 #pragma once
+#include "../fundamental/file.h"
 #include "inherited_widget.h"
 #include "stateful_widget.h"
 
@@ -53,6 +54,7 @@ public:
 
 class Logger : public InheritedWidget
 {
+    class _Wrapper;
     class _Logger;
     friend class StdoutLoggerState;
 
@@ -61,7 +63,7 @@ public:
 
     // support hot switch
     static ref<Widget> cout(ref<Widget> child, option<Key> key = nullptr);
-    static ref<Widget> file(ref<Widget> child, ref<String> path, option<Key> key = nullptr);
+    static ref<Widget> file(ref<Widget> child, ref<File> file, option<Key> key = nullptr);
     static ref<Widget> block(ref<Widget> child, option<Key> key = nullptr);
 
     Logger(ref<Widget> child, ref<LoggerHandler> handler, option<Key> key = nullptr);

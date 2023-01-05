@@ -29,6 +29,7 @@
 
 // run widgets from this api
 void runApp(ref<Widget> widget);
+void exitApp(ref<BuildContext> context);
 
 // ease logger marco
 #ifndef __FILENAME__
@@ -123,7 +124,7 @@ namespace _async_runtime
         ::_async_runtime::loggerTime(__stringstream__)                                                                                         \
             << " [" << __FILENAME__ << ":" << __LINE__ << "] [" << __type__ << "] " ASYNC_RUNTIME_OSTREAM_REDIRECT << __format__ << std::endl; \
         ::Logger::of(context)                                                                                                                  \
-            ->write(::Object::create<::String::Native>(__stringstream__.str())->template format<>(__VA_ARGS__));                                       \
+            ->write(::Object::create<::String::Native>(__stringstream__.str())->template format<>(__VA_ARGS__));                               \
     }
 #endif
 

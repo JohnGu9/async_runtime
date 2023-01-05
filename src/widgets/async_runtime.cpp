@@ -10,6 +10,11 @@ void runApp(ref<Widget> widget)
                    { task(widget); });
 }
 
+void exitApp(ref<BuildContext> context)
+{
+    RootWidget::of(context)->exit();
+}
+
 static void task(ref<Widget> widget)
 {
 #ifndef NDEBUG

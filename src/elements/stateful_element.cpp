@@ -61,8 +61,11 @@ void StatefulElement::attach()
     Element::attach();
     this->_state->_element = self();
     this->_state->initState();
+    assert(this->_state->mounted && "State<*>::initState must be called when override");
+
     this->_state->_context = self(); // context only available after initState
     this->_state->didDependenceChanged();
+
     ref<Widget> widget = this->_state->build(Object::cast<BuildContext>(this));
     this->attachElement(widget->createElement());
     this->_lifeCycle = StatefulElement::LifeCycle::mounted;
@@ -70,17 +73,16 @@ void StatefulElement::attach()
 
 void StatefulElement::detach()
 {
+    this->clearCallbacks();
     this->_lifeCycle = StatefulElement::LifeCycle::unmount;
     this->detachElement();
     this->_state->dispose();
+    assert(!this->_state->mounted && "State<*>::dispose must be called when override");
 
     // release ref avoid ref each other
     static finalref<StatefulElement> _invalidElement = Object::create<StatefulElement>(Object::create<StatefulElement::InvalidWidget>());
     this->_state->_context = _invalidElement;
     this->_state->_element = _invalidElement;
-
-    static finalref<List<Function<void()>>> dummy = List<Function<void()>>::create();
-    this->_setStateCallbacks = dummy;
 
     Element::detach();
 }

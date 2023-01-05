@@ -38,7 +38,7 @@ public:
           loop(reinterpret_cast<uv_loop_t *>(_loop->nativeHandle())),
           openRequest(openRequest),
           closed(Object::create<Completer<int>>(getter)) {}
-    ~_File() { close(); }
+    ~_File() { assert(openRequest == nullptr && "File should be close before drop"); }
     int flags() override { return openRequest->flags; }
 
 #ifndef _WIN32
@@ -256,11 +256,21 @@ public:
 
     bool isClosed() noexcept override { return openRequest == nullptr; }
 
+    struct _close_data
+    {
+        _close_data(uv_fs_t *openRequest,
+                    ref<Completer<int>> completer)
+            : openRequest(openRequest), completer(completer) {}
+        uv_fs_t *openRequest;
+        ref<Completer<int>> completer;
+    };
+
     static void _on_close(uv_fs_t *req)
     {
-        auto closed = reinterpret_cast<ref<Completer<int>> *>(req->data);
-        (*closed)->complete(static_cast<int>(req->result));
+        auto closed = reinterpret_cast<_close_data *>(req->data);
+        closed->completer->complete(static_cast<int>(req->result));
         uv_fs_req_cleanup(req);
+        delete closed->openRequest;
         delete closed;
         delete req;
     }
@@ -270,9 +280,9 @@ public:
         if (openRequest != nullptr)
         {
             auto request = new uv_fs_t;
-            request->data = new ref<Completer<int>>(closed);
+            auto data = new _close_data(openRequest, closed);
+            request->data = data;
             uv_fs_close(loop, request, static_cast<uv_file>(openRequest->result), _on_close);
-            delete openRequest;
             openRequest = nullptr;
         }
         return closed;

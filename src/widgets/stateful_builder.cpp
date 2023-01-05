@@ -9,8 +9,8 @@ class StatefulBuilder::_State : public State<StatefulBuilder>
 public:
     ref<Widget> build(ref<BuildContext> context) override
     {
-        return this->widget->builder(context, [this](Function<void()> fn)
-                                     { this->setState(fn); });
+        return widget->builder(context, [this](Function<void()> fn)
+                               { this->setState(fn); });
     }
 };
 
