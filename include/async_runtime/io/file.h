@@ -2,7 +2,7 @@
 
 /**
  * @file file.h
- * @brief file is an io-component, but I think it's a basic functional component, so I put in fundamental folder
+ * @brief
  *
  * io folder for more advanced io-components
  *
@@ -64,19 +64,19 @@ public:
     static ref<Future<int>> unlink(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
 
     virtual int error() noexcept { return code; }
-    virtual int flags() { throw NotImplementedError(); }
-    virtual int mode() { throw NotImplementedError(); }
-    virtual ref<Future<ref<Stat>>> stat() { throw NotImplementedError(); }
+    virtual int flags() = 0;
+    virtual int mode() = 0;
+    virtual ref<Future<ref<Stat>>> stat() = 0;
 
-    virtual ref<Future<int>> write(ref<String> str) { throw NotImplementedError(); };
-    virtual ref<Future<int>> writeAll(ref<List<ref<String>>> str) { throw NotImplementedError(); };
-    virtual ref<Future<int>> truncate(int64_t offset) { throw NotImplementedError(); };
+    virtual ref<Future<int>> write(ref<String> str) = 0;
+    virtual ref<Future<int>> writeAll(ref<List<ref<String>>> str) = 0;
+    virtual ref<Future<int>> truncate(int64_t offset) = 0;
 
-    virtual ref<Future<ref<String>>> read() { throw NotImplementedError(); };
-    virtual ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) { throw NotImplementedError(); };
+    virtual ref<Future<ref<String>>> read() = 0;
+    virtual ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) = 0;
 
-    virtual bool isClosed() noexcept { return true; }
-    virtual ref<Future<int>> close() { return Future<int>::value(0, _loop); }
+    virtual bool isClosed() noexcept = 0;
+    virtual ref<Future<int>> close() = 0;
 
     ref<EventLoop> eventLoop() override { return _loop; }
 
@@ -91,7 +91,7 @@ protected:
 public:
     const ref<String> &path = _path;
 
-    class _File;
+    class Success;
     class Error;
 };
 
@@ -102,4 +102,18 @@ class File::Error : public File
 public:
     Error(ref<String> path, const int code, option<EventLoopGetterMixin> getter = nullptr)
         : super(path, code, getter) {}
+
+    int flags() override;
+    int mode() override;
+    ref<Future<ref<Stat>>> stat() override;
+
+    ref<Future<int>> write(ref<String> str) override;
+    ref<Future<int>> writeAll(ref<List<ref<String>>> str) override;
+    ref<Future<int>> truncate(int64_t offset) override;
+
+    ref<Future<ref<String>>> read() override;
+    ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) override;
+
+    bool isClosed() noexcept override;
+    ref<Future<int>> close() override;
 };

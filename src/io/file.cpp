@@ -1,4 +1,4 @@
-#include "async_runtime/fundamental/file.h"
+#include "async_runtime/io/file.h"
 
 #include <cstring>
 #include <fstream>
@@ -24,7 +24,21 @@ void File::Stat::toStringStream(std::ostream &ss)
        << " st_gen - " << st_gen << std::endl;
 }
 
-class File::_File : public File
+int File::Error::flags() { throw NotImplementedError(); }
+int File::Error::mode() { throw NotImplementedError(); }
+ref<Future<ref<File::Stat>>> File::Error::stat() { throw NotImplementedError(); }
+
+ref<Future<int>> File::Error::write(ref<String> str) { throw NotImplementedError(); };
+ref<Future<int>> File::Error::writeAll(ref<List<ref<String>>> str) { throw NotImplementedError(); };
+ref<Future<int>> File::Error::truncate(int64_t offset) { throw NotImplementedError(); };
+
+ref<Future<ref<String>>> File::Error::read() { throw NotImplementedError(); };
+ref<Stream<ref<String>>> File::Error::readAsStream(size_t segmentationLength) { throw NotImplementedError(); };
+
+bool File::Error::isClosed() noexcept { return true; }
+ref<Future<int>> File::Error::close() { return Future<int>::value(0, _loop); }
+
+class File::Success : public File
 {
 public:
     using super = File;
@@ -33,12 +47,12 @@ public:
     uv_fs_t *openRequest;
     ref<Completer<int>> closed;
 
-    _File(ref<String> path, uv_fs_t *openRequest, option<EventLoopGetterMixin> getter)
+    Success(ref<String> path, uv_fs_t *openRequest, option<EventLoopGetterMixin> getter)
         : super(path, static_cast<int>(openRequest->result), getter),
           loop(reinterpret_cast<uv_loop_t *>(_loop->nativeHandle())),
           openRequest(openRequest),
           closed(Object::create<Completer<int>>(getter)) {}
-    ~_File() { assert(openRequest == nullptr && "File should be close before drop"); }
+    ~Success() { assert(openRequest == nullptr && "File should be close before drop"); }
     int flags() override { return openRequest->flags; }
 
 #ifndef _WIN32
@@ -172,12 +186,12 @@ public:
 
     struct _read_data
     {
-        _read_data(ref<_File> file,
+        _read_data(ref<Success> file,
                    lateref<Completer<ref<String>>> completer,
                    lateref<StreamController<ref<String>>> stream,
                    std::stringstream &&ss,
                    uv_buf_t &&buffer) : file(file), completer(completer), stream(stream), ss(std::move(ss)), buffer(std::move(buffer)) {}
-        ref<_File> file;
+        ref<Success> file;
         lateref<Completer<ref<String>>> completer;
         lateref<StreamController<ref<String>>> stream;
         std::stringstream ss;
@@ -309,10 +323,10 @@ public:
 
 static void _on_open(uv_fs_t *req)
 {
-    auto data = reinterpret_cast<File::_File::_open_data *>(req->data);
+    auto data = reinterpret_cast<File::Success::_open_data *>(req->data);
     if (req->result > -1)
     {
-        data->completer->complete(Object::create<File::_File>(data->path, req, data->completer));
+        data->completer->complete(Object::create<File::Success>(data->path, req, data->completer));
         uv_fs_req_cleanup(req);
     }
     else
@@ -330,14 +344,14 @@ ref<Future<ref<File>>> File::fromPath(ref<String> path, OpenFlags flags, OpenMod
     auto loop = ensureEventLoop(getter);
     auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
     uv_fs_t *request = new uv_fs_t;
-    request->data = new File::_File::_open_data{path, completer};
+    request->data = new File::Success::_open_data{path, completer};
     uv_fs_open(handle, request, const_cast<const char *>(path->data()), flags, mode, _on_open);
     return completer;
 }
 
 static void _on_unlink(uv_fs_t *req)
 {
-    auto data = reinterpret_cast<File::_File::_unlink_data *>(req->data);
+    auto data = reinterpret_cast<File::Success::_unlink_data *>(req->data);
     data->completer->complete(static_cast<int>(req->result));
     uv_fs_req_cleanup(req);
     delete data;
@@ -350,7 +364,7 @@ ref<Future<int>> File::unlink(ref<String> path, option<EventLoopGetterMixin> get
     auto loop = ensureEventLoop(getter);
     auto handle = reinterpret_cast<uv_loop_t *>(loop->nativeHandle());
     uv_fs_t *request = new uv_fs_t;
-    request->data = new File::_File::_unlink_data{path, completer};
+    request->data = new File::Success::_unlink_data{path, completer};
     uv_fs_unlink(handle, request, const_cast<const char *>(path->data()), _on_unlink);
     return completer;
 }
