@@ -6,7 +6,6 @@
 #include <queue>
 #include <vector>
 
-#include "../utilities/lock.h"
 #include "thread.h"
 
 /**
@@ -19,9 +18,6 @@
  */
 class ThreadPool : public virtual Object
 {
-    static ref<Set<ref<String>>> _namePool;
-    static ref<Lock> _lock;
-
 public:
     ThreadPool(size_t threads, option<String> name = nullptr);
     virtual ~ThreadPool();
@@ -45,7 +41,6 @@ public:
 
 protected:
     virtual std::function<void()> workerBuilder(size_t);
-    virtual void unregisterName();
 
     ref<String> _name;
 

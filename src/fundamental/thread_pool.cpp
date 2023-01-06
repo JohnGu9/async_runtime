@@ -1,7 +1,5 @@
 #include "async_runtime/fundamental/thread_pool.h"
 
-ref<Lock> ThreadPool::_lock = Object::create<Lock>();
-ref<Set<ref<String>>> ThreadPool::_namePool = Set<ref<String>>::create();
 static finalref<String> prefix = "ThreadPool<";
 
 ThreadPool::ThreadPool(size_t threads, option<String> name)
@@ -11,9 +9,6 @@ ThreadPool::ThreadPool(size_t threads, option<String> name)
 {
     {
         DEBUG_ASSERT(this->_name->isNotEmpty());
-        option<Lock::UniqueLock> lk = _lock->uniqueLock();
-        DEBUG_ASSERT(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end() && "ThreadPool name can't repeat");
-        ThreadPool::_namePool->emplace(this->_name);
     }
     _workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
@@ -22,10 +17,6 @@ ThreadPool::ThreadPool(size_t threads, option<String> name)
 #ifndef NDEBUG
 ThreadPool::~ThreadPool()
 {
-    {
-        option<Lock::UniqueLock> lock = _lock->uniqueLock();
-        DEBUG_ASSERT(ThreadPool::_namePool->find(this->_name) == ThreadPool::_namePool->end());
-    }
     {
         std::unique_lock<std::mutex> lock(_queueMutex);
         DEBUG_ASSERT(this->_stop && "ThreadPool memory leak. ThreadPool release without call [dispose]");
@@ -109,11 +100,4 @@ void ThreadPool::dispose()
     for (std::thread &worker : _workers)
         worker.join();
     _workers.clear();
-    unregisterName();
-}
-
-void ThreadPool::unregisterName()
-{
-    option<Lock::UniqueLock> lock = _lock->uniqueLock();
-    ThreadPool::_namePool->remove(this->_name);
 }

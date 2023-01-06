@@ -26,6 +26,7 @@ public:
     using super::operator();
     using Fn<Object::Void>::operator==;
 
+
     const super &toStdFunction() const { return *this; }
 };
 

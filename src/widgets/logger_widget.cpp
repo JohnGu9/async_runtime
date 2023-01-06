@@ -50,15 +50,19 @@ public:
 
         ref<Future<bool>> write(ref<String> str) override
         {
-            return _file->write(str)->then<bool>([](const int &code)
-                                                 { return code == 0; });
+            return _file->write(str)
+                ->then<bool>([str](const int &code) { //
+                    return code == str->length();
+                });
         }
 
         ref<Future<bool>> writeLine(ref<String> str) override
         {
             static finalref<String> endl = endOfLine();
-            return _file->writeAll({str, endl})->then<bool>([](const int &code)
-                                                            { return code == 0; });
+            return _file->writeAll({str, endl})
+                ->then<bool>([str](const int &code) { //
+                    return code == str->length() + endl->length();
+                });
         }
 
         void dispose() override
