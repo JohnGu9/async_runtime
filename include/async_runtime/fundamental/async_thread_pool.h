@@ -47,9 +47,9 @@ ref<Future<T>> AsyncThreadPool::withContext(Function<T()> fn, option<EventLoopGe
     auto loop = EventLoop::ensureEventLoop(getter);
     finalref<Completer<T>> completer = Object::create<Completer<T>>(loop);
     this->launch([completer, fn, loop] { //
-        T value = fn();
-        loop->callSoonThreadSafe([value, completer] { //
-            completer->complete(std::move(value));
+        completer->setResult(fn());
+        loop->callSoonThreadSafe([completer] { //
+            completer->markAsCompleted();
         });
     });
     return completer;

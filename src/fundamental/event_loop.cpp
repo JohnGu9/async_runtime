@@ -9,10 +9,6 @@ extern "C"
 #include "async_runtime/fundamental/thread.h"
 #include "async_runtime/utilities/lock.h"
 
-static void useless_cb(uv_async_t *handle)
-{
-}
-
 class EventLoop::_EventLoop : public EventLoop
 {
 protected:
@@ -133,16 +129,33 @@ public:
 class EventLoop::Handle::_Handle : public EventLoop::Handle
 {
 public:
-    uv_async_t _async;
-
-    _Handle(ref<EventLoop> loop)
+    static void cleanup(uv_handle_t *handle)
     {
-        uv_async_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()), &_async, useless_cb /* never call, just for init argument */);
+        delete reinterpret_cast<uv_async_t *>(handle);
+    }
+
+    static void cb(uv_async_t *handle)
+    {
+        uv_close(reinterpret_cast<uv_handle_t *>(handle), cleanup);
+    }
+
+    uv_async_t *_async;
+
+    _Handle(ref<EventLoop> loop) : _async(new uv_async_t)
+    {
+        uv_async_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()),
+                      _async, cb);
+    }
+
+    virtual ~_Handle()
+    {
+        assert(_async == nullptr && "EventLoop::Handle::dispose should be called before ref dropped");
     }
 
     void dispose() override
     {
-        uv_unref(reinterpret_cast<uv_handle_t *>(&_async));
+        uv_async_send(_async);
+        _async = nullptr;
     }
 };
 

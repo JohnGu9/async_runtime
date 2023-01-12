@@ -24,6 +24,8 @@ protected:
     ref<EventLoop> _loop;
     bool _completed;
 
+    virtual void markAsCompleted() = 0;
+
 public:
     /**
      * @brief For [Future::wait] and [Future::race] return value wrapper
@@ -78,8 +80,7 @@ public:
     virtual ref<Future<T>> timeout(Duration, Function<T()> onTimeout);
 
 protected:
-    virtual void complete(const T &);
-    virtual void complete(T &&);
+    void markAsCompleted() override;
     T _data;
     ref<List<Function<void(const T &)>>> _callbackList;
 };
@@ -158,47 +159,34 @@ template <typename T>
 ref<Future<T>> Future<T>::async(Function<T()> fn)
 {
     auto loop = EventLoopGetterMixin::ensureEventLoop(nullptr);
-    auto future = Object::create<Completer<T>>(loop);
-    loop->callSoon([future, fn]
-                   { future->complete(fn()); });
+    auto future = Object::create<Future<T>>(loop);
+    loop->callSoon([future, fn] { //
+        future->_data = fn();
+        future->markAsCompleted();
+    });
     return future;
 }
 
 template <typename T>
 ref<Future<T>> Future<T>::toEventLoop(Function<T()> fn, ref<EventLoop> eventLoop)
 {
-    auto future = Object::create<Completer<T>>();
+    auto future = Object::create<Future<T>>();
     eventLoop->callSoonThreadSafe(
-        [fn, future] //
-        {            //
-            future->eventLoop()->callSoonThreadSafe(std::bind(
-                [future](T &value)
-                { future->complete(std::move(value)); },
-                fn()));
+        [fn, future] { //
+            future->_data = fn();
+            future->eventLoop()->callSoonThreadSafe([future] { //
+                future->markAsCompleted();
+            });
         });
     return future;
 }
 
 template <typename T>
-void Future<T>::complete(const T &data)
+void Future<T>::markAsCompleted()
 {
     if (_completed)
         throw std::logic_error("Future can not be completed twice");
     _completed = true;
-    _data = data;
-    auto callbackList = _callbackList;
-    _callbackList = dummy;
-    for (const auto &element : callbackList)
-        element(this->_data);
-}
-
-template <typename T>
-void Future<T>::complete(T &&data)
-{
-    if (_completed)
-        throw std::logic_error("Future can not be completed twice");
-    _completed = true;
-    _data = std::move(data);
     auto callbackList = _callbackList;
     _callbackList = dummy;
     for (const auto &element : callbackList)
@@ -209,7 +197,8 @@ template <typename T>
 ref<Future<T>> Future<T>::value(const T &value, option<EventLoopGetterMixin> getter)
 {
     auto future = Object::create<Future<T>>(getter);
-    future->complete(value);
+    future->_data = value;
+    future->markAsCompleted();
     return future;
 }
 
@@ -217,7 +206,8 @@ template <typename T>
 ref<Future<T>> Future<T>::value(T &&value, option<EventLoopGetterMixin> getter)
 {
     auto future = Object::create<Future<T>>(getter);
-    future->complete(std::move(value));
+    future->_data = std::move(value);
+    future->markAsCompleted();
     return future;
 }
 
@@ -231,29 +221,33 @@ ref<Future<ReturnType>> Future<T>::then(Function<FutureOr<ReturnType>(const T &)
 {
     if (this->_completed)
     {
-        FutureOr<ReturnType> result = fn(_data);
+        FutureOr<ReturnType> result = fn(this->_data);
         auto &future = result._future;
         if_not_null(future) return future;
         else_end()
         {
-            auto future = Object::create<Completer<ReturnType>>(self());
-            future->complete(result._value);
-            return future;
+            return Future<ReturnType>::value(std::move(result._value), self());
         }
         end_if();
     }
     else
     {
-        ref<Completer<ReturnType>> future = Object::create<Completer<ReturnType>>(self());
+        auto future = Object::create<Future<ReturnType>>(self());
         this->_callbackList->emplaceBack([future, fn](const T &value) { //
             FutureOr<ReturnType> result = fn(value);
             auto &resultFuture = result._future;
             if_not_null(resultFuture)
+            {
                 resultFuture->then([future](const ReturnType &v) { //
-                    future->complete(v);
+                    future->_data = v;
+                    future->markAsCompleted();
                 });
+            }
             else_end()
-                future->complete(result._value);
+            {
+                future->_data = std::move(result._value);
+                future->markAsCompleted();
+            }
             end_if();
         });
         return future;
@@ -307,8 +301,20 @@ class Completer : public Future<T>
 
 public:
     Completer(option<EventLoopGetterMixin> getter = nullptr) : super(getter) {}
-    void complete(const T &v) override { super::complete(v); }
-    void complete(T &&v) override { super::complete(std::move(v)); }
+    virtual void complete(const T &v)
+    {
+        this->_data = v;
+        this->markAsCompleted();
+    }
+    virtual void complete(T &&v)
+    {
+        this->_data = v;
+        this->markAsCompleted();
+    }
+
+    virtual void setResult(const T &v) { this->_data = v; }
+    virtual void setResult(T &&v) { this->_data = std::move(v); }
+    void markAsCompleted() override { super::markAsCompleted(); }
 };
 
 template <typename T>

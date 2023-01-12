@@ -35,13 +35,6 @@ public:
         virtual void dispose() = 0;
     };
 
-    class WithHandleMixin
-    {
-    protected:
-        ref<Handle> handle;
-        WithHandleMixin(option<EventLoopGetterMixin> getter = nullptr) : handle(Handle::create(getter)) {}
-    };
-
     static thread_local option<EventLoop> runningEventLoop;
     static thread_local bool isRunning;
 

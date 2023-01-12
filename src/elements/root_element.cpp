@@ -44,14 +44,14 @@ public:
             // call from another event loop
             ref<EventLoop> current = EventLoop::runningEventLoop.assertNotNull();
             auto completer = Object::create<Completer<bool>>(current);
-            _loop->callSoonThreadSafe([str, current, completer, wrap] //
-                                      {                               //
-                                          std::cout << str;
-                                          if (wrap)
-                                              std::cout << std::endl;
-                                          current->callSoonThreadSafe([completer]
-                                                                      { completer->complete(true); });
-                                      });
+            _loop->callSoonThreadSafe([str, current, completer, wrap] { //
+                std::cout << str;
+                if (wrap)
+                    std::cout << std::endl;
+                current->callSoonThreadSafe([completer] { //
+                    completer->complete(true);
+                });
+            });
             return completer;
         }
     }

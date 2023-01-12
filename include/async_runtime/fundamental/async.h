@@ -22,17 +22,17 @@ template <typename T = Object::Void>
 class AsyncSnapshot;
 
 #define _ASYNC_RUNTIME_FRIEND_ASYNC_FAMILY \
-    template <typename>                  \
+    template <typename>                    \
     friend class Future;                   \
-    template <typename>                  \
+    template <typename>                    \
     friend class Completer;                \
-    template <typename>                  \
+    template <typename>                    \
     friend class Stream;                   \
-    template <typename>                  \
+    template <typename>                    \
     friend class StreamController;         \
-    template <typename>                  \
+    template <typename>                    \
     friend class StreamSubscription;       \
-    template <typename>                  \
+    template <typename>                    \
     friend class AsyncSnapshot;
 
 #include "async/async_snapshot.h"
@@ -45,10 +45,13 @@ class AsyncSnapshot;
 template <typename T>
 ref<Future<T>> Future<T>::delay(Duration timeout, Function<T()> fn, option<EventLoopGetterMixin> getter)
 {
-    auto future = Object::create<Completer<T>>(getter);
+    auto future = Object::create<Future<T>>(getter);
     Timer::delay(
-        timeout, [future, fn](ref<Timer> timer)
-        { future->complete(fn()); },
+        timeout,
+        [future, fn](ref<Timer> timer) { //
+            future->_data = fn();
+            future->markAsCompleted();
+        },
         getter)
         ->start();
     return future;
@@ -57,10 +60,13 @@ ref<Future<T>> Future<T>::delay(Duration timeout, Function<T()> fn, option<Event
 template <typename T>
 ref<Future<T>> Future<T>::delay(Duration timeout, T value, option<EventLoopGetterMixin> getter)
 {
-    auto future = Object::create<Completer<T>>(getter);
+    auto future = Object::create<Future<T>>(getter);
     Timer::delay(
-        timeout, [future, value](ref<Timer> timer)
-        { future->complete(value); },
+        timeout,
+        [future, value](ref<Timer> timer) { //
+            future->_data = std::move(value);
+            future->markAsCompleted();
+        },
         getter)
         ->start();
     return future;

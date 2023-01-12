@@ -90,7 +90,7 @@ finalref<Fn<Function<void(const T &)>(const ref<StreamSubscription<T>> &)>> Stre
 template <typename T>
 void Stream<T>::rawClose()
 {
-    this->_onClose->complete(0);
+    this->_onClose->markAsCompleted();
     this->_active->clear();
     for (auto &listener : this->_listeners)
     {
