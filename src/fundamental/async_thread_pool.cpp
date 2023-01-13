@@ -22,75 +22,66 @@ bool AsyncThreadPool::isActive()
     return !this->_stop;
 }
 
-class AsyncThreadPool::Single : public AsyncThreadPool
-{
-    using super = AsyncThreadPool;
-    bool _dropRemainTasks = false;
-
-public:
-    Single(bool autoDispose)
-        : super(autoDispose),
-          _worker([this] { //
-              while (true)
+AsyncThreadPool::Single::Single(bool autoDispose)
+    : super(autoDispose),
+      _worker([this] { //
+          while (true)
+          {
+              lateref<Fn<void()>> task;
               {
-                  lateref<Fn<void()>> task;
+                  std::unique_lock<std::mutex> lock(this->_mutex);
+                  this->_condition.wait(lock, [this]
+                                        { return this->_stop || !this->_tasks.empty(); });
+                  if (this->_dropRemainTasks) // [[unlikely]]
                   {
-                      std::unique_lock<std::mutex> lock(this->_mutex);
-                      this->_condition.wait(lock, [this]
-                                            { return this->_stop || !this->_tasks.empty(); });
-                      if (this->_dropRemainTasks) // [[unlikely]]
-                      {
-                          return;
-                      }
-                      else if (!this->_tasks.empty()) // [[likely]]
-                      {
-                          task = std::move(this->_tasks.front());
-                          this->_tasks.pop();
-                      }
-                      else if (this->_stop) // [[unlikely]]
-                      {
-                          return;
-                      }
-                      else // [[unlikely]]
-                      {
-                          continue;
-                      }
+                      return;
                   }
-                  task();
+                  else if (!this->_tasks.empty()) // [[likely]]
+                  {
+                      task = std::move(this->_tasks.front());
+                      this->_tasks.pop();
+                  }
+                  else if (this->_stop) // [[unlikely]]
+                  {
+                      return;
+                  }
+                  else // [[unlikely]]
+                  {
+                      continue;
+                  }
               }
-          })
-    {
-    }
+              task();
+          }
+      })
+{
+}
 
-    Thread _worker;
-
-    void dispose(bool dropRemainTasks = false) override
+void AsyncThreadPool::Single::dispose(bool dropRemainTasks)
+{
     {
+        std::unique_lock<std::mutex> lock(_mutex);
+        if (_stop)
         {
-            std::unique_lock<std::mutex> lock(_mutex);
-            if (_stop)
-            {
-                return;
-            }
-            _dropRemainTasks = false;
-            _stop = true;
+            return;
         }
-        _condition.notify_one();
-        _worker.join();
+        _dropRemainTasks = false;
+        _stop = true;
     }
+    _condition.notify_one();
+    _worker.join();
+}
 
-    ~Single()
+AsyncThreadPool::Single::~Single()
+{
+    if (_autoDispose)
     {
-        if (_autoDispose)
-        {
-            Single::dispose();
-        }
-        else
-        {
-            assert(_stop);
-        }
+        Single::dispose();
     }
-};
+    else
+    {
+        assert(_stop);
+    }
+}
 
 class AsyncThreadPool::Multi : public AsyncThreadPool
 {
@@ -166,7 +157,7 @@ public:
     }
 };
 
-ref<AsyncThreadPool> AsyncThreadPool::single(bool autoDispose)
+ref<AsyncThreadPool::Single> AsyncThreadPool::single(bool autoDispose)
 {
     return Object::create<AsyncThreadPool::Single>(autoDispose);
 }
@@ -176,7 +167,7 @@ ref<AsyncThreadPool> AsyncThreadPool::fromThreadCount(size_t n, bool autoDispose
     assert(n != 0);
     if (n == 1)
     {
-        return Object::create<AsyncThreadPool::Single>(autoDispose);
+        return AsyncThreadPool::single(autoDispose);
     }
     return Object::create<AsyncThreadPool::Multi>(n, autoDispose);
 }

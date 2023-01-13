@@ -14,7 +14,9 @@
 class AsyncThreadPool : public virtual Object
 {
 public:
-    static ref<AsyncThreadPool> single(bool autoDispose = false);
+    class Single;
+
+    static ref<AsyncThreadPool::Single> single(bool autoDispose = false);
     static ref<AsyncThreadPool> fromThreadCount(size_t n, bool autoDispose = false);
 
     template <typename T>
@@ -37,8 +39,20 @@ protected:
     bool _stop = false;
     bool _autoDispose;
 
-    class Single;
     class Multi;
+};
+
+class AsyncThreadPool::Single : public AsyncThreadPool
+{
+    using super = AsyncThreadPool;
+    bool _dropRemainTasks = false;
+
+public:
+    Thread _worker;
+
+    Single(bool autoDispose);
+    ~Single();
+    void dispose(bool dropRemainTasks = false) override;
 };
 
 template <typename T>

@@ -60,6 +60,11 @@ public:
     {
         return openRequest->mode;
     }
+#else
+    int mode() override
+    {
+        return 0;
+    }
 #endif
 
     struct _stat_data
@@ -124,7 +129,7 @@ public:
         auto data = new _write_data(Object::create<Completer<int>>(_loop), str);
         request->data = data;
         uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->data()), static_cast<unsigned int>(str->length()));
-        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), &buffer, 1, 0, _on_write);
+        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), &buffer, 1, -1, _on_write);
         return data->completer;
     }
 
