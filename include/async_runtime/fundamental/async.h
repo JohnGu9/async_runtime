@@ -61,10 +61,10 @@ template <typename T>
 ref<Future<T>> Future<T>::delay(Duration timeout, T value, option<EventLoopGetterMixin> getter)
 {
     auto future = Object::create<Future<T>>(getter);
+    future->_data = std::move(value);
     Timer::delay(
         timeout,
-        [future, value](ref<Timer> timer) { //
-            future->_data = std::move(value);
+        [future](ref<Timer> timer) { //
             future->markAsCompleted();
         },
         getter)
@@ -76,17 +76,23 @@ template <typename T>
 ref<Future<T>> Future<T>::timeout(Duration timeout, Function<T()> onTimeout)
 {
     ref<Future<T>> self = self();
-    ref<Completer<T>> future = Object::create<Completer<T>>(self);
+    ref<Future<T>> future = Object::create<Future<T>>(self);
     this->template then<int>([future](const T &value) { //
         if (!future->completed())
-            future->complete(value);
+        {
+            future->_data = value;
+            future->markAsCompleted();
+        }
         return 0;
     });
     Timer::delay(
         timeout,
         [future, onTimeout](ref<Timer> timer) { //
             if (!future->completed())
-                future->complete(onTimeout());
+            {
+                future->_data = onTimeout();
+                future->markAsCompleted();
+            }
         },
         self)
         ->start();

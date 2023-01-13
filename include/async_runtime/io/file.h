@@ -63,20 +63,20 @@ public:
     static ref<Future<ref<File>>> fromPath(ref<String> path, OpenFlags flags, OpenMode mode, option<EventLoopGetterMixin> getter = nullptr);
     static ref<Future<int>> unlink(ref<String> path, option<EventLoopGetterMixin> getter = nullptr);
 
-    virtual int error() noexcept { return code; }
-    virtual int flags() = 0;
-    virtual int mode() = 0;
-    virtual ref<Future<ref<Stat>>> stat() = 0;
+    virtual int error() noexcept;
+    virtual int flags();
+    virtual int mode();
+    virtual ref<Future<ref<Stat>>> stat();
 
-    virtual ref<Future<int>> write(ref<String> str) = 0;
-    virtual ref<Future<int>> writeAll(ref<List<ref<String>>> str) = 0;
-    virtual ref<Future<int>> truncate(int64_t offset) = 0;
+    virtual ref<Future<int>> write(ref<String> str, int offset = -1);
+    virtual ref<Future<int>> writeAll(ref<List<ref<String>>> str, int offset = -1);
+    virtual ref<Future<int>> truncate(int64_t offset);
 
-    virtual ref<Future<ref<String>>> read() = 0;
-    virtual ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) = 0;
+    virtual ref<Future<ref<String>>> read(int offset = -1);
+    virtual ref<Stream<ref<String>>> readAsStream(size_t segmentationLength, int offset = -1);
 
-    virtual bool isClosed() noexcept = 0;
-    virtual ref<Future<int>> close() = 0;
+    virtual bool isClosed() noexcept;
+    virtual ref<Future<int>> close();
 
     ref<EventLoop> eventLoop() override { return _loop; }
 
@@ -102,18 +102,4 @@ class File::Error : public File
 public:
     Error(ref<String> path, const int code, option<EventLoopGetterMixin> getter = nullptr)
         : super(path, code, getter) {}
-
-    int flags() override;
-    int mode() override;
-    ref<Future<ref<Stat>>> stat() override;
-
-    ref<Future<int>> write(ref<String> str) override;
-    ref<Future<int>> writeAll(ref<List<ref<String>>> str) override;
-    ref<Future<int>> truncate(int64_t offset) override;
-
-    ref<Future<ref<String>>> read() override;
-    ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) override;
-
-    bool isClosed() noexcept override;
-    ref<Future<int>> close() override;
 };

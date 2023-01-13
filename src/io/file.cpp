@@ -8,6 +8,21 @@ extern "C"
 #include <uv.h>
 }
 
+int File::error() noexcept { return code; }
+int File::flags() { throw NotImplementedError(); }
+int File::mode() { throw NotImplementedError(); }
+ref<Future<ref<File::Stat>>> File::stat() { throw NotImplementedError(); }
+
+ref<Future<int>> File::write(ref<String> str, int offset) { throw NotImplementedError(); };
+ref<Future<int>> File::writeAll(ref<List<ref<String>>> str, int offset) { throw NotImplementedError(); };
+ref<Future<int>> File::truncate(int64_t offset) { throw NotImplementedError(); };
+
+ref<Future<ref<String>>> File::read(int offset) { throw NotImplementedError(); };
+ref<Stream<ref<String>>> File::readAsStream(size_t segmentationLength, int offset) { throw NotImplementedError(); };
+
+bool File::isClosed() noexcept { return true; }
+ref<Future<int>> File::close() { return Future<int>::value(0, _loop); }
+
 void File::Stat::toStringStream(std::ostream &ss)
 {
     ss << "File::Stat" << std::endl
@@ -23,20 +38,6 @@ void File::Stat::toStringStream(std::ostream &ss)
        << " st_flags - " << st_flags << std::endl
        << " st_gen - " << st_gen << std::endl;
 }
-
-int File::Error::flags() { throw NotImplementedError(); }
-int File::Error::mode() { throw NotImplementedError(); }
-ref<Future<ref<File::Stat>>> File::Error::stat() { throw NotImplementedError(); }
-
-ref<Future<int>> File::Error::write(ref<String> str) { throw NotImplementedError(); };
-ref<Future<int>> File::Error::writeAll(ref<List<ref<String>>> str) { throw NotImplementedError(); };
-ref<Future<int>> File::Error::truncate(int64_t offset) { throw NotImplementedError(); };
-
-ref<Future<ref<String>>> File::Error::read() { throw NotImplementedError(); };
-ref<Stream<ref<String>>> File::Error::readAsStream(size_t segmentationLength) { throw NotImplementedError(); };
-
-bool File::Error::isClosed() noexcept { return true; }
-ref<Future<int>> File::Error::close() { return Future<int>::value(0, _loop); }
 
 class File::Success : public File
 {
@@ -123,13 +124,13 @@ public:
         delete data;
         delete req;
     }
-    ref<Future<int>> write(ref<String> str) override
+    ref<Future<int>> write(ref<String> str, int offset = -1) override
     {
         auto request = new uv_fs_t;
         auto data = new _write_data(Object::create<Completer<int>>(_loop), str);
         request->data = data;
         uv_buf_t buffer = uv_buf_init(const_cast<char *>(str->data()), static_cast<unsigned int>(str->length()));
-        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), &buffer, 1, -1, _on_write);
+        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), &buffer, 1, offset, _on_write);
         return data->completer;
     }
 
@@ -148,7 +149,7 @@ public:
         delete data;
         delete req;
     }
-    ref<Future<int>> writeAll(ref<List<ref<String>>> str) override
+    ref<Future<int>> writeAll(ref<List<ref<String>>> str, int offset = -1) override
     {
         auto request = new uv_fs_t;
         auto data = new _write_all_data{Object::create<Completer<int>>(_loop), str->copy()};
@@ -161,7 +162,7 @@ public:
             auto &value = str[i];
             buffers[i] = uv_buf_init(const_cast<char *>(value->data()), static_cast<unsigned int>(value->length()));
         }
-        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), buffers, static_cast<unsigned int>(length), -1, _on_write_all);
+        uv_fs_write(loop, request, static_cast<uv_file>(openRequest->result), buffers, static_cast<unsigned int>(length), offset, _on_write_all);
         delete[] buffers;
         return data->completer;
     };
@@ -222,7 +223,7 @@ public:
             uv_fs_read(data->file->loop, req, static_cast<uv_file>(data->file->openRequest->result), &(data->buffer), 1, -1, _on_read);
         }
     }
-    ref<Future<ref<String>>> read() override
+    ref<Future<ref<String>>> read(int offset = -1) override
     {
         auto request = new uv_fs_t;
         auto data = new _read_data{
@@ -234,7 +235,7 @@ public:
         };
         memset(data->buffer.base, 0, 1024);
         request->data = data;
-        uv_fs_read(loop, request, static_cast<uv_file>(openRequest->result), &(data->buffer), 1, -1, _on_read);
+        uv_fs_read(loop, request, static_cast<uv_file>(openRequest->result), &(data->buffer), 1, offset, _on_read);
         return data->completer;
     }
 
@@ -257,7 +258,7 @@ public:
             uv_fs_read(data->file->loop, req, static_cast<uv_file>(data->file->openRequest->result), &(data->buffer), 1, -1, _on_read_stream);
         }
     }
-    ref<Stream<ref<String>>> readAsStream(size_t segmentationLength) override
+    ref<Stream<ref<String>>> readAsStream(size_t segmentationLength, int offset = -1) override
     {
         auto request = new uv_fs_t;
         auto data = new _read_data{
@@ -269,7 +270,7 @@ public:
         };
         memset(data->buffer.base, 0, segmentationLength + 1);
         request->data = data;
-        uv_fs_read(loop, request, static_cast<uv_file>(openRequest->result), &(data->buffer), 1, -1, _on_read_stream);
+        uv_fs_read(loop, request, static_cast<uv_file>(openRequest->result), &(data->buffer), 1, offset, _on_read_stream);
         return data->stream;
     }
 
@@ -293,7 +294,6 @@ public:
         delete closed;
         delete req;
     }
-
     ref<Future<int>> close() override
     {
         if (openRequest != nullptr)

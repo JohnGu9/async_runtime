@@ -194,7 +194,7 @@ static void event_loop_main(uv_async_t *handler)
 {
     Function<void()> *fn = reinterpret_cast<Function<void()> *>(handler->data);
     (*fn)();
-    uv_unref(reinterpret_cast<uv_handle_t *>(handler));
+    uv_close(reinterpret_cast<uv_handle_t *>(handler), 0);
 }
 
 void EventLoop::run(Function<void()> fn)
@@ -233,15 +233,16 @@ ref<EventLoop> EventLoop::createEventLoopOnNewThread(Function<void()> fn)
     std::condition_variable cv;
     std::unique_lock<std::mutex> lock(mutex);
     auto thread = std::thread(
-        [fn, &done, &loop, &cv] //
-        {                       //
+        [fn, &done, &loop, &cv, &mutex] { //
             EventLoop::runningEventLoop = loop = Object::create<_ThreadEventLoop>();
-            EventLoop::run([fn, &done, &cv] //
-                           {                //
-                               done = true;
-                               cv.notify_all();
-                               fn();
-                           });
+            EventLoop::run([fn, &done, &cv, &mutex] { //
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    done = true;
+                }
+                cv.notify_all();
+                fn();
+            });
         });
     cv.wait(lock, [&done]
             { return done; });

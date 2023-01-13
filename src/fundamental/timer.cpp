@@ -26,6 +26,10 @@ public:
         uv_timer_init(reinterpret_cast<uv_loop_t *>(loop->nativeHandle()), &_handle);
         _handle.data = nullptr;
     }
+    virtual ~_Timer()
+    {
+        DEBUG_ASSERT(_handle.data == nullptr);
+    }
     void cancel() noexcept override;
 
     class _Delay;
@@ -55,9 +59,9 @@ public:
         auto self = self();
         _handle.data = new std::function<void()>([this, self] { //
             uv_timer_stop(&_handle);
-            _fn(self);
             auto data = reinterpret_cast<std::function<void()> *>(_handle.data);
-            _handle.data = nullptr;
+            _handle.data = nullptr; // remove ptr from data at first
+            _fn(self);              // because user may restart timer in callback
             delete data;
         });
         uv_timer_start(&_handle, timer_cb, timeout.toMilliseconds(), 0);

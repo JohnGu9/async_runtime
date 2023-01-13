@@ -7,9 +7,7 @@ ThreadPool::ThreadPool(size_t threads, option<String> name)
                                { return String::connect(prefix, size_t(this), ">"); })),
       _stop(false)
 {
-    {
-        DEBUG_ASSERT(this->_name->isNotEmpty());
-    }
+    DEBUG_ASSERT(this->_name->isNotEmpty());
     _workers.reserve(threads);
     for (size_t i = 0; i < threads; ++i)
         _workers.emplace_back(ThreadPool::workerBuilder(i));
@@ -90,7 +88,6 @@ void ThreadPool::dispose()
         std::unique_lock<std::mutex> lock(_queueMutex);
         if (_stop)
         {
-            RUNTIME_ASSERT(false, "ThreadPool call [dispose] that already is disposed. ");
             return;
         }
         _stop = true;
