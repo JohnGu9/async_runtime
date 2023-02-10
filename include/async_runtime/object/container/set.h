@@ -5,5 +5,6 @@
 #include "set/base.h"
 
 #include "set/hash_set.h"
+#include "set/tree_set.h"
 
 #include "set/ref.h"

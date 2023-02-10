@@ -99,4 +99,17 @@ namespace _async_runtime
             return std::equal_to<Key>()(left->first, right->first);
         }
     };
+
+    template <typename T>
+    class KeyLess;
+    template <typename Key, typename Value>
+    class KeyLess<ref<Pair<const Key, Value>>>
+    {
+    public:
+        using T = ref<Pair<const Key, Value>>;
+        constexpr bool operator()(const T &left, const T &right) const
+        {
+            return std::less<Key>()(left->first, right->first);
+        }
+    };
 };

@@ -106,6 +106,12 @@ public:
         return this->find(static_cast<const T &>(value));
     }
 
+    virtual void emplaceAll(ref<Iterable<T>> other)
+    {
+        for (const T &element : other)
+            this->emplace(element);
+    }
+
     bool remove(const T &value) override
     {
         auto it = this->find(value);

@@ -1,5 +1,6 @@
 #pragma once
 #include "base.h"
+#include <unordered_set>
 
 template <typename Key, typename Value>
 class HashMap : public Map<Key, Value>
@@ -10,15 +11,10 @@ class HashMap : public Map<Key, Value>
     using container_type = std::unordered_set<element_type, _async_runtime::KeyHasher<element_type>, _async_runtime::KeyEqual<element_type>>;
     container_type _container;
 
-    container_type &container() const
-    {
-        return const_cast<container_type &>(_container);
-    }
-
 public:
     class _ConstIterator : public ConstIterator<element_type>
     {
-        using iterator = typename container_type::iterator;
+        using iterator = typename container_type::const_iterator;
 
     public:
         const iterator _it;
@@ -56,7 +52,7 @@ public:
 
     ref<ConstIterator<element_type>> findKey(const Key &key) const override
     {
-        return Object::create<_ConstIterator>(container().find(super::keyOnlyPairBuilder(key)));
+        return Object::create<_ConstIterator>(_container.find(super::keyOnlyPairBuilder(key)));
     }
 
     const Value &operator[](const Key &key) const override
@@ -82,12 +78,12 @@ public:
 
     ref<ConstIterator<element_type>> begin() const override
     {
-        return Object::create<_ConstIterator>(container().begin());
+        return Object::create<_ConstIterator>(_container.begin());
     }
 
     ref<ConstIterator<element_type>> end() const override
     {
-        return Object::create<_ConstIterator>(container().end());
+        return Object::create<_ConstIterator>(_container.end());
     }
 
     ref<ConstIterator<element_type>> erase(ref<ConstIterator<element_type>> it) override

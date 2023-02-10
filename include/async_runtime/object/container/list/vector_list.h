@@ -1,18 +1,18 @@
 #pragma once
-#include "std_implement.h"
-#include <deque>
+#include "base.h"
+#include <vector>
 
 template <typename T>
-class DequeList : public StdListImplement<T, std::deque<T>>
+class VectorList : public StdListImplement<T, std::vector<T>>
 {
     _ASYNC_RUNTIME_FRIEND_FAMILY;
-    using super = StdListImplement<T, std::deque<T>>;
+    using super = StdListImplement<T, std::vector<T>>;
 
 public:
     using super::super;
     ref<List<T>> copy() const override
     {
-        auto other = Object::create<DequeList<T>>();
+        auto other = Object::create<VectorList<T>>();
         other->_container = this->_container;
         return other;
     }

@@ -32,7 +32,7 @@ public:
         return false;
     }
 
-    ref<Set<T>> toSet() const override { return constSelf(); }
+    // ref<Set<T>> toSet() const override { return constSelf(); }
 
     void toStringStream(std::ostream &os) override
     {

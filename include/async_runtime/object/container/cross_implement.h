@@ -7,17 +7,23 @@ ref<Iterable<T>>::ref(std::initializer_list<T> list) : super(Object::create<_asy
 template <typename Key, typename Value>
 ref<Iterable<Key>> Map<Key, Value>::keys() const
 {
-    return MapIterable<element_type, Key>::from(constSelf(),
-                                                [](const element_type &pair) -> const Key &
-                                                { return pair->first; });
+    return MapIterable<element_type, Key>::from(
+        constSelf(),
+        [](const element_type &pair) -> const Key &
+        {
+            return pair->first;
+        });
 }
 
 template <typename Key, typename Value>
 ref<Iterable<Value>> Map<Key, Value>::values() const
 {
-    return MapIterable<element_type, Value>::from(constSelf(),
-                                                  [](const element_type &pair) -> const Value &
-                                                  { return pair->second; });
+    return MapIterable<element_type, Value>::from(
+        constSelf(),
+        [](const element_type &pair) -> const Value &
+        {
+            return pair->second;
+        });
 }
 
 template <typename T>

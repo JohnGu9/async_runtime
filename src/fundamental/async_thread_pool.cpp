@@ -30,8 +30,9 @@ AsyncThreadPool::Single::Single(bool autoDispose)
               lateref<Fn<void()>> task;
               {
                   std::unique_lock<std::mutex> lock(this->_mutex);
-                  this->_condition.wait(lock, [this]
-                                        { return this->_stop || !this->_tasks.empty(); });
+                  this->_condition.wait(lock, [this] { //
+                      return this->_stop || !this->_tasks.empty();
+                  });
                   if (this->_dropRemainTasks) // [[unlikely]]
                   {
                       return;

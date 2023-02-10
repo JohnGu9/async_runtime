@@ -2,7 +2,6 @@
 #include "../map.h"
 #include "../pair.h"
 #include "../set.h"
-#include <map>
 
 template <typename Key, typename Value>
 class Map : public Iterable<ref<Pair<const Key, Value>>>,
